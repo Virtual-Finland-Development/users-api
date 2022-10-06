@@ -12,8 +12,11 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - name: Pulumi Configurations Unit Tests
-        run: dotnet test ./VirtualFinland.Infrastructure.UnitTests --no-restore
+      - name: Install AWS Dotnet CLI Lambda Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
+      - name: Build UserAPI Lamda Package
+        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
+        run: dotnet lambda package
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with: 
@@ -23,7 +26,7 @@ jobs:
       
       - uses: pulumi/actions@v3
         with:
-          work-dir: ./VirtualFinland.Infrastructure
+          work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
         env:
