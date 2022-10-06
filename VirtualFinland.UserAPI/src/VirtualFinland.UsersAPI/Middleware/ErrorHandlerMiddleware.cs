@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Exceptions;
 
 public class ErrorHandlerMiddleware
@@ -9,13 +10,10 @@ public class ErrorHandlerMiddleware
     /// <summary>
     /// RFC7807 Problem Details
     /// </summary>
-    private class ErrorResponseDetails
+    [SwaggerSchema(Title = "CreateSearchProfile")]
+    private class ErrorResponseDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
     {
-        public string? Type { get; set; }
-        public string? Title { get; set; }
-        public string? Status { get; set; }
-        public string? Detail { get; set; }
-        public string? Instance { get; set; }
+        
     }
 
     public ErrorHandlerMiddleware(RequestDelegate next)
@@ -50,7 +48,7 @@ public class ErrorHandlerMiddleware
                     break;
             }
 
-            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Title = error?.Message, Detail = error?.Message, Status = response.StatusCode.ToString(), Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
+            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Title = error?.Message, Detail = error?.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
