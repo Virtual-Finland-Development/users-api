@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -18,7 +19,9 @@ public class CreateSearchProfile
         
         public string? Name { get; }
         
+        [SwaggerIgnore]
         public string? ClaimsUserId { get; set;  }
+        [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
         public CreateSearchProfileCommand(string jobTitles, string municipality, string? regions, string? name)

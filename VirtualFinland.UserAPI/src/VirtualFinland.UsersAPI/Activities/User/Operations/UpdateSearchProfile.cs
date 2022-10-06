@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -16,8 +17,9 @@ public class UpdateSearchProfile
         public string? Regions { get; }
         
         public string? Name { get; }
-        
+        [SwaggerIgnore]
         public string? ClaimsUserId { get; set; }
+        [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
         public UpdateSearchProfileCommand(Guid id, string jobTitles, string municipality, string regions, string name)

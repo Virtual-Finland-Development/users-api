@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,10 +47,11 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(config =>
 { //use fully qualified object names
-  config.CustomSchemaIds(x => x.FullName);
+  //config.CustomSchemaIds(x => x.FullName);
     config.EnableAnnotations(); 
     config.AddSecurityDefinition("Bearer", securityScheme);
     config.AddSecurityRequirement(securityReq);
+config.SchemaFilter<SwaggerSkipPropertyFilter >();
 });
 
 builder.Services.AddDbContext<UsersDbContext>();

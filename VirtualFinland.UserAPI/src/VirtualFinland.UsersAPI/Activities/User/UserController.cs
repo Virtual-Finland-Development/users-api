@@ -24,18 +24,14 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        var user = await _mediator.Send(new GetUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
-
-        if (user is null)
-            return NotFound();
-
-        return Ok(user);
+        return Ok(await _mediator.Send(new GetUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer)));
     }
     
     [HttpPatch("/user")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> UpdateUser(UpdateUser.UpdateUserCommand command)
     {
+        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
         await _mediator.Send(command);
         return NoContent();
     }
