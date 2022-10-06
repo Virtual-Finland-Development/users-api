@@ -20,7 +20,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("/user")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
@@ -37,14 +37,14 @@ public class UserController : ControllerBase
     }
     
     [HttpGet("/user/search-profiles/")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IList<GetSearchProfiles.SearchProfile>),StatusCodes.Status200OK)]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
         return await _mediator.Send(new GetSearchProfiles.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
     }
     
     [HttpGet("/user/search-profiles/{profileId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType( typeof(GetSearchProfile.SearchProfile), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
     {
@@ -68,7 +68,7 @@ public class UserController : ControllerBase
     }
     
     [HttpPost("/user/search-profiles")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CreateSearchProfile.SearchProfile), StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.CreateSearchProfileCommand command)
     {
         command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 
@@ -57,6 +58,7 @@ public class GetSearchProfile
         }
     }
     
+    [SwaggerSchema("SearchProfile")]
     public record SearchProfile(Guid Id, string? JobTitles, string? Municipality, string? Name, string? Regions);
 }
 

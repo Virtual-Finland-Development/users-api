@@ -47,8 +47,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(config =>
 { //use fully qualified object names
-  //config.CustomSchemaIds(x => x.FullName);
-    config.EnableAnnotations(); 
+  config.CustomSchemaIds(s => s.FullName.Replace("+", "."));    config.EnableAnnotations(); 
     config.AddSecurityDefinition("Bearer", securityScheme);
     config.AddSecurityRequirement(securityReq);
 config.SchemaFilter<SwaggerSkipPropertyFilter >();

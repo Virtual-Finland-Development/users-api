@@ -1,6 +1,7 @@
 using System.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 
@@ -42,7 +43,8 @@ public class GetUser
             return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName);
         }
     }
-
+    
+    [SwaggerSchema("User")]
     public record User(Guid Id, string? FirstName, string? LastName);
     
 }
