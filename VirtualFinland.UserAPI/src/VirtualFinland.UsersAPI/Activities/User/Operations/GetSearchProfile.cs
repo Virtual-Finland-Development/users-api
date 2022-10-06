@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -37,7 +38,7 @@ public class GetSearchProfile
 
             if (userSearchProfile is null)
             {
-                return null;
+                throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Municipality, userSearchProfile.Name, userSearchProfile.Regions);
@@ -45,12 +46,11 @@ public class GetSearchProfile
 
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
-            // TODO: Better error handling
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             if (externalIdentity is null)
             {
-                return null;
+                throw new NotAuthorizedExpception("User could not be identified as a valid user.");
             }
 
             return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);

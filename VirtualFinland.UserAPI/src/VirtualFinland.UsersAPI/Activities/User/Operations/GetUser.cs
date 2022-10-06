@@ -2,6 +2,7 @@ using System.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -33,7 +34,7 @@ public class GetUser
 
             if (externalIdentity is null)
             {
-                return null;
+                throw new NotAuthorizedExpception("User could not be identified as a valid user.");
             }
 
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);

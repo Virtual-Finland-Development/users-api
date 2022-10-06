@@ -21,7 +21,6 @@ public class GetTestbedIdentityUser
             this.ClaimsUserId = claimsUserId;
             this.ClaimsIssuer = claimsIssuer;
         }
-
     }
 
     public class GetTestbedIdentityUserHandler : IRequestHandler<Query, User>
@@ -34,11 +33,9 @@ public class GetTestbedIdentityUser
         
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            // TODO: Better response error and exception handling
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             // Create a new system user is no one found based on given authentication information
-
             if (externalIdentity is null)
             {
                 var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.User()

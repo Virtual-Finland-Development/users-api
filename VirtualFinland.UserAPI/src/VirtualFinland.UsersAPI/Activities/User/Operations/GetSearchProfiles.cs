@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -38,12 +39,11 @@ public class GetSearchProfiles
 
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
-            // TODO: Better error handling
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             if (externalIdentity is null)
             {
-                return null;
+                throw new NotAuthorizedExpception("User could not be identified as a valid user.");
             }
 
             return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);

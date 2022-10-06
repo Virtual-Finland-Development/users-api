@@ -45,8 +45,6 @@ public class UpdateSearchProfile
         }
         public async Task<Unit> Handle(UpdateSearchProfileCommand request, CancellationToken cancellationToken)
         {
-            var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
-
             var dbSearchProfile = await _usersDbContext.SearchProfiles.SingleAsync(o => o.Id == request.Id, cancellationToken);
             dbSearchProfile.Name = request.Name ?? dbSearchProfile.Name;
             dbSearchProfile.JobTitles = request.JobTitles ?? dbSearchProfile.JobTitles;
@@ -56,19 +54,6 @@ public class UpdateSearchProfile
             await _usersDbContext.SaveChangesAsync(cancellationToken);
             
             return Unit.Value;
-        }
-        
-        async private Task<Models.User> GetAuthenticatedUser(UpdateSearchProfileCommand request, CancellationToken cancellationToken)
-        {
-            // TODO: Better error handling
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
-
-            if (externalIdentity is null)
-            {
-                return null;
-            }
-
-            return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
         }
     }
 
