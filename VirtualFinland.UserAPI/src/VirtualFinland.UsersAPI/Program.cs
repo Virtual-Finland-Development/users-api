@@ -18,6 +18,7 @@ builder.Services.AddControllers();
 // package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
 {
@@ -40,18 +41,21 @@ var securityReq = new OpenApiSecurityRequirement()
                 Id = "Bearer"
             }
         },
-        new string[] {}
+        new string[]
+        {
+        }
     }
 };
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(config =>
 { //use fully qualified object names
-  config.CustomSchemaIds(s => s.FullName.Replace("+", "."));    config.EnableAnnotations(); 
-    config.AddSecurityDefinition("Bearer", securityScheme);
-    config.AddSecurityRequirement(securityReq);
-config.SchemaFilter<SwaggerSkipPropertyFilter >();
-});
+  config.CustomSchemaIds(s => s.FullName.Replace("+", "."));
+  config.EnableAnnotations();
+  config.AddSecurityDefinition("Bearer", securityScheme);
+  config.AddSecurityRequirement(securityReq);
+  config.SchemaFilter<SwaggerSkipPropertyFilter>(); });
 
 builder.Services.AddDbContext<UsersDbContext>();
 
@@ -78,12 +82,14 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
     // global cors policy
     app.UseCors(x => x
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
+
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
