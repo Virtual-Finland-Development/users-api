@@ -42,9 +42,7 @@ public class GetTestbedIdentityUser
             if (externalIdentity is null)
             {
                 var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.User()
-                {
-                    TestbedId = request.ClaimsUserId
-                }, cancellationToken);
+                { FirstName = String.Empty, LastName = String.Empty }, cancellationToken);
 
                 var newExternalIdentity = await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()
                 {

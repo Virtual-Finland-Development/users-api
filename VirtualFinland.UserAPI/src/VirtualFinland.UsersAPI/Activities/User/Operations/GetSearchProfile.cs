@@ -57,6 +57,6 @@ public class GetSearchProfile
         }
     }
     
-    public record SearchProfile(Guid Id, String JobTitles, String Municipality, string Name, string? Regions);
+    public record SearchProfile(Guid Id, string? JobTitles, string? Municipality, string? Name, string? Regions);
 }
 

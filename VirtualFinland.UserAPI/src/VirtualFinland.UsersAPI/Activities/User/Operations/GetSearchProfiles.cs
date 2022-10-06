@@ -52,6 +52,6 @@ public class GetSearchProfiles
     
     [SwaggerSchema(Title = "SearchProfile")]
 
-    public record SearchProfile(Guid Id, string JobTitles, string Municipality, string Name, string? Regions);
+    public record SearchProfile(Guid Id, string? JobTitles, string? Municipality, string? Name, string? Regions);
 }
 
