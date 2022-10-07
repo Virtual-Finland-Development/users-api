@@ -17,16 +17,16 @@ public class UpdateUser
         
         public string? Address { get; set; }
 
-        public String? JobTitles { get; }
-        public String? Municipality { get; }
-        public string? Regions { get; }
+        public List<string> JobTitles { get; }
+        public List<string> Municipality { get; }
+        public List<string> Regions { get; }
         
         [SwaggerIgnore]
         public string? ClaimsUserId { get; set; }
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateUserCommand(string? firstName, string? lastName, string? jobTitles, string? municipality, string? regions)
+        public UpdateUserCommand(string? firstName, string? lastName, List<string> jobTitles, List<string> municipality, List<string> regions)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
@@ -64,7 +64,7 @@ public class UpdateUser
                 {
                     var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
                     {
-                        Name = request.JobTitles,
+                        Name = request.JobTitles.FirstOrDefault(),
                         UserId = dbUser.Id,
                         JobTitles = request.JobTitles,
                         Municipality = request.Municipality,

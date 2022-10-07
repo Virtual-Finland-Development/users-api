@@ -54,6 +54,6 @@ public class GetUser
     }
     
     [SwaggerSchema("User")]
-    public record User(Guid Id, string? FirstName, string? LastName, string? address, string? JobTitles, string? Municipality, string? Regions);
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Municipality, List<string>? Regions);
     
 }

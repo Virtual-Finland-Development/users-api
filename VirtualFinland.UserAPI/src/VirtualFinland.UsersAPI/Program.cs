@@ -55,7 +55,8 @@ builder.Services.AddSwaggerGen(config =>
   config.EnableAnnotations();
   config.AddSecurityDefinition("Bearer", securityScheme);
   config.AddSecurityRequirement(securityReq);
-  config.SchemaFilter<SwaggerSkipPropertyFilter>(); });
+  config.SchemaFilter<SwaggerSkipPropertyFilter>();
+});
 
 builder.Services.AddDbContext<UsersDbContext>();
 

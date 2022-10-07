@@ -12,9 +12,9 @@ public class UpdateSearchProfile
     public class UpdateSearchProfileCommand : IRequest
     {
         public Guid Id { get; }
-        public String? JobTitles { get; }
-        public String? Municipality { get; }
-        public string? Regions { get; }
+        public List<string> JobTitles { get; }
+        public List<string> Municipality { get; }
+        public List<string> Regions { get; }
         
         public string? Name { get; }
         [SwaggerIgnore]
@@ -22,7 +22,7 @@ public class UpdateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateSearchProfileCommand(Guid id, string jobTitles, string municipality, string regions, string name)
+        public UpdateSearchProfileCommand(Guid id, List<string> jobTitles, List<string> municipality, List<string> regions, string name)
         {
             this.Id = id;
             this.JobTitles = jobTitles;

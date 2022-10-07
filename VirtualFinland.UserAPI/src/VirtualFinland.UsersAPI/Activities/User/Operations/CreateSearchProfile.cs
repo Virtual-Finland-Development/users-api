@@ -13,9 +13,9 @@ public class CreateSearchProfile
     [SwaggerSchema(Title = "CreateSearchProfile")]
     public class CreateSearchProfileCommand : IRequest<SearchProfile>
     {
-        public String JobTitles { get; }
-        public String Municipality { get; }
-        public string? Regions { get; }
+        public List<string> JobTitles { get; }
+        public List<string> Municipality { get; }
+        public List<string> Regions { get; }
         
         public string? Name { get; }
         
@@ -24,7 +24,7 @@ public class CreateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public CreateSearchProfileCommand(string jobTitles, string municipality, string? regions, string? name)
+        public CreateSearchProfileCommand(List<string> jobTitles, List<string> municipality, List<string> regions, string? name)
         {
             this.JobTitles = jobTitles;
             this.Municipality = municipality;
@@ -52,7 +52,7 @@ public class CreateSearchProfile
 
             var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
             {
-                Name = request.Name ?? request.JobTitles,
+                Name = request.Name ?? request.JobTitles.FirstOrDefault(),
                 UserId = authenticatedUser.Id,
                 JobTitles = request.JobTitles,
                 Municipality = request.Municipality,

@@ -95,7 +95,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\"\n}"
+					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\"],\n    \"municipality\": [\"Uusimaa\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo\"\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{host}}/user",

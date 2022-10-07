@@ -12,9 +12,9 @@ public class SearchProfile : IEntity
     
     public string? Name { get; set; }
 
-    public string? JobTitles { get; set; }
-    public string? Municipality { get; set; }
-    public string? Regions { get; set; }
+    public List<string>? JobTitles { get; set; }
+    public List<string>? Municipality { get; set; }
+    public List<string>? Regions { get; set; }
 
     public bool IsDefault { get; set; } = false;
 }
