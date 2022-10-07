@@ -10,7 +10,6 @@ public class ErrorHandlerMiddleware
     /// <summary>
     /// RFC7807 Problem Details
     /// </summary>
-    [SwaggerSchema(Title = "CreateSearchProfile")]
     private class ErrorResponseDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
     {
         
