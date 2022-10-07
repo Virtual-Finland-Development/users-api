@@ -5,15 +5,20 @@ namespace VirtualFinland.UserAPI.Data;
 
 public class UsersDbContext : DbContext
 {
+
+    public UsersDbContext(DbContextOptions options) : base(options)
+    {
+    }
     protected override void OnConfiguring
         (DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseInMemoryDatabase(databaseName: "UsersDB");
+        //optionsBuilder.UseInMemoryDatabase(databaseName: "UsersDB");
+        optionsBuilder.UseNpgsql("Host=localhost;Database=postgres;Username=postgres;Password=example");
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<SearchProfile>()
+        /*modelBuilder.Entity<SearchProfile>()
             .Property(e => e.JobTitles)
             .HasConversion(
                 v => string.Join(',', v),
@@ -23,7 +28,7 @@ public class UsersDbContext : DbContext
             .Property(e => e.Regions)
             .HasConversion(
                 v => string.Join(',', v),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());*/
     }
     public DbSet<User> Users { get; set; }
     

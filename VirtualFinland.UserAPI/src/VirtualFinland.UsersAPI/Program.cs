@@ -58,7 +58,8 @@ builder.Services.AddSwaggerGen(config =>
   config.SchemaFilter<SwaggerSkipPropertyFilter>();
 });
 
-builder.Services.AddDbContext<UsersDbContext>();
+builder.Services.AddDbContext<UsersDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
@@ -91,7 +92,7 @@ if (app.Environment.IsDevelopment())
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
+//app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
