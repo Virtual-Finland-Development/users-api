@@ -12,7 +12,6 @@ public class UpdateUser
     [SwaggerSchema(Title = "UpdateUser")]
     public class UpdateUserCommand : IRequest
     {
-        public Guid Id { get; }
         public string? FirstName { get; }
         public string? LastName { get; }
         
@@ -27,9 +26,8 @@ public class UpdateUser
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateUserCommand(Guid id, string? firstName, string? lastName, string? jobTitles, string? municipality, string? regions)
+        public UpdateUserCommand(string? firstName, string? lastName, string? jobTitles, string? municipality, string? regions)
         {
-            this.Id = id;
             this.FirstName = firstName;
             this.LastName = lastName;
             this.JobTitles = jobTitles;
