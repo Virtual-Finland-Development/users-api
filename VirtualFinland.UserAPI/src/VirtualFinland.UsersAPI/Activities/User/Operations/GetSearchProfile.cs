@@ -47,14 +47,15 @@ public class GetSearchProfile
 
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
-
-            if (externalIdentity is null)
+            try
             {
-                throw new NotAuthorizedExpception("User could not be identified as a valid user.");
+                var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+                return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             }
-
-            return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+            catch (InvalidOperationException e)
+            {
+                throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
+            }
         }
     }
     

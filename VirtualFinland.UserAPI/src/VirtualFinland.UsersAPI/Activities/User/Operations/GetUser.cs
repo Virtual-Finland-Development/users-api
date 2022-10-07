@@ -31,20 +31,29 @@ public class GetUser
         }
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+            var dbUser = await GetAuthenticatedUser(request, cancellationToken);
 
-            if (externalIdentity is null)
+            // TODO - To be decided: This default search profile in the user API call can be possibly removed
+            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
+            
+            return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Municipality, dbUserDefaultSearchProfile?.Regions);
+        }
+        
+        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        {
+            try
             {
-                throw new NotAuthorizedExpception("User could not be identified as a valid user.");
+                var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+                return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             }
-
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
-
-            return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName);
+            catch (InvalidOperationException e)
+            {
+                throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
+            }
         }
     }
     
     [SwaggerSchema("User")]
-    public record User(Guid Id, string? FirstName, string? LastName);
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, string? JobTitles, string? Municipality, string? Regions);
     
 }

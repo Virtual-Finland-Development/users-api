@@ -15,4 +15,6 @@ public class SearchProfile : IEntity
     public string? JobTitles { get; set; }
     public string? Municipality { get; set; }
     public string? Regions { get; set; }
+
+    public bool IsDefault { get; set; } = false;
 }
