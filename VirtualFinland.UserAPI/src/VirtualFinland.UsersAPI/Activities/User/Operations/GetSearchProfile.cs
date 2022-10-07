@@ -42,7 +42,7 @@ public class GetSearchProfile
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
-            return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Municipality, userSearchProfile.Name, userSearchProfile.Regions);
+            return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions);
         }
 
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
@@ -60,6 +60,6 @@ public class GetSearchProfile
     }
     
     [SwaggerSchema("SearchProfile")]
-    public record SearchProfile(Guid Id, List<string>? JobTitles, List<string>? Municipality, string? Name, List<string>? Regions);
+    public record SearchProfile(Guid Id, List<string>? JobTitles, string? Name, List<string>? Regions);
 }
 

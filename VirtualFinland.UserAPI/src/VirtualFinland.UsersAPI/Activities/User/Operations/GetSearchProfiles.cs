@@ -34,7 +34,7 @@ public class GetSearchProfiles
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.UserId == authenticatedUser.Id);
 
-            return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Municipality, o.Name, o.Regions)).ToListAsync(cancellationToken);
+            return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions)).ToListAsync(cancellationToken);
         }
 
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
@@ -53,6 +53,6 @@ public class GetSearchProfiles
     
     [SwaggerSchema(Title = "SearchProfile")]
 
-    public record SearchProfile(Guid Id, List<string>? JobTitles, List<string>? Municipality, string? Name, List<string>? Regions);
+    public record SearchProfile(Guid Id, List<string>? JobTitles, string? Name, List<string>? Regions);
 }
 

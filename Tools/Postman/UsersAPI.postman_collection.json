@@ -38,6 +38,38 @@
 			"response": []
 		},
 		{
+			"name": "Update Current User",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{host}}/user",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get Current User",
 			"event": [
 				{
@@ -65,38 +97,6 @@
 						"type": "text"
 					}
 				],
-				"url": {
-					"raw": "{{host}}/user",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update Current User",
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "Accept-Encoding",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\"],\n    \"municipality\": [\"Uusimaa\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo\"\n    ]\n}"
-				},
 				"url": {
 					"raw": "{{host}}/user",
 					"host": [
@@ -180,7 +180,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"Kuskin hommat\",\n  \"jobTitles\": \"F1 Kuski\",\n  \"municipality\": \"Uusimaa\",\n  \"regions\": \"Vantaa\"\n}"
+					"raw": "{\n\"name\": \"Uusi profiili\",\n  \"jobTitles\": [\"Nascar\"],\n    \"regions\": [\n        \"Vantaa\",\n        \"Espoo\"\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{host}}/user/search-profiles",
@@ -266,7 +266,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\"id\": \"{{profileId}}\",\n  \"jobTitles\": \"F1 Kuski\",\n  \"municipality\": \"Uusimaa\",\n  \"regions\": \"Espoo\"\n}"
+					"raw": "{\n\"id\": \"{{profileId}}\",\n  \"name\": \"Nascar profiili\",\n  \"jobTitles\": [\"Nascar Allstar\"],\n    \"regions\": [\n        \"Oulu\",\n        \"Espoo\"\n    ]\n}"
 				},
 				"url": {
 					"raw": "{{host}}/user/search-profiles/{{profileId}}",

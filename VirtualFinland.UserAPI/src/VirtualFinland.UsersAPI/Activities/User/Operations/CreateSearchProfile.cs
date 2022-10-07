@@ -14,7 +14,6 @@ public class CreateSearchProfile
     public class CreateSearchProfileCommand : IRequest<SearchProfile>
     {
         public List<string> JobTitles { get; }
-        public List<string> Municipality { get; }
         public List<string> Regions { get; }
         
         public string? Name { get; }
@@ -24,10 +23,9 @@ public class CreateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public CreateSearchProfileCommand(List<string> jobTitles, List<string> municipality, List<string> regions, string? name)
+        public CreateSearchProfileCommand(List<string> jobTitles, List<string> regions, string? name)
         {
             this.JobTitles = jobTitles;
-            this.Municipality = municipality;
             this.Regions = regions;
             this.Name = name;
         }
@@ -55,7 +53,6 @@ public class CreateSearchProfile
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
                 UserId = authenticatedUser.Id,
                 JobTitles = request.JobTitles,
-                Municipality = request.Municipality,
                 Regions = request.Regions
             }, cancellationToken);
 

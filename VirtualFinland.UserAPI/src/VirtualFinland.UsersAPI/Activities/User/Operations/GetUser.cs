@@ -36,7 +36,7 @@ public class GetUser
             // TODO - To be decided: This default search profile in the user API call can be possibly removed
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             
-            return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Municipality, dbUserDefaultSearchProfile?.Regions);
+            return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions);
         }
         
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
@@ -54,6 +54,6 @@ public class GetUser
     }
     
     [SwaggerSchema("User")]
-    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Municipality, List<string>? Regions);
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions);
     
 }

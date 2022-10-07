@@ -13,7 +13,6 @@ public class UpdateSearchProfile
     {
         public Guid Id { get; }
         public List<string> JobTitles { get; }
-        public List<string> Municipality { get; }
         public List<string> Regions { get; }
         
         public string? Name { get; }
@@ -22,11 +21,10 @@ public class UpdateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateSearchProfileCommand(Guid id, List<string> jobTitles, List<string> municipality, List<string> regions, string name)
+        public UpdateSearchProfileCommand(Guid id, List<string> jobTitles, List<string> regions, string name)
         {
             this.Id = id;
             this.JobTitles = jobTitles;
-            this.Municipality = municipality;
             this.Regions = regions;
             this.Name = name;
         }
@@ -50,7 +48,6 @@ public class UpdateSearchProfile
             var dbSearchProfile = await _usersDbContext.SearchProfiles.SingleAsync(o => o.Id == request.Id, cancellationToken);
             dbSearchProfile.Name = request.Name ?? dbSearchProfile.Name;
             dbSearchProfile.JobTitles = request.JobTitles ?? dbSearchProfile.JobTitles;
-            dbSearchProfile.Municipality = request.Municipality ?? dbSearchProfile.Municipality;
             dbSearchProfile.Regions = request.Regions ?? dbSearchProfile.Regions;
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
