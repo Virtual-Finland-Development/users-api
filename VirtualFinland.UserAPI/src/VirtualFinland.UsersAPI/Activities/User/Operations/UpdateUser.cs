@@ -10,7 +10,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 public class UpdateUser
 {
     [SwaggerSchema(Title = "UpdateUser")]
-    public class UpdateUserCommand : IRequest
+    public class UpdateUserCommand : IRequest<User>
     {
         public string? FirstName { get; }
         public string? LastName { get; }
@@ -40,14 +40,14 @@ public class UpdateUser
         }
     }
 
-    public class Handler : IRequestHandler<UpdateUserCommand>
+    public class Handler : IRequestHandler<UpdateUserCommand, User>
         {
             private readonly UsersDbContext _usersDbContext;
             public Handler(UsersDbContext usersDbContext)
             {
                 _usersDbContext = usersDbContext;
             }
-            public async Task<Unit> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+            public async Task<User> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
 
@@ -82,8 +82,8 @@ public class UpdateUser
                 }
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
-
-                return await Unit.Task;
+                
+                return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions);
             }
             
             async private Task<Models.User> GetAuthenticatedUser(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -98,5 +98,9 @@ public class UpdateUser
                     throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
                 }
             }
+            
+            
         }
+    [SwaggerSchema("User")]
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions);
 }

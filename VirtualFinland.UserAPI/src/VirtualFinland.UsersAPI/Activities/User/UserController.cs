@@ -37,8 +37,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUser.UpdateUserCommand command)
     {
         command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
-        await _mediator.Send(command);
-        return NoContent();
+        return Ok(await _mediator.Send(command));
     }
     
     [HttpGet("/user/search-profiles/")]
