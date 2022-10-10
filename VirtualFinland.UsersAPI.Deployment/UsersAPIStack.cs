@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
+using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Awsx.Ec2;
 using Pulumi.Command.Local;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common;
 using Instance = Pulumi.Aws.Rds.Instance;
 using InstanceArgs = Pulumi.Aws.Rds.InstanceArgs;
 using SubnetGroup = Pulumi.Aws.Dax.SubnetGroup;
+using Vpc = Pulumi.Awsx.Ec2.Vpc;
 
 namespace VirtualFinland.UsersAPI.Deployment;
 
@@ -63,6 +64,26 @@ public class UsersAPIStack : Stack
             PolicyArn = ManagedPolicy.AWSLambdaBasicExecutionRole.ToString()
         });
 
+        /*var default_vpc = new Pulumi.Aws.Ec2.DefaultVpc("default");
+
+        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
+        {
+            Name = "default",
+            VpcId = default_vpc.Id
+        });
+
+        var defaultSubnet = new Pulumi.Aws.Ec2.DefaultSubnet("default", new DefaultSubnetArgs()
+        {
+            AvailabilityZone = "eu-north-1"
+        });
+
+        var functionVpcArgs = new FunctionVpcConfigArgs()
+        {
+            VpcId = default_vpc.Id,
+            SecurityGroupIds = defaultSecurityGroup.Apply( o => o.Id),
+            SubnetIds = defaultSubnet.Id
+        };*/
+
         var lambdaFunction = new Function("vf-UsersAPI", new FunctionArgs
         {
             Role = role.Arn,
@@ -78,7 +99,8 @@ public class UsersAPIStack : Stack
                         .Apply(pulumiOutputs =>$"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}") }
                 }
             },
-            Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip")
+            Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip"),
+            //VpcConfig = functionVpcArgs
         });
 
         var functionUrl = new FunctionUrl("vf-UsersAPI-FunctionUrl", new FunctionUrlArgs
@@ -103,7 +125,7 @@ public class UsersAPIStack : Stack
         Url = functionUrl.FunctionUrlResult;
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, Vpc vpc)
+    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, Vpc vpc)
     {
         /*var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
         {
@@ -134,7 +156,7 @@ public class UsersAPIStack : Stack
 
         DBPassword = password.Result;
 
-        return (password.Result, rdsPostGreInstance.Address);
+        return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
 
     [Output] public Output<string> Url { get; set; }
