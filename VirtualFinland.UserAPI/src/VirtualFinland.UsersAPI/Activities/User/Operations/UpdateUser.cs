@@ -83,7 +83,7 @@ public class UpdateUser
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
-                return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions);
+                return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified);
             }
             
             async private Task<Models.User> GetAuthenticatedUser(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -102,5 +102,5 @@ public class UpdateUser
             
         }
     [SwaggerSchema("User")]
-    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions);
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified);
 }

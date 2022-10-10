@@ -13,7 +13,7 @@ public class UsersDbContext : DbContext
         (DbContextOptionsBuilder optionsBuilder)
     {
         //optionsBuilder.UseInMemoryDatabase(databaseName: "UsersDB");
-        optionsBuilder.UseNpgsql("Host=localhost;Database=postgres;Username=postgres;Password=example");
+        //optionsBuilder.UseNpgsql("Host=localhost;Database=postgres;Username=postgres;Password=example");
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

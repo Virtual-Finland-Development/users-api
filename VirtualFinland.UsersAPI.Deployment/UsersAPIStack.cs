@@ -29,6 +29,8 @@ public class UsersAPIStack : Stack
             { "Environment", config.Require("environment") },
             { "Project", config.Require("name") }
         };
+        
+        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, null);
 
         var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
         {
@@ -71,7 +73,9 @@ public class UsersAPIStack : Stack
             {
                 Variables =
                 {
-                    { "ASPNETCORE_ENVIRONMENT", "Development" }
+                    { "ASPNETCORE_ENVIRONMENT", "Development" },
+                    { "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
+                        .Apply(pulumiOutputs =>$"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}") }
                 }
             },
             Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip")
@@ -96,18 +100,15 @@ public class UsersAPIStack : Stack
             }
         });
 
-        
-
-
         Url = functionUrl.FunctionUrlResult;
     }
 
-    private void InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, Vpc vpc)
+    private (Output<string> dbPassword, Output<string> dbHostName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, Vpc vpc)
     {
-        var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
+        /*var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
         {
             SubnetIds = vpc.PrivateSubnetIds, 
-        });
+        });*/
 
         var password = new RandomPassword("password", new()
         {
@@ -122,14 +123,20 @@ public class UsersAPIStack : Stack
             InstanceClass = "db.t3.micro",
             AllocatedStorage = 20,
 
-            DbSubnetGroupName = dbSubNetGroup.Name,
+            //DbSubnetGroupName = dbSubNetGroup.Name,
             DbName = config.Require("dbName"),
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = tags,
+            PubliclyAccessible = !isProductionEnvironment, 
             SkipFinalSnapshot = !isProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
+
+        DBPassword = password.Result;
+
+        return (password.Result, rdsPostGreInstance.Address);
     }
 
     [Output] public Output<string> Url { get; set; }
+    [Output] public Output<string> DBPassword { get; set; }
     }

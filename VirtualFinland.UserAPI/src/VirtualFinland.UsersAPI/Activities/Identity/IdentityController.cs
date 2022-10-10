@@ -29,7 +29,6 @@ public class IdentityController : ControllerBase
         Description =
             "Given the access token from Testbed, the operation tries to find if the user exists in the system database and if the user does not exist create an account. Notice: The user can't access personal information without being created into the system with this call.")]
     [ProducesResponseType(typeof(GetTestbedIdentityUser.User), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
