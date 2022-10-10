@@ -39,7 +39,7 @@ public class GetTestbedIdentityUser
             if (externalIdentity is null)
             {
                 var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.User()
-                { FirstName = String.Empty, LastName = String.Empty, Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
+                { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
                 var newExternalIdentity = await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()
                 {

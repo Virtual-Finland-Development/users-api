@@ -93,7 +93,7 @@ if (app.Environment.IsDevelopment())
         .AllowAnyHeader());
 }
 
-//app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
