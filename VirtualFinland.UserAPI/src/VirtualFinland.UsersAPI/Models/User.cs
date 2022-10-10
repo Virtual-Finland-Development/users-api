@@ -8,6 +8,9 @@ public class User : IEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
+    public DateTime Created { get; set; }
+    public DateTime Modified { get; set; }
+
     public string? FirstName { get; set; }
 
     public string? LastName { get; set; }

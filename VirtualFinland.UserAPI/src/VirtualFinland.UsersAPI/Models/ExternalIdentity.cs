@@ -8,7 +8,10 @@ public class ExternalIdentity : IEntity
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-    
+
+    public DateTime Created { get; set; }
+    public DateTime Modified { get; set; }
+
     [Required]
     public string? Issuer { get; set; }
     

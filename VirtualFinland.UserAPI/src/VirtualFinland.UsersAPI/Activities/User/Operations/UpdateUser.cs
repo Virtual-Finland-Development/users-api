@@ -54,6 +54,7 @@ public class UpdateUser
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
                 dbUser.Address = request.Address ?? dbUser.Address;
+                dbUser.Modified = DateTime.UtcNow;
                 
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
@@ -66,6 +67,8 @@ public class UpdateUser
                         UserId = dbUser.Id,
                         JobTitles = request.JobTitles,
                         Regions = request.Regions,
+                        Created = DateTime.UtcNow,
+                        Modified = DateTime.UtcNow,
                         IsDefault = true
                     }, cancellationToken);
                 }
@@ -75,6 +78,7 @@ public class UpdateUser
                     dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
                     dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
                     dbUserDefaultSearchProfile.IsDefault = true;
+                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
                 }
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);

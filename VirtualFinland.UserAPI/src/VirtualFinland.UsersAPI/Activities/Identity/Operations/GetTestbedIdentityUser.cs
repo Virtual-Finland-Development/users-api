@@ -39,24 +39,26 @@ public class GetTestbedIdentityUser
             if (externalIdentity is null)
             {
                 var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.User()
-                { FirstName = String.Empty, LastName = String.Empty }, cancellationToken);
+                { FirstName = String.Empty, LastName = String.Empty, Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
                 var newExternalIdentity = await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()
                 {
                     Issuer = request.ClaimsIssuer,
                     IdentityId = request.ClaimsUserId,
-                    UserId = newDbUSer.Entity.Id
+                    UserId = newDbUSer.Entity.Id,
+                    Created = DateTime.UtcNow,
+                    Modified = DateTime.UtcNow
                 }, cancellationToken);
                 
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
-                return new User(newDbUSer.Entity.Id);
+                return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
             
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
-            return new User(dbUser.Id);
+            return new User(dbUser.Id, dbUser.Created, dbUser.Modified);
         }
     }
 
-    public record User(Guid Id);
+    public record User(Guid Id, DateTime Created, DateTime Modified);
 }

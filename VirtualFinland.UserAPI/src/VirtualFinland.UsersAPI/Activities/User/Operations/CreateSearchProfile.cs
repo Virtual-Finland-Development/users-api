@@ -53,7 +53,9 @@ public class CreateSearchProfile
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
                 UserId = authenticatedUser.Id,
                 JobTitles = request.JobTitles,
-                Regions = request.Regions
+                Regions = request.Regions,
+                Created = DateTime.UtcNow,
+                Modified = DateTime.UtcNow
             }, cancellationToken);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);

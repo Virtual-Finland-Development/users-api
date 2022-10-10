@@ -49,6 +49,7 @@ public class UpdateSearchProfile
             dbSearchProfile.Name = request.Name ?? dbSearchProfile.Name;
             dbSearchProfile.JobTitles = request.JobTitles ?? dbSearchProfile.JobTitles;
             dbSearchProfile.Regions = request.Regions ?? dbSearchProfile.Regions;
+            dbSearchProfile.Modified = DateTime.UtcNow;
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
             
