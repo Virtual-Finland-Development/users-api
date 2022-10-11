@@ -71,6 +71,8 @@ public class UpdateUser
                         Modified = DateTime.UtcNow,
                         IsDefault = true
                     }, cancellationToken);
+
+                    dbUserDefaultSearchProfile = dbNewSearchProfile.Entity;
                 }
                 else
                 {
