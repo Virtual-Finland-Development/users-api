@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
+using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -15,10 +18,9 @@ public class UserTests : APITestBase
     {
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        
+        var mockLogger = new Mock<ILogger<GetUser.Handler>>();
         var query = new GetUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-
-        var handler = new GetUser.Handler(_dbContext);
+        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -33,13 +35,12 @@ public class UserTests : APITestBase
     {
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var command = new UpdateUser.UpdateUserCommand("New FirstName", "New LastName", null, null);
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-
-        var handler = new UpdateUser.Handler(_dbContext);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object);
+        
         // Act
-
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert

@@ -40,10 +40,14 @@ public class CreateSearchProfile
     public class Handler : IRequestHandler<CreateSearchProfileCommand, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
-        public Handler(UsersDbContext usersDbContext)
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
+
         public async Task<SearchProfile> Handle(CreateSearchProfileCommand request, CancellationToken cancellationToken)
         {
             var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
@@ -59,6 +63,8 @@ public class CreateSearchProfile
             }, cancellationToken);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
+            
+            _logger.LogDebug("Search Profile Created: {SearchProfileId}", dbNewSearchProfile.Entity.Id);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }
@@ -72,6 +78,7 @@ public class CreateSearchProfile
             }
             catch (InvalidOperationException e)
             {
+                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
                 throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
             }
         }

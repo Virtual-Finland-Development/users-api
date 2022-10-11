@@ -1,5 +1,7 @@
 using Bogus;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -12,10 +14,9 @@ public class IdentityTests : APITestBase
     {
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-
+        var mockLogger = new Mock<ILogger<GetTestbedIdentityUser.GetTestbedIdentityUserHandler>>();
         var query = new GetTestbedIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        
-        var handler = new GetTestbedIdentityUser.GetTestbedIdentityUserHandler(_dbContext);
+        var handler = new GetTestbedIdentityUser.GetTestbedIdentityUserHandler(_dbContext, mockLogger.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -27,11 +28,11 @@ public class IdentityTests : APITestBase
     [Fact]
     public async void Should_VerifyNewLoginUser()
     {
-        var faker = new Faker("en");
         // Arrange
+        var faker = new Faker("en");
         var query = new GetTestbedIdentityUser.Query(faker.Random.Guid().ToString(), faker.Random.String(10));
-        
-        var handler = new GetTestbedIdentityUser.GetTestbedIdentityUserHandler(_dbContext);
+        var mockLogger = new Mock<ILogger<GetTestbedIdentityUser.GetTestbedIdentityUserHandler>>();
+        var handler = new GetTestbedIdentityUser.GetTestbedIdentityUserHandler(_dbContext, mockLogger.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);

@@ -43,10 +43,14 @@ public class UpdateUser
     public class Handler : IRequestHandler<UpdateUserCommand, User>
         {
             private readonly UsersDbContext _usersDbContext;
-            public Handler(UsersDbContext usersDbContext)
+            private readonly ILogger<Handler> _logger;
+
+            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
             {
                 _usersDbContext = usersDbContext;
+                _logger = logger;
             }
+
             public async Task<User> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
@@ -56,7 +60,7 @@ public class UpdateUser
                 dbUser.Address = request.Address ?? dbUser.Address;
                 dbUser.Modified = DateTime.UtcNow;
                 
-                // TODO - To be decided: This default search profile in the user API call can be possibly removed
+                // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
 
                 if (dbUserDefaultSearchProfile is null)
@@ -85,6 +89,8 @@ public class UpdateUser
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
+                _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+                
                 return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified);
             }
             
@@ -97,6 +103,7 @@ public class UpdateUser
                 }
                 catch (InvalidOperationException e)
                 {
+                    _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
                     throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
                 }
             }

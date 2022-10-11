@@ -39,9 +39,12 @@ public class UpdateSearchProfile
     public class Handler : IRequestHandler<UpdateSearchProfileCommand>
     {
         private readonly UsersDbContext _usersDbContext;
-        public Handler(UsersDbContext usersDbContext)
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
         public async Task<Unit> Handle(UpdateSearchProfileCommand request, CancellationToken cancellationToken)
         {
@@ -52,6 +55,8 @@ public class UpdateSearchProfile
             dbSearchProfile.Modified = DateTime.UtcNow;
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
+            
+            _logger.LogDebug("Search Profile updated: {RequestId}", request.Id);
             
             return Unit.Value;
         }

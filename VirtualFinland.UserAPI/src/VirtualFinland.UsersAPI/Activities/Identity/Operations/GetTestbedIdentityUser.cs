@@ -26,11 +26,14 @@ public class GetTestbedIdentityUser
     public class GetTestbedIdentityUserHandler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        public GetTestbedIdentityUserHandler(UsersDbContext usersDbContext)
+        private readonly ILogger<GetTestbedIdentityUserHandler> _logger;
+
+        public GetTestbedIdentityUserHandler(UsersDbContext usersDbContext, ILogger<GetTestbedIdentityUserHandler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
-        
+
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
@@ -52,10 +55,13 @@ public class GetTestbedIdentityUser
                 
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Verified and created a new user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
             
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+            
+            _logger.LogInformation("Verified an existing user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
             return new User(dbUser.Id, dbUser.Created, dbUser.Modified);
         }
     }

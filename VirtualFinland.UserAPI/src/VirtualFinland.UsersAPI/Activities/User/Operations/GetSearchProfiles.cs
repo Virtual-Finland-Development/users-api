@@ -23,16 +23,21 @@ public class GetSearchProfiles
     public class Handler : IRequestHandler<Query, IList<SearchProfile>>
     {
         private readonly UsersDbContext _usersDbContext;
-        public Handler(UsersDbContext usersDbContext)
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
-        
+
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)
         {
             var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.UserId == authenticatedUser.Id);
+            
+            _logger.LogDebug("Retrieving search profiles");
 
             return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions, o.Created, o.Modified)).ToListAsync(cancellationToken);
         }
@@ -46,6 +51,7 @@ public class GetSearchProfiles
             }
             catch (InvalidOperationException e)
             {
+                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
                 throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
             }
         }

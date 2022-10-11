@@ -26,11 +26,14 @@ public class GetSearchProfile
     public class Handler : IRequestHandler<Query, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
-        public Handler(UsersDbContext usersDbContext)
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
-        
+
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
         {
             var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
@@ -39,8 +42,11 @@ public class GetSearchProfile
 
             if (userSearchProfile is null)
             {
+                _logger.LogInformation("Failed to retrieve search profile: {RequestProfileId}", request.ProfileId);
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
+            
+            _logger.LogDebug("Search Profile Retrieved: {SearchProfileId}", userSearchProfile.Id);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }
@@ -54,6 +60,7 @@ public class GetSearchProfile
             }
             catch (InvalidOperationException e)
             {
+                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
                 throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
             }
         }
