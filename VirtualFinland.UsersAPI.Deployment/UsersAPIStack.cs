@@ -22,7 +22,9 @@ public class UsersAPIStack : Stack
         var config = new Config();
         bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
 
-        var stackReference = new StackReference($"{config.Require("infraStackReferencePath")}/{config.Require("environment")}");
+        
+        
+        var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{config.Require("environment")}");
         var privateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var vpcId = stackReference.GetOutput("VpcId");
 
@@ -155,7 +157,7 @@ public class UsersAPIStack : Stack
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = tags,
-            PubliclyAccessible = !isProductionEnvironment,
+            PubliclyAccessible = !isProductionEnvironment, // DEV: For Production set to FALSE
             SkipFinalSnapshot = !isProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
 
