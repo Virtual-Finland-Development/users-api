@@ -1,53 +1,13 @@
-# ASP.NET Core Minimal API Serverless Application
+# Users API
 
-This project shows how to run an ASP.NET Core Web API project as an AWS Lambda exposed through Amazon API Gateway. The
-NuGet package [Amazon.Lambda.AspNetCoreServer](https://www.nuget.org/packages/Amazon.Lambda.AspNetCoreServer) contains a
-Lambda function that is used to translate requests from API Gateway into the ASP.NET Core framework and then the
-responses from ASP.NET Core back to API Gateway.
+This project is intended to create user profiles and related user specific data based on outside identity providers.  
+A user authentication information is checked against the API database to see if the use exists and then create an instance in the database.  
 
-For more information about how the Amazon.Lambda.AspNetCoreServer package works and how to extend its behavior view
-its [README](https://github.com/aws/aws-lambda-dotnet/blob/master/Libraries/src/Amazon.Lambda.AspNetCoreServer/README.md)
-file in GitHub.
+# Development Environment
 
-## Executable Assembly ##
+## Requirements
 
-.NET Lambda projects that use C# top level statements like this project must be deployed as an executable assembly
-instead of a class library. To indicate to Lambda that the .NET function is an executable assembly the
-Lambda function handler value is set to the .NET Assembly name. This is different then deploying as a class library
-where the function handler string includes the assembly, type and method name.
-
-To deploy as an executable assembly the Lambda runtime client must be started to listen for incoming events to process.
-For an ASP.NET Core application the Lambda runtime client is started by included the
-`Amazon.Lambda.AspNetCoreServer.Hosting` NuGet package and calling `AddAWSLambdaHosting(LambdaEventSource.HttpApi)`
-passing in the event source while configuring the services of the application. The
-event source can be API Gateway REST API and HTTP API or Application Load Balancer.
-
-### Project Files ###
-
-* serverless.template - an AWS CloudFormation Serverless Application Model template file for declaring your Serverless
-  functions and other AWS resources
-* aws-lambda-tools-defaults.json - default argument settings for use with Visual Studio and command line deployment
-  tools for AWS
-* Program.cs - entry point to the application that contains all of the top level statements initializing the ASP.NET
-  Core application.
-  The call to `AddAWSLambdaHosting` configures the application to work in Lambda when it detects Lambda is the executing
-  environment.
-* Controllers\CalculatorController - example Web API controller
-
-You may also have a test project depending on the options selected.
-
-## Here are some steps to follow from Visual Studio:
-
-To deploy your Serverless application, right click the project in Solution Explorer and select *Publish to AWS Lambda*.
-
-To view your deployed application open the Stack View window by double-clicking the stack name shown beneath the AWS
-CloudFormation node in the AWS Explorer tree. The Stack View also displays the root URL to your published application.
-
-## Here are some steps to follow to get started from the command line:
-
-Once you have edited your template and code you can deploy your application using
-the [Amazon.Lambda.Tools Global Tool](https://github.com/aws/aws-extensions-for-dotnet-cli#aws-lambda-amazonlambdatools)
-from the command line.
+The project is created primarily on C# and .NET.  
 
 Install Amazon.Lambda.Tools Global Tools if not already installed.
 
@@ -61,9 +21,61 @@ If already installed check if new version is available.
     dotnet tool update -g Amazon.Lambda.Tools
 ```
 
-Deploy application
+Install .NET SDK.  
+https://dotnet.microsoft.com/en-us/download  
 
+Install Pulumi.  
+https://www.pulumi.com/docs/get-started/install/
+
+Docker is used to support local development but not necessary.  
+https://docs.docker.com/get-docker/
+
+
+## Project Structure
+
+1. **VirtualFinland.UsersAPI**: The API functionalities
+2. **VirtualFinland.UsersAPI.Deployment**: The Pulumi IaC definitions for AWS resources provisioning
+3. **VirtualFinland.UsersAPI.IntegrationTests**: Tests for the API functionalities
+4. **Tools**: Contains scripts and definitions that help with the development process
+
+## Q&A
+
+### How do I start developing
+
+Pick your choice of an IDE or similar developer tool that supports C# and .NET.  
+
+You can start by opening the solution file **VirtualFinland.UsersAPI.sln** or by opening the this root folder in a code editor like Visual Studio Code.  
+
+### How to build AWS Lambda Deployment package
+
+Navigate to the VirtualFinland.UsersAPI project root folder and run the lambda tools package command.  
 ```
-    cd "VirtualFinland.UserAPI/src/VirtualFinland.UserAPI"
-    dotnet lambda deploy-serverless
+  dotnet lambda package
 ```
+
+### Which environments are supported
+
+At the moment only a development environment configurations are supported. You can set the following environment variable.
+```
+  ASPNETCORE_ENVIRONMENT=Development
+```
+
+### How  to deploy the infrastructure into AWS
+
+You need to have the Pulumi tools installed in your system and do some of the following things:
+
+If new to Pulumi, then read start here: https://www.pulumi.com/docs/get-started/aws/  
+
+Other good to know documentation:  
+https://www.pulumi.com/docs/intro/concepts/how-pulumi-works/  
+https://www.pulumi.com/docs/intro/concepts/stack/  
+https://www.pulumi.com/docs/intro/concepts/secrets/  
+https://www.pulumi.com/docs/intro/concepts/config/  
+https://www.pulumi.com/docs/intro/concepts/inputs-outputs/  
+
+#### Pulumi basic commands
+
+* "pulumi preview": reads you stacks and generates a preview of to be provisioned resources
+* "pulumi up": Same as preview but will start to preform the actual resources provisioning (create or update) after manual acceptance
+* "pulumi destroy": Will destroy the provisioned resources
+* "pulumi stack select **mystackname**": Will swap to a different stack
