@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text.Json;
+using System.Linq;
 using Pulumi;
-using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
@@ -10,8 +12,6 @@ using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common;
 using Instance = Pulumi.Aws.Rds.Instance;
 using InstanceArgs = Pulumi.Aws.Rds.InstanceArgs;
-using SubnetGroup = Pulumi.Aws.Dax.SubnetGroup;
-using Vpc = Pulumi.Awsx.Ec2.Vpc;
 
 namespace VirtualFinland.UsersAPI.Deployment;
 
@@ -21,17 +21,22 @@ public class UsersAPIStack : Stack
     {
         var config = new Config();
         bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
-        
-        // var stackReference = new StackReference("adriansimionescuRebase/infrastructure/dev");
-        // var vpcId = stackReference.GetOutput("VpcId");
-        
+
+        var stackReference = new StackReference("adriansimionescuRebase/infrastructure/dev");
+        var privateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
+        var vpcId = stackReference.GetOutput("VpcId");
+
         InputMap<string> tags = new InputMap<string>()
         {
-            { "Environment", config.Require("environment") },
-            { "Project", config.Require("name") }
+            {
+                "Environment", config.Require("environment")
+            },
+            {
+                "Project", config.Require("name")
+            }
         };
-        
-        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, null);
+
+        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds.Apply(o => ((ImmutableArray<object>)o).Select( x => x.ToString())));
 
         var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
         {
@@ -61,28 +66,19 @@ public class UsersAPIStack : Stack
         var rolePolicyAttachment = new RolePolicyAttachment("vf-UsersAPI-LambdaRoleAttachment", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{role.Name}"),
-            PolicyArn = ManagedPolicy.AWSLambdaBasicExecutionRole.ToString()
+            PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
-
-        /*var default_vpc = new Pulumi.Aws.Ec2.DefaultVpc("default");
-
-        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
+        
+        var defaultSecurityGroup = new Pulumi.Aws.Ec2.DefaultSecurityGroup("default", new()
         {
-            Name = "default",
-            VpcId = default_vpc.Id
+            VpcId = Output.Format($"{vpcId}")
         });
-
-        var defaultSubnet = new Pulumi.Aws.Ec2.DefaultSubnet("default", new DefaultSubnetArgs()
-        {
-            AvailabilityZone = "eu-north-1"
-        });
-
+        
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            VpcId = default_vpc.Id,
-            SecurityGroupIds = defaultSecurityGroup.Apply( o => o.Id),
-            SubnetIds = defaultSubnet.Id
-        };*/
+            SecurityGroupIds = defaultSecurityGroup.Id,
+            SubnetIds = privateSubnetIds.Apply(o => ((ImmutableArray<object>)o).Select( x => x.ToString()))
+        };
 
         var lambdaFunction = new Function("vf-UsersAPI", new FunctionArgs
         {
@@ -94,13 +90,17 @@ public class UsersAPIStack : Stack
             {
                 Variables =
                 {
-                    { "ASPNETCORE_ENVIRONMENT", "Development" },
-                    { "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
-                        .Apply(pulumiOutputs =>$"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}") }
+                    {
+                        "ASPNETCORE_ENVIRONMENT", "Development"
+                    },
+                    {
+                        "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
+                            .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}")
+                    }
                 }
             },
             Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip"),
-            //VpcConfig = functionVpcArgs
+            VpcConfig = functionVpcArgs
         });
 
         var functionUrl = new FunctionUrl("vf-UsersAPI-FunctionUrl", new FunctionUrlArgs
@@ -123,19 +123,24 @@ public class UsersAPIStack : Stack
         });
 
         Url = functionUrl.FunctionUrlResult;
+        VpcId = Output.Format($"{vpcId}");
+        this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
+        this.DefaultSecurityGroupId = defaultSecurityGroup.Id;
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, Vpc vpc)
+    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds)
     {
-        /*var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
+        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
-            SubnetIds = vpc.PrivateSubnetIds, 
-        });*/
+
+            SubnetIds = privateSubNetIds,
+
+        });
 
         var password = new RandomPassword("password", new()
         {
             Length = 16,
-            Special = true,
+            Special = false,
             OverrideSpecial = "_%@",
         });
 
@@ -145,12 +150,12 @@ public class UsersAPIStack : Stack
             InstanceClass = "db.t3.micro",
             AllocatedStorage = 20,
 
-            //DbSubnetGroupName = dbSubNetGroup.Name,
+            DbSubnetGroupName = dbSubNetGroup.Name,
             DbName = config.Require("dbName"),
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = tags,
-            PubliclyAccessible = !isProductionEnvironment, 
+            PubliclyAccessible = !isProductionEnvironment,
             SkipFinalSnapshot = !isProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
 
@@ -160,5 +165,11 @@ public class UsersAPIStack : Stack
     }
 
     [Output] public Output<string> Url { get; set; }
+
+    [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
+
+    [Output] public Output<string> VpcId { get; set; }
+
+    [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DBPassword { get; set; }
-    }
+}
