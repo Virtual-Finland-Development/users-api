@@ -3,3 +3,5 @@ config:
   VirtualFinland.UsersAPI.Deployment:dbName: usersapidb
   VirtualFinland.UsersAPI.Deployment:environment: dev
   VirtualFinland.UsersAPI.Deployment:name: users-api
+  VirtualFinland.UsersAPI.Deployment:infraStackReferencePath: adriansimionescuRebase/infrastructure
+

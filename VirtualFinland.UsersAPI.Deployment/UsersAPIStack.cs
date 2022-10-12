@@ -22,7 +22,7 @@ public class UsersAPIStack : Stack
         var config = new Config();
         bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
 
-        var stackReference = new StackReference("adriansimionescuRebase/infrastructure/dev");
+        var stackReference = new StackReference($"{config.Require("infraStackReferencePath")}/{config.Require("environment")}");
         var privateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var vpcId = stackReference.GetOutput("VpcId");
 
