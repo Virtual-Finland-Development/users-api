@@ -39,7 +39,6 @@ https://docs.docker.com/get-docker/
 4. **Tools**: Contains scripts and definitions that help with the development process
 
 ## Q&A
-
 ### How do I start developing
 
 Pick your choice of an IDE or similar developer tool that supports C# and .NET.  
@@ -62,6 +61,12 @@ Notice: If you are running a Linux or MacOS operating system you might need to p
 ```
     chmod 755 ./Tools/Scripts/startApiInDocker.sh
 ```
+### What address does the application use in local development
+
+Two addresses:  
+- Primary: https://localhost:5001/
+- Secondary: http://localhost:5001/
+
 
 ### How to build AWS Lambda Deployment package
 
