@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 
@@ -18,7 +19,7 @@ builder.Services.AddControllers();
 // package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
-
+builder.Services.AddHttpClient();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
 {
@@ -62,9 +63,13 @@ var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? 
 builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseNpgsql(dbConnectionString));
 
+IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(null, builder.Configuration);
+identityProviderConfig.LoadOpenIDConfigUrl();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
-    { c.Authority = $"https://{builder.Configuration["Testbed:Domain"]}";
+    { 
+      c.SetJwksOptions(new JwkOptions(identityProviderConfig.JwksOptionsUrl));
 
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
@@ -72,8 +77,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           ValidateActor = false,
           ValidateAudience = false,
           ValidateLifetime = true,
-          ValidAudience = builder.Configuration["Testbed:Audience"],
-          ValidIssuer = builder.Configuration["Testbed:Issuer"]
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = identityProviderConfig.Issuer
       }; });
 
 builder.Services.AddAuthorization();
