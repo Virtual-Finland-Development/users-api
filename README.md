@@ -82,6 +82,13 @@ At the moment only a development environment configurations are supported. You c
   ASPNETCORE_ENVIRONMENT=Development
 ```
 
+### What functionalities and requests the API has
+
+You can use the swagger UI when the API is started in development mode.
+https://localhost:5001/swagger/  
+
+Or you can use premade Postman Collection with ready made environments to testing, these can be found in the **/Tools/Postman** folder.
+
 ### How  to deploy the infrastructure into AWS
 
 You need to have the Pulumi tools installed in your system and do some of the following things:
