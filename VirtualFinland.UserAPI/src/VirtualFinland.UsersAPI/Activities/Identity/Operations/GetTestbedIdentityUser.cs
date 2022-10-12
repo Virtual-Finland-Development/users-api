@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models;
 
@@ -11,6 +12,7 @@ namespace VirtualFinland.UserAPI.Activities.Identity.Operations;
 
 public class GetTestbedIdentityUser
 {
+    [SwaggerSchema(Title = "TestbedIdentityUserRequest")]
     public class Query : IRequest<User>
     {
         public string? ClaimsUserId { get; }
@@ -66,5 +68,6 @@ public class GetTestbedIdentityUser
         }
     }
 
+    [SwaggerSchema(Title ="TestbedIdentityUserResponse")]
     public record User(Guid Id, DateTime Created, DateTime Modified);
 }

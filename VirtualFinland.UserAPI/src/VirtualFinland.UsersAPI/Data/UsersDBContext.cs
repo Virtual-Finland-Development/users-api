@@ -27,13 +27,13 @@ public class UsersDbContext : DbContext
             modelBuilder.Entity<SearchProfile>()
                 .Property(e => e.JobTitles)
                 .HasConversion(
-                    v => string.Join(',', v),
+                    v => string.Join(',', v!),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
 
             modelBuilder.Entity<SearchProfile>()
                 .Property(e => e.Regions)
                 .HasConversion(
-                    v => string.Join(',', v),
+                    v => string.Join(',', v!),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
     }

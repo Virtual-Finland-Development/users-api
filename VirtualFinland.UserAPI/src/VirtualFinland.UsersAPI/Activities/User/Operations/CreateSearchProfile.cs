@@ -10,8 +10,8 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public class CreateSearchProfile
 {
-    [SwaggerSchema(Title = "CreateSearchProfile")]
-    public class CreateSearchProfileCommand : IRequest<SearchProfile>
+    [SwaggerSchema(Title = "CreateSearchProfileRequest")]
+    public class Command : IRequest<SearchProfile>
     {
         public List<string> JobTitles { get; }
         public List<string> Regions { get; }
@@ -23,7 +23,7 @@ public class CreateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public CreateSearchProfileCommand(List<string> jobTitles, List<string> regions, string? name)
+        public Command(List<string> jobTitles, List<string> regions, string? name)
         {
             this.JobTitles = jobTitles;
             this.Regions = regions;
@@ -37,7 +37,7 @@ public class CreateSearchProfile
         }
     }
 
-    public class Handler : IRequestHandler<CreateSearchProfileCommand, SearchProfile>
+    public class Handler : IRequestHandler<Command, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
         private readonly ILogger<Handler> _logger;
@@ -48,7 +48,7 @@ public class CreateSearchProfile
             _logger = logger;
         }
 
-        public async Task<SearchProfile> Handle(CreateSearchProfileCommand request, CancellationToken cancellationToken)
+        public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
             var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
 
@@ -69,7 +69,7 @@ public class CreateSearchProfile
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }
         
-        async private Task<Models.User> GetAuthenticatedUser(CreateSearchProfileCommand request, CancellationToken cancellationToken)
+        async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
         {
             try
             {
@@ -83,6 +83,6 @@ public class CreateSearchProfile
             }
         }
     }
-
+    [SwaggerSchema(Title = "CreateSearchProfileResponse")]
     public record SearchProfile(Guid Id);
 }

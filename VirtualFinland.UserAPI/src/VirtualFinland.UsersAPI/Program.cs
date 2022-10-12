@@ -63,7 +63,7 @@ var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? 
 builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseNpgsql(dbConnectionString));
 
-IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(null, builder.Configuration);
+IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 identityProviderConfig.LoadOpenIDConfigUrl();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

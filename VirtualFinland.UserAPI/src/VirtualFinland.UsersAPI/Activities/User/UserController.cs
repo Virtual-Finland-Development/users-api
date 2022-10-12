@@ -34,7 +34,7 @@ public class UserController : ControllerBase
     [SwaggerOperation(Summary = "Updates the current logged user personal profile", Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
-    public async Task<IActionResult> UpdateUser(UpdateUser.UpdateUserCommand command)
+    public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
         command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
         return Ok(await _mediator.Send(command));
@@ -67,7 +67,7 @@ public class UserController : ControllerBase
     [HttpPatch("/user/search-profiles/{profileId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
-    public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.UpdateSearchProfileCommand command, Guid profileId)
+    public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command, Guid profileId)
     {
         command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
         await _mediator.Send(command);
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
     [HttpPost("/user/search-profiles")]
     [ProducesResponseType(typeof(CreateSearchProfile.SearchProfile), StatusCodes.Status201Created)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
-    public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.CreateSearchProfileCommand command)
+    public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.Command command)
     {
         command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
         var searchProfile = await _mediator.Send(command);

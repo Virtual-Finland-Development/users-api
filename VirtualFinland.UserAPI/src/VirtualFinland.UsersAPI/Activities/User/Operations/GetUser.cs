@@ -9,6 +9,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public class GetUser
 {
+    [SwaggerSchema(Title = "UserRequest")]
     public class Query : IRequest<User>
     {
         public string? ClaimsUserId { get; }
@@ -59,7 +60,7 @@ public class GetUser
         }
     }
     
-    [SwaggerSchema("User")]
+    [SwaggerSchema(Title = "UserResponse")]
     public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified);
     
 }

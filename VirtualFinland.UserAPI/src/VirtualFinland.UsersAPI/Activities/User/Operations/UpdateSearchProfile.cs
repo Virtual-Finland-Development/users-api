@@ -8,8 +8,8 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public class UpdateSearchProfile
 {
-    [SwaggerSchema(Title = "UpdateSearchProfile")]
-    public class UpdateSearchProfileCommand : IRequest
+    [SwaggerSchema(Title = "UpdateSearchProfileRequest")]
+    public class Command : IRequest
     {
         public Guid Id { get; }
         public List<string> JobTitles { get; }
@@ -21,7 +21,7 @@ public class UpdateSearchProfile
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateSearchProfileCommand(Guid id, List<string> jobTitles, List<string> regions, string name)
+        public Command(Guid id, List<string> jobTitles, List<string> regions, string name)
         {
             this.Id = id;
             this.JobTitles = jobTitles;
@@ -36,7 +36,7 @@ public class UpdateSearchProfile
         }
     }
 
-    public class Handler : IRequestHandler<UpdateSearchProfileCommand>
+    public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
         private readonly ILogger<Handler> _logger;
@@ -46,7 +46,7 @@ public class UpdateSearchProfile
             _usersDbContext = usersDbContext;
             _logger = logger;
         }
-        public async Task<Unit> Handle(UpdateSearchProfileCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var dbSearchProfile = await _usersDbContext.SearchProfiles.SingleAsync(o => o.Id == request.Id, cancellationToken);
             dbSearchProfile.Name = request.Name ?? dbSearchProfile.Name;
@@ -62,5 +62,6 @@ public class UpdateSearchProfile
         }
     }
 
+    [SwaggerSchema(Title = "UpdateSearchProfileResponse")]
     public record SearchProfile(Guid Id);
 }

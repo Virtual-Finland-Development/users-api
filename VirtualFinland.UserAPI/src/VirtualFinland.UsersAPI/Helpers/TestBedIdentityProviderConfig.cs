@@ -4,7 +4,6 @@ namespace VirtualFinland.UserAPI.Helpers;
 
 public class TestBedIdentityProviderConfig : IIdentityProviderConfig
 {
-    private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private string? _issuer;
     private string? _jwksOptionsUrl;
@@ -19,9 +18,8 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
         get { return _issuer; }
     }
 
-    public TestBedIdentityProviderConfig(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public TestBedIdentityProviderConfig(IConfiguration configuration)
     {
-        _httpClientFactory = httpClientFactory;
         _configuration = configuration;
     }
 

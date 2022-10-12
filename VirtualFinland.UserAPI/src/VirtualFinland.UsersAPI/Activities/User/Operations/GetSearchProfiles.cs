@@ -8,6 +8,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public class GetSearchProfiles
 {
+    [SwaggerSchema(Title = "SearchProfilesRequest")]
     public class Query : IRequest<IList<SearchProfile>>
     {
         public string? ClaimsUserId { get; }
@@ -57,7 +58,7 @@ public class GetSearchProfiles
         }
     }
     
-    [SwaggerSchema(Title = "SearchProfile")]
+    [SwaggerSchema(Title = "SearchProfilesResponse")]
 
     public record SearchProfile(Guid Id, List<string>? JobTitles, string? Name, List<string>? Regions, DateTime Created, DateTime Modified);
 }

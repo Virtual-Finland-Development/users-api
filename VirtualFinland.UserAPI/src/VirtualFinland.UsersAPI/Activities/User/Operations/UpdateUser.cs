@@ -9,8 +9,8 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public class UpdateUser
 {
-    [SwaggerSchema(Title = "UpdateUser")]
-    public class UpdateUserCommand : IRequest<User>
+    [SwaggerSchema(Title = "UpdateUserRequest")]
+    public class Command : IRequest<User>
     {
         public string? FirstName { get; }
         public string? LastName { get; }
@@ -25,7 +25,7 @@ public class UpdateUser
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public UpdateUserCommand(string? firstName, string? lastName, List<string> jobTitles, List<string> regions)
+        public Command(string? firstName, string? lastName, List<string> jobTitles, List<string> regions)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
@@ -40,7 +40,7 @@ public class UpdateUser
         }
     }
 
-    public class Handler : IRequestHandler<UpdateUserCommand, User>
+    public class Handler : IRequestHandler<Command, User>
         {
             private readonly UsersDbContext _usersDbContext;
             private readonly ILogger<Handler> _logger;
@@ -51,7 +51,7 @@ public class UpdateUser
                 _logger = logger;
             }
 
-            public async Task<User> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+            public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
 
@@ -94,7 +94,7 @@ public class UpdateUser
                 return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified);
             }
             
-            async private Task<Models.User> GetAuthenticatedUser(UpdateUserCommand request, CancellationToken cancellationToken)
+            async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
             {
                 try
                 {
@@ -110,6 +110,6 @@ public class UpdateUser
             
             
         }
-    [SwaggerSchema("User")]
+    [SwaggerSchema(Title = "UpdateUserResponse")]
     public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified);
 }

@@ -36,7 +36,7 @@ public class UserTests : APITestBase
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var command = new UpdateUser.UpdateUserCommand("New FirstName", "New LastName", new List<string>(), new List<string>());
+        var command = new UpdateUser.Command("New FirstName", "New LastName", new List<string>(), new List<string>());
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
         var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object);
         
