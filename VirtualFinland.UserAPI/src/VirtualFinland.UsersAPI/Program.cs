@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 

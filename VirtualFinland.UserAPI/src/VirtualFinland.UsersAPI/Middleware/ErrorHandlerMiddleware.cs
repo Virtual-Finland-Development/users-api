@@ -1,11 +1,13 @@
 using System.Net;
 using System.Text.Json;
-using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Exceptions;
+
+namespace VirtualFinland.UserAPI.Middleware;
 
 public class ErrorHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ErrorHandlerMiddleware> _logger;
 
     /// <summary>
     /// RFC7807 Problem Details
@@ -15,11 +17,11 @@ public class ErrorHandlerMiddleware
         
     }
 
-    public ErrorHandlerMiddleware(RequestDelegate next)
+    public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
-
     public async Task Invoke(HttpContext context)
     {
         try
@@ -28,6 +30,7 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
+            _logger.LogError(error, "Request processing failure!");
             var response = context.Response;
             response.ContentType = "application/json";
 
