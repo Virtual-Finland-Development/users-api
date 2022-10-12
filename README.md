@@ -55,7 +55,7 @@ To start the API in docker use the following script call in the repository root.
 ```
 
 The API should be available at the following address:  
-https//localhost:5001/
+http//localhost:5001/  
 
 Notice: If you are running a Linux or MacOS operating system you might need to provide execution rights to the file, sample command:
 ```
