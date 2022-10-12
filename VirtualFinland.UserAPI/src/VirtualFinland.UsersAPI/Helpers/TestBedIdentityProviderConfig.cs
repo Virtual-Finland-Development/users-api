@@ -33,7 +33,7 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
 
         if (httpResponse.IsSuccessStatusCode)
         {
-            var jsonData = JsonObject.Parse(await httpResponse.Content.ReadAsStringAsync());
+            var jsonData = JsonNode.Parse(await httpResponse.Content.ReadAsStringAsync());
             _issuer = jsonData?["issuer"]?.ToString();
             _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
         }
