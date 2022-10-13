@@ -1,0 +1,3 @@
+name: VirtualFinland.UsersAPI.Deployment
+description: Users API Infrastructure Definitions
+runtime: dotnet

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI", "VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj", "{CAB8E772-8F51-41BB-B5CE-360D417A26B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Deployment", "VirtualFinland.UsersAPI.Deployment\VirtualFinland.UsersAPI.Deployment.csproj", "{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.IntegrationTests", "VirtualFinland.UsersAPI.IntegrationTests\VirtualFinland.UsersAPI.IntegrationTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CAB8E772-8F51-41BB-B5CE-360D417A26B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAB8E772-8F51-41BB-B5CE-360D417A26B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAB8E772-8F51-41BB-B5CE-360D417A26B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAB8E772-8F51-41BB-B5CE-360D417A26B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

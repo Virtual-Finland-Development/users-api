@@ -1,0 +1,326 @@
+{
+	"info": {
+		"_postman_id": "cb957e3e-269f-4df4-b16d-ac58f6612d60",
+		"name": "UsersAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "322459"
+	},
+	"item": [
+		{
+			"name": "Verify(Create) Identity",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/identity/testbed/verify",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"identity",
+						"testbed",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Current User",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{host}}/user",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/user",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current User Search Profiles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/user/search-profiles",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"search-profiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Search Profile for Current User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"profileId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"name\": \"Uusi profiili\",\n  \"jobTitles\": [\"Nascar\"],\n    \"regions\": [\n        \"Vantaa\",\n        \"Espoo\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{host}}/user/search-profiles",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"search-profiles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current User Specific Search Profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/user/search-profiles/{{profileId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"search-profiles",
+						"{{profileId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Search Profile for Current User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"id\": \"{{profileId}}\",\n  \"name\": \"Nascar profiili\",\n  \"jobTitles\": [\"Nascar Allstar\"],\n    \"regions\": [\n        \"Oulu\",\n        \"Espoo\"\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{host}}/user/search-profiles/{{profileId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"search-profiles",
+						"{{profileId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJZV1JwUUhSbGMzUmxjaTUwWlhOMFltVmtMbVpwIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi50ZXN0YmVkLmZpIiwiaWF0IjoxNjY1MDU3MDQ0LCJleHAiOjE2NjUxNDM0NDQsImF1ZCI6Imh0dHBzOi8vbG9naW4udGVzdGJlZC5maSJ9.lfiF7-u_NbP-zZJyV-rIFkdgcnigmghFP_iboUb1NMVJfLKrx24klz1JnxdVH8l4NSpkj2btydXiHII_wF5wQC553AqdO7GsQZ2g50qhDmy7L_3g4U06ioTt9_4smJ0E1HzbWQHitHoJwerA7F8dHqb0wUhQvG2r34rug0zC3xo4XUdaPMD1YSk84BW7VVtpbeL_c1xiRUQRc8s4Gd8kuokGj8bp3afskfd4v0E4HZEdO8ht8rBccowj5R61hoCR1tspHD_BUQDNOG4h9hSSJu4s7bzVVWVg7IfKtMAQ_4afe-Q-xSMPV5NuMNcVL7V3iTKNpyduSoBlw3wGmDXgCn4lCu8MT88H35GezHLa1gLn4t1jeFsIPoohZBtEg1SRcgpHdgivkat8yHtjH_pELlePw2I6d_k9Sdq_MiKjfPFl7iILAYTmcv794a7sFO0Y6dFOIYNk_RpMdBjgYsDaCLfijeEgn3rRGe7D1LIY3zbAi2Pk1iCpI0MxglgahkaHlnM_sUf_PlPDbeAa0R6I5JOLsaa3oMvsbtklhs42BYpOrszOlkBKp8mGN2SuTU_AaC-Mgr4x82m3dmjVOz8UyT0bdE9RDJr9rlywdLSgz1b_eQGLmiLf_hZoQZwJqy8mTED5M393fFASY61BD_fBdISa8nwEmdD1MUXuERdZsNQ",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "profileId",
+			"value": ""
+		}
+	]
+}
