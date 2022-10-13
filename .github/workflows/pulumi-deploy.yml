@@ -31,7 +31,7 @@ jobs:
       - uses: pulumi/actions@v3
         with: 
           work-dir: ./VirtualFinland.UsersAPI.Deployment
-          command: preview
+          command: up
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
