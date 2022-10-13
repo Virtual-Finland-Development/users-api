@@ -37,9 +37,9 @@ public class UsersDbContext : DbContext
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
     }
-    public DbSet<User> Users { get; set; }
-    
-    public DbSet<ExternalIdentity> ExternalIdentities { get; set; }
-    
-    public DbSet<SearchProfile> SearchProfiles { get; set; }
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+
+    public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
 }
