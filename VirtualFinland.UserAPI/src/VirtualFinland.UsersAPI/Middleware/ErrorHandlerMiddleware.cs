@@ -36,7 +36,7 @@ public class ErrorHandlerMiddleware
 
             switch(error)
             {
-                case NotAuthorizedExpception e:
+                case NotAuthorizedException e:
                     // custom application error
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     break;

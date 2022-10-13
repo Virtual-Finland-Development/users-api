@@ -104,7 +104,7 @@ public class UpdateUser
                 catch (InvalidOperationException e)
                 {
                     _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
-                    throw new NotAuthorizedExpception("User could not be identified as a valid user.", e);
+                    throw new NotAuthorizedException("User could not be identified as a valid user.", e);
                 }
             }
             
