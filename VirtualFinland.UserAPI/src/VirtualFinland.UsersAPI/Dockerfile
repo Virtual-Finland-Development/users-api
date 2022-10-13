@@ -1,10 +1,20 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:6.0 AS sdk
+﻿FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
+EXPOSE 80
+EXPOSE 443
 
-COPY ./ ./
-RUN dotnet publish -p:PublishReadyToRun=True -p:PublishReadyToRunUseCrossgen2=True -c Release -o out -r linux-arm64
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+ARG runtimeType=linux-arm64
+ARG cpuArch
+WORKDIR /src
+COPY . .
+RUN dotnet restore "VirtualFinland.UsersAPI.csproj"
+COPY . .
+RUN dotnet build "VirtualFinland.UsersAPI.csproj" -c Release -o /app/build
+FROM build AS publish
+RUN if [[ $(uname -p) != 'arm' ]] ; then dotnet publish "VirtualFinland.UsersAPI.csproj" -c Release -o /app/publish; else dotnet publish "VirtualFinland.UsersAPI.csproj" -c Release -o /app/publish -r $runtimeType; fi
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0
+FROM base AS final
 WORKDIR /app
-COPY --from=sdk /app/out .
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "VirtualFinland.UsersAPI.dll"]
