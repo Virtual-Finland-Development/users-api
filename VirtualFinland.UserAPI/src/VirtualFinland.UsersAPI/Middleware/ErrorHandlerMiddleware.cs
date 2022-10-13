@@ -50,7 +50,7 @@ public class ErrorHandlerMiddleware
                     break;
             }
 
-            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1", Title = error?.Message, Detail = error?.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
+            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Type = "https://tools.ietf.org/html/rfc7231", Title = error?.Message, Detail = error?.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
