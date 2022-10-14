@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(config =>
 });
 
 var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure()); });
+builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
 
 IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 identityProviderConfig.LoadOpenIDConfigUrl();
