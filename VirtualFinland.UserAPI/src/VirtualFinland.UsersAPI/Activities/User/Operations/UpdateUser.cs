@@ -16,6 +16,10 @@ public class UpdateUser
         public string? LastName { get; }
         
         public string? Address { get; set; }
+        
+        public bool? JobsDataConsent { get; set; }
+        
+        public bool? ImmigrationDataConsent { get; set; }
 
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
@@ -25,10 +29,13 @@ public class UpdateUser
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public Command(string? firstName, string? lastName, List<string> jobTitles, List<string> regions)
+        public Command(string? firstName, string? lastName, string? address, bool? jobsDataConsent, bool? immigrationDataConsent, List<string>? jobTitles, List<string>? regions)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
+            this.Address = address;
+            this.JobsDataConsent = jobsDataConsent;
+            this.ImmigrationDataConsent = immigrationDataConsent;
             this.JobTitles = jobTitles;
             this.Regions = regions;
         }
@@ -59,7 +66,9 @@ public class UpdateUser
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
                 dbUser.Address = request.Address ?? dbUser.Address;
                 dbUser.Modified = DateTime.UtcNow;
-                
+                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
+                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
+
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
 
@@ -91,7 +100,7 @@ public class UpdateUser
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
                 
-                return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified);
+                return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified, dbUser.ImmigrationDataConsent, dbUser.JobsDataConsent);
             }
             
             async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
@@ -111,5 +120,5 @@ public class UpdateUser
             
         }
     [SwaggerSchema(Title = "UpdateUserResponse")]
-    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified);
+    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified, bool ImmigrationDataConsent, bool JobsDataConsent);
 }

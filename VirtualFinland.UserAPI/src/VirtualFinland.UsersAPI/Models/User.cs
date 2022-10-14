@@ -16,4 +16,8 @@ public class User : IEntity
     public string? LastName { get; set; }
     
     public string? Address { get; set; }
+    
+    public bool ImmigrationDataConsent { get; set; }
+    
+    public bool JobsDataConsent { get; set; }
 }
