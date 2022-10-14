@@ -16,9 +16,9 @@ using InstanceArgs = Pulumi.Aws.Rds.InstanceArgs;
 
 namespace VirtualFinland.UsersAPI.Deployment;
 
-public class UsersAPIStack : Stack
+public class UsersApiStack : Stack
 {
-    public UsersAPIStack()
+    public UsersApiStack()
     {
         var config = new Config();
         bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
@@ -26,8 +26,8 @@ public class UsersAPIStack : Stack
         
         
         var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{config.Require("environment")}");
-        var privateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
-        var vpcId = stackReference.GetOutput("VpcId");
+        var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
+        var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
         InputMap<string> tags = new InputMap<string>()
         {
@@ -39,7 +39,9 @@ public class UsersAPIStack : Stack
             }
         };
 
-        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds.Apply(o => ((ImmutableArray<object>)o).Select( x => x.ToString())));
+        var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
+
+        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds);
 
         var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
         {
@@ -74,13 +76,13 @@ public class UsersAPIStack : Stack
 
         var defaultSecurityGroup =Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
-            VpcId = Output.Format($"{vpcId}")
+            VpcId = Output.Format($"{stackReferenceVpcId}")
         });
         
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = defaultSecurityGroup.Apply(o=> $"{o.Id}"),
-            SubnetIds = privateSubnetIds.Apply(o => ((ImmutableArray<object>)o).Select( x => x.ToString()))
+            SubnetIds = privateSubnetIds
         };
 
         var lambdaFunction = new Function("vf-UsersAPI", new FunctionArgs
@@ -126,7 +128,7 @@ public class UsersAPIStack : Stack
         });
 
         Url = functionUrl.FunctionUrlResult;
-        VpcId = Output.Format($"{vpcId}");
+        VpcId = Output.Format($"{stackReferenceVpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
     }
@@ -162,7 +164,7 @@ public class UsersAPIStack : Stack
             SkipFinalSnapshot = !isProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
 
-        DBPassword = password.Result;
+        this.DbPassword = password.Result;
 
         return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
@@ -174,5 +176,5 @@ public class UsersAPIStack : Stack
     [Output] public Output<string> VpcId { get; set; }
 
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
-    [Output] public Output<string> DBPassword { get; set; }
+    [Output] public Output<string> DbPassword { get; set; } = null!;
 }
