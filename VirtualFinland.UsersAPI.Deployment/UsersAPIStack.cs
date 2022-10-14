@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using System.Linq;
 using Pulumi;
+using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
@@ -70,15 +71,15 @@ public class UsersAPIStack : Stack
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
-        
-        var defaultSecurityGroup = new Pulumi.Aws.Ec2.DefaultSecurityGroup("default", new()
+
+        var defaultSecurityGroup =Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = Output.Format($"{vpcId}")
         });
         
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = defaultSecurityGroup.Id,
+            SecurityGroupIds = defaultSecurityGroup.Apply(o=> $"{o.Id}"),
             SubnetIds = privateSubnetIds.Apply(o => ((ImmutableArray<object>)o).Select( x => x.ToString()))
         };
 
@@ -127,7 +128,7 @@ public class UsersAPIStack : Stack
         Url = functionUrl.FunctionUrlResult;
         VpcId = Output.Format($"{vpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
-        this.DefaultSecurityGroupId = defaultSecurityGroup.Id;
+        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
     }
 
     private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds)
