@@ -9,7 +9,8 @@ services:
     ports:
       - 5001:80
     depends_on:
-      - postgresdb
+      postgresdb:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
@@ -18,6 +19,11 @@ services:
     container_name: postgresdb
     image: postgres
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - 5432:5432
     environment:
