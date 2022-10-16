@@ -46,8 +46,8 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
                 {
                     break;    
                 }
-                Thread.Sleep(_configUrlRetryWaitTime);
             }    
+            Thread.Sleep(_configUrlRetryWaitTime);
         }
         
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
