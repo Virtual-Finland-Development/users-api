@@ -26,7 +26,7 @@ public class UserTests : APITestBase
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().Match<GetUser.User>(o => o.Id == dbEntities.user.Id && o.address == dbEntities.user.Address && o.FirstName == dbEntities.user.FirstName && o.LastName == dbEntities.user.LastName);
+        result.Should().Match<GetUser.User>(o => o.Id == dbEntities.user.Id && o.address == dbEntities.user.Address && o.FirstName == dbEntities.user.FirstName && o.LastName == dbEntities.user.LastName && o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent && o.JobsDataConsent == dbEntities.user.JobsDataConsent);
         
     }
     
@@ -36,7 +36,7 @@ public class UserTests : APITestBase
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var command = new UpdateUser.Command("New FirstName", "New LastName", new List<string>(), new List<string>());
+        var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, new List<string>(), new List<string>());
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
         var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object);
         
@@ -44,7 +44,7 @@ public class UserTests : APITestBase
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().Match<UpdateUser.User>(o => o.Id == dbEntities.user.Id && o.FirstName == command.FirstName && o.LastName == command.LastName);
+        result.Should().Match<UpdateUser.User>(o => o.Id == dbEntities.user.Id && o.FirstName == command.FirstName && o.LastName == command.LastName && o.ImmigrationDataConsent == command.ImmigrationDataConsent && o.JobsDataConsent == command.JobsDataConsent);
         
     }
 }
