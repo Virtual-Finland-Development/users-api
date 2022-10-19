@@ -20,6 +20,14 @@ public class UpdateUser
         public bool? JobsDataConsent { get; set; }
         
         public bool? ImmigrationDataConsent { get; set; }
+        
+        public string? CountryOfBirthISO { get; set; }
+
+        public string? NativeLanguageISO { get; set; }
+
+        public string? ProfessionISCO { get; set; }
+
+        public string? NationalityISO { get; set; }
 
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
@@ -29,13 +37,27 @@ public class UpdateUser
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public Command(string? firstName, string? lastName, string? address, bool? jobsDataConsent, bool? immigrationDataConsent, List<string>? jobTitles, List<string>? regions)
+        public Command(string? firstName,
+            string? lastName,
+            string? address,
+            bool? jobsDataConsent,
+            bool? immigrationDataConsent,
+            string? countryOfBirthIso,
+            string? nativeLanguageIso,
+            string? professionIsco,
+            string? nationalityIso,
+            List<string>? jobTitles,
+            List<string>? regions)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
             this.Address = address;
             this.JobsDataConsent = jobsDataConsent;
             this.ImmigrationDataConsent = immigrationDataConsent;
+            this.CountryOfBirthISO = countryOfBirthIso;
+            this.NativeLanguageISO = nativeLanguageIso;
+            this.ProfessionISCO = professionIsco;
+            this.NationalityISO = nationalityIso;
             this.JobTitles = jobTitles;
             this.Regions = regions;
         }
@@ -68,6 +90,10 @@ public class UpdateUser
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
+                dbUser.NationalityISOCode = request.NationalityISO ?? dbUser.NationalityISOCode;
+                dbUser.NativeLanguageISOCode = request.NativeLanguageISO ?? dbUser.NativeLanguageISOCode;
+                dbUser.ProfessionISCOCode = request.ProfessionISCO ?? dbUser.ProfessionISCOCode;
+                dbUser.CountryOfBirthISOCode = request.CountryOfBirthISO ?? dbUser.CountryOfBirthISOCode;
 
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
