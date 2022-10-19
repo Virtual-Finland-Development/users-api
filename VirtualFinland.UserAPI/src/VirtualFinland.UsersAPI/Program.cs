@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Data;
@@ -24,8 +25,8 @@ builder.Services.AddHttpClient();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
 {
-    Name = "Authorization",
-    Type = SecuritySchemeType.ApiKey,
+    Name = HeaderNames.Authorization,
+    Type = SecuritySchemeType.Http,
     Scheme = "Bearer",
     BearerFormat = "JWT",
     In = ParameterLocation.Header,
@@ -41,7 +42,9 @@ var securityReq = new OpenApiSecurityRequirement()
             {
                 Type = ReferenceType.SecurityScheme,
                 Id = "Bearer"
-            }
+            },
+            Scheme = SecuritySchemeType.Http.ToString(),
+            In = ParameterLocation.Header
         },
         new string[]
         {
