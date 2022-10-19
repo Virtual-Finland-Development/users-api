@@ -20,4 +20,16 @@ public class User : IEntity
     public bool ImmigrationDataConsent { get; set; }
     
     public bool JobsDataConsent { get; set; }
+    
+    public DateOnly DateOfBirth { get; set; }
+    
+    public string? Gender { get; set; }
+
+    public string? CountryOfBirthISOCode { get; set; }
+
+    public string? NativeLanguageISOCode { get; set; }
+
+    public string? ProfessionISCOCode { get; set; }
+
+    public string? NationalityISOCode { get; set; }
 }

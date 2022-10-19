@@ -42,7 +42,20 @@ public class GetUser
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
             
-            return new User(dbUser.Id, dbUser.FirstName, dbUser.LastName, dbUser.Address, dbUserDefaultSearchProfile?.JobTitles, dbUserDefaultSearchProfile?.Regions, dbUser.Created, dbUser.Modified, dbUser.ImmigrationDataConsent, dbUser.JobsDataConsent);
+            return new User(dbUser.Id,
+                dbUser.FirstName,
+                dbUser.LastName,
+                dbUser.Address,
+                dbUserDefaultSearchProfile?.JobTitles,
+                dbUserDefaultSearchProfile?.Regions,
+                dbUser.Created,
+                dbUser.Modified,
+                dbUser.ImmigrationDataConsent,
+                dbUser.JobsDataConsent,
+                dbUser.CountryOfBirthISOCode,
+                dbUser.NativeLanguageISOCode,
+                dbUser.ProfessionISCOCode,
+                dbUser.NationalityISOCode);
         }
         
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
@@ -61,6 +74,19 @@ public class GetUser
     }
     
     [SwaggerSchema(Title = "UserResponse")]
-    public record User(Guid Id, string? FirstName, string? LastName, string? address, List<string>? JobTitles, List<string>? Regions, DateTime Created, DateTime Modified, bool ImmigrationDataConsent, bool JobsDataConsent);
+    public record User(Guid Id,
+        string? FirstName,
+        string? LastName,
+        string? address,
+        List<string>? JobTitles,
+        List<string>? Regions,
+        DateTime Created,
+        DateTime Modified,
+        bool ImmigrationDataConsent,
+        bool JobsDataConsent,
+        string? CountryOfBirthISO,
+        string? NativeLanguageISO,
+        string? ProfessionISCO,
+        string? NationalityISO);
     
 }
