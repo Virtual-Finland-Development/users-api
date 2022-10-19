@@ -25,12 +25,12 @@ public class GetCountry
         {
             try
             {
-                var country = CultureInfo.GetCultureInfo(request.ISOCode, true);
-                return new Country(country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISOLanguageName, country.ThreeLetterISOLanguageName);
+                var country = new RegionInfo(request.ISOCode);
+                return new Country(country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName);
             }
-            catch (CultureNotFoundException e)
+            catch (ArgumentException e)
             {
-                throw new NotFoundException("Given culture not found");
+                throw new NotFoundException("Given culture not found", e);
             }
             
         }

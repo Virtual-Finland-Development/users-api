@@ -33,6 +33,7 @@ public class CodeSetsController : ControllerBase
     [HttpGet("/code-sets/countries/{countryCode}")]
     [SwaggerOperation(Summary = "Get all available ISO 3166 country codes and details", Description = "Get all available ISO 3166 country codes and details.")]
     [ProducesResponseType(typeof(GetCountry.Country),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser(string countryCode)
     {

@@ -19,7 +19,11 @@ public class APIUserFactory
             FirstName = faker.Person.FirstName,
             LastName = faker.Person.LastName,
             JobsDataConsent = true,
-            ImmigrationDataConsent = false
+            ImmigrationDataConsent = false,
+            NationalityISOCode = "FR",
+            CountryOfBirthISOCode = "FR",
+            ProfessionISCOCode = "4012",
+            NativeLanguageISOCode = "FR",
         });
 
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()

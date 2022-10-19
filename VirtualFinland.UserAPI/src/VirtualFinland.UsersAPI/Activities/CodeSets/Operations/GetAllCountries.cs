@@ -17,8 +17,20 @@ public class GetAllCountries
 
         public async Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
-            return CultureInfo.GetCultures(CultureTypes.AllCultures).Select(o => new Country(o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISOLanguageName, o.ThreeLetterISOLanguageName))
+            return GetCountriesByIso3166().Select(o => new Country(o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName))
                 .ToList();
+        }
+        
+        public static List<RegionInfo> GetCountriesByIso3166()
+        {
+            List<RegionInfo> countries = new List<RegionInfo>();
+            foreach (CultureInfo culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+            {
+                RegionInfo country = new RegionInfo(culture.Name);
+                if (countries.Count(p => p.Name == country.Name) == 0)
+                    countries.Add(country);
+            }
+            return countries.OrderBy(p => p.EnglishName).ToList();
         }
     }
 
