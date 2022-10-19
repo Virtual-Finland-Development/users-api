@@ -11,5 +11,6 @@ cd ../../../
 echo "Work Directory:"
 pwd
 docker-compose -f ./Tools/Docker/docker-compose-localdev.yml up
+docker-compose -f ./Tools/Docker/docker-compose-localdev.yml down
 
 
