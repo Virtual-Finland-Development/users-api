@@ -31,7 +31,7 @@ public class CodeSetsController : ControllerBase
     }
     
     [HttpGet("/code-sets/countries/{countryCode}")]
-    [SwaggerOperation(Summary = "Get all available ISO 3166 country codes and details", Description = "Get all available ISO 3166 country codes and details.")]
+    [SwaggerOperation(Summary = "Gets a single country and its details by it's Two Letter ISO Code", Description = "Gets a single country and its details by it's Two Letter ISO Code.")]
     [ProducesResponseType(typeof(GetCountry.Country),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
