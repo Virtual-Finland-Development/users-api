@@ -1,10 +1,12 @@
 using System.Globalization;
 using MediatR;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
 public class GetAllCountries
 {
+    [SwaggerSchema(Title = "CountryCodeSetRequest")]
     public class Query : IRequest<List<Country>>
     {
         
@@ -20,6 +22,7 @@ public class GetAllCountries
         }
     }
 
+    [SwaggerSchema(Title = "CountryCodeSetResponse")]
     public record Country(string Nane, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
 }
 
