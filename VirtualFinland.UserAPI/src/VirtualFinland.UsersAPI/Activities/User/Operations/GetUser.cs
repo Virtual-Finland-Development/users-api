@@ -77,16 +77,16 @@ public class GetUser
     public record User(Guid Id,
         string? FirstName,
         string? LastName,
-        string? address,
+        string? Address,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
         DateTime Modified,
         bool ImmigrationDataConsent,
         bool JobsDataConsent,
-        string? CountryOfBirthISOCode,
-        string? NativeLanguageISOCode,
-        string? ProfessionISCOCode,
-        string? NationalityISOCode);
+        string? CountryOfBirthCode,
+        string? NativeLanguageCode,
+        string? ProfessionCode,
+        string? NationalityCode);
     
 }

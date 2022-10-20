@@ -21,13 +21,13 @@ public class UpdateUser
         
         public bool? ImmigrationDataConsent { get; set; }
         
-        public string? CountryOfBirthISO { get; set; }
+        public string? CountryOfBirthCode { get; set; }
 
-        public string? NativeLanguageISO { get; set; }
+        public string? NativeLanguageCode { get; set; }
 
-        public string? ProfessionISCO { get; set; }
+        public string? ProfessionCode { get; set; }
 
-        public string? NationalityISO { get; set; }
+        public string? NationalityCode { get; set; }
 
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
@@ -42,10 +42,10 @@ public class UpdateUser
             string? address,
             bool? jobsDataConsent,
             bool? immigrationDataConsent,
-            string? countryOfBirthIso,
-            string? nativeLanguageIso,
-            string? professionIsco,
-            string? nationalityIso,
+            string? countryOfBirthCode,
+            string? nativeLanguageCode,
+            string? professionCode,
+            string? nationalityCode,
             List<string>? jobTitles,
             List<string>? regions)
         {
@@ -54,10 +54,10 @@ public class UpdateUser
             this.Address = address;
             this.JobsDataConsent = jobsDataConsent;
             this.ImmigrationDataConsent = immigrationDataConsent;
-            this.CountryOfBirthISO = countryOfBirthIso;
-            this.NativeLanguageISO = nativeLanguageIso;
-            this.ProfessionISCO = professionIsco;
-            this.NationalityISO = nationalityIso;
+            this.CountryOfBirthCode = countryOfBirthCode;
+            this.NativeLanguageCode = nativeLanguageCode;
+            this.ProfessionCode = professionCode;
+            this.NationalityCode = nationalityCode;
             this.JobTitles = jobTitles;
             this.Regions = regions;
         }
@@ -90,10 +90,10 @@ public class UpdateUser
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.NationalityISOCode = request.NationalityISO ?? dbUser.NationalityISOCode;
-                dbUser.NativeLanguageISOCode = request.NativeLanguageISO ?? dbUser.NativeLanguageISOCode;
-                dbUser.ProfessionISCOCode = request.ProfessionISCO ?? dbUser.ProfessionISCOCode;
-                dbUser.CountryOfBirthISOCode = request.CountryOfBirthISO ?? dbUser.CountryOfBirthISOCode;
+                dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
+                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
+                dbUser.ProfessionISCOCode = request.ProfessionCode ?? dbUser.ProfessionISCOCode;
+                dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
 
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
@@ -162,15 +162,15 @@ public class UpdateUser
     public record User(Guid Id,
         string? FirstName,
         string? LastName,
-        string? address,
+        string? Address,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
         DateTime Modified,
         bool ImmigrationDataConsent,
         bool JobsDataConsent,
-        string? CountryOfBirthISOCode,
-        string? NativeLanguageISOCode,
-        string? ProfessionISCOCode,
-        string? NationalityISOCode);
+        string? CountryOfBirthCode,
+        string? NativeLanguageCode,
+        string? ProfessionCode,
+        string? NationalityCode);
 }

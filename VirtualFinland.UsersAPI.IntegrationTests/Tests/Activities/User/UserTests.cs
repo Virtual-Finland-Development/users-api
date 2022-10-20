@@ -29,7 +29,7 @@ public class UserTests : APITestBase
         result.Should()
             .Match<GetUser.User>(o =>
                 o.Id == dbEntities.user.Id &&
-                o.address == dbEntities.user.Address &&
+                o.Address == dbEntities.user.Address &&
                 o.FirstName == dbEntities.user.FirstName &&
                 o.LastName == dbEntities.user.LastName &&
                 o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
@@ -58,10 +58,10 @@ public class UserTests : APITestBase
                 o.LastName == command.LastName &&
                 o.ImmigrationDataConsent == command.ImmigrationDataConsent &&
                 o.JobsDataConsent == command.JobsDataConsent &&
-                o.NationalityISOCode == command.NationalityISO &&
-                o.NativeLanguageISOCode == command.NativeLanguageISO &&
-                o.ProfessionISCOCode == command.ProfessionISCO &&
-                o.CountryOfBirthISOCode == command.CountryOfBirthISO);
+                o.NationalityCode == command.NationalityCode &&
+                o.NativeLanguageCode == command.NativeLanguageCode &&
+                o.ProfessionCode == command.ProfessionCode &&
+                o.CountryOfBirthISOCode == command.CountryOfBirthCode);
         
     }
 }
