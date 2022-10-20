@@ -61,7 +61,7 @@ public class UserTests : APITestBase
                 o.NationalityCode == command.NationalityCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
                 o.ProfessionCode == command.ProfessionCode &&
-                o.CountryOfBirthISOCode == command.CountryOfBirthCode);
+                o.CountryOfBirthCode == command.CountryOfBirthCode);
         
     }
 }
