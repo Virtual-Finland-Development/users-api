@@ -58,10 +58,10 @@ public class UserTests : APITestBase
                 o.LastName == command.LastName &&
                 o.ImmigrationDataConsent == command.ImmigrationDataConsent &&
                 o.JobsDataConsent == command.JobsDataConsent &&
-                o.NationalityISO == command.NationalityISO &&
-                o.NativeLanguageISO == command.NativeLanguageISO &&
-                o.ProfessionISCO == command.ProfessionISCO &&
-                o.CountryOfBirthISO == command.CountryOfBirthISO);
+                o.NationalityISOCode == command.NationalityISO &&
+                o.NativeLanguageISOCode == command.NativeLanguageISO &&
+                o.ProfessionISCOCode == command.ProfessionISCO &&
+                o.CountryOfBirthISOCode == command.CountryOfBirthISO);
         
     }
 }

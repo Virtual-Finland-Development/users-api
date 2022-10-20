@@ -25,6 +25,7 @@ public class CodeSetsController : ControllerBase
     [SwaggerOperation(Summary = "Get all available ISO 3166 country codes and details", Description = "Get all available ISO 3166 country codes and details.")]
     [ProducesResponseType(typeof(List<GetAllCountries.Country>),StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         return Ok(await _mediator.Send(new GetAllCountries.Query()));
@@ -35,6 +36,7 @@ public class CodeSetsController : ControllerBase
     [ProducesResponseType(typeof(GetCountry.Country),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetTestbedIdentityUser(string countryCode)
     {
         return Ok(await _mediator.Send(new GetCountry.Query(countryCode)));

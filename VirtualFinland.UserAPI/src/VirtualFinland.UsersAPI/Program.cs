@@ -85,6 +85,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
       }; });
 
 builder.Services.AddAuthorization();
+builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
@@ -106,6 +107,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseResponseCaching();
 
 using (var scope = app.Services.CreateScope())
 {

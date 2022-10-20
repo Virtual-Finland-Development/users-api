@@ -169,8 +169,8 @@ public class UpdateUser
         DateTime Modified,
         bool ImmigrationDataConsent,
         bool JobsDataConsent,
-        string? CountryOfBirthISO,
-        string? NativeLanguageISO,
-        string? ProfessionISCO,
-        string? NationalityISO);
+        string? CountryOfBirthISOCode,
+        string? NativeLanguageISOCode,
+        string? ProfessionISCOCode,
+        string? NationalityISOCode);
 }

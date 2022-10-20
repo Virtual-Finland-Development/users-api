@@ -26,7 +26,7 @@ public class GetCountry
             try
             {
                 var country = new RegionInfo(request.ISOCode);
-                return new Country(country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName);
+                return new Country(country.Name, country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName);
             }
             catch (ArgumentException e)
             {
@@ -37,6 +37,6 @@ public class GetCountry
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string Nane, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
+    public record Country(string Id, string Nane, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
 }
 
