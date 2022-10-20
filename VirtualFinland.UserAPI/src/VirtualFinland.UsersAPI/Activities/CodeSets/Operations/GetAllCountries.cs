@@ -15,9 +15,9 @@ public class GetAllCountries
     public class Handler : IRequestHandler<Query, List<Country>>
     {
 
-        public async Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
+        public Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
-            return GetCountriesByIso3166().Select(o => new Country(o.Name,o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList();
+            return Task.FromResult(GetCountriesByIso3166().Select(o => new Country(o.Name,o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList());
         }
         
         public static List<RegionInfo> GetCountriesByIso3166()

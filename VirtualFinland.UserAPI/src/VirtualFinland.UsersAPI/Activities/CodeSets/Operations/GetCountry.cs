@@ -21,12 +21,12 @@ public class GetCountry
     public class Handler : IRequestHandler<Query, Country>
     {
 
-        public async Task<Country> Handle(Query request, CancellationToken cancellationToken)
+        public Task<Country> Handle(Query request, CancellationToken cancellationToken)
         {
             try
             {
                 var country = new RegionInfo(request.ISOCode);
-                return new Country(country.Name, country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName);
+                return Task.FromResult(new Country(country.Name, country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName));
             }
             catch (ArgumentException e)
             {

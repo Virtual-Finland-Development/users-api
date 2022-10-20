@@ -87,6 +87,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddResponseCaching();
 
+builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

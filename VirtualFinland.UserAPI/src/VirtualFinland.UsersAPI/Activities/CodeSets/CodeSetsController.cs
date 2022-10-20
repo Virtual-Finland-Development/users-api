@@ -26,7 +26,7 @@ public class CodeSetsController : ControllerBase
     [ProducesResponseType(typeof(List<GetAllCountries.Country>),StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
     [ResponseCache(Duration = 60)]
-    public async Task<IActionResult> GetTestbedIdentityUser()
+    public async Task<IActionResult> GetAllCountries()
     {
         return Ok(await _mediator.Send(new GetAllCountries.Query()));
     }
@@ -37,8 +37,29 @@ public class CodeSetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
     [ResponseCache(Duration = 60)]
-    public async Task<IActionResult> GetTestbedIdentityUser(string countryCode)
+    public async Task<IActionResult> GetCountry(string countryCode)
     {
         return Ok(await _mediator.Send(new GetCountry.Query(countryCode)));
+    }
+    
+    [HttpGet("/code-sets/occupations")]
+    [SwaggerOperation(Summary = "Get all available ISCO occupations", Description = "Get all available ISCO occupations")]
+    [ProducesResponseType(typeof(List<GetAllOccupations.Occupation>),StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ResponseCache(Duration = 60)]
+    public async Task<IActionResult> GetAllOccupations()
+    {
+        return Ok(await _mediator.Send(new GetAllOccupations.Query()));
+    }
+    
+    [HttpGet("/code-sets/occupations/{occupationCode}")]
+    [SwaggerOperation(Summary = "Gets a single occupation and its details by it's ISCO code", Description = "Gets a single occupation and its details by it's ISCO code.")]
+    [ProducesResponseType(typeof(GetOccupation.Occupation),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ResponseCache(Duration = 60)]
+    public async Task<IActionResult> GetOccupation(string occupationCode)
+    {
+        return Ok(await _mediator.Send(new GetOccupation.Query(occupationCode)));
     }
 }
