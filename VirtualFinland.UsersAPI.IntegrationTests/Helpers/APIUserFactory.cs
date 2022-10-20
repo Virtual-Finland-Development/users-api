@@ -17,7 +17,9 @@ public class APIUserFactory
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             FirstName = faker.Person.FirstName,
-            LastName = faker.Person.LastName
+            LastName = faker.Person.LastName,
+            JobsDataConsent = true,
+            ImmigrationDataConsent = false
         });
 
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()

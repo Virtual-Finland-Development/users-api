@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221014102749_ConsentFields")]
+    partial class ConsentFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -92,19 +94,10 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<string>("CountryOfBirthISOCode")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly>("DateOfBirth")
-                        .HasColumnType("date");
-
                     b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Gender")
                         .HasColumnType("text");
 
                     b.Property<bool>("ImmigrationDataConsent")
@@ -118,15 +111,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NationalityISOCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NativeLanguageISOCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProfessionISCOCode")
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
