@@ -25,7 +25,7 @@ public class UpdateUser
 
         public string? NativeLanguageCode { get; set; }
 
-        public string? ProfessionCode { get; set; }
+        public string? OccupationCode { get; set; }
 
         public string? NationalityCode { get; set; }
 
@@ -44,7 +44,7 @@ public class UpdateUser
             bool? immigrationDataConsent,
             string? countryOfBirthCode,
             string? nativeLanguageCode,
-            string? professionCode,
+            string? occupationCode,
             string? nationalityCode,
             List<string>? jobTitles,
             List<string>? regions)
@@ -56,7 +56,7 @@ public class UpdateUser
             this.ImmigrationDataConsent = immigrationDataConsent;
             this.CountryOfBirthCode = countryOfBirthCode;
             this.NativeLanguageCode = nativeLanguageCode;
-            this.ProfessionCode = professionCode;
+            this.OccupationCode = occupationCode;
             this.NationalityCode = nationalityCode;
             this.JobTitles = jobTitles;
             this.Regions = regions;
@@ -92,7 +92,7 @@ public class UpdateUser
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
                 dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
                 dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
-                dbUser.ProfessionISCOCode = request.ProfessionCode ?? dbUser.ProfessionISCOCode;
+                dbUser.ProfessionISCOCode = request.OccupationCode ?? dbUser.ProfessionISCOCode;
                 dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
 
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
@@ -171,6 +171,6 @@ public class UpdateUser
         bool JobsDataConsent,
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
-        string? ProfessionCode,
+        string? OccupationCode,
         string? NationalityCode);
 }

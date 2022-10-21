@@ -60,7 +60,7 @@ public class UserTests : APITestBase
                 o.JobsDataConsent == command.JobsDataConsent &&
                 o.NationalityCode == command.NationalityCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
-                o.ProfessionCode == command.ProfessionCode &&
+                o.OccupationCode == command.OccupationCode &&
                 o.CountryOfBirthCode == command.CountryOfBirthCode);
         
     }

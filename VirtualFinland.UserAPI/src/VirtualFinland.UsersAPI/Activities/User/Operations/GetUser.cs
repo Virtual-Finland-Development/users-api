@@ -86,7 +86,7 @@ public class GetUser
         bool JobsDataConsent,
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
-        string? ProfessionCode,
+        string? OccupationCode,
         string? NationalityCode);
     
 }
