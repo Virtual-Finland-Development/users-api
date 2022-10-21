@@ -2,6 +2,7 @@ using System.Collections;
 using MediatR;
 using VirtualFinland.UserAPI.Data;
 using System.Linq;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models.SuomiFi;
 
@@ -9,13 +10,14 @@ namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
 public class GetOccupation
 {
+    [SwaggerSchema(Title = "OccupationCodeSetRequest")]
     public class Query : IRequest<Occupation>
     {
-        public string? ISCOCode { get; }
+        public string? OccupationCode { get; }
         
-        public Query(string? iscoCode)
+        public Query(string? occupationCode)
         {
-            this.ISCOCode = iscoCode;
+            this.OccupationCode = occupationCode;
         }
     }
 
@@ -33,7 +35,7 @@ public class GetOccupation
 
             try
             {
-                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.ISCOCode);
+                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.OccupationCode);
 
                 return new Occupation(occupationRaw?.Id,
                     new LanguageTranslations(occupationRaw?.Name?.Finland,
@@ -50,8 +52,9 @@ public class GetOccupation
         }
     }
 
+    [SwaggerSchema(Title = "OccupationCodeSetResponse")]
     public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
 
-    public record LanguageTranslations(string? Finland, string? English, string? Swedish);
+    public record LanguageTranslations(string? Fi, string? En, string? Sw);
 }
 

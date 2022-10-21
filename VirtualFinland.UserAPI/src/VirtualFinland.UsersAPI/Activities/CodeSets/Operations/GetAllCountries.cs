@@ -17,7 +17,7 @@ public class GetAllCountries
 
         public Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(GetCountriesByIso3166().Select(o => new Country(o.Name,o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList());
+            return Task.FromResult(GetCountriesByIso3166().Select(o => new Country(o.Name,o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList());
         }
         
         public static List<RegionInfo> GetCountriesByIso3166()
@@ -34,6 +34,6 @@ public class GetAllCountries
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string id, string Nane, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
+    public record Country(string id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
 }
 

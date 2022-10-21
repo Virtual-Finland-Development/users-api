@@ -10,11 +10,11 @@ public class GetCountry
     [SwaggerSchema(Title = "CountryCodeSetRequest")]
     public class Query : IRequest<Country>
     {
-        public string ISOCode { get; }
+        public string CountryCode { get; }
 
-        public Query(string isoCode)
+        public Query(string countryCode)
         {
-            this.ISOCode = isoCode;
+            this.CountryCode = countryCode;
         }
     }
 
@@ -25,8 +25,8 @@ public class GetCountry
         {
             try
             {
-                var country = new RegionInfo(request.ISOCode);
-                return Task.FromResult(new Country(country.Name, country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName));
+                var country = new RegionInfo(request.CountryCode);
+                return Task.FromResult(new Country(country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName));
             }
             catch (ArgumentException e)
             {
@@ -37,6 +37,6 @@ public class GetCountry
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string Id, string Nane, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
+    public record Country(string Id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
 }
 

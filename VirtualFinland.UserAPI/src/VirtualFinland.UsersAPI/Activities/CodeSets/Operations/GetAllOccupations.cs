@@ -2,12 +2,14 @@ using System.Collections;
 using MediatR;
 using VirtualFinland.UserAPI.Data;
 using System.Linq;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Models.SuomiFi;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
 public class GetAllOccupations
 {
+    [SwaggerSchema(Title = "OccupationsCodeSetRequest")]
     public class Query : IRequest<List<Occupation>>
     {
         
@@ -36,8 +38,9 @@ public class GetAllOccupations
         }
     }
 
+    [SwaggerSchema(Title = "OccupationsCodeSetResponse")]
     public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
 
-    public record LanguageTranslations(string? Finland, string? English, string? Swedish);
+    public record LanguageTranslations(string? Fi, string? En, string? Sw);
 }
 
