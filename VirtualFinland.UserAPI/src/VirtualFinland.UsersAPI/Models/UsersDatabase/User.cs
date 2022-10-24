@@ -21,7 +21,7 @@ public class User : IEntity
     
     public bool JobsDataConsent { get; set; }
     
-    public DateOnly DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     
     public string? Gender { get; set; }
 

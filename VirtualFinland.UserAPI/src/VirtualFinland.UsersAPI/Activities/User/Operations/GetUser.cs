@@ -55,7 +55,9 @@ public class GetUser
                 dbUser.CountryOfBirthISOCode,
                 dbUser.NativeLanguageISOCode,
                 dbUser.ProfessionISCOCode,
-                dbUser.NationalityISOCode);
+                dbUser.NationalityISOCode,
+                dbUser.Gender,
+                dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
         }
         
         async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
@@ -87,6 +89,8 @@ public class GetUser
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
-        string? NationalityCode);
+        string? NationalityCode,
+        string? Gender,
+        DateTime? DateOfBirth);
     
 }

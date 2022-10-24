@@ -32,22 +32,16 @@ public class UpdateUser
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
         
+        public string? Gender { get; }
+        
+        public DateTime? DateOfBirth { get; }
+        
         [SwaggerIgnore]
         public string? ClaimsUserId { get; set; }
         [SwaggerIgnore]
         public string? ClaimsIssuer { get; set; }
 
-        public Command(string? firstName,
-            string? lastName,
-            string? address,
-            bool? jobsDataConsent,
-            bool? immigrationDataConsent,
-            string? countryOfBirthCode,
-            string? nativeLanguageCode,
-            string? occupationCode,
-            string? nationalityCode,
-            List<string>? jobTitles,
-            List<string>? regions)
+        public Command(string? firstName, string? lastName, string? address, bool? jobsDataConsent, bool? immigrationDataConsent, string? countryOfBirthCode, string? nativeLanguageCode, string? occupationCode, string? nationalityCode, List<string>? jobTitles, List<string>? regions, string? gender, DateTime? dateOfBirth)
         {
             this.FirstName = firstName;
             this.LastName = lastName;
@@ -60,6 +54,8 @@ public class UpdateUser
             this.NationalityCode = nationalityCode;
             this.JobTitles = jobTitles;
             this.Regions = regions;
+            this.Gender = gender;
+            this.DateOfBirth = dateOfBirth;
         }
 
         public void SetAuth(string? claimsUserId, string? claimsIssuer)
@@ -94,6 +90,8 @@ public class UpdateUser
                 dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
                 dbUser.ProfessionISCOCode = request.OccupationCode ?? dbUser.ProfessionISCOCode;
                 dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
+                dbUser.Gender = request.Gender ?? dbUser.Gender;
+                dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
 
                 // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
@@ -125,7 +123,7 @@ public class UpdateUser
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
-                
+
                 return new User(dbUser.Id,
                     dbUser.FirstName,
                     dbUser.LastName,
@@ -139,7 +137,9 @@ public class UpdateUser
                     dbUser.CountryOfBirthISOCode,
                     dbUser.NativeLanguageISOCode,
                     dbUser.ProfessionISCOCode,
-                    dbUser.NationalityISOCode);
+                    dbUser.NationalityISOCode,
+                    dbUser.Gender,
+                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
             
             async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
@@ -172,5 +172,7 @@ public class UpdateUser
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
-        string? NationalityCode);
+        string? NationalityCode,
+        string? Gender,
+        DateTime? DateOfBirth);
 }
