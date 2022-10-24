@@ -22,7 +22,7 @@ public class APIUserFactory
             ImmigrationDataConsent = false,
             NationalityISOCode = "FR",
             CountryOfBirthISOCode = "FR",
-            ProfessionISCOCode = "4012",
+            OccupationISCOCode = "4012",
             NativeLanguageISOCode = "FR",
         });
 

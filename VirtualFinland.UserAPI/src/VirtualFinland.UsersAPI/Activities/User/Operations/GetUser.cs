@@ -54,7 +54,7 @@ public class GetUser
                 dbUser.JobsDataConsent,
                 dbUser.CountryOfBirthISOCode,
                 dbUser.NativeLanguageISOCode,
-                dbUser.ProfessionISCOCode,
+                dbUser.OccupationISCOCode,
                 dbUser.NationalityISOCode,
                 dbUser.Gender,
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));

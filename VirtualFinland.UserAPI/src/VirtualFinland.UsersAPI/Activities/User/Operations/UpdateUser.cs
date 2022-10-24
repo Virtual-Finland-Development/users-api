@@ -102,7 +102,7 @@ public class UpdateUser
                     dbUser.JobsDataConsent,
                     dbUser.CountryOfBirthISOCode,
                     dbUser.NativeLanguageISOCode,
-                    dbUser.ProfessionISCOCode,
+                    dbUser.OccupationISCOCode,
                     dbUser.NationalityISOCode,
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
@@ -118,7 +118,7 @@ public class UpdateUser
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
                 dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
                 dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
-                dbUser.ProfessionISCOCode = request.OccupationCode ?? dbUser.ProfessionISCOCode;
+                dbUser.OccupationISCOCode = request.OccupationCode ?? dbUser.OccupationISCOCode;
                 dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;

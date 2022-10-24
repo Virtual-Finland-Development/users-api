@@ -29,7 +29,7 @@ public class User : IEntity
 
     public string? NativeLanguageISOCode { get; set; }
 
-    public string? ProfessionISCOCode { get; set; }
+    public string? OccupationISCOCode { get; set; }
 
     public string? NationalityISOCode { get; set; }
 }
