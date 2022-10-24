@@ -62,4 +62,14 @@ public class CodeSetsController : ControllerBase
     {
         return Ok(await _mediator.Send(new GetOccupation.Query(occupationCode)));
     }
+    
+    [HttpGet("/code-sets/languages")]
+    [SwaggerOperation(Summary = "Get all languages", Description = "Get all languages.")]
+    [ProducesResponseType(typeof(List<GetAllLanguages.Language>),StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ResponseCache(Duration = 60)]
+    public async Task<IActionResult> GetAllLanguages()
+    {
+        return Ok(await _mediator.Send(new GetAllLanguages.Query()));
+    }
 }
