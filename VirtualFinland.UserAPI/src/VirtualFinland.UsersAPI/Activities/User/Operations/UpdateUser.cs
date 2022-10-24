@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -79,46 +80,11 @@ public class UpdateUser
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
-
-                dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
-                dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.Address = request.Address ?? dbUser.Address;
-                dbUser.Modified = DateTime.UtcNow;
-                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
-                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
-                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
-                dbUser.ProfessionISCOCode = request.OccupationCode ?? dbUser.ProfessionISCOCode;
-                dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
-                dbUser.Gender = request.Gender ?? dbUser.Gender;
-                dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
-
-                // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
+                
+                VerifyUserUpdate(dbUser, request);
+                
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
-
-                if (dbUserDefaultSearchProfile is null)
-                {
-                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
-                    {
-                        Name = request.JobTitles?.FirstOrDefault(),
-                        UserId = dbUser.Id,
-                        JobTitles = request.JobTitles,
-                        Regions = request.Regions,
-                        Created = DateTime.UtcNow,
-                        Modified = DateTime.UtcNow,
-                        IsDefault = true
-                    }, cancellationToken);
-
-                    dbUserDefaultSearchProfile = dbNewSearchProfile.Entity;
-                }
-                else
-                {
-                    dbUserDefaultSearchProfile.Name = dbUserDefaultSearchProfile.Name;
-                    dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
-                    dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
-                    dbUserDefaultSearchProfile.IsDefault = true;
-                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
-                }
+                dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
@@ -140,6 +106,59 @@ public class UpdateUser
                     dbUser.NationalityISOCode,
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+            }
+
+            private void VerifyUserUpdate(Models.User dbUser, Command request)
+            {
+                dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
+                dbUser.LastName = request.LastName ?? dbUser.LastName;
+                dbUser.Address = request.Address ?? dbUser.Address;
+                dbUser.Modified = DateTime.UtcNow;
+                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
+                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
+                dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
+                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
+                dbUser.ProfessionISCOCode = request.OccupationCode ?? dbUser.ProfessionISCOCode;
+                dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
+                dbUser.Gender = request.Gender ?? dbUser.Gender;
+                dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
+
+            }
+
+            /// <summary>
+            /// TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
+            /// </summary>
+            /// <param name="dbUserDefaultSearchProfile"></param>
+            /// <param name="dbUser"></param>
+            /// <param name="request"></param>
+            /// <param name="cancellationToken"></param>
+            async private Task<SearchProfile> VerifyUserSearchProfile(Models.SearchProfile? dbUserDefaultSearchProfile, Models.User dbUser, Command request, CancellationToken cancellationToken)
+            {
+                if (dbUserDefaultSearchProfile is null)
+                {
+                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
+                    {
+                        Name = request.JobTitles?.FirstOrDefault(),
+                        UserId = dbUser.Id,
+                        JobTitles = request.JobTitles,
+                        Regions = request.Regions,
+                        Created = DateTime.UtcNow,
+                        Modified = DateTime.UtcNow,
+                        IsDefault = true
+                    }, cancellationToken);
+
+                    return dbNewSearchProfile.Entity;
+                }
+                else
+                {
+                    dbUserDefaultSearchProfile.Name = dbUserDefaultSearchProfile.Name;
+                    dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
+                    dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
+                    dbUserDefaultSearchProfile.IsDefault = true;
+                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
+
+                    return dbUserDefaultSearchProfile;
+                }
             }
             
             async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
