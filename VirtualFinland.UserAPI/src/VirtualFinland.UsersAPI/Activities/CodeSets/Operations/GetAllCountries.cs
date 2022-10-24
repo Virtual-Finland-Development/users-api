@@ -1,6 +1,7 @@
 using System.Globalization;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
+using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
@@ -14,10 +15,16 @@ public class GetAllCountries
 
     public class Handler : IRequestHandler<Query, List<Country>>
     {
+        private readonly ICountriesRepository _countriesRepository;
 
-        public Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
+        public Handler(ICountriesRepository countriesRepository)
         {
-            return Task.FromResult(GetCountriesByIso3166().Select(o => new Country(o.Name,o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList());
+            _countriesRepository = countriesRepository;
+        }
+        public async Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
+        {
+            var countries = await _countriesRepository.GetAllCountries();
+            return countries.Select(o => new Country(o.id, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList();
         }
         
         public static List<RegionInfo> GetCountriesByIso3166()

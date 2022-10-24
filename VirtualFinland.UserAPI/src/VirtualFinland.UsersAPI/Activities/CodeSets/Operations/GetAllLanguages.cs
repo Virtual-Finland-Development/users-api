@@ -1,6 +1,7 @@
 using System.Globalization;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
+using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
@@ -14,10 +15,16 @@ public class GetAllLanguages
 
     public class Handler : IRequestHandler<Query, List<Language>>
     {
+        private readonly ILanguageRepository _languageRepository;
 
-        public Task<List<Language>> Handle(Query request, CancellationToken cancellationToken)
+        public Handler(ILanguageRepository languageRepository)
         {
-            return Task.FromResult(CultureInfo.GetCultures(CultureTypes.AllCultures).Select(o => new Language(o.Name, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISOLanguageName, o.ThreeLetterISOLanguageName)).ToList());
+            _languageRepository = languageRepository;
+        }
+        public async Task<List<Language>> Handle(Query request, CancellationToken cancellationToken)
+        {
+            var languages= await _languageRepository.GetAllLanguages();
+            return languages.Select(o => new Language(o.Id, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList();
         }
         
 

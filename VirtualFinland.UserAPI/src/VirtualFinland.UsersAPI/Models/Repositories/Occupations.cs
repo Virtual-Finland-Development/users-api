@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace VirtualFinland.UserAPI.Models.SuomiFi;
+namespace VirtualFinland.UserAPI.Models.Repositories;
 
 public class OccupationRoot
 {

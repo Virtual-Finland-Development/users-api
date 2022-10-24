@@ -1,8 +1,7 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using VirtualFinland.UserAPI.Models.SuomiFi;
+using VirtualFinland.UserAPI.Models.Repositories;
 
-namespace VirtualFinland.UserAPI.Data;
+namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class OccupationsRepository : IOccupationsRepository
 {

@@ -9,6 +9,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Middleware;
 
@@ -88,6 +89,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddResponseCaching();
 
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
+builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
+builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 
 var app = builder.Build();
 

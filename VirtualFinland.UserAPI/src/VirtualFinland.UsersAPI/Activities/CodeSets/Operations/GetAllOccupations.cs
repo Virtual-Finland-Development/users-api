@@ -3,7 +3,7 @@ using MediatR;
 using VirtualFinland.UserAPI.Data;
 using System.Linq;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Models.SuomiFi;
+using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
