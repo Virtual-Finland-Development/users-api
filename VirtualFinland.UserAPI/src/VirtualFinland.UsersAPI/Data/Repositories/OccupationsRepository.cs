@@ -16,7 +16,7 @@ public class OccupationsRepository : IOccupationsRepository
         _codeSetsSuomiFiUrl = _configuration["ExternalSources:CodeSetsSuomiFiURL"];
     }
     
-    public async Task<List<OccupationRoot.Occupation>?> GetAllOccupationsRaw()
+    public async Task<List<OccupationRoot.Occupation>?> GetAllOccupations()
     {
         // TODO: Better cache control, maybe use .NET Core 6 In-Memory Cache. Fastest solution at the moment.
         if (_occupations is not null)

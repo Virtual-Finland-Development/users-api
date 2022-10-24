@@ -25,7 +25,7 @@ public class GetAllOccupations
         }
         public async Task<List<Occupation>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var occupationsRawData = await _occupationsRepository.GetAllOccupationsRaw();
+            var occupationsRawData = await _occupationsRepository.GetAllOccupations();
 
             return occupationsRawData?.Where( o => int.TryParse(o.Id, out _)).Select(o => new Occupation(o.Id,
                     new LanguageTranslations(o.Name?.Finland,

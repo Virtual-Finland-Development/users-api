@@ -31,7 +31,7 @@ public class GetOccupation
         }
         public async Task<Occupation> Handle(Query request, CancellationToken cancellationToken)
         {
-            var occupationsRawData = await _occupationsRepository.GetAllOccupationsRaw();
+            var occupationsRawData = await _occupationsRepository.GetAllOccupations();
 
             try
             {
