@@ -24,6 +24,8 @@ public class APIUserFactory
             CountryOfBirthISOCode = "FR",
             OccupationISCOCode = "4012",
             NativeLanguageISOCode = "FR",
+            Gender = "1",
+            DateOfBirth = DateOnly.FromDateTime(DateTime.Now)
         });
 
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()

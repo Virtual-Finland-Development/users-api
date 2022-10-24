@@ -33,7 +33,13 @@ public class UserTests : APITestBase
                 o.FirstName == dbEntities.user.FirstName &&
                 o.LastName == dbEntities.user.LastName &&
                 o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
-                o.JobsDataConsent == dbEntities.user.JobsDataConsent);
+                o.JobsDataConsent == dbEntities.user.JobsDataConsent &&
+                o.NationalityCode == dbEntities.user.NationalityISOCode &&
+                o.OccupationCode == dbEntities.user.OccupationISCOCode &&
+                o.NativeLanguageCode == dbEntities.user.NationalityISOCode &&
+                o.CountryOfBirthCode == dbEntities.user.CountryOfBirthISOCode &&
+                o.Gender == dbEntities.user.Gender &&
+                DateOnly.FromDateTime(o.DateOfBirth.Value) == dbEntities.user.DateOfBirth);
         
     }
     
@@ -43,7 +49,8 @@ public class UserTests : APITestBase
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "en", "en", "5001","en",new List<string>(), new List<string>(), "male", DateTime.Now);
+        
+        var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "en", "en", "5001","en",new List<string>(), new List<string>(), "1", DateTime.Now);
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
         var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object);
         
@@ -61,7 +68,8 @@ public class UserTests : APITestBase
                 o.NationalityCode == command.NationalityCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
                 o.OccupationCode == command.OccupationCode &&
-                o.CountryOfBirthCode == command.CountryOfBirthCode);
+                o.CountryOfBirthCode == command.CountryOfBirthCode &&
+                o.Gender == command.Gender);
         
     }
 }
