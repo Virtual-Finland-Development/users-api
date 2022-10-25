@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Identity.Operations;
 
-public class GetTestbedIdentityUser
+public static class GetTestbedIdentityUser
 {
     [SwaggerSchema(Title = "TestbedIdentityUserRequest")]
     public class Query : IRequest<User>

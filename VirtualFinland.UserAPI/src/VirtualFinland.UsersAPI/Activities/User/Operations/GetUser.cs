@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class GetUser
+public static class GetUser
 {
     [SwaggerSchema(Title = "UserRequest")]
     public class Query : IRequest<User>

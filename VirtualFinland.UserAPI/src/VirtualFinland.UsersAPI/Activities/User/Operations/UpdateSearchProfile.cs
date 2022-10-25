@@ -7,7 +7,7 @@ using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class UpdateSearchProfile
+public static class UpdateSearchProfile
 {
     [SwaggerSchema(Title = "UpdateSearchProfileRequest")]
     public class Command : IRequest

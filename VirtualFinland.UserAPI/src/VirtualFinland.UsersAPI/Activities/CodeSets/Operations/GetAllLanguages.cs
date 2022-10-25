@@ -4,7 +4,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
-public class GetAllLanguages
+public static class GetAllLanguages
 {
     [SwaggerSchema(Title = "LanguagesCodeSetRequest")]
     public class Query : IRequest<List<Language>>

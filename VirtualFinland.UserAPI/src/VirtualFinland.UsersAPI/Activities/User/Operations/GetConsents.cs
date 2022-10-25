@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class GetConsents
+public static class GetConsents
 {
     [SwaggerSchema(Title = "ConsentsRequest")]
     public class Query : IRequest<Consents>

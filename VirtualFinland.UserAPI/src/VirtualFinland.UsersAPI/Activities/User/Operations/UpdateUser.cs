@@ -5,13 +5,12 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class UpdateUser
+public static class UpdateUser
 {
     [SwaggerSchema(Title = "UpdateUserRequest")]
     public class Command : IRequest<User>

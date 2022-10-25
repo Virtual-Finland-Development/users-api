@@ -5,7 +5,7 @@ using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
-public class GetOccupation
+public static class GetOccupation
 {
     [SwaggerSchema(Title = "OccupationCodeSetRequest")]
     public class Query : IRequest<Occupation>

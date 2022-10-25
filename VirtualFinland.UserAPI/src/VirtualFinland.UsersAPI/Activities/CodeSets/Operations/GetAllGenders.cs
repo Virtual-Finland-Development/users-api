@@ -3,7 +3,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
-public class GetAllGenders
+public static class GetAllGenders
 {
     [SwaggerSchema(Title = "GenderCodeSetRequest")]
     public class Query : IRequest<List<Gender>>

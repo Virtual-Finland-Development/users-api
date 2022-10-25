@@ -7,7 +7,7 @@ using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class CreateSearchProfile
+public static class CreateSearchProfile
 {
     [SwaggerSchema(Title = "CreateSearchProfileRequest")]
     public class Command : IRequest<SearchProfile>

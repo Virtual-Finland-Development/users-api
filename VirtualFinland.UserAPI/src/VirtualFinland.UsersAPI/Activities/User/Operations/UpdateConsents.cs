@@ -7,7 +7,7 @@ using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class UpdateConsents
+public static class UpdateConsents
 {
     [SwaggerSchema(Title = "UpdateConsentsRequest")]
     public class Command : IRequest<Consents>

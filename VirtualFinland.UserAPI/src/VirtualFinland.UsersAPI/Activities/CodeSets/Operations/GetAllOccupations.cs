@@ -4,7 +4,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
-public class GetAllOccupations
+public static class GetAllOccupations
 {
     [SwaggerSchema(Title = "OccupationsCodeSetRequest")]
     public class Query : IRequest<List<Occupation>>

@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class GetSearchProfiles
+public static class GetSearchProfiles
 {
     [SwaggerSchema(Title = "SearchProfilesRequest")]
     public class Query : IRequest<IList<SearchProfile>>

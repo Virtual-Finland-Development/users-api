@@ -5,7 +5,7 @@ using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
-public class GetCountry
+public static class GetCountry
 {
     [SwaggerSchema(Title = "CountryCodeSetRequest")]
     public class Query : IRequest<Country>
