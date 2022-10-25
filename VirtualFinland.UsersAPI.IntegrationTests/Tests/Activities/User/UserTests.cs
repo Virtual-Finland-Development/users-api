@@ -168,7 +168,6 @@ public class UserTests : APITestBase
     public async void Should_FailUpdateUserAuthenticationCheckAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockContriesRepository();
@@ -189,14 +188,8 @@ public class UserTests : APITestBase
     public async void Should_FailGetUserAuthenticationCheckAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
-        var languageRepository = new LanguageRepository();
-        
         var query = new GetUser.Query("false user id", "false issuer");
-
         var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
         
         // Act
