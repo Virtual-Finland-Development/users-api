@@ -13,11 +13,11 @@ public class GetOccupation
     [SwaggerSchema(Title = "OccupationCodeSetRequest")]
     public class Query : IRequest<Occupation>
     {
-        public string? OccupationCode { get; }
+        public string? Id { get; }
         
-        public Query(string? occupationCode)
+        public Query(string? id)
         {
-            this.OccupationCode = occupationCode;
+            this.Id = id;
         }
     }
 
@@ -35,7 +35,7 @@ public class GetOccupation
 
             try
             {
-                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.OccupationCode);
+                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.Id);
 
                 return new Occupation(occupationRaw?.Id,
                     new LanguageTranslations(occupationRaw?.Name?.Finland,

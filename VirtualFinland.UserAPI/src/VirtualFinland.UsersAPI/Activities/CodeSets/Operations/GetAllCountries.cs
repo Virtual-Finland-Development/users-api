@@ -24,7 +24,7 @@ public class GetAllCountries
         public async Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
             var countries = await _countriesRepository.GetAllCountries();
-            return countries.Select(o => new Country(o.id, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList();
+            return countries.Select(o => new Country(o.IsoCode, o?.Name?.Common, o?.Name?.Common, String.Empty, o?.IsoCode, o?.IsoCodeTßhreeLetter)).ToList();
         }
         
         public static List<RegionInfo> GetCountriesByIso3166()
@@ -41,6 +41,6 @@ public class GetAllCountries
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
+    public record Country(string? id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISOCode, string? ThreeLetterISOCode);
 }
 
