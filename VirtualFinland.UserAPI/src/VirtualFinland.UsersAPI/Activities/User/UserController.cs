@@ -32,7 +32,7 @@ public class UserController : ControllerBase
     
     [HttpPatch("/user")]
     [SwaggerOperation(Summary = "Updates the current logged user personal profile", Description = "Updates the current logged user own personal details and his default search profile.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
@@ -51,7 +51,7 @@ public class UserController : ControllerBase
     
     [HttpPatch("/user/consents")]
     [SwaggerOperation(Summary = "Updates the current logged user personal consents", Description = "Updates the current logged user own personal consents.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
     {
