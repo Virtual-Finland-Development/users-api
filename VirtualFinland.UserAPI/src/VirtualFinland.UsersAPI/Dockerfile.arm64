@@ -12,7 +12,7 @@ RUN dotnet restore "VirtualFinland.UsersAPI.csproj"
 COPY . .
 RUN dotnet build "VirtualFinland.UsersAPI.csproj" -c Release -o /app/build
 FROM build AS publish
-RUN dotnet publish "VirtualFinland.UsersAPI.csproj" -p:PublishReadyToRun=True -p:PublishReadyToRunUseCrossgen2=True -c Release -o /app/publish -r $runtimeType
+RUN dotnet publish "VirtualFinland.UsersAPI.csproj" -p:PublishReadyToRun=True -p:PublishReadyToRunUseCrossgen2=True -c Release -o /app/publish -r linux-arm64
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
