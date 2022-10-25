@@ -2,9 +2,11 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models;
+using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -70,18 +72,24 @@ public class UpdateUser
         {
             private readonly UsersDbContext _usersDbContext;
             private readonly ILogger<Handler> _logger;
+            private readonly ILanguageRepository _languageRepository;
+            private readonly ICountriesRepository _countriesRepository;
+            private readonly IOccupationsRepository _occupationsRepository;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository)
             {
                 _usersDbContext = usersDbContext;
                 _logger = logger;
+                _languageRepository = languageRepository;
+                _countriesRepository = countriesRepository;
+                _occupationsRepository = occupationsRepository;
             }
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
                 
-                VerifyUserUpdate(dbUser, request);
+                await VerifyUserUpdate(dbUser, request);
                 
                 var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
                 dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
@@ -108,8 +116,31 @@ public class UpdateUser
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
 
-            private void VerifyUserUpdate(Models.User dbUser, Command request)
+            async private Task VerifyUserUpdate(Models.User dbUser, Command request)
             {
+                var countries = await _countriesRepository.GetAllCountries() ?? new List<Country>();
+                if (!countries.Any(o => o.id == request.NationalityCode?.ToUpper()))
+                {
+                    throw new BadRequestException("NationalityCode does not match any known ISO 3166 country code.");
+                }
+                
+                if (!countries.Any(o => o.id == request.CountryOfBirthCode?.ToUpper()))
+                {
+                    throw new BadRequestException("CountryOfBirthCode does not match any known ISO 3166 country code.");
+                }
+                
+                var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
+                if (!occupations.Any(o => o.Id == request.OccupationCode))
+                {
+                    throw new BadRequestException("OccupationCode does not match any known occupation code.");
+                }
+
+                var languages = await _languageRepository.GetAllLanguages() ?? new List<Language>();
+                if (!languages.Any(o => o.Id == request.NativeLanguageCode))
+                {
+                    throw new BadRequestException("NativeLanguageCode does not match any known language code");
+                }
+
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
                 dbUser.Address = request.Address ?? dbUser.Address;
@@ -117,7 +148,7 @@ public class UpdateUser
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
                 dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
-                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode;
+                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode; 
                 dbUser.OccupationISCOCode = request.OccupationCode ?? dbUser.OccupationISCOCode;
                 dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;

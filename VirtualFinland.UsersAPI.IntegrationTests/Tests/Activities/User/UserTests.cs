@@ -5,6 +5,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -49,10 +50,13 @@ public class UserTests : APITestBase
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new Mock<IOccupationsRepository>();
+        var countryRepository = new CountriesRepository();
+        var languageRepostiroy = new LanguageRepository();
         
         var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "en", "en", "5001","en",new List<string>(), new List<string>(), "1", DateTime.Now);
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepostiroy, countryRepository, occupationRepository.Object);
         
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

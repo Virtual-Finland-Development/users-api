@@ -107,7 +107,6 @@ if (app.Environment.IsDevelopment())
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -119,6 +118,8 @@ using (var scope = app.Services.CreateScope())
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
 }
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.MapGet("/", () => "App is up!");
 

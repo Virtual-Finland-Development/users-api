@@ -44,6 +44,10 @@ public class ErrorHandlerMiddleware
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     break;
+                case BadRequestException e:
+                    // bad request error
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    break;
                 default:
                     // unhandled error
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
