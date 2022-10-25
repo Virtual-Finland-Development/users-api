@@ -119,24 +119,24 @@ public class UpdateUser
             async private Task VerifyUserUpdate(Models.User dbUser, Command request)
             {
                 var countries = await _countriesRepository.GetAllCountries() ?? new List<Country>();
-                if (!countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
+                if (!string.IsNullOrEmpty(request.NationalityCode) && !countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
                 {
                     throw new BadRequestException("NationalityCode does not match any known ISO 3166 country code.");
                 }
                 
-                if (!countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
+                if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
                 {
                     throw new BadRequestException("CountryOfBirthCode does not match any known ISO 3166 country code.");
                 }
                 
                 var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
-                if (!occupations.Any(o => o.Id == request.OccupationCode))
+                if (!string.IsNullOrEmpty(request.OccupationCode) && !occupations.Any(o => o.Id == request.OccupationCode))
                 {
                     throw new BadRequestException("OccupationCode does not match any known occupation code.");
                 }
 
                 var languages = await _languageRepository.GetAllLanguages() ?? new List<Language>();
-                if (!languages.Any(o => o.Id == request.NativeLanguageCode))
+                if (!string.IsNullOrEmpty(request.NativeLanguageCode) && !languages.Any(o => o.Id == request.NativeLanguageCode))
                 {
                     throw new BadRequestException("NativeLanguageCode does not match any known language code");
                 }

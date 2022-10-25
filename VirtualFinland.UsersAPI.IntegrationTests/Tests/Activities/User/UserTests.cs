@@ -6,8 +6,11 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
+using VirtualFinland.UsersAPI.UnitTests.Mocks;
+using UpdateUser = VirtualFinland.UserAPI.Activities.User.Operations.UpdateUser;
 
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
@@ -50,13 +53,13 @@ public class UserTests : APITestBase
         // Arrange
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new Mock<IOccupationsRepository>();
-        var countryRepository = new Mock<ICountriesRepository>();
-        var languageRepostiroy = new LanguageRepository();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
         
-        var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "en", "en", "5001","en",new List<string>(), new List<string>(), "1", DateTime.Now);
+        var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "fi", "fi-FI", "01","fi",new List<string>(), new List<string>(), "1", DateTime.Now);
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepostiroy, countryRepository.Object, occupationRepository.Object);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -75,5 +78,89 @@ public class UserTests : APITestBase
                 o.CountryOfBirthCode == command.CountryOfBirthCode &&
                 o.Gender == command.Gender);
         
+    }
+    
+    [Fact]
+    public async void Should_FailUpdateUserNationalityCheckAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var command = new UpdateUser.Command(null, null, null, null, null, null, null, null,"not a code",null, null, null, null);
+        command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        
+        // Act
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+    
+    [Fact]
+    public async void Should_FailUpdateUserCountryOfBirthAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var command = new UpdateUser.Command(null, null, null, null, null, "not a code", null, null,null,null, null, null, null);
+        command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        
+        // Act
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+    
+    [Fact]
+    public async void Should_FailUpdateUserNativeLanguageCodeAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var command = new UpdateUser.Command(null, null, null, null, null, null, "not a code", null,null,null, null, null, null);
+        command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        
+        // Act
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
+    }
+    
+    [Fact]
+    public async void Should_FailUpdateUserOccupationCodeAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
+        command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        
+        // Act
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<BadRequestException>();
     }
 }
