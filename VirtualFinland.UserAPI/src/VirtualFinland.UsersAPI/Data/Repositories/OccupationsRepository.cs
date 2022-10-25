@@ -14,6 +14,7 @@ public class OccupationsRepository : IOccupationsRepository
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
         _codeSetsSuomiFiUrl = _configuration["ExternalSources:CodeSetsSuomiFiURL"];
+        GetAllOccupations().Wait();
     }
     
     public async Task<List<OccupationRoot.Occupation>?> GetAllOccupations()
