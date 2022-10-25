@@ -51,12 +51,12 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new Mock<IOccupationsRepository>();
-        var countryRepository = new CountriesRepository();
+        var countryRepository = new Mock<ICountriesRepository>();
         var languageRepostiroy = new LanguageRepository();
         
         var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "en", "en", "5001","en",new List<string>(), new List<string>(), "1", DateTime.Now);
         command.SetAuth(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepostiroy, countryRepository, occupationRepository.Object);
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepostiroy, countryRepository.Object, occupationRepository.Object);
         
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

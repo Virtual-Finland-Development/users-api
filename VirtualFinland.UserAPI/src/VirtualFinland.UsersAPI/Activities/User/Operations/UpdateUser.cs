@@ -119,12 +119,12 @@ public class UpdateUser
             async private Task VerifyUserUpdate(Models.User dbUser, Command request)
             {
                 var countries = await _countriesRepository.GetAllCountries() ?? new List<Country>();
-                if (!countries.Any(o => o.id == request.NationalityCode?.ToUpper()))
+                if (!countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
                 {
                     throw new BadRequestException("NationalityCode does not match any known ISO 3166 country code.");
                 }
                 
-                if (!countries.Any(o => o.id == request.CountryOfBirthCode?.ToUpper()))
+                if (!countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
                 {
                     throw new BadRequestException("CountryOfBirthCode does not match any known ISO 3166 country code.");
                 }
