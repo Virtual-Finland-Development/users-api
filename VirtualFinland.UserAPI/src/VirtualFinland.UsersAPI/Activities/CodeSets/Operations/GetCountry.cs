@@ -43,6 +43,6 @@ public class GetCountry
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string? Id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISOCode, string? ThreeLetterISOCode);
+    public record Country(string? Id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISORegionName, string? ThreeLetterISORegionName);
 }
 
