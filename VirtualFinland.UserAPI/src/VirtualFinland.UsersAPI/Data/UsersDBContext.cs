@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
