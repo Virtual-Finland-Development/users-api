@@ -1,11 +1,7 @@
-using System.Net.Mime;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 
@@ -29,13 +25,10 @@ public class IdentityController : ControllerBase
         Description =
             "Given the access token from Testbed, the operation tries to find if the user exists in the system database and if the user does not exist create an account. Notice: The user can't access personal information without being created into the system with this call.")]
     [ProducesResponseType(typeof(GetTestbedIdentityUser.User), StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         var user = await _mediator.Send(new GetTestbedIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
-
-        if (user is null)
-            return NotFound();
 
         return Ok(user);
     }

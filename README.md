@@ -49,9 +49,14 @@ You can start by opening the solution file **VirtualFinland.UsersAPI.sln** or by
 
 Use premade scripts that build and start the API with a database using docker. You will need to have docker installed.  
 
-To start the API in docker use the following script call in the repository root.
+To start the API in docker use the following script x86 CPUs, call in the repository root.
 ```
     ./Tools/Scripts/startApiInDocker.sh
+```
+
+Or the following script or arm64 CPUs, call in the repository root.
+```
+    ./Tools/Scripts/startApiInDocker-arm64.sh
 ```
 
 The API should be available at the following address:  

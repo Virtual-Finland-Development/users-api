@@ -38,6 +38,7 @@ public class GetAllOccupations
     [SwaggerSchema(Title = "OccupationsCodeSetResponse")]
     public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
 
+    [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);
 }
 

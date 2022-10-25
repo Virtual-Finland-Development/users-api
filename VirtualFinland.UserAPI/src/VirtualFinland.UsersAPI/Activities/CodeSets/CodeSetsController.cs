@@ -22,7 +22,7 @@ public class CodeSetsController : ControllerBase
     [HttpGet("/code-sets/countries")]
     [SwaggerOperation(Summary = "Get all available ISO 3166 country codes and details", Description = "Get all available ISO 3166 country codes and details.")]
     [ProducesResponseType(typeof(List<GetAllCountries.Country>),StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetAllCountries()
     {
@@ -33,7 +33,7 @@ public class CodeSetsController : ControllerBase
     [SwaggerOperation(Summary = "Gets a single country and its details by it's Two Letter ISO Code", Description = "Gets a single country and its details by it's Two Letter ISO Code.")]
     [ProducesResponseType(typeof(GetCountry.Country),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetCountry(string countryCode)
     {
@@ -43,7 +43,7 @@ public class CodeSetsController : ControllerBase
     [HttpGet("/code-sets/occupations")]
     [SwaggerOperation(Summary = "Get all available ISCO occupations", Description = "Get all available ISCO occupations")]
     [ProducesResponseType(typeof(List<GetAllOccupations.Occupation>),StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetAllOccupations()
     {
@@ -54,7 +54,7 @@ public class CodeSetsController : ControllerBase
     [SwaggerOperation(Summary = "Gets a single occupation and its details by it's ISCO code", Description = "Gets a single occupation and its details by it's ISCO code.")]
     [ProducesResponseType(typeof(GetOccupation.Occupation),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetOccupation(string occupationCode)
     {
@@ -64,7 +64,7 @@ public class CodeSetsController : ControllerBase
     [HttpGet("/code-sets/languages")]
     [SwaggerOperation(Summary = "Get all languages", Description = "Get all languages.")]
     [ProducesResponseType(typeof(List<GetAllLanguages.Language>),StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetAllLanguages()
     {
@@ -74,7 +74,7 @@ public class CodeSetsController : ControllerBase
     [HttpGet("/code-sets/genders")]
     [SwaggerOperation(Summary = "Get all gender options", Description = "Get all gender options.")]
     [ProducesResponseType(typeof(List<GetAllGenders.Gender>),StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
     public async Task<IActionResult> GetAllGenders()
     {
