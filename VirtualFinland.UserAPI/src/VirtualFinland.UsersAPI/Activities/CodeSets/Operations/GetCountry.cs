@@ -1,6 +1,7 @@
 using System.Globalization;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
@@ -10,25 +11,30 @@ public class GetCountry
     [SwaggerSchema(Title = "CountryCodeSetRequest")]
     public class Query : IRequest<Country>
     {
-        public string CountryCode { get; }
+        public string Id { get; }
 
-        public Query(string countryCode)
+        public Query(string id)
         {
-            this.CountryCode = countryCode;
+            this.Id = id;
         }
     }
 
     public class Handler : IRequestHandler<Query, Country>
     {
-
-        public Task<Country> Handle(Query request, CancellationToken cancellationToken)
+        private readonly ICountriesRepository _countriesRepository;
+        public Handler(ICountriesRepository countriesRepository)
+        {
+            _countriesRepository = countriesRepository;
+        }
+        public async Task<Country> Handle(Query request, CancellationToken cancellationToken)
         {
             try
             {
-                var country = new RegionInfo(request.CountryCode);
-                return Task.FromResult(new Country(country.Name, country.DisplayName, country.EnglishName, country.NativeName, country.TwoLetterISORegionName, country.ThreeLetterISORegionName));
+                var countries = await _countriesRepository.GetAllCountries();
+                var country = countries.Single(o => o.IsoCode == request.Id);
+                return new Country(country?.IsoCode, country?.Name?.Common, country?.Name?.Common, String.Empty, country?.IsoCode, country?.IsoCodeTßhreeLetter);
             }
-            catch (ArgumentException e)
+            catch (InvalidOperationException e)
             {
                 throw new NotFoundException("Given culture not found", e);
             }
@@ -37,6 +43,6 @@ public class GetCountry
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string Id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISORegionName, string ThreeLetterISORegionName);
+    public record Country(string? Id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISOCode, string? ThreeLetterISOCode);
 }
 

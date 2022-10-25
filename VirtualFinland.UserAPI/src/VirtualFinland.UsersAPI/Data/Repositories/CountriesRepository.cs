@@ -1,20 +1,44 @@
 using System.Globalization;
+using System.Text.Json;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class CountriesRepository : ICountriesRepository
 {
+    private readonly IConfiguration _configuration;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly string _iso3166CountriesURL;
+    private List<Country>? _countries;
 
-    public Task<List<Country>> GetAllCountries()
+    public CountriesRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
-        List<RegionInfo> countries = new List<RegionInfo>();
-        foreach (CultureInfo culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+        _configuration = configuration;
+        _httpClientFactory = httpClientFactory;
+        _iso3166CountriesURL = _configuration["ExternalSources:ISO3166CountriesURL"];
+
+    }
+    public async Task<List<Country>> GetAllCountries()
+    {
+        if (_countries is not null)
         {
-            RegionInfo country = new RegionInfo(culture.Name);
-            if (countries.Count(p => p.Name == country.Name) == 0)
-                countries.Add(country);
+            return _countries;
         }
-        return Task.FromResult(countries.OrderBy(p => p.EnglishName).Select(o => new Country(o.Name,o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISORegionName, o.ThreeLetterISORegionName)).ToList());
+        
+        var httpClient = _httpClientFactory.CreateClient();
+        var httpResponseMessage = await httpClient.GetAsync(_iso3166CountriesURL);
+
+        if (httpResponseMessage.IsSuccessStatusCode)
+        {
+            var countries = JsonSerializer.Deserialize<List<Country>>(await httpResponseMessage.Content.ReadAsStringAsync());
+
+            if (countries is not null)
+            {
+                _countries = countries;
+                return _countries;
+            }
+        }
+
+        return new List<Country>();
     }
 }
