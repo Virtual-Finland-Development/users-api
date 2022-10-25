@@ -32,6 +32,7 @@ public class UserTests : APITestBase
         // Assert
         result.Should()
             .Match<GetUser.User>(o =>
+                o.DateOfBirth != null &&
                 o.Id == dbEntities.user.Id &&
                 o.Address == dbEntities.user.Address &&
                 o.FirstName == dbEntities.user.FirstName &&

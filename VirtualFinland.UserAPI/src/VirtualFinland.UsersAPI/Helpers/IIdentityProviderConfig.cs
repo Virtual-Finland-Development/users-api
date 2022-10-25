@@ -2,7 +2,7 @@ namespace VirtualFinland.UserAPI.Helpers;
 
 public interface IIdentityProviderConfig
 {
-    void LoadOpenIDConfigUrl();
+    void LoadOpenIdConfigUrl();
     public string? JwksOptionsUrl { get; }
     public string? Issuer { get; }
 }

@@ -76,11 +76,6 @@ public class UserController : ControllerBase
     {
         var searchProfile = await _mediator.Send(new GetSearchProfile.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer, profileId));
 
-        if (searchProfile is null)
-        {
-            return NotFound();
-        }
-
         return Ok(searchProfile);
     }
     

@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
@@ -52,7 +51,7 @@ public class CreateSearchProfile
         {
             var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
 
-            var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
+            var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
             {
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
                 UserId = authenticatedUser.Id,
@@ -69,7 +68,7 @@ public class CreateSearchProfile
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }
         
-        async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
         {
             try
             {

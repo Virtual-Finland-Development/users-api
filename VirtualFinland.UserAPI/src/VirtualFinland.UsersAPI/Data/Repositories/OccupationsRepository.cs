@@ -5,15 +5,13 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class OccupationsRepository : IOccupationsRepository
 {
-    private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _codeSetsSuomiFiUrl;
     private List<OccupationRoot.Occupation>? _occupations;
     public OccupationsRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
-        _configuration = configuration;
         _httpClientFactory = httpClientFactory;
-        _codeSetsSuomiFiUrl = _configuration["ExternalSources:CodeSetsSuomiFiURL"];
+        _codeSetsSuomiFiUrl = configuration["ExternalSources:CodeSetsSuomiFiURL"];
         GetAllOccupations().Wait();
     }
     

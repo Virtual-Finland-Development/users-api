@@ -28,7 +28,7 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
         _configuration = configuration;
     }
 
-    public async void LoadOpenIDConfigUrl()
+    public async void LoadOpenIdConfigUrl()
     {
         var testBedConfigUrl = _configuration["Testbed:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();

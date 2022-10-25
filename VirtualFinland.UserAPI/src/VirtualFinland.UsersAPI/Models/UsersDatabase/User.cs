@@ -1,7 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VirtualFinland.UserAPI.Models;
+namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class User : IEntity
 {

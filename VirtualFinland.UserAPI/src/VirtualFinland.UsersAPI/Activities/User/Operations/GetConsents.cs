@@ -1,4 +1,3 @@
-using System.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -36,9 +35,6 @@ public class GetConsents
         public async Task<Consents> Handle(Query request, CancellationToken cancellationToken)
         {
             var dbUser = await GetAuthenticatedUser(request, cancellationToken);
-
-            // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
-            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User consents retrieved for user: {DbUserId}", dbUser.Id);
             
             return new Consents(
@@ -47,7 +43,7 @@ public class GetConsents
                 );
         }
         
-        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
             try
             {

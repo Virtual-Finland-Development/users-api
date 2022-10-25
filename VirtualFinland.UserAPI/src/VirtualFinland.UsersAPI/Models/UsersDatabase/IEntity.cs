@@ -1,6 +1,4 @@
-using System;
-
-namespace VirtualFinland.UserAPI.Models;
+namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public interface IEntity
 {

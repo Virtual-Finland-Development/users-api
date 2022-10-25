@@ -1,4 +1,3 @@
-using System.Globalization;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 

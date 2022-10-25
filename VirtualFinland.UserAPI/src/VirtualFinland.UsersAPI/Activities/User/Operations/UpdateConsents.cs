@@ -2,11 +2,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Models;
-using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -41,24 +38,18 @@ public class UpdateConsents
         {
             private readonly UsersDbContext _usersDbContext;
             private readonly ILogger<Handler> _logger;
-            private readonly ILanguageRepository _languageRepository;
-            private readonly ICountriesRepository _countriesRepository;
-            private readonly IOccupationsRepository _occupationsRepository;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository)
+            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
             {
                 _usersDbContext = usersDbContext;
                 _logger = logger;
-                _languageRepository = languageRepository;
-                _countriesRepository = countriesRepository;
-                _occupationsRepository = occupationsRepository;
             }
 
             public async Task<Consents> Handle(Command request, CancellationToken cancellationToken)
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
                 
-                await VerifyUserUpdate(dbUser, request);
+                VerifyUserUpdate(dbUser, request);
                 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
@@ -69,14 +60,14 @@ public class UpdateConsents
                     dbUser.JobsDataConsent);
             }
 
-            async private Task VerifyUserUpdate(Models.User dbUser, Command request)
+            private void VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
             {
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
             }
 
-            async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+            async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
             {
                 try
                 {

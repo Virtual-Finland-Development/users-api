@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -12,8 +13,8 @@ public class UpdateSearchProfile
     public class Command : IRequest
     {
         public Guid Id { get; }
-        public List<string> JobTitles { get; }
-        public List<string> Regions { get; }
+        public List<string>? JobTitles { get; }
+        public List<string>? Regions { get; }
         
         public string? Name { get; }
         [SwaggerIgnore]
@@ -48,6 +49,7 @@ public class UpdateSearchProfile
         }
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
+            await VerifyAuthenticatedUser(request, cancellationToken);
             var dbSearchProfile = await _usersDbContext.SearchProfiles.SingleAsync(o => o.Id == request.Id, cancellationToken);
             dbSearchProfile.Name = request.Name ?? dbSearchProfile.Name;
             dbSearchProfile.JobTitles = request.JobTitles ?? dbSearchProfile.JobTitles;
@@ -59,6 +61,20 @@ public class UpdateSearchProfile
             _logger.LogDebug("Search Profile updated: {RequestId}", request.Id);
             
             return Unit.Value;
+        }
+        
+        async private Task VerifyAuthenticatedUser(Command request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+                await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+            }
+            catch (InvalidOperationException e)
+            {
+                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
+                throw new NotAuthorizedException("User could not be identified as a valid user.", e);
+            }
         }
     }
 

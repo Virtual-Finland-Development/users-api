@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using VirtualFinland.UserAPI.Models.Repositories;
 
@@ -6,16 +5,14 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class CountriesRepository : ICountriesRepository
 {
-    private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _iso3166CountriesURL;
+    private readonly string _iso3166CountriesUrl;
     private List<Country>? _countries;
 
     public CountriesRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
-        _configuration = configuration;
         _httpClientFactory = httpClientFactory;
-        _iso3166CountriesURL = _configuration["ExternalSources:ISO3166CountriesURL"];
+        _iso3166CountriesUrl = configuration["ExternalSources:ISO3166CountriesURL"];
         GetAllCountries().Wait();
     }
     public async Task<List<Country>> GetAllCountries()
@@ -26,7 +23,7 @@ public class CountriesRepository : ICountriesRepository
         }
         
         var httpClient = _httpClientFactory.CreateClient();
-        var httpResponseMessage = await httpClient.GetAsync(_iso3166CountriesURL);
+        var httpResponseMessage = await httpClient.GetAsync(_iso3166CountriesUrl);
 
         if (httpResponseMessage.IsSuccessStatusCode)
         {

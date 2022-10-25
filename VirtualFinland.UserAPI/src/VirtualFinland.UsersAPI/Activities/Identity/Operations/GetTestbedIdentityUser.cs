@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Identity.Operations;
 
@@ -43,7 +44,7 @@ public class GetTestbedIdentityUser
             // Create a new system user is no one found based on given authentication information
             if (externalIdentity is null)
             {
-                var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.User()
+                var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.UsersDatabase.User()
                 { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
                 var newExternalIdentity = await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()

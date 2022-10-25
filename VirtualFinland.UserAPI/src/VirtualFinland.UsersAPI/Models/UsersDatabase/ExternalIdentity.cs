@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VirtualFinland.UserAPI.Models;
+namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class ExternalIdentity : IEntity
 {

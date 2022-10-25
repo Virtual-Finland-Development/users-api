@@ -52,7 +52,7 @@ public class GetSearchProfile
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }
 
-        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
             try
             {

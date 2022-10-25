@@ -1,10 +1,7 @@
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
@@ -68,7 +65,7 @@ var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? 
 builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
 
 IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
-identityProviderConfig.LoadOpenIDConfigUrl();
+identityProviderConfig.LoadOpenIdConfigUrl();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>

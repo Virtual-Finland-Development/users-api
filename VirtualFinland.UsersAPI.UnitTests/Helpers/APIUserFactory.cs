@@ -2,6 +2,7 @@ using Bogus;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -11,7 +12,7 @@ public class APIUserFactory
     {
         var faker = new Faker("en");
         
-        var dbUser = dbContext.Users.Add(new UserAPI.Models.User()
+        var dbUser = dbContext.Users.Add(new User()
         {
             Address = faker.Address.FullAddress(),
             Created = DateTime.UtcNow,

@@ -1,4 +1,3 @@
-using System.Globalization;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
@@ -31,6 +30,6 @@ public class GetAllLanguages
     }
 
     [SwaggerSchema(Title = "LanguageCodeSetResponse")]
-    public record Language(string id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISOLanguageName, string ThreeLetterISOLanguageName);
+    public record Language(string Id, string DisplayName, string EnglishName, string NativeName, string TwoLetterISOLanguageName, string ThreeLetterISOLanguageName);
 }
 

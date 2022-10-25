@@ -36,15 +36,15 @@ public class ErrorHandlerMiddleware
 
             switch(error)
             {
-                case NotAuthorizedException e:
+                case NotAuthorizedException:
                     // custom application error
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     break;
-                case NotFoundException e:
+                case NotFoundException:
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     break;
-                case BadRequestException e:
+                case BadRequestException:
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     break;
@@ -54,7 +54,7 @@ public class ErrorHandlerMiddleware
                     break;
             }
 
-            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Type = "https://tools.ietf.org/html/rfc7231", Title = error?.Message, Detail = error?.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
+            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Type = "https://tools.ietf.org/html/rfc7231", Title = error.Message, Detail = error.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true

@@ -43,7 +43,7 @@ public class GetSearchProfiles
             return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions, o.Created, o.Modified)).ToListAsync(cancellationToken);
         }
 
-        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
             try
             {

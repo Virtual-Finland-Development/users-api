@@ -1,4 +1,3 @@
-using System.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -60,7 +59,7 @@ public class GetUser
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
         }
         
-        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
             try
             {

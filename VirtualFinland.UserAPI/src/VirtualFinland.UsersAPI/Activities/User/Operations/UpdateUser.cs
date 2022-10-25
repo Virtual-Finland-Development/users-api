@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UserAPI.Models.Repositories;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -116,9 +117,9 @@ public class UpdateUser
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
 
-            async private Task VerifyUserUpdate(Models.User dbUser, Command request)
+            async private Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
             {
-                var countries = await _countriesRepository.GetAllCountries() ?? new List<Country>();
+                var countries = await _countriesRepository.GetAllCountries();
                 if (!string.IsNullOrEmpty(request.NationalityCode) && !countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
                 {
                     throw new BadRequestException("NationalityCode does not match any known ISO 3166 country code.");
@@ -135,7 +136,7 @@ public class UpdateUser
                     throw new BadRequestException("OccupationCode does not match any known occupation code.");
                 }
 
-                var languages = await _languageRepository.GetAllLanguages() ?? new List<Language>();
+                var languages = await _languageRepository.GetAllLanguages();
                 if (!string.IsNullOrEmpty(request.NativeLanguageCode) && !languages.Any(o => o.Id == request.NativeLanguageCode))
                 {
                     throw new BadRequestException("NativeLanguageCode does not match any known language code");
@@ -163,11 +164,11 @@ public class UpdateUser
             /// <param name="dbUser"></param>
             /// <param name="request"></param>
             /// <param name="cancellationToken"></param>
-            async private Task<SearchProfile> VerifyUserSearchProfile(Models.SearchProfile? dbUserDefaultSearchProfile, Models.User dbUser, Command request, CancellationToken cancellationToken)
+            async private Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
             {
                 if (dbUserDefaultSearchProfile is null)
                 {
-                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
+                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new SearchProfile()
                     {
                         Name = request.JobTitles?.FirstOrDefault(),
                         UserId = dbUser.Id,
@@ -192,7 +193,7 @@ public class UpdateUser
                 }
             }
             
-            async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+            async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
             {
                 try
                 {
