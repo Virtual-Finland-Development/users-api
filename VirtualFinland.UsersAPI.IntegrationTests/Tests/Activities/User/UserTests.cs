@@ -98,7 +98,7 @@ public class UserTests : APITestBase
         var act = () => handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<BadRequestException>().WithMessage("*NationalityCode*");
     }
     
     [Fact]
@@ -119,7 +119,7 @@ public class UserTests : APITestBase
         var act = () => handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<BadRequestException>().WithMessage("*CountryOfBirthCode*");
     }
     
     [Fact]
@@ -140,7 +140,7 @@ public class UserTests : APITestBase
         var act = () => handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<BadRequestException>().WithMessage("*NativeLanguageCode*");
     }
     
     [Fact]
@@ -161,6 +161,48 @@ public class UserTests : APITestBase
         var act = () => handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await act.Should().ThrowAsync<BadRequestException>();
+        await act.Should().ThrowAsync<BadRequestException>().WithMessage("*OccupationCode*");
+    }
+    
+    [Fact]
+    public async void Should_FailUpdateUserAuthenticationCheckAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
+        command.SetAuth("false user id", "false issuer");
+        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        
+        // Act
+        var act = () => handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotAuthorizedException>().WithMessage("*User could not be identified as a valid user*");
+    }
+    
+    [Fact]
+    public async void Should_FailGetUserAuthenticationCheckAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<GetUser.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var countryRepository = new MockContriesRepository();
+        var languageRepository = new LanguageRepository();
+        
+        var query = new GetUser.Query("false user id", "false issuer");
+
+        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
+        
+        // Act
+        var act = () => handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotAuthorizedException>().WithMessage("*User could not be identified as a valid user*");;
     }
 }
