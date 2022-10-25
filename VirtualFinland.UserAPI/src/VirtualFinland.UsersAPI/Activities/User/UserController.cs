@@ -40,6 +40,26 @@ public class UserController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
     
+    [HttpGet("/user/consents")]
+    [SwaggerOperation(Summary = "Get the current logged user personal consents", Description = "Returns the current logged user own personal consents.")]
+    [ProducesResponseType(typeof(GetConsents.Consents),StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    public async Task<IActionResult> GetUserConsents()
+    {
+        return Ok(await _mediator.Send(new GetConsents.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer)));
+    }
+    
+    [HttpPatch("/user/consents")]
+    [SwaggerOperation(Summary = "Updates the current logged user consents", Description = "Updates the current logged user own personal consents.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
+    public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
+    {
+        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
+        return Ok(await _mediator.Send(command));
+    }
+    
     [HttpGet("/user/search-profiles/")]
     [ProducesResponseType(typeof(IList<GetSearchProfiles.SearchProfile>),StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(Microsoft.AspNetCore.Mvc.ProblemDetails))]
