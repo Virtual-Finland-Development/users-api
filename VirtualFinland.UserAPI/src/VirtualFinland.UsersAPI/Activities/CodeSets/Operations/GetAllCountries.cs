@@ -26,21 +26,9 @@ public class GetAllCountries
             var countries = await _countriesRepository.GetAllCountries();
             return countries.Select(o => new Country(o.IsoCode, o?.Name?.Common, o?.Name?.Common, String.Empty, o?.IsoCode, o?.IsoCodeTßhreeLetter)).ToList();
         }
-        
-        public static List<RegionInfo> GetCountriesByIso3166()
-        {
-            List<RegionInfo> countries = new List<RegionInfo>();
-            foreach (CultureInfo culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
-            {
-                RegionInfo country = new RegionInfo(culture.Name);
-                if (countries.Count(p => p.Name == country.Name) == 0)
-                    countries.Add(country);
-            }
-            return countries.OrderBy(p => p.EnglishName).ToList();
-        }
     }
 
     [SwaggerSchema(Title = "CountryCodeSetResponse")]
-    public record Country(string? id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISOCode, string? ThreeLetterISOCode);
+    public record Country(string? id, string? DisplayName, string? EnglishName, string? NativeName, string? TwoLetterISORegionName, string? ThreeLetterISORegionName);
 }
 

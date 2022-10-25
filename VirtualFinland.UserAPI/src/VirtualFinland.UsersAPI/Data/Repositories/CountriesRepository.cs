@@ -16,7 +16,7 @@ public class CountriesRepository : ICountriesRepository
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
         _iso3166CountriesURL = _configuration["ExternalSources:ISO3166CountriesURL"];
-
+        GetAllCountries().Wait();
     }
     public async Task<List<Country>> GetAllCountries()
     {
