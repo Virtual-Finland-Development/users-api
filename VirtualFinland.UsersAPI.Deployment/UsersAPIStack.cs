@@ -8,6 +8,7 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
+using Pulumi.Aws.S3;
 using Pulumi.Command.Local;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common;
@@ -42,6 +43,8 @@ public class UsersApiStack : Stack
         var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
 
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds);
+
+        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags);
 
         var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
         {
@@ -101,7 +104,10 @@ public class UsersApiStack : Stack
                     {
                         "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
                             .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}")
-                    }
+                    },
+                    {
+                        "CODE_SET_COUNTRIES", Output.Format($"{countriesCodeSetConfigs}")
+                    },
                 }
             },
             Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip"),
@@ -169,6 +175,25 @@ public class UsersApiStack : Stack
         return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
 
+    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags)
+    {
+        var bucket = new Bucket("vf-users-api", new BucketArgs()
+        {
+            Tags = tags,
+        });
+        
+        var bucketObject = new BucketObject("countries.json", new BucketObjectArgs
+        {
+            Bucket = bucket.BucketName,
+            Source = new FileAsset("./Resources/countries.json"),
+            Tags = tags,
+            ContentType = "application/json",
+            Acl = "public-read"
+        });
+
+        return CountriesCodeSetUrl = Output.Format($"https://{bucket.BucketDomainName}/countries.json");
+    }
+
     [Output] public Output<string> Url { get; set; }
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
@@ -177,4 +202,6 @@ public class UsersApiStack : Stack
 
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
+    
+    [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
 }
