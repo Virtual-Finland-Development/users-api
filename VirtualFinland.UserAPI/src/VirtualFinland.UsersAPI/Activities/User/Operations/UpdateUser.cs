@@ -205,7 +205,7 @@ public static class UpdateUser
             /// <param name="dbUser"></param>
             /// <param name="request"></param>
             /// <param name="cancellationToken"></param>
-            async private Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
+            private async Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
             {
                 if (dbUserDefaultSearchProfile is null)
                 {
@@ -234,7 +234,7 @@ public static class UpdateUser
                 }
             }
             
-            async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+            private async Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
             {
                 try
                 {
