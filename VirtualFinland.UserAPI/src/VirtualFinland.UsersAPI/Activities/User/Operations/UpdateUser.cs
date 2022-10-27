@@ -118,27 +118,15 @@ public static class UpdateUser
 
             private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
             {
-                var countries = await _countriesRepository.GetAllCountries();
-                if (!string.IsNullOrEmpty(request.NationalityCode) && !countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
-                {
-                    throw new BadRequestException("NationalityCode does not match any known ISO 3166 country code.");
-                }
                 
-                if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
-                {
-                    throw new BadRequestException("CountryOfBirthCode does not match any known ISO 3166 country code.");
-                }
-                
-                var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
-                if (!string.IsNullOrEmpty(request.OccupationCode) && !occupations.Any(o => o.Id == request.OccupationCode))
-                {
-                    throw new BadRequestException("OccupationCode does not match any known occupation code.");
-                }
+                var validationErrors = new System.Collections.Generic.List<ValidationErrorDetail>();
+                validationErrors.AddRange(await ValidateCountryCodesLogic(request));
+                validationErrors.AddRange(await ValidateLanguageCodesLogic(request));
+                validationErrors.AddRange(await ValidateOccupationCodesLogic(request));
 
-                var languages = await _languageRepository.GetAllLanguages();
-                if (!string.IsNullOrEmpty(request.NativeLanguageCode) && !languages.Any(o => o.Id == request.NativeLanguageCode))
+                if (validationErrors.Count > 0)
                 {
-                    throw new BadRequestException("NativeLanguageCode does not match any known language code");
+                    throw new BadRequestException("One or more validation errors occurred.", validationErrors);
                 }
 
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
@@ -154,6 +142,60 @@ public static class UpdateUser
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
 
+            }
+
+            private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)
+            {
+                var validationErrors = new List<ValidationErrorDetail>();
+
+                if(!string.IsNullOrEmpty(request.OccupationCode))
+                {
+                    var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
+                    if (!occupations.Any(o => o.Id == request.OccupationCode))
+                    {
+                        validationErrors.Add(new ValidationErrorDetail(nameof(request.OccupationCode), $"{nameof(request.OccupationCode)} does not match any known occupation code."));
+                    }    
+                }
+                
+                return validationErrors;
+            }
+
+            private async Task<List<ValidationErrorDetail>>  ValidateLanguageCodesLogic(Command request)
+            {
+                var validationErrors = new List<ValidationErrorDetail>();
+
+                if (!string.IsNullOrEmpty(request.NativeLanguageCode))
+                {
+                    var languages = await _languageRepository.GetAllLanguages();
+                    if (!languages.Any(o => o.Id == request.NativeLanguageCode))
+                    {
+                        validationErrors.Add(new ValidationErrorDetail(nameof(request.NativeLanguageCode), $"{nameof(request.NativeLanguageCode)} does not match any known language code."));
+                    }    
+                }
+
+                return validationErrors;
+            }
+            private async Task<List<ValidationErrorDetail>>  ValidateCountryCodesLogic(Command request)
+            {
+                var countries = new List<Country>();
+                var validationErrors = new List<ValidationErrorDetail>();
+
+                if (!string.IsNullOrEmpty(request.NationalityCode) || !string.IsNullOrEmpty(request.CountryOfBirthCode))
+                {
+                    countries = await _countriesRepository.GetAllCountries();
+                }
+                
+                if (!countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
+                {
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.NationalityCode), $"{nameof(request.NationalityCode)} does not match any known ISO 3166 country code."));
+                }
+                
+                if (!countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
+                {
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.CountryOfBirthCode), $"{nameof(request.CountryOfBirthCode)} does not match any known ISO 3166 country code."));
+                }
+
+                return validationErrors;
             }
 
             /// <summary>

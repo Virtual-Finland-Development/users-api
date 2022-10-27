@@ -33,6 +33,7 @@ public class ErrorHandlerMiddleware
             _logger.LogError(error, "Request processing failure!");
             var response = context.Response;
             response.ContentType = "application/json";
+            Dictionary<string, List<string>> validationErrorDetails = new Dictionary<string, List<string>>();
 
             switch(error)
             {
@@ -44,9 +45,11 @@ public class ErrorHandlerMiddleware
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     break;
-                case BadRequestException:
+                case BadRequestException e:
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                    e.ValidationErrors?.ForEach( o => validationErrorDetails.Add(o.Field, new List<string>() { o.Message }));
                     break;
                 default:
                     // unhandled error
@@ -54,7 +57,25 @@ public class ErrorHandlerMiddleware
                     break;
             }
 
-            var result = JsonSerializer.Serialize(new ErrorResponseDetails() { Type = "https://tools.ietf.org/html/rfc7231", Title = error.Message, Detail = error.Message, Status = response.StatusCode, Instance = response.HttpContext.Request.Path}, new JsonSerializerOptions
+            ErrorResponseDetails errorResponseDetails = validationErrorDetails?.Count == 0 ? new ErrorResponseDetails()
+            {
+                Type = "https://tools.ietf.org/html/rfc7231",
+                Title = error.Message,
+                Detail = error.Message,
+                Status = response.StatusCode,
+                Instance = response.HttpContext.Request.Path
+            } : new ErrorResponseDetails()
+            {
+                Type = "https://tools.ietf.org/html/rfc7231",
+                Title = error.Message,
+                Detail = error.Message,
+                Status = response.StatusCode,
+                Instance = response.HttpContext.Request.Path,
+                Extensions = { new KeyValuePair<string, object?>( "errors", validationErrorDetails)  }
+            };
+
+            var result = JsonSerializer.Serialize(errorResponseDetails,
+                new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true
