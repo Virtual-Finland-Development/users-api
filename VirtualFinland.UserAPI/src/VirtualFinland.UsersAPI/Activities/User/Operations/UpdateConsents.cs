@@ -17,9 +17,8 @@ public static class UpdateConsents
         public bool? ImmigrationDataConsent { get; set; }
 
         [SwaggerIgnore]
-        public string? ClaimsUserId { get; set; }
-        [SwaggerIgnore]
-        public string? ClaimsIssuer { get; set; }
+        public Guid? UserId { get; private set; }
+
 
         public Command(bool? jobsDataConsent, bool? immigrationDataConsent)
         {
@@ -27,10 +26,9 @@ public static class UpdateConsents
             this.ImmigrationDataConsent = immigrationDataConsent;
         }
 
-        public void SetAuth(string? claimsUserId, string? claimsIssuer)
+        public void SetAuth(Guid? userDbId)
         {
-            this.ClaimsIssuer = claimsIssuer;
-            this.ClaimsUserId = claimsUserId;
+            this.UserId = userDbId;
         }
     }
 
@@ -47,7 +45,7 @@ public static class UpdateConsents
 
             public async Task<Consents> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await GetAuthenticatedUser(request, cancellationToken);
+                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
                 
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
@@ -61,22 +59,6 @@ public static class UpdateConsents
                     dbUser.ImmigrationDataConsent,
                     dbUser.JobsDataConsent);
             }
-
-            private async Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
-            {
-                try
-                {
-                    var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
-                    return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
-                }
-                catch (InvalidOperationException e)
-                {
-                    _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
-                    throw new NotAuthorizedException("User could not be identified as a valid user.", e);
-                }
-            }
-            
-            
         }
     [SwaggerSchema(Title = "UpdateConsentsResponse")]
     public record Consents(

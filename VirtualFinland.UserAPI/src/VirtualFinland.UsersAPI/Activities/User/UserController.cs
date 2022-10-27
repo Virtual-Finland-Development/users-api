@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Middleware;
 
 namespace VirtualFinland.UserAPI.Activities.User;
 
@@ -11,7 +13,7 @@ namespace VirtualFinland.UserAPI.Activities.User;
 [Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
-public class UserController : ControllerBase
+public class UserController : ApiControllerBase
 {
     private readonly IMediator _mediator;
 
@@ -27,7 +29,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        return Ok(await _mediator.Send(new GetUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer)));
+        return Ok(await _mediator.Send(new GetUser.Query(this.UserDdId)));
     }
     
     [HttpPatch("/user")]
@@ -36,7 +38,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
+        command.SetAuth(this.UserDdId);
         return Ok(await _mediator.Send(command));
     }
     
@@ -46,7 +48,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserConsents()
     {
-        return Ok(await _mediator.Send(new GetConsents.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer)));
+        return Ok(await _mediator.Send(new GetConsents.Query(this.UserDdId)));
     }
     
     [HttpPatch("/user/consents")]
@@ -55,7 +57,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
     {
-        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
+        command.SetAuth(this.UserDdId);
         return Ok(await _mediator.Send(command));
     }
     
@@ -64,7 +66,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
-        return await _mediator.Send(new GetSearchProfiles.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
+        return await _mediator.Send(new GetSearchProfiles.Query(this.UserDdId));
     }
     
     [HttpGet("/user/search-profiles/{profileId}")]
@@ -73,7 +75,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
     {
-        var searchProfile = await _mediator.Send(new GetSearchProfile.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer, profileId));
+        var searchProfile = await _mediator.Send(new GetSearchProfile.Query(this.UserDdId, profileId));
 
         return Ok(searchProfile);
     }
@@ -83,7 +85,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command, Guid profileId)
     {
-        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
+        command.SetAuth(this.UserDdId);
         await _mediator.Send(command);
         return NoContent();
     }
@@ -93,7 +95,7 @@ public class UserController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.Command command)
     {
-        command.SetAuth(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer);
+        command.SetAuth(this.UserDdId);
         var searchProfile = await _mediator.Send(command);
 
         return CreatedAtAction(nameof(GetUserSearchProfile), new

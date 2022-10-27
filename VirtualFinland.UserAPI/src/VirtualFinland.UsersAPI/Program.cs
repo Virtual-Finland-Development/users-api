@@ -103,9 +103,12 @@ if (app.Environment.IsDevelopment())
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
+// Notice: Keep the IdentityProviderAuthMiddleware between the authentication and authorizations middlewares.
+app.UseIdentityProviderAuthMiddleware();
 app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
@@ -116,7 +119,6 @@ using (var scope = app.Services.CreateScope())
     await dataContext.Database.MigrateAsync();
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.MapGet("/", () => "App is up!");
 
