@@ -4,7 +4,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
-using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
