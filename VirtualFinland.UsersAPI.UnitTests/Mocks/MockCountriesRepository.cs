@@ -16,8 +16,8 @@ public class MockContriesRepository : ICountriesRepository
                 {
                     Common = "Finland"
                 },
-                IsoCode = "FI",
-                IsoCodeThreeLetter = "FIN"
+                ISOCode = "FI",
+                ISOCodeThreeLetter = "FIN"
             },
             new Country()
             {
@@ -25,8 +25,8 @@ public class MockContriesRepository : ICountriesRepository
                 {
                     Common = "Laos"
                 },
-                IsoCode = "LA",
-                IsoCodeThreeLetter = "LAO"
+                ISOCode = "LA",
+                ISOCodeThreeLetter = "LAO"
             },
             new Country()
             {
@@ -34,8 +34,8 @@ public class MockContriesRepository : ICountriesRepository
                 {
                     Common = "Tuvalu"
                 },
-                IsoCode = "TV",
-                IsoCodeThreeLetter = "TUV"
+                ISOCode = "TV",
+                ISOCodeThreeLetter = "TUV"
             },
         };
         

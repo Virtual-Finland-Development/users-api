@@ -185,12 +185,12 @@ public static class UpdateUser
                     countries = await _countriesRepository.GetAllCountries();
                 }
                 
-                if (!countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))
+                if (!countries.Any(o => o.ISOCode == request.NationalityCode?.ToUpper()))
                 {
                     validationErrors.Add(new ValidationErrorDetail(nameof(request.NationalityCode), $"{nameof(request.NationalityCode)} does not match any known ISO 3166 country code."));
                 }
                 
-                if (!countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
+                if (!countries.Any(o => o.ISOCode == request.CountryOfBirthCode?.ToUpper()))
                 {
                     validationErrors.Add(new ValidationErrorDetail(nameof(request.CountryOfBirthCode), $"{nameof(request.CountryOfBirthCode)} does not match any known ISO 3166 country code."));
                 }
