@@ -116,7 +116,7 @@ public static class UpdateUser
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
 
-            async private Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
+            private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
             {
                 var countries = await _countriesRepository.GetAllCountries();
                 if (!string.IsNullOrEmpty(request.NationalityCode) && !countries.Any(o => o.IsoCode == request.NationalityCode?.ToUpper()))

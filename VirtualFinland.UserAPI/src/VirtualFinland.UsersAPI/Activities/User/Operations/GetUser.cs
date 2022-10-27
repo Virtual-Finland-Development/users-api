@@ -59,7 +59,7 @@ public static class GetUser
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
         }
         
-        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
+        private async Task<Models.UsersDatabase.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
         {
             try
             {

@@ -49,7 +49,9 @@ public static class UpdateConsents
             {
                 var dbUser = await GetAuthenticatedUser(request, cancellationToken);
                 
-                VerifyUserUpdate(dbUser, request);
+                dbUser.Modified = DateTime.UtcNow;
+                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
+                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
                 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 
@@ -60,14 +62,7 @@ public static class UpdateConsents
                     dbUser.JobsDataConsent);
             }
 
-            private void VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
-            {
-                dbUser.Modified = DateTime.UtcNow;
-                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
-                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-            }
-
-            async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+            private async Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
             {
                 try
                 {

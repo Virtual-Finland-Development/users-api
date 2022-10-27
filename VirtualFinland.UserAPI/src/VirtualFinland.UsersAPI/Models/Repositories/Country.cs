@@ -20,5 +20,5 @@ public class Country
     public string? IsoCode { get; set; }
     
     [JsonPropertyName("cca3")]
-    public string? IsoCodeTßhreeLetter { get; set; }
+    public string? IsoCodeThreeLetter { get; set; }
 }

@@ -63,7 +63,7 @@ public static class UpdateSearchProfile
             return Unit.Value;
         }
         
-        async private Task VerifyAuthenticatedUser(Command request, CancellationToken cancellationToken)
+        private async Task VerifyAuthenticatedUser(Command request, CancellationToken cancellationToken)
         {
             try
             {

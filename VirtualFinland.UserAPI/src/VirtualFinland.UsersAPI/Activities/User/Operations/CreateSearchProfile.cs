@@ -68,7 +68,7 @@ public static class CreateSearchProfile
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }
         
-        async private Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
+        private async Task<Models.UsersDatabase.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
         {
             try
             {
