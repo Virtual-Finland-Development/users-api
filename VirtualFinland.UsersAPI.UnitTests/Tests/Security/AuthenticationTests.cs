@@ -38,10 +38,10 @@ public class AuthenticationTests : APITestBase
         
         var identityProviderAuthMiddleware = new IdentityProviderAuthMiddleware(mockRequestDelegate.Object);
 
-        // Assert
+        // Act
         var act = () => identityProviderAuthMiddleware.InvokeAsync(mockHttpContext.Object, _dbContext, mockLogger.Object);
 
-        // Act
+        // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
     }
 }
