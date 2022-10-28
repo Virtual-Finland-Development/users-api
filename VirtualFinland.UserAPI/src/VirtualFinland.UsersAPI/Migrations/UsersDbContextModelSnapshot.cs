@@ -98,7 +98,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly>("DateOfBirth")
+                    b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("FirstName")
@@ -125,7 +125,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("NativeLanguageISOCode")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProfessionISCOCode")
+                    b.Property<string>("OccupationISCOCode")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

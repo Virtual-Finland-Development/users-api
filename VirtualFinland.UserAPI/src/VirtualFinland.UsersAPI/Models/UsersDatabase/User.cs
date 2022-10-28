@@ -1,7 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VirtualFinland.UserAPI.Models;
+namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class User : IEntity
 {
@@ -21,7 +20,7 @@ public class User : IEntity
     
     public bool JobsDataConsent { get; set; }
     
-    public DateOnly DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     
     public string? Gender { get; set; }
 
@@ -29,7 +28,7 @@ public class User : IEntity
 
     public string? NativeLanguageISOCode { get; set; }
 
-    public string? ProfessionISCOCode { get; set; }
+    public string? OccupationISCOCode { get; set; }
 
     public string? NationalityISOCode { get; set; }
 }

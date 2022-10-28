@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Deployment", "VirtualFinland.UsersAPI.Deployment\VirtualFinland.UsersAPI.Deployment.csproj", "{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.IntegrationTests", "VirtualFinland.UsersAPI.IntegrationTests\VirtualFinland.UsersAPI.IntegrationTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.UnitTests", "VirtualFinland.UsersAPI.UnitTests\VirtualFinland.UsersAPI.UnitTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

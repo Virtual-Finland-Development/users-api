@@ -2,6 +2,7 @@ using Bogus;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -11,7 +12,7 @@ public class APIUserFactory
     {
         var faker = new Faker("en");
         
-        var dbUser = dbContext.Users.Add(new UserAPI.Models.User()
+        var dbUser = dbContext.Users.Add(new User()
         {
             Address = faker.Address.FullAddress(),
             Created = DateTime.UtcNow,
@@ -19,7 +20,13 @@ public class APIUserFactory
             FirstName = faker.Person.FirstName,
             LastName = faker.Person.LastName,
             JobsDataConsent = true,
-            ImmigrationDataConsent = false
+            ImmigrationDataConsent = false,
+            NationalityISOCode = "FR",
+            CountryOfBirthISOCode = "FR",
+            OccupationISCOCode = "4012",
+            NativeLanguageISOCode = "FR",
+            Gender = "1",
+            DateOfBirth = DateOnly.FromDateTime(DateTime.Now)
         });
 
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()

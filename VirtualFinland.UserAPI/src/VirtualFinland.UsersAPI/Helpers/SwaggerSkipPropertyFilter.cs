@@ -8,7 +8,7 @@ public class SwaggerSkipPropertyFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
-        if (schema?.Properties == null)
+        if (schema.Properties == null)
         {
             return;
         }

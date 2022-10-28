@@ -14,7 +14,8 @@
 					"script": {
 						"exec": [
 							"var jsonData = pm.response.json();",
-							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID verify: \" + jsonData.id)"
 						],
 						"type": "text/javascript"
 					}
@@ -55,7 +56,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"{{userId}}\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo\"\n    ]\n}"
+					"raw": "{\n    \"id\": \"\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\", \"3\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo2\"\n    ],\n    \"immigrationDataConsent\": true,\n    \"jobsDataConsent\": false,\n    \"countryOfBirthCode\": \"FI\",\n    \"nativeLanguageCode\": \"en-GB\",\n    \"occupationCode\": \"92\",\n    \"nationalityCode\": \"FI\",\n    \"gender\": \"1\",\n    \"dateOfBirth\": \"2022-12-01T00:00:00\"\n}"
 				},
 				"url": {
 					"raw": "{{host}}/user",
@@ -70,6 +71,39 @@
 			"response": []
 		},
 		{
+			"name": "Update Current User Consents",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"immigrationDataConsent\": true,\n    \"jobsDataConsent\": true\n}"
+				},
+				"url": {
+					"raw": "{{host}}/user/consents",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"consents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get Current User",
 			"event": [
 				{
@@ -77,7 +111,8 @@
 					"script": {
 						"exec": [
 							"var jsonData = pm.response.json();",
-							"pm.collectionVariables.set(\"userId\", jsonData.id);"
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
 						],
 						"type": "text/javascript"
 					}
@@ -104,6 +139,48 @@
 					],
 					"path": [
 						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Current User Consents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/user/consents",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"consents"
 					]
 				}
 			},
@@ -281,6 +358,258 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get All Country Code ISO-3166",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/countries",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"countries"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get A Single Country ISO-3166",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/countries/PE",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"countries",
+						"PE"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All  Languages",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/languages",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"languages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All  Genders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/genders",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"genders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All ISCO Occupations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/occupations",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"occupations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get A Single  ISCO Occupation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"userId\", jsonData.id);",
+							"console.log(\"userID GET user: \" + jsonData.id)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/code-sets/occupations/32",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"occupations",
+						"32"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
@@ -288,7 +617,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJZV1JwUUhSbGMzUmxjaTUwWlhOMFltVmtMbVpwIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi50ZXN0YmVkLmZpIiwiaWF0IjoxNjY1MDU3MDQ0LCJleHAiOjE2NjUxNDM0NDQsImF1ZCI6Imh0dHBzOi8vbG9naW4udGVzdGJlZC5maSJ9.lfiF7-u_NbP-zZJyV-rIFkdgcnigmghFP_iboUb1NMVJfLKrx24klz1JnxdVH8l4NSpkj2btydXiHII_wF5wQC553AqdO7GsQZ2g50qhDmy7L_3g4U06ioTt9_4smJ0E1HzbWQHitHoJwerA7F8dHqb0wUhQvG2r34rug0zC3xo4XUdaPMD1YSk84BW7VVtpbeL_c1xiRUQRc8s4Gd8kuokGj8bp3afskfd4v0E4HZEdO8ht8rBccowj5R61hoCR1tspHD_BUQDNOG4h9hSSJu4s7bzVVWVg7IfKtMAQ_4afe-Q-xSMPV5NuMNcVL7V3iTKNpyduSoBlw3wGmDXgCn4lCu8MT88H35GezHLa1gLn4t1jeFsIPoohZBtEg1SRcgpHdgivkat8yHtjH_pELlePw2I6d_k9Sdq_MiKjfPFl7iILAYTmcv794a7sFO0Y6dFOIYNk_RpMdBjgYsDaCLfijeEgn3rRGe7D1LIY3zbAi2Pk1iCpI0MxglgahkaHlnM_sUf_PlPDbeAa0R6I5JOLsaa3oMvsbtklhs42BYpOrszOlkBKp8mGN2SuTU_AaC-Mgr4x82m3dmjVOz8UyT0bdE9RDJr9rlywdLSgz1b_eQGLmiLf_hZoQZwJqy8mTED5M393fFASY61BD_fBdISa8nwEmdD1MUXuERdZsNQ",
+				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJZV1JwUUhSbGMzUmxjaTUwWlhOMFltVmtMbVpwIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi50ZXN0YmVkLmZpIiwiaWF0IjoxNjY2Njk0NjEzLCJleHAiOjE2NjY3ODEwMTMsImF1ZCI6Imh0dHBzOi8vbG9naW4udGVzdGJlZC5maSJ9.bWMjx-_pQFdRe8DfwVYZFywWT45aErMS6Dbe15wrASAXJQkrtRjcRzd97Rvixvoe4j4O_If9jDrvUb_VrKEjGA5nznR9m76rMssBWdfAsugrGcstk2GHM58ZyjlEz2EuNnsR5-nll7bHTW0e8ihWIXBelmDqpmGASixDL8-m_h-MXgE00R5tgfqjqy4QwaQ5vdrXbeQwEpvJAvyHDWlW60sHOMAksnszMum3R5TsriCTNHfaPRe3z2DlqJGDp8pbpj-iVHprxVY5h9n-X7ieS6mevr7Vk3ILK0jhC2YsWyShwa4nv2uaXk30eZDqtyKdolB1RG7Ga2K0c1zwK6AeJPBgxdZchm3QKAE5WwcIXyW0M0yUyKm6FbyV1XCVQ_w2Wabw39_cNDOo4gtdXpBM84Lk-zKIYWpbV8E0hUFsrH4soXQIf0EiDJ3UpUsffMlQgOH4QuoxjGQVufyEWKEyL7uu6PCyWxlsjvmxc96faVc_XBBRS7GBjPNFKF1Rsmj6UJg5P-bjhBhSnnDOhghBv3rDAfFCXQ--RBdvjEoLb7uVq4Vh6fGQIha3Vf63xJxAvgehGndMKtx_1tzASb5y4aRutJPqhX302_53YqUQy5uyS0ERZ2-48ZPkxRTbjydPJHXbzJEyYfGc9tVvldZbOLJvGY-xe1lFV8Tu6odXCDA",
 				"type": "string"
 			}
 		]

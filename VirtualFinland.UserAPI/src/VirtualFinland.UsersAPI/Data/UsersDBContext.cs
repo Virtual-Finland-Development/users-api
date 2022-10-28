@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using VirtualFinland.UserAPI.Models;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
 
 public class UsersDbContext : DbContext
 {
-    private readonly bool _isTesting = false;
+    private readonly bool _isTesting;
     public UsersDbContext(DbContextOptions options) : base(options)
     {
     }

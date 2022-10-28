@@ -2,24 +2,24 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class UpdateSearchProfile
+public static class UpdateSearchProfile
 {
     [SwaggerSchema(Title = "UpdateSearchProfileRequest")]
     public class Command : IRequest
     {
         public Guid Id { get; }
-        public List<string> JobTitles { get; }
-        public List<string> Regions { get; }
+        public List<string>? JobTitles { get; }
+        public List<string>? Regions { get; }
         
         public string? Name { get; }
+        
         [SwaggerIgnore]
-        public string? ClaimsUserId { get; set; }
-        [SwaggerIgnore]
-        public string? ClaimsIssuer { get; set; }
+        public Guid? UserId { get; private set; }
 
         public Command(Guid id, List<string> jobTitles, List<string> regions, string name)
         {
@@ -28,11 +28,10 @@ public class UpdateSearchProfile
             this.Regions = regions;
             this.Name = name;
         }
-
-        public void SetAuth(string? claimsUserId, string? claimsIssuer)
+        
+        public void SetAuth(Guid? userDbId)
         {
-            this.ClaimsIssuer = claimsIssuer;
-            this.ClaimsUserId = claimsUserId;
+            this.UserId = userDbId;
         }
     }
 

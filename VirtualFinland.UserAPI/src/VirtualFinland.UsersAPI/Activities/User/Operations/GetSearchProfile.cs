@@ -3,23 +3,24 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class GetSearchProfile
+public static class GetSearchProfile
 {
     [SwaggerSchema(Title = "SearchProfileRequest")]
     public class Query : IRequest<SearchProfile>
     {
-        public string? ClaimsUserId { get; }
-        public string? ClaimsIssuer { get; }
+        [SwaggerIgnore]
+        public Guid? UserId { get; }
+
         
         public Guid ProfileId { get; }
 
-        public Query(string? claimsUserId, string? claimsIssuer, Guid profileId)
+        public Query(Guid? userId, Guid profileId)
         {
-            this.ClaimsUserId = claimsUserId;
-            this.ClaimsIssuer = claimsIssuer;
+            this.UserId = userId;
             this.ProfileId = profileId;
         }
     }
@@ -37,9 +38,9 @@ public class GetSearchProfile
 
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
         {
-            var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
+            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
 
-            var userSearchProfile = await _usersDbContext.SearchProfiles.SingleOrDefaultAsync(o => o.UserId == authenticatedUser.Id && o.Id == request.ProfileId, cancellationToken);
+            var userSearchProfile = await _usersDbContext.SearchProfiles.SingleOrDefaultAsync(o => o.UserId == dbUser.Id && o.Id == request.ProfileId, cancellationToken);
 
             if (userSearchProfile is null)
             {
@@ -50,20 +51,6 @@ public class GetSearchProfile
             _logger.LogDebug("Search Profile Retrieved: {SearchProfileId}", userSearchProfile.Id);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
-        }
-
-        async private Task<Models.User> GetAuthenticatedUser(Query request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
-                return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
-            }
-            catch (InvalidOperationException e)
-            {
-                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
-                throw new NotAuthorizedException("User could not be identified as a valid user.", e);
-            }
         }
     }
     

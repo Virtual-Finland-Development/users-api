@@ -1,5 +1,4 @@
 using MediatR;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
@@ -8,7 +7,7 @@ using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
-public class CreateSearchProfile
+public static class CreateSearchProfile
 {
     [SwaggerSchema(Title = "CreateSearchProfileRequest")]
     public class Command : IRequest<SearchProfile>
@@ -19,9 +18,7 @@ public class CreateSearchProfile
         public string? Name { get; }
         
         [SwaggerIgnore]
-        public string? ClaimsUserId { get; set;  }
-        [SwaggerIgnore]
-        public string? ClaimsIssuer { get; set; }
+        public Guid? UserId { get; private set; }
 
         public Command(List<string> jobTitles, List<string> regions, string? name)
         {
@@ -29,11 +26,10 @@ public class CreateSearchProfile
             this.Regions = regions;
             this.Name = name;
         }
-
-        public void SetAuth(string? claimsUserId, string? claimsIssuer)
+        
+        public void SetAuth(Guid? userDbId)
         {
-            this.ClaimsIssuer = claimsIssuer;
-            this.ClaimsUserId = claimsUserId;
+            this.UserId = userDbId;
         }
     }
 
@@ -50,12 +46,12 @@ public class CreateSearchProfile
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
-            var authenticatedUser = await GetAuthenticatedUser(request, cancellationToken);
-
-            var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.SearchProfile()
+            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            
+            var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
             {
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
-                UserId = authenticatedUser.Id,
+                UserId = dbUser.Id,
                 JobTitles = request.JobTitles,
                 Regions = request.Regions,
                 Created = DateTime.UtcNow,
@@ -67,20 +63,6 @@ public class CreateSearchProfile
             _logger.LogDebug("Search Profile Created: {SearchProfileId}", dbNewSearchProfile.Entity.Id);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
-        }
-        
-        async private Task<Models.User> GetAuthenticatedUser(Command request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
-                return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
-            }
-            catch (InvalidOperationException e)
-            {
-                _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
-                throw new NotAuthorizedException("User could not be identified as a valid user.", e);
-            }
         }
     }
     [SwaggerSchema(Title = "CreateSearchProfileResponse")]
