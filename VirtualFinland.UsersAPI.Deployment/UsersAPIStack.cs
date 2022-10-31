@@ -133,7 +133,7 @@ public class UsersApiStack : Stack
             }
         });
 
-        Url = functionUrl.FunctionUrlResult;
+        this.ApplicationUrl = functionUrl.FunctionUrlResult;
         VpcId = Output.Format($"{stackReferenceVpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
@@ -194,7 +194,7 @@ public class UsersApiStack : Stack
         return CountriesCodeSetUrl = Output.Format($"https://{bucket.BucketDomainName}/countries.json");
     }
 
-    [Output] public Output<string> Url { get; set; }
+    [Output] public Output<string> ApplicationUrl { get; set; }
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
 
