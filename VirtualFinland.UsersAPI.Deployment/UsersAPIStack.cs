@@ -22,11 +22,9 @@ public class UsersApiStack : Stack
     public UsersApiStack()
     {
         var config = new Config();
-        bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
-
+        bool isProductionEnvironment = Pulumi.Deployment.Instance.StackName == Environments.Prod.ToString().ToLowerInvariant();
         
-        
-        var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{config.Require("environment")}");
+        var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{Pulumi.Deployment.Instance.StackName}");
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
