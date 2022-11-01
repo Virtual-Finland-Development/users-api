@@ -21,11 +21,21 @@ jobs:
       - name: Build UserAPI Lamda Package
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: dotnet lambda package
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Application_Artifact
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          retention-days: 2
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        with:
+          name: my-artifact
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with: 
