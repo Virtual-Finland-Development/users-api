@@ -39,7 +39,7 @@ jobs:
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
   deploy:
-    name: Deploy to AWS
+    name: Deploy to AWS $STACK_ENVIRONMENT environment
     environment: $STACK_ENVIRONMENT
     runs-on: ubuntu-latest
     needs: build-and-test
