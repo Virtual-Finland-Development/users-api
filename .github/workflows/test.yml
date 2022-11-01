@@ -30,7 +30,7 @@ jobs:
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-test
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v3
