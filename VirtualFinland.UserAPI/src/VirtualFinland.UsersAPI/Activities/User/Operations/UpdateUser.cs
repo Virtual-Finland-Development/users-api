@@ -117,10 +117,10 @@ public static class UpdateUser
                     dbUser.Modified,
                     dbUser.ImmigrationDataConsent,
                     dbUser.JobsDataConsent,
-                    dbUser.CountryOfBirthISOCode,
-                    dbUser.NativeLanguageISOCode,
-                    dbUser.OccupationISCOCode,
-                    dbUser.NationalityISOCode,
+                    dbUser.CountryOfBirthCode,
+                    dbUser.NativeLanguageCode,
+                    dbUser.OccupationCode,
+                    dbUser.CitizenshipCode,
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
@@ -144,10 +144,10 @@ public static class UpdateUser
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.NationalityISOCode = request.CitizenshipCode ?? dbUser.NationalityISOCode;
-                dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode; 
-                dbUser.OccupationISCOCode = request.OccupationCode ?? dbUser.OccupationISCOCode;
-                dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
+                dbUser.CitizenshipCode = request.CitizenshipCode ?? dbUser.CitizenshipCode;
+                dbUser.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.NativeLanguageCode; 
+                dbUser.OccupationCode = request.OccupationCode ?? dbUser.OccupationCode;
+                dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
 

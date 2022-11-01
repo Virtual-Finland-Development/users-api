@@ -49,10 +49,10 @@ public static class GetUser
                 dbUser.Modified,
                 dbUser.ImmigrationDataConsent,
                 dbUser.JobsDataConsent,
-                dbUser.CountryOfBirthISOCode,
-                dbUser.NativeLanguageISOCode,
-                dbUser.OccupationISCOCode,
-                dbUser.NationalityISOCode,
+                dbUser.CountryOfBirthCode,
+                dbUser.NativeLanguageCode,
+                dbUser.OccupationCode,
+                dbUser.CitizenshipCode,
                 dbUser.Gender,
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
         }
