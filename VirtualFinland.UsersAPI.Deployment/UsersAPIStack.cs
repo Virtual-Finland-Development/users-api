@@ -108,7 +108,7 @@ public class UsersApiStack : Stack
                     },
                 }
             },
-            Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip"),
+            Code = new FileArchive("../VirtualFinland.UsersAPI.zip"),
             VpcConfig = functionVpcArgs
         });
 
