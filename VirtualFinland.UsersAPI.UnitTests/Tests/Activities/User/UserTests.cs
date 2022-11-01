@@ -39,7 +39,7 @@ public class UserTests : APITestBase
                 o.LastName == dbEntities.user.LastName &&
                 o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
                 o.JobsDataConsent == dbEntities.user.JobsDataConsent &&
-                o.NationalityCode == dbEntities.user.NationalityISOCode &&
+                o.CitizenshipCode == dbEntities.user.NationalityISOCode &&
                 o.OccupationCode == dbEntities.user.OccupationISCOCode &&
                 o.NativeLanguageCode == dbEntities.user.NationalityISOCode &&
                 o.CountryOfBirthCode == dbEntities.user.CountryOfBirthISOCode &&
@@ -73,7 +73,7 @@ public class UserTests : APITestBase
                 o.LastName == command.LastName &&
                 o.ImmigrationDataConsent == command.ImmigrationDataConsent &&
                 o.JobsDataConsent == command.JobsDataConsent &&
-                o.NationalityCode == command.NationalityCode &&
+                o.CitizenshipCode == command.CitizenshipCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
                 o.OccupationCode == command.OccupationCode &&
                 o.CountryOfBirthCode == command.CountryOfBirthCode &&

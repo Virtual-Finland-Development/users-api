@@ -30,7 +30,7 @@ public static class UpdateUser
 
         public string? OccupationCode { get; set; }
 
-        public string? NationalityCode { get; set; }
+        public string? CitizenshipCode { get; set; }
 
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
@@ -50,7 +50,7 @@ public static class UpdateUser
             string? countryOfBirthCode,
             string? nativeLanguageCode,
             string? occupationCode,
-            string? nationalityCode,
+            string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
             string? gender,
@@ -64,7 +64,7 @@ public static class UpdateUser
             this.CountryOfBirthCode = countryOfBirthCode;
             this.NativeLanguageCode = nativeLanguageCode;
             this.OccupationCode = occupationCode;
-            this.NationalityCode = nationalityCode;
+            this.CitizenshipCode = citizenshipCode;
             this.JobTitles = jobTitles;
             this.Regions = regions;
             this.Gender = gender;
@@ -144,7 +144,7 @@ public static class UpdateUser
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.NationalityISOCode = request.NationalityCode ?? dbUser.NationalityISOCode;
+                dbUser.NationalityISOCode = request.CitizenshipCode ?? dbUser.NationalityISOCode;
                 dbUser.NativeLanguageISOCode = request.NativeLanguageCode ?? dbUser.NativeLanguageISOCode; 
                 dbUser.OccupationISCOCode = request.OccupationCode ?? dbUser.OccupationISCOCode;
                 dbUser.CountryOfBirthISOCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthISOCode;
@@ -189,12 +189,12 @@ public static class UpdateUser
                 var countries = new List<Country>();
                 var validationErrors = new List<ValidationErrorDetail>();
 
-                if (!string.IsNullOrEmpty(request.NationalityCode) || !string.IsNullOrEmpty(request.CountryOfBirthCode))
+                if (!string.IsNullOrEmpty(request.CitizenshipCode) || !string.IsNullOrEmpty(request.CountryOfBirthCode))
                 {
                     countries = await _countriesRepository.GetAllCountries();
-                    if (!string.IsNullOrEmpty(request.NationalityCode) && !countries.Any(o => o.ISOCode == request.NationalityCode?.ToUpper()))
+                    if (!string.IsNullOrEmpty(request.CitizenshipCode) && !countries.Any(o => o.ISOCode == request.CitizenshipCode?.ToUpper()))
                     {
-                        validationErrors.Add(new ValidationErrorDetail(nameof(request.NationalityCode), $"{nameof(request.NationalityCode)} does not match any known ISO 3166 country code."));
+                        validationErrors.Add(new ValidationErrorDetail(nameof(request.CitizenshipCode), $"{nameof(request.CitizenshipCode)} does not match any known ISO 3166 country code."));
                     }
                 
                     if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.ISOCode == request.CountryOfBirthCode?.ToUpper()))
@@ -256,7 +256,7 @@ public static class UpdateUser
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
-        string? NationalityCode,
+        string? CitizenshipCode,
         string? Gender,
         DateTime? DateOfBirth);
 }

@@ -72,7 +72,7 @@ public static class GetUser
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
-        string? NationalityCode,
+        string? CitizenshipCode,
         string? Gender,
         DateTime? DateOfBirth);
     
