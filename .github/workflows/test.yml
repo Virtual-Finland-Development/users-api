@@ -16,6 +16,11 @@ jobs:
           dotnet-version: 6.0.x
       - name: Pulumi Users API Integration Tests
         run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
+      - name: Install AWS Dotnet CLI Lambda Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
+      - name: Build UserAPI Lamda Package
+        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
+        run: dotnet lambda package
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
