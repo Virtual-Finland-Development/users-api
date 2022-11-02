@@ -5,8 +5,6 @@ on:
     branches:
       - main
 
-#env:
-  #APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip # This env variable is used to tell Pulumi where the lambda app artifact is stored in Github artifacts
 env:
   PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
 
@@ -42,10 +40,10 @@ jobs:
         with:
           name: Application_Artifact
           path: ./
-      - name: set pulumi stack
+      - name: Select Pulumi Stack
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi stack select dev
-      - name: Set artifact path
+      - name: Set Artifact Path
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
       - name: Configure AWS credentials
@@ -59,6 +57,5 @@ jobs:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
-          run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
 
         
