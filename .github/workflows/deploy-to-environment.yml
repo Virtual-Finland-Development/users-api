@@ -14,6 +14,7 @@ on:
 
 env:
   STACK_ENVIRONMENT: ${{ github.event.inputs.env }}
+  APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip
 
 jobs:
   build-and-test:

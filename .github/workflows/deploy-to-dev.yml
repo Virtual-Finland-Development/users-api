@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip
+
 jobs:
   build-and-test:
     name: Build and test
