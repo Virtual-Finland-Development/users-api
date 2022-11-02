@@ -33,10 +33,10 @@ public class UsersApiStack : Stack
         InputMap<string> tags = new InputMap<string>()
         {
             {
-                "Environment", Pulumi.Deployment.Instance.StackName
+                "vfd:stack", Pulumi.Deployment.Instance.StackName
             },
             {
-                "Project", Pulumi.Deployment.Instance.ProjectName
+                "vfd:project", Pulumi.Deployment.Instance.ProjectName
             }
         };
 
