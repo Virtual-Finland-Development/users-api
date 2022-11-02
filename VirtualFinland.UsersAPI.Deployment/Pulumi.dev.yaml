@@ -3,6 +3,4 @@ config:
   VirtualFinland.UsersAPI.Deployment:dbName: usersapidb
   VirtualFinland.UsersAPI.Deployment:name: users-api
   VirtualFinland.UsersAPI.Deployment:infraStackReferenceName: infrastructure
-  VirtualFinland.UsersAPI.Deployment:artifactAppPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
-
 

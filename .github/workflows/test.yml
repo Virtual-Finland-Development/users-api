@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip
+
 jobs:
   build-and-test:
     name: Build and test
@@ -48,6 +51,5 @@ jobs:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
-          config-map: '{VirtualFinland.UsersAPI.Deployment:artifactAppPath: {value: ../VirtualFinland.UsersAPI.zip, secret: false}}'
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}

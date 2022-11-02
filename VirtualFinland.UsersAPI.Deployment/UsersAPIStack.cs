@@ -87,6 +87,9 @@ public class UsersApiStack : Stack
             SubnetIds = privateSubnetIds
         };
 
+        var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? "../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip";
+        Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
+
         var lambdaFunction = new Function($"vf-UsersAPI-{environment}", new FunctionArgs
         {
             Role = role.Arn,
@@ -109,7 +112,7 @@ public class UsersApiStack : Stack
                     },
                 }
             },
-            Code = new FileArchive($"{config.RequireSecret("artifactAppPath")}"),
+            Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs
         });
 
