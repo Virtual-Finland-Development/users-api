@@ -1,6 +1,6 @@
 config:
-  VirtualFinland.UsersAPI.Deployment:dbAdmin: apiDbAdmin
-  VirtualFinland.UsersAPI.Deployment:dbName: usersapidb
-  VirtualFinland.UsersAPI.Deployment:name: users-api
-  VirtualFinland.UsersAPI.Deployment:infraStackReferenceName: infrastructure
+  users-api:dbAdmin: apiDbAdmin
+  users-api:dbName: usersapidb
+  users-api:name: users-api
+  users-api:infraStackReferenceName: infrastructure
 
