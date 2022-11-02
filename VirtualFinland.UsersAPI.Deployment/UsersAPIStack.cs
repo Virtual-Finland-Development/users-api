@@ -23,7 +23,8 @@ public class UsersApiStack : Stack
     {
         var config = new Config();
         bool isProductionEnvironment = Pulumi.Deployment.Instance.StackName == Environments.Prod.ToString().ToLowerInvariant();
-        
+        var environment = Pulumi.Deployment.Instance.StackName;
+
         var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{Pulumi.Deployment.Instance.StackName}");
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
@@ -34,17 +35,17 @@ public class UsersApiStack : Stack
                 "Environment", Pulumi.Deployment.Instance.StackName
             },
             {
-                "Project", config.Require("name")
+                "Project", Pulumi.Deployment.Instance.ProjectName
             }
         };
 
         var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
 
-        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds);
+        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment);
 
-        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags);
+        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags, environment);
 
-        var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
+        var role = new Role($"vf-UsersAPI-LambdaRole-{environment}", new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -69,7 +70,7 @@ public class UsersApiStack : Stack
             })
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment("vf-UsersAPI-LambdaRoleAttachment", new RolePolicyAttachmentArgs
+        var rolePolicyAttachment = new RolePolicyAttachment($"vf-UsersAPI-LambdaRoleAttachment-{environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
@@ -86,7 +87,7 @@ public class UsersApiStack : Stack
             SubnetIds = privateSubnetIds
         };
 
-        var lambdaFunction = new Function("vf-UsersAPI", new FunctionArgs
+        var lambdaFunction = new Function($"vf-UsersAPI-{environment}", new FunctionArgs
         {
             Role = role.Arn,
             Runtime = "dotnet6",
@@ -108,17 +109,17 @@ public class UsersApiStack : Stack
                     },
                 }
             },
-            Code = new FileArchive("../VirtualFinland.UsersAPI.zip"),
+            Code = new FileArchive($"{config.RequireSecret("artifactAppPath")}"),
             VpcConfig = functionVpcArgs
         });
 
-        var functionUrl = new FunctionUrl("vf-UsersAPI-FunctionUrl", new FunctionUrlArgs
+        var functionUrl = new FunctionUrl($"vf-UsersAPI-FunctionUrl-{environment}", new FunctionUrlArgs
         {
             FunctionName = lambdaFunction.Arn,
             AuthorizationType = "NONE"
         });
 
-        var localCommand = new Command("vf-UsersAPI-AddPermissions", new CommandArgs
+        var localCommand = new Command($"vf-UsersAPI-AddPermissions-{environment}", new CommandArgs
         {
             Create = Output.Format(
                 $"aws lambda add-permission --function-name {lambdaFunction.Arn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")
@@ -137,7 +138,7 @@ public class UsersApiStack : Stack
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds)
+    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
@@ -153,7 +154,7 @@ public class UsersApiStack : Stack
             OverrideSpecial = "_%@",
         });
 
-        var rdsPostGreInstance = new Instance("postgres-db", new InstanceArgs()
+        var rdsPostGreInstance = new Instance($"postgres-db-{environment}", new InstanceArgs()
         {
             Engine = "postgres",
             InstanceClass = "db.t3.micro",
@@ -173,9 +174,9 @@ public class UsersApiStack : Stack
         return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
 
-    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags)
+    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags, string environment)
     {
-        var bucket = new Bucket("vf-users-api", new BucketArgs()
+        var bucket = new Bucket($"vf-users-api-{environment}", new BucketArgs()
         {
             Tags = tags,
         });
