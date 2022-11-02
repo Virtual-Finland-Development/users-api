@@ -43,6 +43,7 @@ jobs:
           name: Application_Artifact
           path: ./
       - name: set pulumi stack
+        working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi stack select dev
       - name: Set artifact path
         working-directory: ./VirtualFinland.UsersAPI.Deployment
