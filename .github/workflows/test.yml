@@ -42,6 +42,8 @@ jobs:
         with:
           name: Application_Artifact
           path: ./
+      - name: set pulumi stack
+        run: pulumi stack select dev
       - name: Set artifact path
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
@@ -56,4 +58,6 @@ jobs:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
+          run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
+
         
