@@ -45,7 +45,7 @@ jobs:
       - name: Select Pulumi Stack
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/dev
-      - name: Set Artifact Path
+      - name: Set Pulumi Artifact Path
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
       - name: Configure AWS credentials
