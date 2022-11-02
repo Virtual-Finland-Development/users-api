@@ -64,13 +64,16 @@ builder.Services.AddSwaggerGen(config =>
 var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
 
-IIdentityProviderConfig identityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
-identityProviderConfig.LoadOpenIdConfigUrl();
+IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
+testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
+IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
+sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
+
+builder.Services.AddAuthentication("TestBedScheme")
+    .AddJwtBearer("TestBedScheme", c =>
     { 
-      c.SetJwksOptions(new JwkOptions(identityProviderConfig.JwksOptionsUrl));
+      c.SetJwksOptions(new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
 
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
@@ -79,8 +82,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           ValidateAudience = false,
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = identityProviderConfig.Issuer
-      }; });
+          ValidIssuer = testBedIdentityProviderConfig.Issuer
+      }; }).AddJwtBearer("SinunaScheme", c =>
+    { 
+    c.SetJwksOptions(new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
+
+    c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateActor = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = sinunaIdentityProviderConfig.Issuer
+    }; });
 
 builder.Services.AddAuthorization();
 builder.Services.AddResponseCaching();
