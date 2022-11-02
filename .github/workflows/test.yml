@@ -48,6 +48,6 @@ jobs:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/dev
-          config-map: 'artifactAppPath: ../VirtualFinland.UsersAPI.zip'
+          config-map: '{artifactAppPath: {value: ../VirtualFinland.UsersAPI.zip, secret: false}}'
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
