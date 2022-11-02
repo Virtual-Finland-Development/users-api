@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip
+  APPLICATION_ARTIFACT_PATH: ../VirtualFinland.UsersAPI.zip # This env variable is used to tell Pulumi where the lambda app artifact is stored in Github artifacts
 
 jobs:
   build-and-test:
