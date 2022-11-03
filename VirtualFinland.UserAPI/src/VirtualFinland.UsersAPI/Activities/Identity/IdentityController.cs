@@ -28,7 +28,7 @@ public class IdentityController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        var user = await _mediator.Send(new GetTestbedIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
+        var user = await _mediator.Send(new GetTestbedIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst("nameID")?.Value, this.User.Claims.First().Issuer));
 
         return Ok(user);
     }

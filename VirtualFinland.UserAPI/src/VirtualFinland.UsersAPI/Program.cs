@@ -84,18 +84,6 @@ builder.Services.AddAuthentication("DefaultTestBedBearerScheme")
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
       }; 
-    }).AddJwtBearer("SinunaBearerScheme", c =>
-    { c.SetJwksOptions(new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
-
-      c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-      {
-          ValidateIssuer = true,
-          ValidateActor = false,
-          ValidateAudience = false,
-          ValidateLifetime = true,
-          ValidateIssuerSigningKey = true,
-          ValidIssuer = sinunaIdentityProviderConfig.Issuer
-      }; 
     }).AddJwtBearer("SuomiFiBearerScheme", c =>
     { c.SetJwksOptions(new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
 
@@ -114,7 +102,7 @@ builder.Services.AddAuthorization(options =>
 {
 var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
     "DefaultTestBedBearerScheme",
-    "SinunaBearerScheme", "SuomiFiBearerScheme");
+    "SuomiFiBearerScheme");
 defaultAuthorizationPolicyBuilder =
     defaultAuthorizationPolicyBuilder.RequireAuthenticatedUser();
 options.DefaultPolicy = defaultAuthorizationPolicyBuilder.Build();
