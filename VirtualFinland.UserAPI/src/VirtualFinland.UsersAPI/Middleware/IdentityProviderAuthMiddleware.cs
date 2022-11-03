@@ -22,7 +22,7 @@ public class IdentityProviderAuthMiddleware
     {
         if (context.Request.Path.Value != null && context.User.Identity != null && context.User.Identity.IsAuthenticated && !context.Request.Path.Value.Contains("/identity"))
         {
-            var dbUser = await VerifyAndGetAuthenticatedUser(context.User.Claims.First().Issuer, context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, usersDbContext, logger);
+            var dbUser = await VerifyAndGetAuthenticatedUser(context.User.Claims.First().Issuer, context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.User.FindFirst("nameID")?.Value, usersDbContext, logger);
             context.Items[IdentityProviderAuthMiddleware.ContextItemUserDbIdName] = dbUser.Id;
         }
 

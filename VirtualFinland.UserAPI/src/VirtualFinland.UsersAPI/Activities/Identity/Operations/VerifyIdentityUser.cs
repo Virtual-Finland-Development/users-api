@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Identity.Operations;
 
-public static class GetTestbedIdentityUser
+public static class VerifyIdentityUser
 {
     [SwaggerSchema(Title = "TestbedIdentityUserRequest")]
     public class Query : IRequest<User>
@@ -21,12 +21,12 @@ public static class GetTestbedIdentityUser
         }
     }
 
-    public class GetTestbedIdentityUserHandler : IRequestHandler<Query, User>
+    public class Handler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<GetTestbedIdentityUserHandler> _logger;
+        private readonly ILogger<Handler> _logger;
 
-        public GetTestbedIdentityUserHandler(UsersDbContext usersDbContext, ILogger<GetTestbedIdentityUserHandler> logger)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;
