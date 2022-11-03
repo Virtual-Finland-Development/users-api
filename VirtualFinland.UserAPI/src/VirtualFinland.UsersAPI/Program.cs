@@ -75,7 +75,7 @@ IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProvide
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
 builder.Services.AddAuthentication()
-    .AddJwtBearer("DefaultTestBedBearerScheme", c =>
+    .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
     { JwksExtension.SetJwksOptions(c, new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
 
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -86,7 +86,7 @@ builder.Services.AddAuthentication()
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
-      }; }).AddJwtBearer("SuomiFiBearerScheme", c =>
+      }; }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
@@ -97,7 +97,7 @@ builder.Services.AddAuthentication()
           ValidateIssuerSigningKey = true,
           ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
       }; })
-    .AddJwtBearer("SinunaScheme", c =>
+    .AddJwtBearer(Constants.Security.SinunaScheme, c =>
     { 
     JwksExtension.SetJwksOptions(c, new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
 
@@ -115,9 +115,9 @@ builder.Services.AddAuthorization(options =>
 {
 
 var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
-    "DefaultTestBedBearerScheme", "SuomiFiBearerScheme", "SinunaScheme").Build();
+    Constants.Security.TestBedBearerScheme, Constants.Security.SuomiFiBearerScheme, Constants.Security.SinunaScheme).Build();
 
-options.AddPolicy( "AllPolicies", allAuthorizationPolicyBuilder);
+options.AddPolicy( Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
 options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 
@@ -147,8 +147,6 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
-// Notice: Keep the IdentityProviderAuthMiddleware between the authentication and authorizations middlewares.
-//app.UseIdentityProviderAuthMiddleware();
 app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();

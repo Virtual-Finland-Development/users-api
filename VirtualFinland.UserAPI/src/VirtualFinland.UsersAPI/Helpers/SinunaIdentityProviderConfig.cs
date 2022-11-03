@@ -34,7 +34,7 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
     {
         var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:106.0) Gecko/20100101 Firefox/106.0");
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
         var httpResponse = await httpClient.GetAsync(configUrl);
         
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)

@@ -14,7 +14,7 @@ public static class JwksExtension
             Timeout = options.BackchannelTimeout,
             MaxResponseContentBufferSize = 10485760
         };
-        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:106.0) Gecko/20100101 Firefox/106.0");
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
 
         options.ConfigurationManager = (IConfigurationManager<OpenIdConnectConfiguration>) new ConfigurationManager<OpenIdConnectConfiguration>(jwkOptions.JwksUri, (IConfigurationRetriever<OpenIdConnectConfiguration>) new JwksRetriever(), (IDocumentRetriever) new HttpDocumentRetriever(httpClient)
         {

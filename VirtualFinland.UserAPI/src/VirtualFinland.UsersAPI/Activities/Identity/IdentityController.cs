@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.Identity;
 
@@ -28,7 +29,7 @@ public class IdentityController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> VerifyIdentityUser()
     {
-        var user = await _mediator.Send(new VerifyIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst("nameID")?.Value, this.User.Claims.First().Issuer));
+        var user = await _mediator.Send(new VerifyIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst(Constants.Web.ClaimNameId)?.Value, this.User.Claims.First().Issuer));
 
         return Ok(user);
     }

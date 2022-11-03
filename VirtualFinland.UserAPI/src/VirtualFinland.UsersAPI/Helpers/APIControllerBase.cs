@@ -25,20 +25,15 @@ public class ApiControllerBase : ControllerBase
     {
             if (this._currentUserId == null)
             {
-                await this.VerifyUser();
+                if (this.Request.Path.Value != null && this.User != null && this.User.Identity != null && this.User.Identity.IsAuthenticated && !this.Request.Path.Value.Contains("/identity"))
+                {
+                    var dbUser = await VerifyAndGetAuthenticatedUser(this.User.Claims.First().Issuer, this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst(Constants.Web.ClaimNameId)?.Value);
+                    _currentUserId = dbUser?.Id;
+                }
             }
             return (Guid?)this._currentUserId;
-}
-
-    protected async Task VerifyUser()
-    {
-        if (this.Request.Path.Value != null && this.User != null && this.User.Identity != null && this.User.Identity.IsAuthenticated && !this.Request.Path.Value.Contains("/identity"))
-        {
-            var dbUser = await VerifyAndGetAuthenticatedUser(this.User.Claims.First().Issuer, this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst("nameID")?.Value);
-            _currentUserId = dbUser.Id;
-        }
     }
-    
+
     /// <summary>
     /// This function tries to verify that the given token has a valid created user account in the user DB. If not the client should "verify" the token through the IdentityController
     /// </summary>
@@ -46,7 +41,7 @@ public class ApiControllerBase : ControllerBase
     /// <param name="claimsUserId"></param>
     /// <returns></returns>
     /// <exception cref="NotAuthorizedException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
-    private async Task<Models.UsersDatabase.User> VerifyAndGetAuthenticatedUser(string? claimsIssuer, string? claimsUserId)
+    private async Task<Models.UsersDatabase.User?> VerifyAndGetAuthenticatedUser(string? claimsIssuer, string? claimsUserId)
     {
         try
         {
