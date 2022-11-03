@@ -1,7 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using MediatR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
@@ -11,6 +9,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Middleware;
+using JwksExtension = VirtualFinland.UserAPI.Helpers.JwksExtension;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +20,10 @@ builder.Services.AddControllers();
 // package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("", c =>
+{
+
+ });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
@@ -74,7 +76,7 @@ sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
 builder.Services.AddAuthentication()
     .AddJwtBearer("DefaultTestBedBearerScheme", c =>
-    { c.SetJwksOptions(new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
+    { JwksExtension.SetJwksOptions(c, new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
 
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
@@ -85,7 +87,7 @@ builder.Services.AddAuthentication()
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
       }; }).AddJwtBearer("SuomiFiBearerScheme", c =>
-    { c.SetJwksOptions(new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
+    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
           ValidateIssuer = true,
@@ -94,21 +96,27 @@ builder.Services.AddAuthentication()
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
           ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
-      }; });
+      }; })
+    .AddJwtBearer("SinunaScheme", c =>
+    { 
+    JwksExtension.SetJwksOptions(c, new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
+
+    c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateActor = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = sinunaIdentityProviderConfig.Issuer
+    }; });
 
 builder.Services.AddAuthorization(options =>
 {
-var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
-    "DefaultTestBedBearerScheme").Build();
-
-var suomiFiAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
-    "SuomiFiBearerScheme").Build();
 
 var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
-    "DefaultTestBedBearerScheme", "SuomiFiBearerScheme").Build();
+    "DefaultTestBedBearerScheme", "SuomiFiBearerScheme", "SinunaScheme").Build();
 
-options.AddPolicy("DefaultTestBedBearerPolicy", defaultAuthorizationPolicyBuilder);
-options.AddPolicy("SuomiFiBearerPloicy", suomiFiAuthorizationPolicyBuilder);
 options.AddPolicy( "AllPolicies", allAuthorizationPolicyBuilder);
 options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
