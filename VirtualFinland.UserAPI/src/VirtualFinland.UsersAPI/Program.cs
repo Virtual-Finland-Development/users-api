@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,7 +72,7 @@ testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
-builder.Services.AddAuthentication("DefaultTestBedBearerScheme")
+builder.Services.AddAuthentication()
     .AddJwtBearer("DefaultTestBedBearerScheme", c =>
     { c.SetJwksOptions(new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
 
@@ -83,10 +84,8 @@ builder.Services.AddAuthentication("DefaultTestBedBearerScheme")
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
-      }; 
-    }).AddJwtBearer("SuomiFiBearerScheme", c =>
+      }; }).AddJwtBearer("SuomiFiBearerScheme", c =>
     { c.SetJwksOptions(new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
-
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
           ValidateIssuer = true,
@@ -95,17 +94,23 @@ builder.Services.AddAuthentication("DefaultTestBedBearerScheme")
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
           ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
-      }; 
-    });
+      }; });
 
 builder.Services.AddAuthorization(options =>
 {
-var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
-    "DefaultTestBedBearerScheme",
-    "SuomiFiBearerScheme");
-defaultAuthorizationPolicyBuilder =
-    defaultAuthorizationPolicyBuilder.RequireAuthenticatedUser();
-options.DefaultPolicy = defaultAuthorizationPolicyBuilder.Build();
+var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
+    "DefaultTestBedBearerScheme").Build();
+
+var suomiFiAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
+    "SuomiFiBearerScheme").Build();
+
+var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
+    "DefaultTestBedBearerScheme", "SuomiFiBearerScheme").Build();
+
+options.AddPolicy("DefaultTestBedBearerPolicy", defaultAuthorizationPolicyBuilder);
+options.AddPolicy("SuomiFiBearerPloicy", suomiFiAuthorizationPolicyBuilder);
+options.AddPolicy( "AllPolicies", allAuthorizationPolicyBuilder);
+options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 
 
@@ -135,7 +140,7 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 // Notice: Keep the IdentityProviderAuthMiddleware between the authentication and authorizations middlewares.
-app.UseIdentityProviderAuthMiddleware();
+//app.UseIdentityProviderAuthMiddleware();
 app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();

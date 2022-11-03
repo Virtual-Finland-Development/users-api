@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
+using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Middleware;
 
@@ -15,12 +16,11 @@ namespace VirtualFinland.UserAPI.Activities.User;
 [Produces("application/json")]
 public class UserController : ApiControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public UserController(IMediator mediator)
+    public UserController(UsersDbContext usersDbContext, ILogger<ApiControllerBase> logger, IMediator mediator) : base(usersDbContext, logger, mediator)
     {
-        _mediator = mediator;
+        
     }
+    
 
     [HttpGet("/user")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile", Description = "Returns the current logged user own personal details and his default search profile.")]
@@ -29,7 +29,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        return Ok(await _mediator.Send(new GetUser.Query(this.UserDdId)));
+        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId())));
     }
     
     [HttpPatch("/user")]
@@ -38,8 +38,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        command.SetAuth(this.UserDdId);
-        return Ok(await _mediator.Send(command));
+        command.SetAuth(await this.GetCurrentUserId());
+        return Ok(await Mediator.Send(command));
     }
     
     [HttpGet("/user/consents")]
@@ -48,7 +48,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserConsents()
     {
-        return Ok(await _mediator.Send(new GetConsents.Query(this.UserDdId)));
+        return Ok(await Mediator.Send(new GetConsents.Query(await this.GetCurrentUserId())));
     }
     
     [HttpPatch("/user/consents")]
@@ -57,8 +57,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
     {
-        command.SetAuth(this.UserDdId);
-        return Ok(await _mediator.Send(command));
+        command.SetAuth(await this.GetCurrentUserId());
+        return Ok(await Mediator.Send(command));
     }
     
     [HttpGet("/user/search-profiles/")]
@@ -66,7 +66,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
-        return await _mediator.Send(new GetSearchProfiles.Query(this.UserDdId));
+        return await Mediator.Send(new GetSearchProfiles.Query(await this.GetCurrentUserId()));
     }
     
     [HttpGet("/user/search-profiles/{profileId}")]
@@ -75,7 +75,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
     {
-        var searchProfile = await _mediator.Send(new GetSearchProfile.Query(this.UserDdId, profileId));
+        var searchProfile = await Mediator.Send(new GetSearchProfile.Query(await this.GetCurrentUserId(), profileId));
 
         return Ok(searchProfile);
     }
@@ -85,8 +85,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command, Guid profileId)
     {
-        command.SetAuth(this.UserDdId);
-        await _mediator.Send(command);
+        command.SetAuth(await this.GetCurrentUserId());
+        await Mediator.Send(command);
         return NoContent();
     }
     
@@ -95,12 +95,13 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.Command command)
     {
-        command.SetAuth(this.UserDdId);
-        var searchProfile = await _mediator.Send(command);
+        command.SetAuth(await this.GetCurrentUserId());
+        var searchProfile = await Mediator.Send(command);
 
         return CreatedAtAction(nameof(GetUserSearchProfile), new
         {
             profileId = searchProfile.Id
         }, searchProfile);
     }
+
 }
