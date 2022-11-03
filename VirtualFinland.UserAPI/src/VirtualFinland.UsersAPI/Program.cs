@@ -1,6 +1,7 @@
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
@@ -20,6 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
 {
@@ -58,8 +60,7 @@ builder.Services.AddSwaggerGen(config =>
   config.EnableAnnotations();
   config.AddSecurityDefinition("Bearer", securityScheme);
   config.AddSecurityRequirement(securityReq);
-  config.SchemaFilter<SwaggerSkipPropertyFilter>();
-});
+  config.SchemaFilter<SwaggerSkipPropertyFilter>(); });
 
 var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
@@ -70,10 +71,9 @@ testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
-builder.Services.AddAuthentication("TestBedScheme")
-    .AddJwtBearer("TestBedScheme", c =>
-    { 
-      c.SetJwksOptions(new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
+builder.Services.AddAuthentication("DefaultTestBedBearerScheme")
+    .AddJwtBearer("DefaultTestBedBearerScheme", c =>
+    { c.SetJwksOptions(new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
 
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
@@ -83,21 +83,44 @@ builder.Services.AddAuthentication("TestBedScheme")
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
-      }; }).AddJwtBearer("SinunaScheme", c =>
-    { 
-    c.SetJwksOptions(new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
+      }; 
+    }).AddJwtBearer("SinunaBearerScheme", c =>
+    { c.SetJwksOptions(new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
 
-    c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateActor = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = sinunaIdentityProviderConfig.Issuer
-    }; });
+      c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+      {
+          ValidateIssuer = true,
+          ValidateActor = false,
+          ValidateAudience = false,
+          ValidateLifetime = true,
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = sinunaIdentityProviderConfig.Issuer
+      }; 
+    }).AddJwtBearer("SuomiFiBearerScheme", c =>
+    { c.SetJwksOptions(new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
 
-builder.Services.AddAuthorization();
+      c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+      {
+          ValidateIssuer = true,
+          ValidateActor = false,
+          ValidateAudience = false,
+          ValidateLifetime = true,
+          ValidateIssuerSigningKey = true,
+          ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
+      }; 
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
+    "DefaultTestBedBearerScheme",
+    "SinunaBearerScheme", "SuomiFiBearerScheme");
+defaultAuthorizationPolicyBuilder =
+    defaultAuthorizationPolicyBuilder.RequireAuthenticatedUser();
+options.DefaultPolicy = defaultAuthorizationPolicyBuilder.Build();
+});
+
+
 builder.Services.AddResponseCaching();
 
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
@@ -118,6 +141,7 @@ if (app.Environment.IsDevelopment())
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
+
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseHttpsRedirection();
