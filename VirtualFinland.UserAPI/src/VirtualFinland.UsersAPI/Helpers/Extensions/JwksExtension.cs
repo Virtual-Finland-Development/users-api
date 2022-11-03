@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using NetDevPack.Security.JwtExtensions;
 
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Extensions;
 
 public static class JwksExtension
 {

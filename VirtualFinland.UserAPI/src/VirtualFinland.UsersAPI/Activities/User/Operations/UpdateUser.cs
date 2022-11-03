@@ -5,6 +5,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 

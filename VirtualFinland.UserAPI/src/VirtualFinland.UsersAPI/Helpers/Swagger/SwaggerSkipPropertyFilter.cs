@@ -2,7 +2,7 @@ using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Swagger;
 
 public class SwaggerSkipPropertyFilter : ISchemaFilter
 {

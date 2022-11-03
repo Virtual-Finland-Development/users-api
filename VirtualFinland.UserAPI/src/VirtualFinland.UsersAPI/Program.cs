@@ -8,8 +8,10 @@ using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
+using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
-using JwksExtension = VirtualFinland.UserAPI.Helpers.JwksExtension;
+using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 var builder = WebApplication.CreateBuilder(args);
 

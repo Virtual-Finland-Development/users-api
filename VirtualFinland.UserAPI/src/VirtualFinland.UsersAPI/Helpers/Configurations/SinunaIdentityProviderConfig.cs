@@ -1,7 +1,6 @@
-using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
 
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
 public class SinunaIdentityProviderConfig : IIdentityProviderConfig
 {
