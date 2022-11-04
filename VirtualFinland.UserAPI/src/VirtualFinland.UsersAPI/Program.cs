@@ -180,7 +180,7 @@ using (var scope = app.Services.CreateScope())
     
     await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
-    await mediator?.Send(new GetTestbedIdentityUser.Query(string.Empty, string.Empty))!;
+    await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
 
 }
 
