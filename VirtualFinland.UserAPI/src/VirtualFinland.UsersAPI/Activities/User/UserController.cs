@@ -16,7 +16,7 @@ namespace VirtualFinland.UserAPI.Activities.User;
 [Produces("application/json")]
 public class UserController : ApiControllerBase
 {
-    public UserController(UsersDbContext usersDbContext, ILogger<UserController> logger, IMediator mediator) : base(usersDbContext, logger, mediator)
+    public UserController(UsersDbContext usersDbContext, ILogger<UserController> logger, IMediator mediator, IConfiguration configuration) : base(usersDbContext, logger, mediator, configuration)
     {
         
     }

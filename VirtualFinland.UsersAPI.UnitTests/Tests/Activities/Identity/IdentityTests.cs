@@ -1,5 +1,6 @@
 using Bogus;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
@@ -16,7 +17,9 @@ public class IdentityTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var query = new VerifyIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object);
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
+        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -32,7 +35,9 @@ public class IdentityTests : APITestBase
         var faker = new Faker("en");
         var query = new VerifyIdentityUser.Query(faker.Random.Guid().ToString(), faker.Random.String(10));
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
-        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object);
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
+        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);

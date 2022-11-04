@@ -12,12 +12,14 @@ public class ApiControllerBase : ControllerBase
 {
     private readonly UsersDbContext _usersDbContext;
     private readonly ILogger<ApiControllerBase> _logger;
+    private readonly IConfiguration _configuration;
     protected readonly IMediator Mediator;
     private Guid? _currentUserId;
-    public ApiControllerBase( UsersDbContext usersDbContext, ILogger<ApiControllerBase> logger, IMediator mediator)
+    public ApiControllerBase( UsersDbContext usersDbContext, ILogger<ApiControllerBase> logger, IMediator mediator, IConfiguration configuration)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
+        _configuration = configuration;
         Mediator = mediator;
     }
 
@@ -45,6 +47,11 @@ public class ApiControllerBase : ControllerBase
     {
         try
         {
+            if (claimsIssuer.Contains(_configuration["SuomiFI:Issuer"]))
+            {
+                claimsUserId = "suomifiDummyUserId";
+            }
+            
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == claimsUserId && o.Issuer == claimsIssuer, CancellationToken.None);
             return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
         }

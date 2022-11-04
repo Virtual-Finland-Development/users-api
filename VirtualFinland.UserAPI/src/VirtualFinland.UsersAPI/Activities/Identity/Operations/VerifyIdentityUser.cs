@@ -25,16 +25,25 @@ public static class VerifyIdentityUser
     {
         private readonly UsersDbContext _usersDbContext;
         private readonly ILogger<Handler> _logger;
+        private readonly IConfiguration _configuration;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, IConfiguration configuration)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == request.ClaimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+            var claimsUserId = request.ClaimsUserId;
+            
+            if (request.ClaimsIssuer.Contains(_configuration["SuomiFI:Issuer"]))
+            {
+                claimsUserId = "suomifiDummyUserId";
+            }
+            
+            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == claimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             // Create a new system user is no one found based on given authentication information
             if (externalIdentity is null)
@@ -45,7 +54,7 @@ public static class VerifyIdentityUser
                 await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()
                 {
                     Issuer = request.ClaimsIssuer,
-                    IdentityId = request.ClaimsUserId,
+                    IdentityId = claimsUserId,
                     UserId = newDbUSer.Entity.Id,
                     Created = DateTime.UtcNow,
                     Modified = DateTime.UtcNow
@@ -53,13 +62,13 @@ public static class VerifyIdentityUser
                 
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
-                _logger.LogInformation("Verified and created a new user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
+                _logger.LogInformation("Verified and created a new user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", claimsUserId, request.ClaimsIssuer);
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
             
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             
-            _logger.LogInformation("Verified an existing user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", request.ClaimsUserId, request.ClaimsIssuer);
+            _logger.LogInformation("Verified an existing user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", claimsUserId, request.ClaimsIssuer);
             return new User(dbUser.Id, dbUser.Created, dbUser.Modified);
         }
     }
