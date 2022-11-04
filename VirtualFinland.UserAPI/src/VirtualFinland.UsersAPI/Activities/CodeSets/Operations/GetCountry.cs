@@ -30,8 +30,8 @@ public static class GetCountry
             try
             {
                 var countries = await _countriesRepository.GetAllCountries();
-                var country = countries.Single(o => o.ISOCode == request.Id);
-                return new Country(country.ISOCode, country.Name?.Common, country.Name?.Common, String.Empty, country.ISOCode, country.ISOCodeThreeLetter);
+                var country = countries.Single(o => o.IsoCode == request.Id);
+                return new Country(country.IsoCode, country.Name?.Common, country.Name?.Common, String.Empty, country.IsoCode, country.IsoCodeThreeLetter);
             }
             catch (InvalidOperationException e)
             {

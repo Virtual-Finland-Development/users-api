@@ -23,7 +23,7 @@ public static class GetAllLanguages
         public async Task<List<Language>> Handle(Query request, CancellationToken cancellationToken)
         {
             var languages= await _languageRepository.GetAllLanguages();
-            return languages.Select(o => new Language(o.Id, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterISOLanguageName, o.ThreeLetterISOLanguageName)).ToList();
+            return languages.Select(o => new Language(o.Id, o.DisplayName, o.EnglishName, o.NativeName, o.TwoLetterIsoLanguageName, o.ThreeLetterIsoLanguageName)).ToList();
         }
         
 

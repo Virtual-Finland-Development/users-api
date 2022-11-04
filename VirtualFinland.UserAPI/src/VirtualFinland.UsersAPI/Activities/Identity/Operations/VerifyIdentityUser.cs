@@ -38,7 +38,7 @@ public static class VerifyIdentityUser
         {
             var claimsUserId = request.ClaimsUserId;
             
-            if (request.ClaimsIssuer.Contains(_configuration["SuomiFI:Issuer"]))
+            if (request.ClaimsIssuer != null && request.ClaimsIssuer.Contains(_configuration["SuomiFI:Issuer"]))
             {
                 claimsUserId = "suomifiDummyUserId";
             }

@@ -6,6 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Middleware;
 
 namespace VirtualFinland.UserAPI.Activities.User;
@@ -16,7 +17,7 @@ namespace VirtualFinland.UserAPI.Activities.User;
 [Produces("application/json")]
 public class UserController : ApiControllerBase
 {
-    public UserController(UsersDbContext usersDbContext, ILogger<UserController> logger, IMediator mediator, IConfiguration configuration) : base(usersDbContext, logger, mediator, configuration)
+    public UserController(IMediator mediator, AuthenticationService authenticationService) : base(mediator, authenticationService)
     {
         
     }
