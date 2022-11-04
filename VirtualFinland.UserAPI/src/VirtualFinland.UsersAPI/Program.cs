@@ -113,10 +113,21 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
+// Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
+    // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
+    
+    var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
+    var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
+    var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
+
+    // Preload outside data that does not change
+    await occupationsRepository.GetAllOccupations();
+    await languageRepository.GetAllLanguages();
+    await countriesRepository.GetAllCountries();
 }
 
 
