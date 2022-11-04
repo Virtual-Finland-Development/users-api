@@ -119,7 +119,7 @@ using (var scope = app.Services.CreateScope())
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
-    
+
     var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
     var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
     var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
