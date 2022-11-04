@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
@@ -128,6 +130,16 @@ using (var scope = app.Services.CreateScope())
     await occupationsRepository.GetAllOccupations();
     await languageRepository.GetAllLanguages();
     await countriesRepository.GetAllCountries();
+
+    // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
+    var mediator = scope.ServiceProvider.GetService<IMediator>();
+    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    updateUserWarmUpCommand.SetAuth(UsersDbContext.WarmUpUserId);
+    
+    await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;
+    await mediator?.Send(updateUserWarmUpCommand)!;
+    await mediator?.Send(new GetTestbedIdentityUser.Query(string.Empty, string.Empty))!;
+
 }
 
 
