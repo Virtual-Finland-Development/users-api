@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
@@ -113,10 +115,31 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
+// Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
+    // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
+
+    var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
+    var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
+    var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
+
+    // Preload outside data that does not change
+    await occupationsRepository.GetAllOccupations();
+    await languageRepository.GetAllLanguages();
+    await countriesRepository.GetAllCountries();
+
+    // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
+    var mediator = scope.ServiceProvider.GetService<IMediator>();
+    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    updateUserWarmUpCommand.SetAuth(UsersDbContext.WarmUpUserId);
+    
+    await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;
+    await mediator?.Send(updateUserWarmUpCommand)!;
+    await mediator?.Send(new GetTestbedIdentityUser.Query(string.Empty, string.Empty))!;
+
 }
 
 

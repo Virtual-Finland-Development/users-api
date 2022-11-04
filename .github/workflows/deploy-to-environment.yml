@@ -1,0 +1,69 @@
+name: Manually deploy to selected environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        type: string
+        required: true
+        description: Environment where to deploy the stack
+        options:
+          - dev
+          - staging
+        default: dev
+
+env:
+  STACK_ENVIRONMENT: ${{ github.event.inputs.env }}
+  PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
+
+jobs:
+  build-and-test:
+    name: Build and test
+    environment: $STACK_ENVIRONMENT
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Pulumi Users API Integration Tests
+        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
+      - name: Install AWS Dotnet CLI Lambda Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
+      - name: Build UserAPI Lamda Package
+        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
+        run: dotnet lambda package
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Application_Artifact
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          retention-days: 2
+  deploy:
+    name: Deploy to AWS $STACK_ENVIRONMENT environment
+    environment: $STACK_ENVIRONMENT
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Install Pulumi CLI
+        uses: pulumi/setup-pulumi@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: Application_Artifact
+          path: ./
+      - name: Select Pulumi Stack
+        working-directory: ./VirtualFinland.UsersAPI.Deployment
+        run: pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/$STACK_ENVIRONMENT
+      - name: Set Pulumi Artifact Path
+        working-directory: ./VirtualFinland.UsersAPI.Deployment
+        run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with: 
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Pulumi Up
+        working-directory: ./VirtualFinland.UsersAPI.Deployment
+        run: pulumi up -y
