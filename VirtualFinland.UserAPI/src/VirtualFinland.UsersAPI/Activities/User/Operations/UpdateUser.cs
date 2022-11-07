@@ -192,12 +192,12 @@ public static class UpdateUser
                 if (!string.IsNullOrEmpty(request.CitizenshipCode) || !string.IsNullOrEmpty(request.CountryOfBirthCode))
                 {
                     countries = await _countriesRepository.GetAllCountries();
-                    if (!string.IsNullOrEmpty(request.CitizenshipCode) && !countries.Any(o => o.ISOCode == request.CitizenshipCode?.ToUpper()))
+                    if (!string.IsNullOrEmpty(request.CitizenshipCode) && !countries.Any(o => o.IsoCode == request.CitizenshipCode?.ToUpper()))
                     {
                         validationErrors.Add(new ValidationErrorDetail(nameof(request.CitizenshipCode), $"{nameof(request.CitizenshipCode)} does not match any known ISO 3166 country code."));
                     }
                 
-                    if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.ISOCode == request.CountryOfBirthCode?.ToUpper()))
+                    if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
                     {
                         validationErrors.Add(new ValidationErrorDetail(nameof(request.CountryOfBirthCode), $"{nameof(request.CountryOfBirthCode)} does not match any known ISO 3166 country code."));
                     }
