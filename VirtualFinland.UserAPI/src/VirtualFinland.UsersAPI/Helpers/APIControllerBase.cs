@@ -1,15 +1,21 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using VirtualFinland.UserAPI.Middleware;
+using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
 public class ApiControllerBase : ControllerBase
 {
-    protected Guid? UserDdId
+    protected readonly IMediator Mediator;
+    private readonly AuthenticationService _authenticationService;
+    public ApiControllerBase(IMediator mediator, AuthenticationService authenticationService)
     {
-        get
-        {
-            return (Guid?)this.HttpContext.Items[IdentityProviderAuthMiddleware.ContextItemUserDbIdName];
-        }
-    } 
+        Mediator = mediator;
+        _authenticationService = authenticationService;
+    }
+
+    protected async Task<Guid?> GetCurrentUserId()
+    {
+        return await _authenticationService.GetCurrentUserId(this.Request);
+    }
 }

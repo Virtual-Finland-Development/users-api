@@ -1,4 +1,4 @@
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
 public interface IIdentityProviderConfig
 {

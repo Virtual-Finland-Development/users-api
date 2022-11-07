@@ -1,9 +1,10 @@
 using System.Text.Json.Nodes;
 
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
-public class TestBedIdentityProviderConfig : IIdentityProviderConfig
+public class SinunaIdentityProviderConfig : IIdentityProviderConfig
 {
+
     private readonly IConfiguration _configuration;
     private string? _issuer;
     private string? _jwksOptionsUrl;
@@ -23,16 +24,17 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
         get { return _issuer; }
     }
 
-    public TestBedIdentityProviderConfig(IConfiguration configuration)
+    public SinunaIdentityProviderConfig(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
     public async void LoadOpenIdConfigUrl()
     {
-        var testBedConfigUrl = _configuration["Testbed:OpenIDConfigurationURL"];
+        var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
-        var httpResponse = await httpClient.GetAsync(testBedConfigUrl);
+        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
+        var httpResponse = await httpClient.GetAsync(configUrl);
         
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {
