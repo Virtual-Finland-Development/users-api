@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221102125227_DatabaseFieldChange")]
+    partial class DatabaseFieldChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,17 +51,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExternalIdentities");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("81846ac1-5155-4a60-a1c6-7632c51a5427"),
-                            Created = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(570),
-                            IdentityId = "83e480dd-af44-4bf9-a3a8-9db438b7a7f9",
-                            Issuer = "78b3ace8-cca3-4d56-babe-1ecadf149ce0",
-                            Modified = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(570),
-                            UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
-                        });
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.SearchProfile", b =>
@@ -142,18 +133,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(460),
-                            FirstName = "WarmUpUser",
-                            ImmigrationDataConsent = false,
-                            JobsDataConsent = false,
-                            LastName = "WarmUpUser",
-                            Modified = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(460)
-                        });
                 });
 #pragma warning restore 612, 618
         }
