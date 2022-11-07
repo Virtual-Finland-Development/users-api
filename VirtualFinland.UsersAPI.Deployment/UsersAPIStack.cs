@@ -22,31 +22,31 @@ public class UsersApiStack : Stack
     public UsersApiStack()
     {
         var config = new Config();
-        bool isProductionEnvironment = config.Require("environment") == Environments.Prod.ToString().ToLowerInvariant();
+        bool isProductionEnvironment = Pulumi.Deployment.Instance.StackName == Environments.Prod.ToString().ToLowerInvariant();
+        var environment = Pulumi.Deployment.Instance.StackName;
+        var projectName = Pulumi.Deployment.Instance.ProjectName;
 
-        
-        
-        var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{config.Require("environment")}");
+        var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{environment}");
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
         InputMap<string> tags = new InputMap<string>()
         {
             {
-                "Environment", config.Require("environment")
+                "vfd:stack", Pulumi.Deployment.Instance.StackName
             },
             {
-                "Project", config.Require("name")
+                "vfd:project", Pulumi.Deployment.Instance.ProjectName
             }
         };
 
         var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
 
-        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds);
+        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
 
-        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags);
+        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags, environment, projectName);
 
-        var role = new Role("vf-UsersAPI-LambdaRole", new RoleArgs
+        var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -71,7 +71,7 @@ public class UsersApiStack : Stack
             })
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment("vf-UsersAPI-LambdaRoleAttachment", new RolePolicyAttachmentArgs
+        var rolePolicyAttachment = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-{environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
@@ -88,7 +88,10 @@ public class UsersApiStack : Stack
             SubnetIds = privateSubnetIds
         };
 
-        var lambdaFunction = new Function("vf-UsersAPI", new FunctionArgs
+        var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
+        Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
+
+        var lambdaFunction = new Function($"{projectName}-{environment}", new FunctionArgs
         {
             Role = role.Arn,
             Runtime = "dotnet6",
@@ -110,17 +113,17 @@ public class UsersApiStack : Stack
                     },
                 }
             },
-            Code = new FileArchive("../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip"),
+            Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs
         });
 
-        var functionUrl = new FunctionUrl("vf-UsersAPI-FunctionUrl", new FunctionUrlArgs
+        var functionUrl = new FunctionUrl($"{projectName}-FunctionUrl-{environment}", new FunctionUrlArgs
         {
             FunctionName = lambdaFunction.Arn,
             AuthorizationType = "NONE"
         });
 
-        var localCommand = new Command("vf-UsersAPI-AddPermissions", new CommandArgs
+        var localCommand = new Command($"{projectName}-AddPermissions-{environment}", new CommandArgs
         {
             Create = Output.Format(
                 $"aws lambda add-permission --function-name {lambdaFunction.Arn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")
@@ -139,7 +142,7 @@ public class UsersApiStack : Stack
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds)
+    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
@@ -155,7 +158,7 @@ public class UsersApiStack : Stack
             OverrideSpecial = "_%@",
         });
 
-        var rdsPostGreInstance = new Instance("postgres-db", new InstanceArgs()
+        var rdsPostGreInstance = new Instance($"{projectName}-postgres-db-{environment}", new InstanceArgs()
         {
             Engine = "postgres",
             InstanceClass = "db.t3.micro",
@@ -175,9 +178,9 @@ public class UsersApiStack : Stack
         return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
 
-    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags)
+    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags, string environment, string projectName)
     {
-        var bucket = new Bucket("vf-users-api", new BucketArgs()
+        var bucket = new Bucket($"{projectName}-{environment}", new BucketArgs()
         {
             Tags = tags,
         });

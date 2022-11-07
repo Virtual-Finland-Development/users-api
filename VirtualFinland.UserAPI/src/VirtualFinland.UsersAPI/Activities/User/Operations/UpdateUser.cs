@@ -4,7 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -18,19 +18,19 @@ public static class UpdateUser
         public string? FirstName { get; }
         public string? LastName { get; }
         
-        public string? Address { get; set; }
+        public string? Address { get; }
         
-        public bool? JobsDataConsent { get; set; }
+        public bool? JobsDataConsent { get; }
         
-        public bool? ImmigrationDataConsent { get; set; }
+        public bool? ImmigrationDataConsent { get; }
         
-        public string? CountryOfBirthCode { get; set; }
+        public string? CountryOfBirthCode { get; }
 
-        public string? NativeLanguageCode { get; set; }
+        public string? NativeLanguageCode { get; }
 
-        public string? OccupationCode { get; set; }
+        public string? OccupationCode { get; }
 
-        public string? CitizenshipCode { get; set; }
+        public string? CitizenshipCode { get; }
 
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
@@ -128,7 +128,7 @@ public static class UpdateUser
             private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
             {
                 
-                var validationErrors = new System.Collections.Generic.List<ValidationErrorDetail>();
+                var validationErrors = new List<ValidationErrorDetail>();
                 validationErrors.AddRange(await ValidateCountryCodesLogic(request));
                 validationErrors.AddRange(await ValidateLanguageCodesLogic(request));
                 validationErrors.AddRange(await ValidateOccupationCodesLogic(request));

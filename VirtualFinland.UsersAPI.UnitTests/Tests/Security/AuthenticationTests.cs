@@ -2,10 +2,11 @@ using System.Security.Claims;
 using System.Security.Principal;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Middleware;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
@@ -16,9 +17,10 @@ public class AuthenticationTests : APITestBase
     public async Task Should_FailIfTokenClaimsNotInUsersDb()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<IdentityProviderAuthMiddleware>>();
-        var mockRequestDelegate = new Mock<RequestDelegate>();
+        await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLogger = new Mock<ILogger<AuthenticationService>>();
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
         var mockHttpContext = new Mock<HttpContext>();
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockClaimsPrincipal = new Mock<ClaimsPrincipal>();
@@ -35,11 +37,12 @@ public class AuthenticationTests : APITestBase
         mockHttpContext.Setup(o => o.User.Identity).Returns(mockUserIdentity.Object);
         mockHttpContext.Setup(o => o.User.Identity.IsAuthenticated).Returns(true);
         mockHttpContext.Setup(o => o.User.Claims).Returns(invalidClaims);
+        mockHttpRequest.Setup(o => o.HttpContext).Returns(mockHttpContext.Object);
         
-        var identityProviderAuthMiddleware = new IdentityProviderAuthMiddleware(mockRequestDelegate.Object);
+        var authenticationService = new AuthenticationService(_dbContext, mockLogger.Object, mockConfiguration.Object);
 
         // Act
-        var act = () => identityProviderAuthMiddleware.InvokeAsync(mockHttpContext.Object, _dbContext, mockLogger.Object);
+        var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();

@@ -23,7 +23,7 @@ public static class GetAllCountries
         public async Task<List<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
             var countries = await _countriesRepository.GetAllCountries();
-            return countries.Select(o => new Country(o.ISOCode, o.Name?.Common, o.Name?.Common, String.Empty, o.ISOCode, o.ISOCodeThreeLetter)).ToList();
+            return countries.Select(o => new Country(o.IsoCode, o.Name?.Common, o.Name?.Common, String.Empty, o.IsoCode, o.IsoCodeThreeLetter)).ToList();
         }
     }
 

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221104120728_SeedWarmUpUser")]
+    partial class SeedWarmUpUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,10 +105,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
-                    b.Property<string>("CitizenshipCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CountryOfBirthCode")
+                    b.Property<string>("CountryOfBirthISOCode")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
@@ -133,10 +132,13 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("NativeLanguageCode")
+                    b.Property<string>("NationalityISOCode")
                         .HasColumnType("text");
 
-                    b.Property<string>("OccupationCode")
+                    b.Property<string>("NativeLanguageISOCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OccupationISCOCode")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

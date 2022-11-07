@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.Identity;
 
@@ -20,15 +21,15 @@ public class IdentityController : ControllerBase
         _mediator = mediator;
     }
 
-    [HttpGet("identity/testbed/verify")]
-    [SwaggerOperation(Summary = "Verifies the existence of a Testbed identified user.",
+    [HttpGet("identity/verify")]
+    [SwaggerOperation(Summary = "Verifies the existence of a user that was identified by an external identity provider.",
         Description =
-            "Given the access token from Testbed, the operation tries to find if the user exists in the system database and if the user does not exist create an account. Notice: The user can't access personal information without being created into the system with this call.")]
-    [ProducesResponseType(typeof(GetTestbedIdentityUser.User), StatusCodes.Status200OK)]
+            "Given the access token from an external identity provider, the operation tries to find if the user exists in the system database and creates the user into the system. Notice: The user can't access the API other paths without being created into the system with this call.")]
+    [ProducesResponseType(typeof(VerifyIdentityUser.User), StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> GetTestbedIdentityUser()
+    public async Task<IActionResult> VerifyIdentityUser()
     {
-        var user = await _mediator.Send(new GetTestbedIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, this.User.Claims.First().Issuer));
+        var user = await _mediator.Send(new VerifyIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst(Constants.Web.ClaimNameId)?.Value, this.User.Claims.First().Issuer));
 
         return Ok(user);
     }
