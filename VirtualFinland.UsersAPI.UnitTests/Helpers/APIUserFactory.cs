@@ -21,10 +21,10 @@ public class APIUserFactory
             LastName = faker.Person.LastName,
             JobsDataConsent = true,
             ImmigrationDataConsent = false,
-            NationalityISOCode = "FR",
-            CountryOfBirthISOCode = "FR",
-            OccupationISCOCode = "4012",
-            NativeLanguageISOCode = "FR",
+            CitizenshipCode = "FR",
+            CountryOfBirthCode = "FR",
+            OccupationCode = "4012",
+            NativeLanguageCode = "FR",
             Gender = "1",
             DateOfBirth = DateOnly.FromDateTime(DateTime.Now)
         });
