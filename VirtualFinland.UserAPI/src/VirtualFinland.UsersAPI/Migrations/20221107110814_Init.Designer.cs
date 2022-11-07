@@ -13,8 +13,8 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20221014102749_ConsentFields")]
-    partial class ConsentFields
+    [Migration("20221107110814_Init")]
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -25,7 +25,7 @@ namespace VirtualFinland.UserAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("VirtualFinland.UserAPI.Models.ExternalIdentity", b =>
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.ExternalIdentity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,9 +51,20 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExternalIdentities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("e8e1b280-71ad-4018-acc5-e161c975b39d"),
+                            Created = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1500),
+                            IdentityId = "d5ec2ed8-1ded-4457-83ac-4ad05909cb24",
+                            Issuer = "88973016-baf2-4eb8-8a1c-67463581d066",
+                            Modified = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1500),
+                            UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
+                        });
                 });
 
-            modelBuilder.Entity("VirtualFinland.UserAPI.Models.SearchProfile", b =>
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.SearchProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,7 +96,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.ToTable("SearchProfiles");
                 });
 
-            modelBuilder.Entity("VirtualFinland.UserAPI.Models.User", b =>
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -94,10 +105,22 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<string>("CitizenshipCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CountryOfBirthCode")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
+
                     b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gender")
                         .HasColumnType("text");
 
                     b.Property<bool>("ImmigrationDataConsent")
@@ -112,9 +135,27 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("NativeLanguageCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OccupationCode")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
+                            Created = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1400),
+                            FirstName = "WarmUpUser",
+                            ImmigrationDataConsent = false,
+                            JobsDataConsent = false,
+                            LastName = "WarmUpUser",
+                            Modified = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1400)
+                        });
                 });
 #pragma warning restore 612, 618
         }

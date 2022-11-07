@@ -53,11 +53,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("81846ac1-5155-4a60-a1c6-7632c51a5427"),
-                            Created = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(570),
-                            IdentityId = "83e480dd-af44-4bf9-a3a8-9db438b7a7f9",
-                            Issuer = "78b3ace8-cca3-4d56-babe-1ecadf149ce0",
-                            Modified = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(570),
+                            Id = new Guid("e8e1b280-71ad-4018-acc5-e161c975b39d"),
+                            Created = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1500),
+                            IdentityId = "d5ec2ed8-1ded-4457-83ac-4ad05909cb24",
+                            Issuer = "88973016-baf2-4eb8-8a1c-67463581d066",
+                            Modified = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1500),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -147,12 +147,12 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(460),
+                            Created = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1400),
                             FirstName = "WarmUpUser",
                             ImmigrationDataConsent = false,
                             JobsDataConsent = false,
                             LastName = "WarmUpUser",
-                            Modified = new DateTime(2022, 11, 4, 12, 7, 28, 338, DateTimeKind.Utc).AddTicks(460)
+                            Modified = new DateTime(2022, 11, 7, 11, 8, 14, 777, DateTimeKind.Utc).AddTicks(1400)
                         });
                 });
 #pragma warning restore 612, 618
