@@ -15,7 +15,7 @@ env:
 jobs:
   build-and-test:
     name: Build and test
-    environment: ${{ inputs.environment }
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
