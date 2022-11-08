@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -29,6 +30,14 @@ public static class CreateSearchProfile
         public void SetAuth(Guid? userDbId)
         {
             this.UserId = userDbId;
+        }
+    }
+    
+    public class CommandValidator : AbstractValidator<Command>
+    {
+        public CommandValidator()
+        {
+            RuleFor(command => command.UserId).NotNull().NotEmpty();
         }
     }
 
