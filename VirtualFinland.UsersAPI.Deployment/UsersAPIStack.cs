@@ -97,6 +97,7 @@ public class UsersApiStack : Stack
             Runtime = "dotnet6",
             Handler = "VirtualFinland.UsersAPI",
             Timeout = 30,
+            MemorySize = 1024,
             Environment = new FunctionEnvironmentArgs
             {
                 Variables =
