@@ -1,5 +1,6 @@
 using System.Reflection;
 using MediatR;
+using MediatR.Extensions.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
@@ -133,6 +134,7 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<AuthenticationService>();
+builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 
 var app = builder.Build();
 
