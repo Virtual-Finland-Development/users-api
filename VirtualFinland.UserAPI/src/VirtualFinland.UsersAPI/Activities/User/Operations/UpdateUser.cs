@@ -85,7 +85,7 @@ public static class UpdateUser
             RuleFor(command => command.UserId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
-            RuleFor(command => command.Address).MaximumLength(1024);
+            RuleFor(command => command.Address).MaximumLength(512);
             RuleFor(command => command.CitizenshipCode).MaximumLength(10);
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
