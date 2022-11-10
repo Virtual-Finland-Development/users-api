@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -17,6 +18,14 @@ public static class GetUser
         public Query(Guid? userId)
         {
             this.UserId = userId;
+        }
+    }
+
+    public class QueryValidator : AbstractValidator<Query>
+    {
+        public QueryValidator()
+        {
+            RuleFor(query => query.UserId).NotNull().NotEmpty();
         }
     }
 

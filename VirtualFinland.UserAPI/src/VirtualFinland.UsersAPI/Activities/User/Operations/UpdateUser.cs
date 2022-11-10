@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -76,6 +77,23 @@ public static class UpdateUser
             this.UserId = userDbId;
         }
     }
+    
+    public class CommandValidator : AbstractValidator<Command> 
+    {
+        public CommandValidator()
+        {
+            RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.FirstName).MaximumLength(255);
+            RuleFor(command => command.LastName).MaximumLength(255);
+            RuleFor(command => command.Address).MaximumLength(512);
+            RuleFor(command => command.CitizenshipCode).MaximumLength(10);
+            RuleFor(command => command.OccupationCode).MaximumLength(10);
+            RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
+            RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
+            RuleFor(command => command.Gender).MaximumLength(10);
+        }
+    }
+    
 
     public class Handler : IRequestHandler<Command, User>
         {

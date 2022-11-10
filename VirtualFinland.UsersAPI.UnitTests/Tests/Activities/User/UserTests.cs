@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using FluentAssertions;
+using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
@@ -11,6 +14,7 @@ using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using UpdateUser = VirtualFinland.UserAPI.Activities.User.Operations.UpdateUser;
+using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
@@ -183,5 +187,26 @@ public class UserTests : APITestBase
 
         // Assert
         await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async void Should_FailUserUpdateWithMaxLengths_FluentValidation()
+    {
+        // Arrange
+        var validator = new UpdateUser.CommandValidator();
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var command = new UpdateUser.Command(new string('*', 256), new string('*', 256), new string('*', 520),null, null, "12345678910", "12345678910", "12345678910", "12345678910", null, null, "superghumangender123", null);
+        command.SetAuth(dbEntities.user.Id);
+
+        // Assert
+        var result = validator.TestValidate(command);
+        result.ShouldHaveValidationErrorFor(user => user.FirstName);
+        result.ShouldHaveValidationErrorFor(user => user.LastName);
+        result.ShouldHaveValidationErrorFor(user => user.Address);
+        result.ShouldHaveValidationErrorFor(user => user.Gender);
+        result.ShouldHaveValidationErrorFor(user => user.CountryOfBirthCode);
+        result.ShouldHaveValidationErrorFor(user => user.CitizenshipCode);
+        result.ShouldHaveValidationErrorFor(user => user.OccupationCode);
+        result.ShouldHaveValidationErrorFor(user => user.NativeLanguageCode);
     }
 }

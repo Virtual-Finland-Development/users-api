@@ -1,3 +1,4 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -22,6 +23,14 @@ public static class GetSearchProfile
         {
             this.UserId = userId;
             this.ProfileId = profileId;
+        }
+    }
+    
+    public class QueryValidator : AbstractValidator<Query>
+    {
+        public QueryValidator()
+        {
+            RuleFor(query => query.UserId).NotNull().NotEmpty();
         }
     }
 
