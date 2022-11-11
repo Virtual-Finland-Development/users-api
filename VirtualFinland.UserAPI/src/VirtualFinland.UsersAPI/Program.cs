@@ -1,4 +1,6 @@
 using System.Reflection;
+using Amazon.SecretsManager;
+using Amazon.SecretsManager.Extensions.Caching;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -71,7 +73,10 @@ builder.Services.AddSwaggerGen(config =>
   config.AddSecurityRequirement(securityReq);
   config.SchemaFilter<SwaggerSkipPropertyFilter>(); });
 
-var dbConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") ?? builder.Configuration.GetConnectionString("DefaultConnection");
+AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+
+var secret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME")) : null;
+var dbConnectionString = secret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
 
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);

@@ -90,6 +90,16 @@ public class UsersApiStack : Stack
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
+        
+        var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{projectName}-dbConnectionStringSecret-{environment}");
+        var secretVersionDbConectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
+        {
+            SecretId = secretDbConnectionString.Id,
+            SecretString = Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
+                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}"),
+        });
+
+        DbConnectionStringSecretId = secretDbConnectionString.Name;
 
         var lambdaFunction = new Function($"{projectName}-{environment}", new FunctionArgs
         {
@@ -106,12 +116,11 @@ public class UsersApiStack : Stack
                         "ASPNETCORE_ENVIRONMENT", "Development"
                     },
                     {
-                        "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
-                            .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}")
-                    },
-                    {
                         "CODE_SET_COUNTRIES", Output.Format($"{countriesCodeSetConfigs}")
                     },
+                    {
+                        "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),
@@ -199,6 +208,7 @@ public class UsersApiStack : Stack
     }
 
     [Output] public Output<string> ApplicationUrl { get; set; }
+    [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
 
@@ -207,5 +217,7 @@ public class UsersApiStack : Stack
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
     
-    [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
+    
+    [Output] public Output<string> DbConnectionStringSecretId { get; set; }
+
 }
