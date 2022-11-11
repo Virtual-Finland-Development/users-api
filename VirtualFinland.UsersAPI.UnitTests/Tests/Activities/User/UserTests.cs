@@ -12,7 +12,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
-using VirtualFinland.UsersAPI.UnitTests.Mocks;
+using VirtualFinland.UsersAPI.UnitTests.Stubs;
 using UpdateUser = VirtualFinland.UserAPI.Activities.User.Operations.UpdateUser;
 using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
@@ -25,10 +25,11 @@ public class UserTests : APITestBase
     public async void Should_GetUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
         var query = new GetUser.Query(dbEntities.user.Id);
-        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
+        var handler = new GetUser.Handler(mockLogger.Object, userRepository);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -56,15 +57,16 @@ public class UserTests : APITestBase
     public async void Should_UpdateUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var occupationRepository = new StubOccupationsRepository();
+        var countryRepository = new StubContriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "fi", "fi-FI", "01","fi",new List<string>(), new List<string>(), "1", DateTime.Now);
         command.SetAuth(dbEntities.user.Id);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var handler = new UpdateUser.Handler(userRepository, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -89,15 +91,16 @@ public class UserTests : APITestBase
     public async void Should_FailUpdateUserNationalityCheckAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var occupationRepository = new StubOccupationsRepository();
+        var countryRepository = new StubContriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, null, null,"not a code",null, null, null, null);
         command.SetAuth(dbEntities.user.Id);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var handler = new UpdateUser.Handler(userRepository, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var act = () => handler.Handle(command, CancellationToken.None);
@@ -110,15 +113,16 @@ public class UserTests : APITestBase
     public async void Should_FailUpdateUserCountryOfBirthAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var occupationRepository = new StubOccupationsRepository();
+        var countryRepository = new StubContriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, "not a code", null, null,null,null, null, null, null);
         command.SetAuth(dbEntities.user.Id);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var handler = new UpdateUser.Handler(userRepository, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var act = () => handler.Handle(command, CancellationToken.None);
@@ -131,15 +135,16 @@ public class UserTests : APITestBase
     public async void Should_FailUpdateUserNativeLanguageCodeAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var occupationRepository = new StubOccupationsRepository();
+        var countryRepository = new StubContriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, "not a code", null,null,null, null, null, null);
         command.SetAuth(dbEntities.user.Id);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var handler = new UpdateUser.Handler(userRepository, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var act = () => handler.Handle(command, CancellationToken.None);
@@ -152,15 +157,16 @@ public class UserTests : APITestBase
     public async void Should_FailUpdateUserOccupationCodeAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
+        var userRepository = new StubUserRepository();
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var occupationRepository = new StubOccupationsRepository();
+        var countryRepository = new StubContriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
         command.SetAuth(dbEntities.user.Id);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var handler = new UpdateUser.Handler(userRepository, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
         
         // Act
         var act = () => handler.Handle(command, CancellationToken.None);
@@ -168,33 +174,13 @@ public class UserTests : APITestBase
         // Assert
         await act.Should().ThrowAsync<BadRequestException>();
     }
-    
-    [Fact]
-    public async void Should_FailUserCheckWithNonExistingUserIdAsync()
-    {
-        // Arrange
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
-        var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
-        var languageRepository = new LanguageRepository();
-        
-        var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
-        command.SetAuth(Guid.Empty);
-        var handler = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
-        
-        // Act
-        var act = () => handler.Handle(command, CancellationToken.None);
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>();
-    }
 
     [Fact]
     public async void Should_FailUserUpdateWithMaxLengths_FluentValidation()
     {
         // Arrange
         var validator = new UpdateUser.CommandValidator();
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
         var command = new UpdateUser.Command(new string('*', 256), new string('*', 256), new string('*', 520),null, null, "12345678910", "12345678910", "12345678910", "12345678910", null, null, "superghumangender123", null);
         command.SetAuth(dbEntities.user.Id);
 

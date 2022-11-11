@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -43,20 +44,20 @@ public static class CreateSearchProfile
 
     public class Handler : IRequestHandler<Command, SearchProfile>
     {
-        private readonly UsersDbContext _usersDbContext;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(IUserRepository userRepository, ILogger<Handler> logger)
         {
-            _usersDbContext = usersDbContext;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _userRepository.GetUser(request.UserId, cancellationToken);
             
-            var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
+            var dbNewSearchProfile = await _userRepository.AddSearchProfile(new Models.UsersDatabase.SearchProfile()
             {
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
                 UserId = dbUser.Id,
@@ -65,8 +66,6 @@ public static class CreateSearchProfile
                 Created = DateTime.UtcNow,
                 Modified = DateTime.UtcNow
             }, cancellationToken);
-
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
             
             _logger.LogDebug("Search Profile Created: {SearchProfileId}", dbNewSearchProfile.Entity.Id);
 

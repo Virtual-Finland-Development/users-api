@@ -14,7 +14,7 @@ public class IdentityTests : APITestBase
     public async void Should_VerifyExistingLoginUser()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dbEntities = ApiUserFactory.CreateAndGetLogInUser();
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var query = new VerifyIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
         var mockConfiguration = new Mock<IConfiguration>();

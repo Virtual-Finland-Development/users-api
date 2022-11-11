@@ -1,9 +1,9 @@
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Models.Repositories;
 
-namespace VirtualFinland.UsersAPI.UnitTests.Mocks;
+namespace VirtualFinland.UsersAPI.UnitTests.Stubs;
 
-public class MockContriesRepository : ICountriesRepository
+public class StubContriesRepository : ICountriesRepository
 {
 
     public Task<List<Country>> GetAllCountries()

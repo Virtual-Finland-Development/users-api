@@ -1,9 +1,9 @@
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Models.Repositories;
 
-namespace VirtualFinland.UsersAPI.UnitTests.Mocks;
+namespace VirtualFinland.UsersAPI.UnitTests.Stubs;
 
-public class MockOccupationsRepository : IOccupationsRepository
+public class StubOccupationsRepository : IOccupationsRepository
 {
 
     public Task<List<OccupationRoot.Occupation>?> GetAllOccupations()

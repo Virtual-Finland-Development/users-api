@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
@@ -36,21 +37,19 @@ public static class GetSearchProfile
 
     public class Handler : IRequestHandler<Query, SearchProfile>
     {
-        private readonly UsersDbContext _usersDbContext;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(IUserRepository userRepository, ILogger<Handler> logger)
         {
-            _usersDbContext = usersDbContext;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
-
-            var userSearchProfile = await _usersDbContext.SearchProfiles.SingleOrDefaultAsync(o => o.UserId == dbUser.Id && o.Id == request.ProfileId, cancellationToken);
-
+            var dbUser = await _userRepository.GetUser(request.UserId, cancellationToken);
+            var userSearchProfile = await _userRepository.GetSearchProfile(request.ProfileId, cancellationToken);
             if (userSearchProfile is null)
             {
                 _logger.LogInformation("Failed to retrieve search profile: {RequestProfileId}", request.ProfileId);

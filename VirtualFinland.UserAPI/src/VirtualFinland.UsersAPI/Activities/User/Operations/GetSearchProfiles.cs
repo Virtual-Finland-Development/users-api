@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -31,20 +32,20 @@ public static class GetSearchProfiles
 
     public class Handler : IRequestHandler<Query, IList<SearchProfile>>
     {
-        private readonly UsersDbContext _usersDbContext;
+        private readonly IUserRepository _userRepository;
         private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(IUserRepository userRepository, ILogger<Handler> logger)
         {
-            _usersDbContext = usersDbContext;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _userRepository.GetUser(request.UserId, cancellationToken);
 
-            var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.UserId == dbUser.Id);
+            var userSearchProfiles = _userRepository.GetUserSearchProfiles(request.UserId);
             
             _logger.LogDebug("Retrieving search profiles");
 

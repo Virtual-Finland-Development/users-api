@@ -6,13 +6,13 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;
 
-public class APIUserFactory
+public static class ApiUserFactory
 {
-    public async static Task<(User user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(UsersDbContext dbContext)
+    public static (User user, ExternalIdentity externalIdentity) CreateAndGetLogInUser()
     {
         var faker = new Faker("en");
         
-        var dbUser = dbContext.Users.Add(new User()
+        var dbUser = new User()
         {
             Address = faker.Address.FullAddress(),
             Created = DateTime.UtcNow,
@@ -27,19 +27,17 @@ public class APIUserFactory
             NativeLanguageCode = "FR",
             Gender = "1",
             DateOfBirth = DateOnly.FromDateTime(DateTime.Now)
-        });
+        };
 
-        var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()
+        var externalIdentity = new ExternalIdentity()
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Issuer = faker.Random.String(10),
             IdentityId = faker.Random.Guid().ToString(),
-            UserId = dbUser.Entity.Id
-        });
+            UserId = dbUser.Id
+        };
 
-        await dbContext.SaveChangesAsync();
-
-        return (dbUser.Entity, externalIdentity.Entity);
+        return (dbUser, externalIdentity);
     }
 }

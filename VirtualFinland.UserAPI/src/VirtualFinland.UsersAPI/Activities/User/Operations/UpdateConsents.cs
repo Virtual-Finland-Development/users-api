@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -42,24 +43,23 @@ public static class UpdateConsents
 
     public class Handler : IRequestHandler<Command, Consents>
         {
-            private readonly UsersDbContext _usersDbContext;
+            private readonly IUserRepository _userRepository;
             private readonly ILogger<Handler> _logger;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+            public Handler(IUserRepository userRepository, ILogger<Handler> logger)
             {
-                _usersDbContext = usersDbContext;
+                _userRepository = userRepository;
                 _logger = logger;
             }
 
             public async Task<Consents> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
-                
+                var dbUser = await _userRepository.GetUser(request.UserId, cancellationToken);
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                
-                await _usersDbContext.SaveChangesAsync(cancellationToken);
+
+                await _userRepository.UpdateUser(dbUser, cancellationToken);
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 

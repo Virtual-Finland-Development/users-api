@@ -17,7 +17,7 @@ public class AuthenticationTests : APITestBase
     public async Task Should_FailIfTokenClaimsNotInUsersDb()
     {
         // Arrange
-        await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+         ApiUserFactory.CreateAndGetLogInUser();
         var mockLogger = new Mock<ILogger<AuthenticationService>>();
         var mockConfiguration = new Mock<IConfiguration>();
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");

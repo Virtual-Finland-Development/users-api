@@ -133,6 +133,7 @@ builder.Services.AddResponseCaching();
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 

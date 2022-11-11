@@ -97,15 +97,15 @@ public static class UpdateUser
 
     public class Handler : IRequestHandler<Command, User>
         {
-            private readonly UsersDbContext _usersDbContext;
+            private readonly IUserRepository _userRepository;
             private readonly ILogger<Handler> _logger;
             private readonly ILanguageRepository _languageRepository;
             private readonly ICountriesRepository _countriesRepository;
             private readonly IOccupationsRepository _occupationsRepository;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository)
+            public Handler(IUserRepository userRepository, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository)
             {
-                _usersDbContext = usersDbContext;
+                _userRepository = userRepository;
                 _logger = logger;
                 _languageRepository = languageRepository;
                 _countriesRepository = countriesRepository;
@@ -114,14 +114,12 @@ public static class UpdateUser
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                var dbUser = await _userRepository.GetUser(request.UserId, cancellationToken);
                 
-                await VerifyUserUpdate(dbUser, request);
-                
-                var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
-                dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
+                await VerifyUserUpdate(dbUser, request, cancellationToken);
 
-                await _usersDbContext.SaveChangesAsync(cancellationToken);
+                var dbUserDefaultSearchProfile = await _userRepository.GetUserDefaultSearchProfile(request.UserId, true, cancellationToken);
+                dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
@@ -143,7 +141,7 @@ public static class UpdateUser
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
             }
 
-            private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
+            private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
             {
                 
                 var validationErrors = new List<ValidationErrorDetail>();
@@ -169,6 +167,7 @@ public static class UpdateUser
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
 
+                await _userRepository.UpdateUser(dbUser, cancellationToken);
             }
 
             private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)
@@ -235,7 +234,7 @@ public static class UpdateUser
             {
                 if (dbUserDefaultSearchProfile is null)
                 {
-                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new SearchProfile()
+                    var dbNewSearchProfile = await _userRepository.AddSearchProfile(new SearchProfile()
                     {
                         Name = request.JobTitles?.FirstOrDefault(),
                         UserId = dbUser.Id,
@@ -256,6 +255,8 @@ public static class UpdateUser
                     dbUserDefaultSearchProfile.IsDefault = true;
                     dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
+                    await _userRepository.UpdateSearchProfile(dbUserDefaultSearchProfile, cancellationToken);
+                    
                     return dbUserDefaultSearchProfile;
                 }
             }
