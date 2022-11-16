@@ -21,7 +21,6 @@ public class ProductizerController : ApiControllerBase
         
     }
     
-    [EnableCors("TestbedCorsPolicy")]
     [HttpPost("/productizer/user")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)", Description = "Returns the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]

@@ -93,7 +93,7 @@ builder.Services.AddAuthentication()
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
       }; }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
-    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
+    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
           ValidateIssuer = true,
@@ -101,7 +101,7 @@ builder.Services.AddAuthentication()
           ValidateAudience = false,
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
+          ValidIssuer = builder.Configuration["AuthGW:Issuer"]
       }; })
     .AddJwtBearer(Constants.Security.SinunaScheme, c =>
     { 
@@ -135,14 +135,7 @@ builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: "TestbedCorsPolicy",
-        policy  =>
-        {
-            policy.WithHeaders("Authorization", "X-authorization-provider");
-        }); 
-});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

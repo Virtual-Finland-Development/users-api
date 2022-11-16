@@ -6,6 +6,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -116,8 +117,15 @@ public static class UpdateUser
             private readonly ICountriesRepository _countriesRepository;
             private readonly IOccupationsRepository _occupationsRepository;
             private readonly IHttpClientFactory _httpClientFactory;
+            private readonly IConfiguration _configuration;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository, IHttpClientFactory httpClientFactory)
+            public Handler(UsersDbContext usersDbContext,
+                ILogger<Handler> logger,
+                ILanguageRepository languageRepository,
+                ICountriesRepository countriesRepository,
+                IOccupationsRepository occupationsRepository,
+                IHttpClientFactory httpClientFactory,
+                IConfiguration configuration)
             {
                 _usersDbContext = usersDbContext;
                 _logger = logger;
@@ -125,6 +133,7 @@ public static class UpdateUser
                 _countriesRepository = countriesRepository;
                 _occupationsRepository = occupationsRepository;
                 _httpClientFactory = httpClientFactory;
+                _configuration = configuration;
             }
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
@@ -166,16 +175,13 @@ public static class UpdateUser
                 {
                     HttpClient httpClient = _httpClientFactory.CreateClient();
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(command.JwtToken.Replace("Bearer ", string.Empty) ?? string.Empty);
-                    httpClient.DefaultRequestHeaders.Add("x-authorization-context", "user-api-productizer");
-                    httpClient.DefaultRequestHeaders.Add("x-authorization-provider", command.XAuthorizationProvider);
-                    using HttpResponseMessage response = await httpClient.PostAsync("https://q88uo5prmh.execute-api.eu-north-1.amazonaws.com/authorize", null);
+                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
+                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, command.XAuthorizationProvider);
+                    using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
                     response.EnsureSuccessStatusCode();
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(responseBody);
                 }
                 catch (HttpRequestException e)
                 {
-                    Console.WriteLine("Message :{0} ", e.Message);
                     throw new NotAuthorizedException(e.Message);
                 }
             }

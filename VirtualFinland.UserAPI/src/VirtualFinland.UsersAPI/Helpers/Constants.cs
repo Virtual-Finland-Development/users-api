@@ -19,6 +19,14 @@ public static class Constants
                 return "nameID";
             }
         }
+
+        public static string AuthGwApplicationContext
+        {
+            get
+            {
+                return "user-api-productizer";
+            }
+        }
     }
     public static class Security
     {
@@ -51,6 +59,25 @@ public static class Constants
             get
             {
                 return "AllPolicies";
+            }
+        }
+    }
+
+    public static class Headers
+    {
+        public static string XAuthorizationContext
+        {
+            get
+            {
+                return "x-authorization-context";
+            }
+        }
+        
+        public static string XAuthorizationProvider
+        {
+            get
+            {
+                return "x-authorization-provider";
             }
         }
     }

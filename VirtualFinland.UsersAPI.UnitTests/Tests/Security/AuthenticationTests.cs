@@ -20,7 +20,7 @@ public class AuthenticationTests : APITestBase
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<AuthenticationService>>();
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
         var mockHttpContext = new Mock<HttpContext>();
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockClaimsPrincipal = new Mock<ClaimsPrincipal>();

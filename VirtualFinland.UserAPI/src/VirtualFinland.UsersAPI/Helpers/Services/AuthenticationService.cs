@@ -46,7 +46,7 @@ public class AuthenticationService
     {
         try
         {
-            if (claimsIssuer != null && claimsIssuer.Contains(_configuration["SuomiFI:Issuer"]))
+            if (claimsIssuer != null && claimsIssuer.Contains(_configuration["AuthGW:Issuer"]))
             {
                 claimsUserId = "suomifiDummyUserId";
             }
