@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
@@ -20,9 +21,9 @@ public class ProductizerController : ApiControllerBase
         
     }
     
-
-    [HttpGet("/productizer/user")]
-    [SwaggerOperation(Summary = "Get the current logged user personal profile", Description = "Returns the current logged user own personal details and his default search profile.")]
+    [EnableCors("TestbedCorsPolicy")]
+    [HttpPost("/productizer/user")]
+    [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)", Description = "Returns the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
@@ -31,4 +32,15 @@ public class ProductizerController : ApiControllerBase
         return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization, this.Request.Headers["X-authorization-provider"])));
     }
     
+    [HttpPatch("/productizer/user/write")]
+    [SwaggerOperation(Summary = "Updates the current logged user personal profile (Testbed Productizer)", Description = "Updates the current logged user own personal details and his default search profile.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
+    {
+        command.SetAuth(await this.GetCurrentUserId());
+        command.SetRequestHeaders(this.Request.Headers.Authorization, this.Request.Headers["X-authorization-provider"]);
+        return Ok(await Mediator.Send(command));
+    }
+
 }

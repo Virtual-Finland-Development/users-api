@@ -20,13 +20,13 @@ public static class GetUser
         [SwaggerIgnore]
         public string? JwtToken { get; }
         [SwaggerIgnore]
-        public string? XAuthorizationToken { get; }
+        public string? XAuthorizationProvider { get; }
 
-        public Query(Guid? userId, string? jwtToken, string? xAuthorizationToken)
+        public Query(Guid? userId, string? jwtToken, string? xAuthorizationProvider)
         {
             this.UserId = userId;
             this.JwtToken = jwtToken;
-            this.XAuthorizationToken = xAuthorizationToken;
+            this.XAuthorizationProvider = xAuthorizationProvider;
         }
     }
 
@@ -53,22 +53,7 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            try
-            {
-                HttpClient httpClient = _httpClientFactory.CreateClient();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(request.JwtToken.Replace("Bearer ", string.Empty) ?? string.Empty);
-                httpClient.DefaultRequestHeaders.Add("x-authorization-context", "user-api-productizer");
-                httpClient.DefaultRequestHeaders.Add("x-authorization-provider", request.XAuthorizationToken);
-                using HttpResponseMessage response = await httpClient.PostAsync("https://q88uo5prmh.execute-api.eu-north-1.amazonaws.com/authorize", null);
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(responseBody);
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine("Message :{0} ", e.Message);
-                throw new NotAuthorizedException(e.Message);
-            }
+           await ValidateToken(request);
 
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
 
@@ -92,6 +77,26 @@ public static class GetUser
                 dbUser.CitizenshipCode,
                 dbUser.Gender,
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+        }
+
+        private async Task ValidateToken(Query request)
+        {
+            try
+            {
+                HttpClient httpClient = _httpClientFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(request.JwtToken.Replace("Bearer ", string.Empty) ?? string.Empty);
+                httpClient.DefaultRequestHeaders.Add("x-authorization-context", "user-api-productizer");
+                httpClient.DefaultRequestHeaders.Add("x-authorization-provider", request.XAuthorizationProvider);
+                using HttpResponseMessage response = await httpClient.PostAsync("https://q88uo5prmh.execute-api.eu-north-1.amazonaws.com/authorize", null);
+                response.EnsureSuccessStatusCode();
+                string responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(responseBody);
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine("Message :{0} ", e.Message);
+                throw new NotAuthorizedException(e.Message);
+            }
         }
     }
     

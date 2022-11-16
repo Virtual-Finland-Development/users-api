@@ -135,7 +135,14 @@ builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "TestbedCorsPolicy",
+        policy  =>
+        {
+            policy.WithHeaders("Authorization", "X-authorization-provider");
+        }); 
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
