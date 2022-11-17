@@ -28,7 +28,7 @@ public class ProductizerController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization, this.Request.Headers["X-authorization-provider"])));
+        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization)));
     }
     
     [HttpPatch("/productizer/user/write")]
@@ -38,7 +38,7 @@ public class ProductizerController : ApiControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
         command.SetAuth(await this.GetCurrentUserId());
-        command.SetRequestHeaders(this.Request.Headers.Authorization, this.Request.Headers["X-authorization-provider"]);
+        command.SetRequestAuthorization(this.Request.Headers.Authorization);
         return Ok(await Mediator.Send(command));
     }
 

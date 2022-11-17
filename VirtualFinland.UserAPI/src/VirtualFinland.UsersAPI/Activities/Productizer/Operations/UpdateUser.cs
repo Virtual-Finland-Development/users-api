@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using FluentValidation;
 using MediatR;
@@ -46,11 +47,8 @@ public static class UpdateUser
         public Guid? UserId { get; private set; }
         
         [SwaggerIgnore]
-        public string? JwtToken { get; private set; }
-        
-        [SwaggerIgnore]
-        public string? XAuthorizationProvider { get; private set; }
-        
+        public string? Authorization { get; private set; }
+
         public Command(string? firstName,
             string? lastName,
             string? address,
@@ -85,10 +83,9 @@ public static class UpdateUser
             this.UserId = userDbId;
         }
 
-        public void SetRequestHeaders(string? jwtToken, string? xAuthorizationProvider)
+        public void SetRequestAuthorization(string? authorization)
         {
-            this.JwtToken = jwtToken;
-            this.XAuthorizationProvider = xAuthorizationProvider;
+            this.Authorization = authorization;
         }
     }
     
@@ -173,10 +170,14 @@ public static class UpdateUser
             {
                 try
                 {
+                    var token = command.Authorization.Replace("Bearer ", string.Empty) ?? string.Empty;
+                    var handler = new JwtSecurityTokenHandler();
+                    var jwtSecurityToken = handler.ReadJwtToken(token);
+                    
                     HttpClient httpClient = _httpClientFactory.CreateClient();
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(command.JwtToken.Replace("Bearer ", string.Empty) ?? string.Empty);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
                     httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
-                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, command.XAuthorizationProvider);
+                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, jwtSecurityToken.Issuer ?? String.Empty);
                     using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
                     response.EnsureSuccessStatusCode();
                 }
