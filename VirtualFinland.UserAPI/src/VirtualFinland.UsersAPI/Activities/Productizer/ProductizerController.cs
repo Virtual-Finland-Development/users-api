@@ -21,7 +21,7 @@ public class ProductizerController : ApiControllerBase
         
     }
     
-    [HttpPost("/productizer/user")]
+    [HttpPost("/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)", Description = "Returns the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -31,7 +31,7 @@ public class ProductizerController : ApiControllerBase
         return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization)));
     }
     
-    [HttpPatch("/productizer/user/write")]
+    [HttpPatch("/test/lassipatanen/User/Profile/Write")]
     [SwaggerOperation(Summary = "Updates the current logged user personal profile (Testbed Productizer)", Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
