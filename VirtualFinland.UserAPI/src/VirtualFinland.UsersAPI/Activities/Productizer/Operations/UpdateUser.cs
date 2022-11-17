@@ -171,13 +171,14 @@ public static class UpdateUser
                 try
                 {
                     var token = command.Authorization.Replace("Bearer ", string.Empty) ?? string.Empty;
-                    var handler = new JwtSecurityTokenHandler();
-                    var jwtSecurityToken = handler.ReadJwtToken(token);
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var canReadToken = tokenHandler.CanReadToken(token);
+                    var issuer = canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
                     
                     HttpClient httpClient = _httpClientFactory.CreateClient();
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
                     httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
-                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, jwtSecurityToken.Issuer ?? String.Empty);
+                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, issuer);
                     using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
                     response.EnsureSuccessStatusCode();
                 }
