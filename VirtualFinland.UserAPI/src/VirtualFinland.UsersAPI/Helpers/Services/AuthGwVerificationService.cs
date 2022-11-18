@@ -6,11 +6,11 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AuthGwVerificationService
 {
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly ILogger<AuthGwVerificationService> _logger;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
     
-    public AuthGwVerificationService(ILogger<AuthenticationService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public AuthGwVerificationService(ILogger<AuthGwVerificationService> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _configuration = configuration;

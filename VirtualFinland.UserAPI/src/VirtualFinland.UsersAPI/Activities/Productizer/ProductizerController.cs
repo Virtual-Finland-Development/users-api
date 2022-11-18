@@ -10,7 +10,6 @@ using VirtualFinland.UserAPI.Helpers.Services;
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
-[Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ApiControllerBase
@@ -41,7 +40,6 @@ public class ProductizerController : ApiControllerBase
     {
         await _authGwVerificationService.AuthGwVerification(this.Request);
         command.SetAuth(await this.GetCurrentUserId());
-        // command.SetRequestAuthorization(this.Request.Headers.Authorization);
         return Ok(await Mediator.Send(command));
     }
 
