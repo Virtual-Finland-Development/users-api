@@ -19,13 +19,10 @@ public static class GetUser
     {
         [SwaggerIgnore]
         public Guid? UserId { get; }
-        [SwaggerIgnore]
-        public string? Authorization { get; }
 
-        public Query(Guid? userId, string? authorization)
+        public Query(Guid? userId)
         {
             this.UserId = userId;
-            this.Authorization = authorization;
         }
     }
 

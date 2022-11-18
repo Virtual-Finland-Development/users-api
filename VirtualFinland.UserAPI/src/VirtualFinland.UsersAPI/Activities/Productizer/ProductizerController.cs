@@ -1,6 +1,4 @@
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
@@ -29,7 +27,7 @@ public class ProductizerController : ApiControllerBase
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         await _authGwVerificationService.AuthGwVerification(this.Request);
-        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization)));
+        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId())));
     }
     
     [HttpPatch("/test/lassipatanen/User/Profile/Write")]

@@ -68,6 +68,7 @@ public class AuthenticationTests : APITestBase
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:AuthorizeURL")]).Returns("https://someurl.com");
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
         var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object);
 
