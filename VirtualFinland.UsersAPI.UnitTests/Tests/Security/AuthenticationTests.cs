@@ -54,6 +54,7 @@ public class AuthenticationTests : APITestBase
     public async Task Should_FailAuthGwVerificationIfEmptyToken()
     {
         // Arrange
+        await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<AuthGwVerificationService>>();
         var mockConfiguration = new Mock<IConfiguration>();
         var mockHttpRequest = new Mock<HttpRequest>();
@@ -70,7 +71,7 @@ public class AuthenticationTests : APITestBase
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object);
+        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, _dbContext);
 
         // Act
         var act = () => authGwVerificationService.AuthGwVerification(mockHttpRequest.Object);
