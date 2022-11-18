@@ -127,13 +127,13 @@ options.AddPolicy( Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyB
 options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 
-
 builder.Services.AddResponseCaching();
 
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<AuthenticationService>();
+builder.Services.AddTransient<AuthGwVerificationService>();
 builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 
 var app = builder.Build();

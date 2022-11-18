@@ -41,20 +41,15 @@ public static class GetUser
     {
         private readonly UsersDbContext _usersDbContext;
         private readonly ILogger<Handler> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            await ValidateToken(request);
 
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
 
@@ -78,29 +73,6 @@ public static class GetUser
                 dbUser.CitizenshipCode,
                 dbUser.Gender,
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
-        }
-
-        private async Task ValidateToken(Query request)
-        {
-            try
-            {
-                var token = request.Authorization.Replace("Bearer ", string.Empty) ?? string.Empty;
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var canReadToken = tokenHandler.CanReadToken(token);
-                var issuer = canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
-                
-
-                HttpClient httpClient = _httpClientFactory.CreateClient();
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
-                httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
-                httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, issuer);
-                using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException e)
-            {
-                throw new NotAuthorizedException(e.Message);
-            }
         }
     }
     

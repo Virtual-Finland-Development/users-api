@@ -10,15 +10,16 @@ using VirtualFinland.UserAPI.Helpers.Services;
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
-// [Authorize("ProductizerAuth")]
 [Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ApiControllerBase
 {
-    public ProductizerController(IMediator mediator, AuthenticationService authenticationService) : base(mediator, authenticationService)
+    private readonly AuthGwVerificationService _authGwVerificationService;
+
+    public ProductizerController(IMediator mediator, AuthenticationService authenticationService, AuthGwVerificationService authGwVerificationService) : base(mediator, authenticationService)
     {
-        
+        _authGwVerificationService = authGwVerificationService;
     }
     
     [HttpPost("/test/lassipatanen/User/Profile")]
@@ -28,6 +29,7 @@ public class ProductizerController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
+        await _authGwVerificationService.AuthGwVerification(this.Request);
         return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId(), this.Request.Headers.Authorization)));
     }
     
@@ -37,8 +39,9 @@ public class ProductizerController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
+        await _authGwVerificationService.AuthGwVerification(this.Request);
         command.SetAuth(await this.GetCurrentUserId());
-        command.SetRequestAuthorization(this.Request.Headers.Authorization);
+        // command.SetRequestAuthorization(this.Request.Headers.Authorization);
         return Ok(await Mediator.Send(command));
     }
 

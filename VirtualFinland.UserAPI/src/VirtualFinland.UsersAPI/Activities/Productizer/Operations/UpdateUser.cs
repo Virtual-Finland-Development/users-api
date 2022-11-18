@@ -45,9 +45,6 @@ public static class UpdateUser
         
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
-        
-        [SwaggerIgnore]
-        public string? Authorization { get; private set; }
 
         public Command(string? firstName,
             string? lastName,
@@ -82,11 +79,6 @@ public static class UpdateUser
         {
             this.UserId = userDbId;
         }
-
-        public void SetRequestAuthorization(string? authorization)
-        {
-            this.Authorization = authorization;
-        }
     }
     
     public class CommandValidator : AbstractValidator<Command> 
@@ -113,29 +105,22 @@ public static class UpdateUser
             private readonly ILanguageRepository _languageRepository;
             private readonly ICountriesRepository _countriesRepository;
             private readonly IOccupationsRepository _occupationsRepository;
-            private readonly IHttpClientFactory _httpClientFactory;
-            private readonly IConfiguration _configuration;
 
             public Handler(UsersDbContext usersDbContext,
                 ILogger<Handler> logger,
                 ILanguageRepository languageRepository,
                 ICountriesRepository countriesRepository,
-                IOccupationsRepository occupationsRepository,
-                IHttpClientFactory httpClientFactory,
-                IConfiguration configuration)
+                IOccupationsRepository occupationsRepository)
             {
                 _usersDbContext = usersDbContext;
                 _logger = logger;
                 _languageRepository = languageRepository;
                 _countriesRepository = countriesRepository;
                 _occupationsRepository = occupationsRepository;
-                _httpClientFactory = httpClientFactory;
-                _configuration = configuration;
             }
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-                await ValidateToken(request);
 
                 var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
                 
@@ -164,28 +149,6 @@ public static class UpdateUser
                     dbUser.CitizenshipCode,
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
-            }
-            
-            private async Task ValidateToken(Command command)
-            {
-                try
-                {
-                    var token = command.Authorization.Replace("Bearer ", string.Empty) ?? string.Empty;
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var canReadToken = tokenHandler.CanReadToken(token);
-                    var issuer = canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
-                    
-                    HttpClient httpClient = _httpClientFactory.CreateClient();
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
-                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
-                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, issuer);
-                    using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
-                    response.EnsureSuccessStatusCode();
-                }
-                catch (HttpRequestException e)
-                {
-                    throw new NotAuthorizedException(e.Message);
-                }
             }
 
             private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
