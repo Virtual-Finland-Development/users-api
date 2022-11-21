@@ -59,7 +59,7 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command("New FirstName", "New LastName", string.Empty, true, false, "fi", "fi-FI", "01","fi",new List<string>(), new List<string>(), "1", DateTime.Now);
@@ -92,7 +92,7 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, null, null,"not a code",null, null, null, null);
@@ -113,7 +113,7 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, "not a code", null, null,null,null, null, null, null);
@@ -134,7 +134,7 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, "not a code", null,null,null, null, null, null);
@@ -155,7 +155,7 @@ public class UserTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
@@ -175,7 +175,7 @@ public class UserTests : APITestBase
         // Arrange
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
-        var countryRepository = new MockContriesRepository();
+        var countryRepository = new MockCountriesRepository();
         var languageRepository = new LanguageRepository();
         
         var command = new UpdateUser.Command(null, null, null, null, null, null, null, "not a code",null,null, null, null, null);
