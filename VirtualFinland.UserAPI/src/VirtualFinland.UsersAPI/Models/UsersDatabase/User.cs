@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -20,14 +21,22 @@ public class User : IEntity
     [MaxLength(512)]
     public string? Address { get; set; }
     
+    [MaxLength(5)]
+    public string? ZipCode { get; set; }
+ 
+    [MaxLength(512)]
+    public string? City { get; set; }
+    
+    [MaxLength(512)]
+    public string? Country { get; set; }
+    
     public bool ImmigrationDataConsent { get; set; }
     
     public bool JobsDataConsent { get; set; }
     
     public DateOnly? DateOfBirth { get; set; }
     
-    [MaxLength(10)]
-    public string? Gender { get; set; }
+    public Gender Gender { get; set; }
     
     [MaxLength(10)]
     public string? CountryOfBirthCode { get; set; }
@@ -40,4 +49,12 @@ public class User : IEntity
     
     [MaxLength(10)]
     public string? CitizenshipCode { get; set; }
+}
+
+public enum Gender
+{
+    [JsonPropertyName("MALE")]
+    Male = 1,
+    [JsonPropertyName("FEMALE")]
+    Female = 2
 }

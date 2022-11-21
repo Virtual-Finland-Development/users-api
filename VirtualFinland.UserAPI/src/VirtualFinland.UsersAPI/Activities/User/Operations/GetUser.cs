@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -52,6 +53,9 @@ public static class GetUser
                 dbUser.FirstName,
                 dbUser.LastName,
                 dbUser.Address,
+                string.Empty, // TODO: Return actual data
+                string.Empty,
+                string.Empty,
                 dbUserDefaultSearchProfile?.JobTitles,
                 dbUserDefaultSearchProfile?.Regions,
                 dbUser.Created,
@@ -72,6 +76,9 @@ public static class GetUser
         string? FirstName,
         string? LastName,
         string? Address,
+        string? ZipCode,
+        string? City,
+        string? Country,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
@@ -82,7 +89,7 @@ public static class GetUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        string? Gender,
+        Gender? Gender,
         DateTime? DateOfBirth);
     
 }

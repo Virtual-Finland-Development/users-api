@@ -36,14 +36,15 @@ public static class UpdateUser
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
         
-        public string? Gender { get; }
+        public Gender? Gender { get; }
         
         public DateTime? DateOfBirth { get; }
         
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
         
-        public Command(string? firstName,
+        public Command(
+            string? firstName,
             string? lastName,
             string? address,
             bool? jobsDataConsent,
@@ -54,7 +55,7 @@ public static class UpdateUser
             string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
-            string? gender,
+            Gender? gender,
             DateTime? dateOfBirth)
         {
             this.FirstName = firstName;
@@ -85,12 +86,12 @@ public static class UpdateUser
             RuleFor(command => command.UserId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
-            RuleFor(command => command.Address).MaximumLength(512);
+            RuleFor(command => command.Address).MaximumLength(255);
             RuleFor(command => command.CitizenshipCode).MaximumLength(10);
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
-            RuleFor(command => command.Gender).MaximumLength(10);
+            RuleFor(command => command.Gender).IsInEnum();
         }
     }
     
@@ -125,10 +126,14 @@ public static class UpdateUser
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
-                return new User(dbUser.Id,
+                return new User(
+                    dbUser.Id,
                     dbUser.FirstName,
                     dbUser.LastName,
                     dbUser.Address,
+                    string.Empty, // TODO: Return actual data
+                    string.Empty,
+                    string.Empty,
                     dbUserDefaultSearchProfile.JobTitles,
                     dbUserDefaultSearchProfile.Regions,
                     dbUser.Created,
@@ -265,6 +270,9 @@ public static class UpdateUser
         string? FirstName,
         string? LastName,
         string? Address,
+        string? ZipCode,
+        string? City,
+        string? Country,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
@@ -275,6 +283,6 @@ public static class UpdateUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        string? Gender,
+        Gender? Gender,
         DateTime? DateOfBirth);
 }
