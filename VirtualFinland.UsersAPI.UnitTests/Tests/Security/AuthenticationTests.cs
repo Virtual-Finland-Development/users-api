@@ -20,29 +20,17 @@ public class AuthenticationTests : APITestBase
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<AuthenticationService>>();
+        var mockUserSecurityLogger = new Mock<ILogger<UserSecurityService>>();
         var mockConfiguration = new Mock<IConfiguration>();
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
-        var mockHttpContext = new Mock<HttpContext>();
         var mockHttpRequest = new Mock<HttpRequest>();
-        var mockClaimsPrincipal = new Mock<ClaimsPrincipal>();
-        var mockUserIdentity = new Mock<IIdentity>();
-        var mockUserSecuritySevice = new Mock<UserSecurityService>(_dbContext, mockLogger.Object, mockConfiguration.Object);
-        IList<Claim> invalidClaims = new List<Claim>()
-        {
-            new Claim(ClaimTypes.NameIdentifier, "user id not a match  from a token compared to database"),
-            new Claim("issuer", "issuer not a match from a token compared to database")
-        };
+        var mockHeaders = new Mock<IHeaderDictionary>();
+        var UserSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object, mockConfiguration.Object);
+
+        mockHeaders.Setup(o => o.Authorization).Returns("");
+        mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
         
-        mockHttpContext.Setup(o => o.Request).Returns(mockHttpRequest.Object);
-        mockHttpContext.Setup(o => o.Request.Path).Returns("/some-path");
-        mockHttpContext.Setup(o => o.User).Returns(mockClaimsPrincipal.Object);
-        mockHttpContext.Setup(o => o.User.Identity).Returns(mockUserIdentity.Object);
-        mockHttpContext.Setup(o => o.User.Identity.IsAuthenticated).Returns(true);
-        mockHttpContext.Setup(o => o.User.Claims).Returns(invalidClaims);
-        mockHttpRequest.Setup(o => o.HttpContext).Returns(mockHttpContext.Object);
-        
-        var authenticationService = new AuthenticationService(mockUserSecuritySevice.Object);
+        var authenticationService = new AuthenticationService(UserSecurityService);
 
         // Act
         var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
@@ -57,6 +45,7 @@ public class AuthenticationTests : APITestBase
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<AuthGwVerificationService>>();
+        var mockUserSecurityLogger = new Mock<ILogger<UserSecurityService>>();
         var mockConfiguration = new Mock<IConfiguration>();
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHttpClientFactory = new Mock<IHttpClientFactory>();
@@ -66,13 +55,14 @@ public class AuthenticationTests : APITestBase
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage {});
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
+        var UserSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object, mockConfiguration.Object);
 
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:AuthorizeURL")]).Returns("https://someurl.com");
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, null);
+        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, UserSecurityService);
 
         // Act
         var act = () => authGwVerificationService.AuthGwVerification(mockHttpRequest.Object);

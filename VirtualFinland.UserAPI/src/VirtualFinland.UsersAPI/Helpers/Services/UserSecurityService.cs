@@ -9,10 +9,10 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly ILogger<UserSecurityService> _logger;
     private readonly IConfiguration _configuration;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<AuthenticationService> logger, IConfiguration configuration)
+    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IConfiguration configuration)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
