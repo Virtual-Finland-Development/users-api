@@ -1,20 +1,22 @@
 using Bogus;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;
 
 public class APIUserFactory
 {
-    public async static Task<(User user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(UsersDbContext dbContext)
+    public static async Task<(User user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
+        UsersDbContext dbContext)
     {
-        var faker = new Faker("en");
-        
-        var dbUser = dbContext.Users.Add(new User()
+        var faker = new Faker();
+
+        var dbUser = dbContext.Users.Add(new User
         {
-            Address = faker.Address.FullAddress(),
+            Address = faker.Address.StreetAddress(),
+            ZipCode = faker.Address.ZipCode(),
+            City = faker.Address.City(),
+            Country = faker.Address.Country(),
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             FirstName = faker.Person.FirstName,
@@ -25,11 +27,11 @@ public class APIUserFactory
             CountryOfBirthCode = "FR",
             OccupationCode = "4012",
             NativeLanguageCode = "FR",
-            Gender = "1",
+            Gender = Gender.Male,
             DateOfBirth = DateOnly.FromDateTime(DateTime.Now)
         });
 
-        var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity()
+        var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
