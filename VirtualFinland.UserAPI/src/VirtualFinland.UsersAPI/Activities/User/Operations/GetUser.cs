@@ -52,10 +52,12 @@ public static class GetUser
             return new User(dbUser.Id,
                 dbUser.FirstName,
                 dbUser.LastName,
-                dbUser.Address,
-                string.Empty, // TODO: Return actual data
-                string.Empty,
-                string.Empty,
+                new Address(
+                    dbUser.Address,
+                    string.Empty, // TODO: Return actual data
+                    string.Empty,
+                    string.Empty
+                ),
                 dbUserDefaultSearchProfile?.JobTitles,
                 dbUserDefaultSearchProfile?.Regions,
                 dbUser.Created,
@@ -75,10 +77,7 @@ public static class GetUser
     public record User(Guid Id,
         string? FirstName,
         string? LastName,
-        string? Address,
-        string? ZipCode,
-        string? City,
-        string? Country,
+        Address? Address,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
@@ -92,4 +91,10 @@ public static class GetUser
         Gender? Gender,
         DateTime? DateOfBirth);
     
+    public record Address(
+        string? StreetAddress,
+        string? ZipCode,
+        string? City,
+        string? Country
+    );
 }
