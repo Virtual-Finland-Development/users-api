@@ -27,6 +27,7 @@ public class AuthenticationTests : APITestBase
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockClaimsPrincipal = new Mock<ClaimsPrincipal>();
         var mockUserIdentity = new Mock<IIdentity>();
+        var mockUserSecuritySevice = new Mock<UserSecurityService>(_dbContext, mockLogger.Object, mockConfiguration.Object);
         IList<Claim> invalidClaims = new List<Claim>()
         {
             new Claim(ClaimTypes.NameIdentifier, "user id not a match  from a token compared to database"),
@@ -41,7 +42,7 @@ public class AuthenticationTests : APITestBase
         mockHttpContext.Setup(o => o.User.Claims).Returns(invalidClaims);
         mockHttpRequest.Setup(o => o.HttpContext).Returns(mockHttpContext.Object);
         
-        var authenticationService = new AuthenticationService(_dbContext, mockLogger.Object, mockConfiguration.Object);
+        var authenticationService = new AuthenticationService(mockUserSecuritySevice.Object);
 
         // Act
         var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
@@ -61,7 +62,7 @@ public class AuthenticationTests : APITestBase
         var mockHttpClientFactory = new Mock<IHttpClientFactory>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        mockHttpMessageHandler.Protected()
+        mockHttpMessageHandler.Protected()  
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage {});
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
@@ -71,7 +72,7 @@ public class AuthenticationTests : APITestBase
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, _dbContext);
+        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, null);
 
         // Act
         var act = () => authGwVerificationService.AuthGwVerification(mockHttpRequest.Object);
