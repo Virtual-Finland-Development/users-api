@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using VirtualFinland.UserAPI.Exceptions;
 
@@ -25,12 +24,10 @@ public class AuthGwVerificationService
         if (currentUserId == null)
         {
             var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-            var issuer = this.GetIssuer(token);
-            var userId = this.GetUserId(token);
-
-            if (!String.IsNullOrEmpty(issuer) && !String.IsNullOrEmpty(userId))
+            
+            if (!String.IsNullOrEmpty(token))
             {
-                var dbUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(issuer, userId);
+                var dbUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
                 currentUserId = dbUser?.Id;
             }
         }
@@ -42,7 +39,7 @@ public class AuthGwVerificationService
         try
         {
             var token = request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-            var issuer = this.GetIssuer(token);
+            var issuer = _userSecurityService.GetTokenIssuer(token);
 
             HttpClient httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
@@ -61,25 +58,5 @@ public class AuthGwVerificationService
             _logger.LogWarning("AuthGW could verify token.");
             throw new NotAuthorizedException(e.Message);
         }
-    }
-
-    private String? GetUserId(String token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        if (!tokenHandler.CanReadToken(token))
-        {
-            return String.Empty;
-        }
-
-        var jwtSecurityToken = tokenHandler.ReadJwtToken(token);
-        return String.IsNullOrEmpty(jwtSecurityToken.Subject) ? jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "userId")?.Value : jwtSecurityToken.Subject;
-    }
-
-    private String? GetIssuer(String token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var canReadToken = tokenHandler.CanReadToken(token);
-        return canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
     }
 }

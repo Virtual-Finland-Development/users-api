@@ -37,12 +37,7 @@ public static class VerifyIdentityUser
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
             var claimsUserId = request.ClaimsUserId;
-            
-            if (request.ClaimsIssuer != null && request.ClaimsIssuer.Contains(_configuration["AuthGW:Issuer"]))
-            {
-                claimsUserId = "suomifiDummyUserId";
-            }
-            
+
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(o => o.IdentityId == claimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             // Create a new system user is no one found based on given authentication information

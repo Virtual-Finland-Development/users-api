@@ -12,11 +12,11 @@ public static class Constants
             }
         }
 
-        public static string ClaimNameId
+        public static string ClaimUserId
         {
             get
             {
-                return "nameID";
+                return "userId";
             }
         }
 
