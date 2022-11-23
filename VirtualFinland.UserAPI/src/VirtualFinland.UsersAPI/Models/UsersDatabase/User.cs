@@ -51,10 +51,11 @@ public class User : IEntity
     public string? CitizenshipCode { get; set; }
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Gender
 {
-    [JsonPropertyName("MALE")]
+    [JsonPropertyName("Male")]
     Male = 1,
-    [JsonPropertyName("FEMALE")]
+    [JsonPropertyName("Female")]
     Female = 2
 }
