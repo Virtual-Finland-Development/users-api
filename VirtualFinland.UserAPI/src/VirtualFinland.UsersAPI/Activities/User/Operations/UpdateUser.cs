@@ -132,9 +132,9 @@ public static class UpdateUser
                     dbUser.LastName,
                     new Address(
                         dbUser.StreetAddress,
-                        string.Empty, // TODO: Return actual data
-                        string.Empty,
-                        string.Empty
+                        dbUser.ZipCode, // TODO: Return actual data
+                        dbUser.City,
+                        dbUser.Country
                     ),
                     dbUserDefaultSearchProfile.JobTitles,
                     dbUserDefaultSearchProfile.Regions,

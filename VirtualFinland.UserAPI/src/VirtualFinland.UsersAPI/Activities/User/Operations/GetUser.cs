@@ -54,9 +54,9 @@ public static class GetUser
                 dbUser.LastName,
                 new Address(
                     dbUser.StreetAddress,
-                    string.Empty, // TODO: Return actual data
-                    string.Empty,
-                    string.Empty
+                    dbUser.ZipCode,
+                    dbUser.City,
+                    dbUser.Country
                 ),
                 dbUserDefaultSearchProfile?.JobTitles,
                 dbUserDefaultSearchProfile?.Regions,
