@@ -53,7 +53,7 @@ public static class GetUser
                 dbUser.FirstName,
                 dbUser.LastName,
                 new Address(
-                    dbUser.Address,
+                    dbUser.StreetAddress,
                     string.Empty, // TODO: Return actual data
                     string.Empty,
                     string.Empty

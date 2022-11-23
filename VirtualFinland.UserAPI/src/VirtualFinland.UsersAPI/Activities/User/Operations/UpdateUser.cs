@@ -131,7 +131,7 @@ public static class UpdateUser
                     dbUser.FirstName,
                     dbUser.LastName,
                     new Address(
-                        dbUser.Address,
+                        dbUser.StreetAddress,
                         string.Empty, // TODO: Return actual data
                         string.Empty,
                         string.Empty
@@ -165,7 +165,7 @@ public static class UpdateUser
 
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.Address = request.Address ?? dbUser.Address;
+                dbUser.StreetAddress = request.Address ?? dbUser.StreetAddress;
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;

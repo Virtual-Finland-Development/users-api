@@ -13,7 +13,7 @@ public class APIUserFactory
 
         var dbUser = dbContext.Users.Add(new User
         {
-            Address = faker.Address.StreetAddress(),
+            StreetAddress = faker.Address.StreetAddress(),
             ZipCode = faker.Address.ZipCode(),
             City = faker.Address.City(),
             Country = faker.Address.Country(),

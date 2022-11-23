@@ -19,7 +19,7 @@ public class User : IEntity
     public string? LastName { get; set; }
     
     [MaxLength(512)]
-    public string? Address { get; set; }
+    public string? StreetAddress { get; set; }
     
     [MaxLength(5)]
     public string? ZipCode { get; set; }

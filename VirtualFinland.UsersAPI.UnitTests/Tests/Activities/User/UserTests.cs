@@ -30,7 +30,7 @@ public class UserTests : APITestBase
             .Match<GetUser.User>(o =>
                 o.DateOfBirth != null &&
                 o.Id == dbEntities.user.Id &&
-                o.Address!.StreetAddress == dbEntities.user.Address &&
+                o.Address!.StreetAddress == dbEntities.user.StreetAddress &&
                 o.FirstName == dbEntities.user.FirstName &&
                 o.LastName == dbEntities.user.LastName &&
                 o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
