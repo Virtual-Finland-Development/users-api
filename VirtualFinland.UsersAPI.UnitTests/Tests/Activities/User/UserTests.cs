@@ -184,7 +184,7 @@ public class UserTests : APITestBase
         var command = new UpdateUserCommandBuilder()
             .WithFirstName(new string('*', 256))
             .WithLastName(new string('*', 256))
-            .WithAddress(new string('*', 256))
+            .WithAddress(new AddressBuilder().WithStreetAddress(new string('*', 256)).Build())
             .WithJobsDataConsent(null)
             .WithImmigrationDataConsent(null)
             .WithCountryOfBirthCode("12345678910")
@@ -203,7 +203,7 @@ public class UserTests : APITestBase
         
         result.ShouldHaveValidationErrorFor(user => user.FirstName);
         result.ShouldHaveValidationErrorFor(user => user.LastName);
-        result.ShouldHaveValidationErrorFor(user => user.Address);
+        result.ShouldHaveValidationErrorFor(user => user.Address!.StreetAddress);
         result.ShouldHaveValidationErrorFor(user => user.Gender);
         result.ShouldHaveValidationErrorFor(user => user.CountryOfBirthCode);
         result.ShouldHaveValidationErrorFor(user => user.CitizenshipCode);

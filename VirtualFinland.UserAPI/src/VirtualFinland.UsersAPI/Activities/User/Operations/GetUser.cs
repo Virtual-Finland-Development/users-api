@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -90,11 +91,4 @@ public static class GetUser
         string? CitizenshipCode,
         Gender? Gender,
         DateTime? DateOfBirth);
-    
-    public record Address(
-        string? StreetAddress,
-        string? ZipCode,
-        string? City,
-        string? Country
-    );
 }
