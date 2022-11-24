@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -19,7 +20,7 @@ public static class UpdateUser
         public string? FirstName { get; }
         public string? LastName { get; }
         
-        public string? Address { get; }
+        public Address? Address { get; }
         
         public bool? JobsDataConsent { get; }
         
@@ -46,7 +47,7 @@ public static class UpdateUser
         public Command(
             string? firstName,
             string? lastName,
-            string? address,
+            Address? address,
             bool? jobsDataConsent,
             bool? immigrationDataConsent,
             string? countryOfBirthCode,
@@ -78,7 +79,18 @@ public static class UpdateUser
             this.UserId = userDbId;
         }
     }
-    
+
+    public class AddressValidator : AbstractValidator<Address>
+    {
+        public AddressValidator()
+        {
+            RuleFor(address => address.StreetAddress).MaximumLength(255);
+            RuleFor(address => address.City).MaximumLength(255);
+            RuleFor(address => address.Country).MaximumLength(255);
+            RuleFor(address => address.ZipCode).MaximumLength(5);
+        }
+    }
+
     public class CommandValidator : AbstractValidator<Command> 
     {
         public CommandValidator()
@@ -86,7 +98,7 @@ public static class UpdateUser
             RuleFor(command => command.UserId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
-            RuleFor(command => command.Address).MaximumLength(255);
+            RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
             RuleFor(command => command.CitizenshipCode).MaximumLength(10);
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
@@ -165,7 +177,7 @@ public static class UpdateUser
 
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.StreetAddress = request.Address ?? dbUser.StreetAddress;
+                dbUser.StreetAddress = request.Address?.StreetAddress ?? dbUser.StreetAddress;
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
@@ -284,11 +296,4 @@ public static class UpdateUser
         string? CitizenshipCode,
         Gender? Gender,
         DateTime? DateOfBirth);
-    
-    public record Address(
-        string? StreetAddress,
-        string? ZipCode,
-        string? City,
-        string? Country
-    );
 }
