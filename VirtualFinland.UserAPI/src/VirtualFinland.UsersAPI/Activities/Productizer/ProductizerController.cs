@@ -21,7 +21,7 @@ public class ProductizerController : ControllerBase
         _authGwVerificationService = authGwVerificationService;
     }
     
-    [HttpPost("/test/lassipatanen/User/Profile")]
+    [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)", Description = "Returns the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -32,7 +32,7 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(new GetUser.Query(await _authGwVerificationService.GetCurrentUserId(this.Request))));
     }
     
-    [HttpPatch("/test/lassipatanen/User/Profile/Write")]
+    [HttpPatch("/productizer/test/lassipatanen/User/Profile/Write")]
     [SwaggerOperation(Summary = "Updates the current logged user personal profile (Testbed Productizer)", Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
