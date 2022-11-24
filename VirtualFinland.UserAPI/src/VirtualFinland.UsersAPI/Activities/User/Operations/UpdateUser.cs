@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -19,7 +20,7 @@ public static class UpdateUser
         public string? FirstName { get; }
         public string? LastName { get; }
         
-        public string? Address { get; }
+        public Address? Address { get; }
         
         public bool? JobsDataConsent { get; }
         
@@ -36,16 +37,17 @@ public static class UpdateUser
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
         
-        public string? Gender { get; }
+        public Gender? Gender { get; }
         
         public DateTime? DateOfBirth { get; }
         
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
         
-        public Command(string? firstName,
+        public Command(
+            string? firstName,
             string? lastName,
-            string? address,
+            Address? address,
             bool? jobsDataConsent,
             bool? immigrationDataConsent,
             string? countryOfBirthCode,
@@ -54,7 +56,7 @@ public static class UpdateUser
             string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
-            string? gender,
+            Gender? gender,
             DateTime? dateOfBirth)
         {
             this.FirstName = firstName;
@@ -77,7 +79,18 @@ public static class UpdateUser
             this.UserId = userDbId;
         }
     }
-    
+
+    public class AddressValidator : AbstractValidator<Address>
+    {
+        public AddressValidator()
+        {
+            RuleFor(address => address.StreetAddress).MaximumLength(255);
+            RuleFor(address => address.City).MaximumLength(255);
+            RuleFor(address => address.Country).MaximumLength(255);
+            RuleFor(address => address.ZipCode).MaximumLength(5);
+        }
+    }
+
     public class CommandValidator : AbstractValidator<Command> 
     {
         public CommandValidator()
@@ -85,12 +98,12 @@ public static class UpdateUser
             RuleFor(command => command.UserId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
-            RuleFor(command => command.Address).MaximumLength(512);
+            RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
             RuleFor(command => command.CitizenshipCode).MaximumLength(10);
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
-            RuleFor(command => command.Gender).MaximumLength(10);
+            RuleFor(command => command.Gender).IsInEnum();
         }
     }
     
@@ -125,10 +138,16 @@ public static class UpdateUser
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
-                return new User(dbUser.Id,
+                return new User(
+                    dbUser.Id,
                     dbUser.FirstName,
                     dbUser.LastName,
-                    dbUser.Address,
+                    new Address(
+                        dbUser.StreetAddress,
+                        dbUser.ZipCode, // TODO: Return actual data
+                        dbUser.City,
+                        dbUser.Country
+                    ),
                     dbUserDefaultSearchProfile.JobTitles,
                     dbUserDefaultSearchProfile.Regions,
                     dbUser.Created,
@@ -158,7 +177,10 @@ public static class UpdateUser
 
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.Address = request.Address ?? dbUser.Address;
+                dbUser.StreetAddress = request.Address?.StreetAddress ?? dbUser.StreetAddress;
+                dbUser.ZipCode = request.Address?.ZipCode ?? dbUser.ZipCode;
+                dbUser.City = request.Address?.City ?? dbUser.City;
+                dbUser.Country = request.Address?.Country ?? dbUser.Country;
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
@@ -264,7 +286,7 @@ public static class UpdateUser
     public record User(Guid Id,
         string? FirstName,
         string? LastName,
-        string? Address,
+        Address? Address,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
@@ -275,6 +297,6 @@ public static class UpdateUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        string? Gender,
+        Gender? Gender,
         DateTime? DateOfBirth);
 }

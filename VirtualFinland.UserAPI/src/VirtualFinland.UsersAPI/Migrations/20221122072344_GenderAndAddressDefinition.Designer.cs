@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221122072344_GenderAndAddressDefinition")]
+    partial class GenderAndAddressDefinition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,11 +55,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("9ed28e82-6cb9-4c48-a27c-603c5a97221f"),
-                            Created = new DateTime(2022, 11, 23, 7, 15, 9, 238, DateTimeKind.Utc).AddTicks(4460),
-                            IdentityId = "a8f51b88-af6b-4a95-b2d8-da62e0fb4f65",
-                            Issuer = "15b205f4-98bc-491f-8616-ce66043ee7f6",
-                            Modified = new DateTime(2022, 11, 23, 7, 15, 9, 238, DateTimeKind.Utc).AddTicks(4460),
+                            Id = new Guid("981cecb2-d916-49e7-b194-a9d0e81bf1b2"),
+                            Created = new DateTime(2022, 11, 22, 7, 23, 44, 435, DateTimeKind.Utc).AddTicks(4050),
+                            IdentityId = "1766fb5f-c867-45e3-90ee-9b6fba5d2d80",
+                            Issuer = "20ca085a-64e1-4787-ae5f-1a82049cb941",
+                            Modified = new DateTime(2022, 11, 22, 7, 23, 44, 435, DateTimeKind.Utc).AddTicks(4050),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -99,6 +101,10 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.Property<string>("CitizenshipCode")
                         .HasMaxLength(10)
@@ -151,10 +157,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
-                    b.Property<string>("StreetAddress")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
                     b.Property<string>("ZipCode")
                         .HasMaxLength(5)
                         .HasColumnType("character varying(5)");
@@ -167,13 +169,13 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2022, 11, 23, 7, 15, 9, 238, DateTimeKind.Utc).AddTicks(4010),
+                            Created = new DateTime(2022, 11, 22, 7, 23, 44, 435, DateTimeKind.Utc).AddTicks(3620),
                             FirstName = "WarmUpUser",
                             Gender = "0",
                             ImmigrationDataConsent = false,
                             JobsDataConsent = false,
                             LastName = "WarmUpUser",
-                            Modified = new DateTime(2022, 11, 23, 7, 15, 9, 238, DateTimeKind.Utc).AddTicks(4010)
+                            Modified = new DateTime(2022, 11, 22, 7, 23, 44, 435, DateTimeKind.Utc).AddTicks(3620)
                         });
                 });
 #pragma warning restore 612, 618

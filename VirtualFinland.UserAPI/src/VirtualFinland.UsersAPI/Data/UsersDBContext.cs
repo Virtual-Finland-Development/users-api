@@ -59,6 +59,8 @@ public class UsersDbContext : DbContext
             Modified = DateTime.UtcNow
         });
 
+        modelBuilder.Entity<User>().Property(u => u.Gender).HasConversion<string>();
+
         modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity()
         {
             Id = Guid.NewGuid(),
