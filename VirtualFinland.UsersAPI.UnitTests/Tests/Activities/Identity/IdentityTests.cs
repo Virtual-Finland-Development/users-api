@@ -18,7 +18,7 @@ public class IdentityTests : APITestBase
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var query = new VerifyIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
         var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
         
         // Act
@@ -36,7 +36,7 @@ public class IdentityTests : APITestBase
         var query = new VerifyIdentityUser.Query(faker.Random.Guid().ToString(), faker.Random.String(10));
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "SuomiFI:Issuer")]).Returns("IssuerIdentity");
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
         var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
         
         // Act

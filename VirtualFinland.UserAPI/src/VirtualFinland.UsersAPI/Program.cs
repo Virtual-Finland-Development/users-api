@@ -93,7 +93,7 @@ builder.Services.AddAuthentication()
           ValidateIssuerSigningKey = true,
           ValidIssuer = testBedIdentityProviderConfig.Issuer
       }; }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
-    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonURL"]));
+    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
       c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
       {
           ValidateIssuer = true,
@@ -101,7 +101,7 @@ builder.Services.AddAuthentication()
           ValidateAudience = false,
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
+          ValidIssuer = builder.Configuration["AuthGW:Issuer"]
       }; })
     .AddJwtBearer(Constants.Security.SinunaScheme, c =>
     { 
@@ -127,13 +127,14 @@ options.AddPolicy( Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyB
 options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 
-
 builder.Services.AddResponseCaching();
 
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
+builder.Services.AddTransient<AuthGwVerificationService>();
 builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 
 var app = builder.Build();

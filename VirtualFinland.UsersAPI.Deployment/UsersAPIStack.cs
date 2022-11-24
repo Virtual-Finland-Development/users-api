@@ -103,7 +103,7 @@ public class UsersApiStack : Stack
                 Variables =
                 {
                     {
-                        "ASPNETCORE_ENVIRONMENT", "Development"
+                        "ASPNETCORE_ENVIRONMENT", environment
                     },
                     {
                         "DB_CONNECTION", Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
