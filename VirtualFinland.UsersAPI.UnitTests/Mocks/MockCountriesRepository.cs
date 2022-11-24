@@ -3,7 +3,7 @@ using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Mocks;
 
-public class MockContriesRepository : ICountriesRepository
+public class MockCountriesRepository : ICountriesRepository
 {
 
     public Task<List<Country>> GetAllCountries()
