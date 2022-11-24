@@ -9,6 +9,8 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Models.Shared;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;
 
@@ -57,7 +59,12 @@ public static class GetUser
             return new User(dbUser.Id,
                 dbUser.FirstName,
                 dbUser.LastName,
-                dbUser.Address,
+                new Address(
+                    dbUser.StreetAddress,
+                    dbUser.ZipCode,
+                    dbUser.City,
+                    dbUser.Country
+                ),
                 dbUserDefaultSearchProfile?.JobTitles,
                 dbUserDefaultSearchProfile?.Regions,
                 dbUser.Created,
@@ -77,7 +84,7 @@ public static class GetUser
     public record User(Guid Id,
         string? FirstName,
         string? LastName,
-        string? Address,
+        Address? Address,
         List<string>? JobTitles,
         List<string>? Regions,
         DateTime Created,
@@ -88,7 +95,7 @@ public static class GetUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        string? Gender,
+        Gender? Gender,
         DateTime? DateOfBirth);
     
 }
