@@ -178,6 +178,9 @@ public static class UpdateUser
                 dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
                 dbUser.StreetAddress = request.Address?.StreetAddress ?? dbUser.StreetAddress;
+                dbUser.ZipCode = request.Address?.ZipCode ?? dbUser.ZipCode;
+                dbUser.City = request.Address?.City ?? dbUser.City;
+                dbUser.Country = request.Address?.Country ?? dbUser.Country;
                 dbUser.Modified = DateTime.UtcNow;
                 dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
                 dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
