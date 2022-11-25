@@ -16,6 +16,7 @@ using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -140,7 +141,7 @@ builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtensions.IsStaging(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
