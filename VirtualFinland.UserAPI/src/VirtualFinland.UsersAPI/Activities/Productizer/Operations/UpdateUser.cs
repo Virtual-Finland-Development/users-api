@@ -154,8 +154,8 @@ public static class UpdateUser
                         dbUser.City,
                         dbUser.Country
                     ),
-                    dbUserDefaultSearchProfile.JobTitles,
-                    dbUserDefaultSearchProfile.Regions,
+                    dbUserDefaultSearchProfile.JobTitles ?? new List<string>(),
+                    dbUserDefaultSearchProfile.Regions ?? new List<string>(),
                     dbUser.Created,
                     dbUser.Modified,
                     dbUser.ImmigrationDataConsent,

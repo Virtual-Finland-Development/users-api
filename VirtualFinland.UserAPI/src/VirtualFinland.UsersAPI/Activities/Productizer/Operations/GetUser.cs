@@ -65,8 +65,8 @@ public static class GetUser
                     dbUser.City,
                     dbUser.Country
                 ),
-                dbUserDefaultSearchProfile?.JobTitles,
-                dbUserDefaultSearchProfile?.Regions,
+                dbUserDefaultSearchProfile?.JobTitles ?? new List<string>(),
+                dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
                 dbUser.Created,
                 dbUser.Modified,
                 dbUser.ImmigrationDataConsent,
@@ -79,7 +79,7 @@ public static class GetUser
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
         }
     }
-    
+
     [SwaggerSchema(Title = "UserResponse")]
     public record User(Guid Id,
         string? FirstName,
@@ -97,5 +97,5 @@ public static class GetUser
         string? CitizenshipCode,
         Gender? Gender,
         DateTime? DateOfBirth);
-    
+
 }
