@@ -76,6 +76,35 @@ public class UsersApiStack : Stack
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
+        
+        var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{projectName}-LambdaSecretManagerPolicy-{environment}", new()
+        {
+            Path = "/",
+            Description = "Users-API Secret Get Policy",
+            PolicyDocument = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["Version"] = "2012-10-17",
+                ["Statement"] = new[]
+                {
+                    new Dictionary<string, object?>
+                    {
+                        ["Action"] = new[]
+                        {
+                            "secretsmanager:GetSecretValue",
+                        },
+                        ["Effect"] = "Allow",
+                        ["Resource"] = "*",
+                    },
+                },
+            }),
+        });
+
+        
+        var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-SecretManager-{environment}", new RolePolicyAttachmentArgs
+        {
+            Role = Output.Format($"{role.Name}"),
+            PolicyArn = ManagedPolicy.SecretsManagerReadWrite.ToString(), // TODO: Swap for secretManagerReadPolicy policy if configs correct
+        });
 
         var defaultSecurityGroup =Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
