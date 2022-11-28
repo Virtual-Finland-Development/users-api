@@ -32,6 +32,9 @@ builder.Services.AddHttpClient("", c =>
 
  });
 
+// Validate server configurations
+ServerConfigurationValidation.ValidateServer(builder.Configuration);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 var securityScheme = new OpenApiSecurityScheme()
 {
