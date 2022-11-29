@@ -39,12 +39,10 @@ public class AuthGwVerificationService
         try
         {
             var token = request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-            var issuer = _userSecurityService.GetTokenIssuer(token);
 
             HttpClient httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
             httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
-            httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationProvider, issuer);
             using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
             response.EnsureSuccessStatusCode();
         }
