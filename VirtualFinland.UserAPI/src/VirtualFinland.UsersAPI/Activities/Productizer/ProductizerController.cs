@@ -43,4 +43,24 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
+    [HttpPost("/productizer/test/lassipatanen/User/Consents")]
+    [SwaggerOperation(Summary = "Get the current logged user personal consents (Testbed Productizer)", Description = "Returns the current logged user own personal consents.")]
+    [ProducesResponseType(typeof(GetConsents.Consents), StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> GetUserConsents()
+    {
+        await _authGwVerificationService.AuthGwVerification(this.Request);
+        return Ok(await _mediator.Send(new GetConsents.Query(await _authGwVerificationService.GetCurrentUserId(this.Request))));
+    }
+
+    [HttpPost("/productizer/test/lassipatanen/User/Consents/Write")]
+    [SwaggerOperation(Summary = "Updates the current logged user personal consents (Testbed Productizer)", Description = "Updates the current logged user own personal consents.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
+    {
+        await _authGwVerificationService.AuthGwVerification(this.Request);
+        command.SetAuth(await _authGwVerificationService.GetCurrentUserId(this.Request));
+        return Ok(await _mediator.Send(command));
+    }
 }

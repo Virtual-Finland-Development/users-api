@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b833c2e3-65dd-4dee-8e14-f9fdbda954f9",
+		"_postman_id": "2ae26570-3c6e-436b-8041-c9369c1fadd7",
 		"name": "UsersAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "22874660"
@@ -668,6 +668,58 @@
 						"lassipatanen",
 						"User",
 						"Profile",
+						"Write"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Productizer User Consents Get",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Consents",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Consents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Productizer User Consents Write",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"immigrationDataConsent\": false,\n    \"jobsDataConsent\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Consents/Write",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Consents",
 						"Write"
 					]
 				}
