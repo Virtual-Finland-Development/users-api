@@ -32,7 +32,7 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(new GetUser.Query(await _authGwVerificationService.GetCurrentUserId(this.Request))));
     }
     
-    [HttpPatch("/productizer/test/lassipatanen/User/Profile/Write")]
+    [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
     [SwaggerOperation(Summary = "Updates the current logged user personal profile (Testbed Productizer)", Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]

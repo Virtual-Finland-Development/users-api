@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "cb957e3e-269f-4df4-b16d-ac58f6612d60",
+		"_postman_id": "b833c2e3-65dd-4dee-8e14-f9fdbda954f9",
 		"name": "UsersAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "322459"
+		"_exporter_id": "22874660"
 	},
 	"item": [
 		{
@@ -55,7 +55,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"\",\n    \"firstName\": \"Mika\",\n    \"lastName\": \"Häkkinen\",\n    \"address\": \"Osoite 1, Helsinki\",\n    \"jobTitles\": [\"F1 Kuski\", \"3\"],\n    \"regions\": [\n        \"Helsinki\",\n        \"Espoo2\"\n    ],\n    \"immigrationDataConsent\": true,\n    \"jobsDataConsent\": false,\n    \"countryOfBirthCode\": \"FI\",\n    \"nativeLanguageCode\": \"en-GB\",\n    \"occupationCode\": \"92\",\n    \"nationalityCode\": \"FI\",\n    \"gender\": \"1\",\n    \"dateOfBirth\": \"2022-12-01T00:00:00\"\n}"
+					"raw": "{\n\n    \"firstName\": \"Productizer\",\n    \"lastName\": \"User\",\n    \"address\": {\n        \"streetAddress\": \"1092 Street\",\n        \"city\": \"Sun Prairie, WI\",\n        \"country\": \"United States\",\n        \"zipCode\": \"53590\"\n    }\n}"
 				},
 				"url": {
 					"raw": "{{host}}/user",
@@ -609,6 +609,70 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Productizer User Get",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-authorization-provider",
+						"value": "testbed",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Profile",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Productizer User Write",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-authorization-provider",
+						"value": "testbed",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstName\": \"productizer\",\n    \"lastName\": \"update\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Profile/Write",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Profile",
+						"Write"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
@@ -616,7 +680,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InZmZDphdXRoZ3c6c3VvbWlmaTpqd3QifQ.eyJhcHBDb250ZXh0SGFzaCI6ImV5SmhjSEJPWVcxbElqb2lZWFYwYUdac2IzY3RkR1Z6ZENJc0luSmxaR2x5WldOMFZYSnNJam9pYUhSMGNITTZMeTkyYVhKMGRXRnNMV1pwYm14aGJtUXRaR1YyWld4dmNHMWxiblF0WVhWMGFDMW1hV3hsY3k1ek15NWxkUzF1YjNKMGFDMHhMbUZ0WVhwdmJtRjNjeTVqYjIwdmFXNWtaWGd1YUhSdGJDSXNJbkJ5YjNacFpHVnlJam9pYzNWdmJXbG1hU0lzSW1kMWFXUWlPaUkxTkRjMFlUQm1OeTFoTkRaaUxUUTNZalV0T0dOa1pTMDNOekV5TkRRMU5qUm1aVElpZlElM0QlM0QiLCJuYW1lSUQiOiJBQWR6WldOeVpYUXhwYWQ3b3RsVXVKRGI0alV1YVdUWU85UHpTZWhYMHNIN2JvVldISmZxRk9VRU9QQlJZWlZXU1J0a2laNkdjS25EN3lBQ25penJCVFBRL3o5dlJpaVU2cEtINDVFS1ZVL1hIL0N5aFRpREJKVTY4QURuRzZ0cVNXSlM3UkNjZWZDWGdPemFEamh0UHM2cEY3V2tFeWlGc1hpbVA3Z20xVW1xVlhLOWt0WEJmQVVUUlBydks0cFhlTTFyeHplckZFUkciLCJub25jZSI6IjczMTEwNGM5M2UwNGE0YjI0NmFkZjQyZGNhY2E4OTUzOGI4NWNjNGJiZTBkYTRiOGJkYTliOWYxODg2ODQ0OWIiLCJpYXQiOjE2Njc1NTIyNzksImV4cCI6MTY2NzU1NTg3OSwiaXNzIjoiaHR0cHM6Ly9xODh1bzVwcm1oLmV4ZWN1dGUtYXBpLmV1LW5vcnRoLTEuYW1hem9uYXdzLmNvbSJ9.cUKvk1JkZV0Cp2Wj1NQNaIy_A1fM4UP0MhgQRkVwBCwAuJ3XJHG3qjM4eAm4baHYlDyIPquYXoEGIwtewa7nAzcxoo9Z58ThsJD_PJdq8_6vLaxYmIHmvoPqW4YB9f6QxwjkrMWSHoanHQKEqQ2Hwr7s0fadYR4b3kp4gcFSYX_t163rF12f_KZobCf2ETQCQMQW7V3Q4AdsuYZCQL9Ey8ydhYC4APp0Wuq8KmiCCKK7FsqnjT8IMP_OF-dfvBJRW_24lDxpFIH54svy56xA9NvYAzLD8SsZyfMLWhx7TJx_R4wQ2cvks87pGRIEMYGPv5K0fLZcjBFufuVo_SjIML2W-z9wEbg44hheRjf2zSleOnLno8cZrMyQJxStgQr_PMGPG3pI-gnIYMqF1N4xj7BSJScAuRhTdd2IV2iPS6TLYYRc0ZoDpPMl90CBmuqaDJYQqXDoUYfaQsiP_UeBaNxwcBwPgcEW_ciqkrSumHfTu0Xt7C2ckAzqGJ5MKGQcgV2csXxIeSSMxpUPvopvXnpktBBtYMRgCsJGRcmDDn6tOjE4Y1yirTUy0WCLsHhX9oxtDgL0mK24cYCn1DktcTvE9jq_tgjFWIPmakMB7JrB6BMPAURuC4jkAjF7V2WDvUKjfo464PF8yxLlfS6JWyjPYSzDuyYohTKYrydyZnY",
+				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJiR0YxY21sQWRHVnpkR1Z5TG5SbGMzUmlaV1F1Wm1rIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi50ZXN0YmVkLmZpIiwiaWF0IjoxNjY5Nzg5ODIxLCJleHAiOjE2Njk4NzYyMjEsImF1ZCI6ImU2YTVhNjQ1LTBjZjYtNDhhMS05ZjA4LTNkNzJiZTNhY2VhZiIsIm5vbmNlIjoiNjY1Yzk5ZDYtMzg4OC00NDBiLWI0YTMtYWZiYTI5N2Y0ZmVmIiwiYWNyIjoiZmFrZS1hdXRoIiwiZW1haWwiOiJsYXVyaUB0ZXN0ZXIudGVzdGJlZC5maSJ9.HdlNyvOniwLqS4qzJ_wbPnml63M23Fn6CKbZ_8uCXbNMjRGtax6TTnzU7vcVCl2Tgv8snfKpvXtvx72TcbAf-1_3d3qDgHuYt4tOR26bNTtUDs-iMRp2_m6oT35yxOJhJmHP7Ql2nsKtHsQGh9-G9eF07DnUqeP_XGuVxXeWXbt7L752TBQnCzf7g0hUt9cDzaHcw3EgMmSZpiNMCsJZmbHDwzmaTMbO8A8glcQd10WP3QwRt2GTF7mFsH-bidMFCP1r5gI0g9J5TqgOiUwAcgwG4ZUi2_m_h-CvdMMMGjNDcyphB86t-3GhDXiWA2LZfpjituWcqaqGx5fprVl7GDnKqo0NSU22tZH5O2H9LNYWl2tZaTMBSO_VEoawQ24Rj-e4Qabvl_qpH3XneuTeYNHpkz9P8pN5AL1Cwj3wTb6LBZG4y2VI0CVGWWAl5a_1hcLs1n8-6MnPrsSYlr2wSGDpjL_gKqoSsP99GiSyAQy2FpF9Q8OuruJivD8oxwWPTAYcrlLAs6AE6rdjuS47U7eXyNHKv5-Ka7cuGLI4whN_yYWa-0_bRhUK3xCO6P9yVSxxVSw_JTI3_6FytjJ-4HDetfPeYpl190oDTpuU87DXHH-iV1aMkmLfsgcJ_6Hk0cYMYI0W8OCfEtkFjWR_k9RDtLRXgt7VUxi5dsDsjXw",
 				"type": "string"
 			}
 		]
