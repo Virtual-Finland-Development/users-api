@@ -10,7 +10,7 @@ public class LanguageRepository : ILanguageRepository
     {
         return Task.FromResult(CultureInfo.GetCultures(CultureTypes.AllCultures)
             .Where(o => !string.IsNullOrEmpty(o.Name) && o.Name == o.TwoLetterISOLanguageName)
-            .Select(o => new Language(o.Name,
+            .Select(o => new Language(o.ThreeLetterISOLanguageName,
                 o.DisplayName,
                 o.EnglishName,
                 o.NativeName,
