@@ -34,8 +34,6 @@ public class ProductizerTests : APITestBase
                 o.Address!.StreetAddress == dbEntities.user.StreetAddress &&
                 o.FirstName == dbEntities.user.FirstName &&
                 o.LastName == dbEntities.user.LastName &&
-                o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
-                o.JobsDataConsent == dbEntities.user.JobsDataConsent &&
                 o.CitizenshipCode == dbEntities.user.CitizenshipCode &&
                 o.OccupationCode == dbEntities.user.OccupationCode &&
                 o.NativeLanguageCode == dbEntities.user.CitizenshipCode &&
@@ -67,8 +65,6 @@ public class ProductizerTests : APITestBase
                 o.Id == dbEntities.user.Id &&
                 o.FirstName == command.FirstName &&
                 o.LastName == command.LastName &&
-                o.ImmigrationDataConsent == command.ImmigrationDataConsent &&
-                o.JobsDataConsent == command.JobsDataConsent &&
                 o.CitizenshipCode == command.CitizenshipCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
                 o.OccupationCode == command.OccupationCode &&
