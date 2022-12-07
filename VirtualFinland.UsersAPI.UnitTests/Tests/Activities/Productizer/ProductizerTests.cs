@@ -41,7 +41,7 @@ public class ProductizerTests : APITestBase
                 o.NativeLanguageCode == dbEntities.user.CitizenshipCode &&
                 o.CountryOfBirthCode == dbEntities.user.CountryOfBirthCode &&
                 o.Gender == dbEntities.user.Gender &&
-                DateOnly.FromDateTime(o.DateOfBirth.Value) == dbEntities.user.DateOfBirth);
+                o.DateOfBirth == dbEntities.user.DateOfBirth);
         
     }
     

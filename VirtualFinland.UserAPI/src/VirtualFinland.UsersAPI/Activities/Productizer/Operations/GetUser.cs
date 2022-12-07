@@ -1,6 +1,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -55,47 +56,53 @@ public static class GetUser
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
-            
-            return new User(dbUser.Id,
-                dbUser.FirstName,
-                dbUser.LastName,
-                new Address(
-                    dbUser.StreetAddress,
-                    dbUser.ZipCode,
-                    dbUser.City,
-                    dbUser.Country
-                ),
-                dbUserDefaultSearchProfile?.JobTitles ?? new List<string>(),
-                dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
-                dbUser.Created,
-                dbUser.Modified,
-                dbUser.ImmigrationDataConsent,
-                dbUser.JobsDataConsent,
-                dbUser.CountryOfBirthCode,
-                dbUser.NativeLanguageCode,
-                dbUser.OccupationCode,
-                dbUser.CitizenshipCode,
-                dbUser.Gender,
-                dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+
+            return new User
+            {
+                Id = dbUser.Id,
+                FirstName = dbUser.FirstName,
+                LastName = dbUser.LastName,
+                Address = new Address(
+                        dbUser.StreetAddress,
+                        dbUser.ZipCode,
+                        dbUser.City,
+                        dbUser.Country
+                    ),
+                JobTitles = dbUserDefaultSearchProfile?.JobTitles,
+                Regions = dbUserDefaultSearchProfile?.Regions,
+                Created = dbUser.Created,
+                Modified = dbUser.Modified,
+                ImmigrationDataConsent = dbUser.ImmigrationDataConsent,
+                JobsDataConsent = dbUser.JobsDataConsent,
+                CountryOfBirthCode = dbUser.CountryOfBirthCode,
+                NativeLanguageCode = dbUser.NativeLanguageCode,
+                OccupationCode = dbUser.OccupationCode,
+                CitizenshipCode = dbUser.CitizenshipCode,
+                Gender = dbUser.Gender,
+                DateOfBirth = dbUser.DateOfBirth
+            };
         }
     }
 
-    [SwaggerSchema(Title = "UserResponse")]
-    public record User(Guid Id,
-        string? FirstName,
-        string? LastName,
-        Address? Address,
-        List<string>? JobTitles,
-        List<string>? Regions,
-        DateTime Created,
-        DateTime Modified,
-        bool ImmigrationDataConsent,
-        bool JobsDataConsent,
-        string? CountryOfBirthCode,
-        string? NativeLanguageCode,
-        string? OccupationCode,
-        string? CitizenshipCode,
-        Gender? Gender,
-        DateTime? DateOfBirth);
-
+    [SwaggerSchema(Title = "UpdateUserResponse")]
+    public record User
+    {
+        public Guid Id { get; init; } = default!;
+        public string? FirstName { get; init; } = default;
+        public string? LastName { get; init; } = default!;
+        public Address? Address { get; init; } = default!;
+        public List<string>? JobTitles { get; init; } = default!;
+        public List<string>? Regions { get; init; } = default!;
+        public DateTime Created { get; init; } = default!;
+        public DateTime Modified { get; init; } = default!;
+        public bool ImmigrationDataConsent { get; init; } = default!;
+        public bool JobsDataConsent { get; init; } = default!;
+        public string? CountryOfBirthCode { get; init; } = default!;
+        public string? NativeLanguageCode { get; init; } = default!;
+        public string? OccupationCode { get; init; } = default!;
+        public string? CitizenshipCode { get; init; } = default!;
+        public Gender? Gender { get; init; } = default!;
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        public DateOnly? DateOfBirth { get; init; } = default!;
+    }
 }
