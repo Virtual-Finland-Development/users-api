@@ -68,8 +68,8 @@ public static class GetUser
                         dbUser.City,
                         dbUser.Country
                     ),
-                JobTitles = dbUserDefaultSearchProfile?.JobTitles,
-                Regions = dbUserDefaultSearchProfile?.Regions,
+                JobTitles = dbUserDefaultSearchProfile?.JobTitles ?? new List<string>(),
+                Regions = dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
                 Created = dbUser.Created,
                 Modified = dbUser.Modified,
                 ImmigrationDataConsent = dbUser.ImmigrationDataConsent,
