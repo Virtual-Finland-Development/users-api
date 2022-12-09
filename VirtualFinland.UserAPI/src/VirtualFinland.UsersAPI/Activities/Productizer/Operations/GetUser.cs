@@ -72,8 +72,6 @@ public static class GetUser
                 Regions = dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
                 Created = dbUser.Created,
                 Modified = dbUser.Modified,
-                ImmigrationDataConsent = dbUser.ImmigrationDataConsent,
-                JobsDataConsent = dbUser.JobsDataConsent,
                 CountryOfBirthCode = dbUser.CountryOfBirthCode,
                 NativeLanguageCode = dbUser.NativeLanguageCode,
                 OccupationCode = dbUser.OccupationCode,
@@ -95,8 +93,6 @@ public static class GetUser
         public List<string>? Regions { get; init; } = default!;
         public DateTime Created { get; init; } = default!;
         public DateTime Modified { get; init; } = default!;
-        public bool ImmigrationDataConsent { get; init; } = default!;
-        public bool JobsDataConsent { get; init; } = default!;
         public string? CountryOfBirthCode { get; init; } = default!;
         public string? NativeLanguageCode { get; init; } = default!;
         public string? OccupationCode { get; init; } = default!;
