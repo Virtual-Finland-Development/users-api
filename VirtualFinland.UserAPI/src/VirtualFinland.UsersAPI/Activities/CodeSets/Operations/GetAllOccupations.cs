@@ -30,13 +30,14 @@ public static class GetAllOccupations
                         o.Name?.Swedish),
                     new LanguageTranslations(o.Description?.Finland,
                         o.Description?.English,
-                        o.Description?.Swedish)))
+                        o.Description?.Swedish),
+                    o.HierarchyLevel))
                 .OrderBy(o=> int.Parse(o.Id!)).ToList() ?? new List<Occupation>();
         }
     }
 
     [SwaggerSchema(Title = "OccupationsCodeSetResponse")]
-    public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
+    public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description, int? HierarchyLevel);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);

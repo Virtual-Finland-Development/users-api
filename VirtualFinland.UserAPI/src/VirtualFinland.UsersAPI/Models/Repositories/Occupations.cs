@@ -14,6 +14,9 @@ public class OccupationRoot
         
         [JsonPropertyName("description")]
         public LanguageTranslations? Description { get; set; }
+
+        [JsonPropertyName("hierarchyLevel")]
+        public int? HierarchyLevel { get; set; }
     }
 
     public class LanguageTranslations
