@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e # exit on error
 echo "Starting Users API in docker"
 cd ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
 echo "Work Directory:"
@@ -10,6 +10,6 @@ echo "Starting LocalDev in Docker"
 cd ../../../
 echo "Work Directory:"
 pwd
-docker-compose -f ./Tools/Docker/docker-compose-localdev.yml up
-docker-compose -f ./Tools/Docker/docker-compose-localdev.yml down
+docker compose -f ./Tools/Docker/docker-compose-localdev.yml up
+docker compose -f ./Tools/Docker/docker-compose-localdev.yml down
 
