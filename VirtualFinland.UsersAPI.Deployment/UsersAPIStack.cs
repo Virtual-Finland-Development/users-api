@@ -44,7 +44,11 @@ public class UsersApiStack : Stack
 
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
 
-        var countriesCodeSetConfigs = UploadCountriesCodeSetData(tags, environment, projectName);
+        var bucket = CreateBucket(tags, environment, projectName);
+
+        var countriesCodeSetConfigs = UploadListsData(bucket, tags, "countries.json", "CountriesCodeSetUrl");
+
+        var occupationsEscoListConfigs = UploadListsData(bucket, tags, "occupations.zip", "OccupationsCodeSetUrl");
 
         var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {
@@ -148,6 +152,9 @@ public class UsersApiStack : Stack
                         "CODE_SET_COUNTRIES", Output.Format($"{countriesCodeSetConfigs}")
                     },
                     {
+                        "CODE_SET_OCCUPATIONS", Output.Format($"{occupationsEscoListConfigs}")
+                    },
+                    {
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
                     }
                 }
@@ -217,27 +224,42 @@ public class UsersApiStack : Stack
         return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
     }
 
-    public Output<string> UploadCountriesCodeSetData(InputMap<string> tags, string environment, string projectName)
+    public Bucket CreateBucket(InputMap<string> tags, string environment, string projectName)
     {
         var bucket = new Bucket($"{projectName}-{environment}", new BucketArgs()
         {
             Tags = tags,
         });
-        
-        var bucketObject = new BucketObject("countries.json", new BucketObjectArgs
+
+        return bucket;
+    }
+
+    public Output<string> UploadListsData(Bucket bucket, InputMap<string> tags, string objectName, string OutputVariable)
+    {
+        var bucketObject = new BucketObject(objectName, new BucketObjectArgs
         {
             Bucket = bucket.BucketName,
-            Source = new FileAsset("./Resources/countries.json"),
+            Source = new FileAsset($"./Resources/{objectName}"),
             Tags = tags,
             ContentType = "application/json",
             Acl = "public-read"
         });
 
-        return CountriesCodeSetUrl = Output.Format($"https://{bucket.BucketDomainName}/countries.json");
+        var output = Output.Format($"https://{bucket.BucketDomainName}/{objectName}");
+
+        var classProperty = this.GetType().GetProperty(OutputVariable);
+
+        if (classProperty is not null)
+        {
+            classProperty.SetValue(this, output, null);
+        }
+
+        return output;
     }
 
     [Output] public Output<string> ApplicationUrl { get; set; }
     [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
+    [Output] public Output<string> OccupationsCodeSetUrl { get; set; } = null!;
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
 
