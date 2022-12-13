@@ -35,12 +35,11 @@ public static class GetOccupation
                 var occupationRaw = occupationsRawData?.Single(o => o.Id == request.Id);
 
                 return new Occupation(occupationRaw?.Id,
+                    occupationRaw?.Uri,
                     new LanguageTranslations(occupationRaw?.Name?.Finland,
                         occupationRaw?.Name?.English,
                         occupationRaw?.Name?.Swedish),
-                    new LanguageTranslations(occupationRaw?.Description?.Finland,
-                        occupationRaw?.Description?.English,
-                        occupationRaw?.Description?.Swedish));
+                    occupationRaw?.Broader);
             }
             catch (InvalidOperationException e)
             {
@@ -50,7 +49,7 @@ public static class GetOccupation
     }
 
     [SwaggerSchema(Title = "OccupationCodeSetResponse")]
-    public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
+    public record Occupation(string? Id, string? Uri, LanguageTranslations Name, List<string>? Broader);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);

@@ -41,7 +41,7 @@ public class CodeSetsController : ControllerBase
     }
     
     [HttpGet("/code-sets/occupations")]
-    [SwaggerOperation(Summary = "Get all available ISCO occupations", Description = "Get all available ISCO occupations")]
+    [SwaggerOperation(Summary = "Get all available ESCO occupations", Description = "Get all available ESCO occupations")]
     [ProducesResponseType(typeof(List<GetAllOccupations.Occupation>),StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     [ResponseCache(Duration = 60)]
@@ -51,7 +51,7 @@ public class CodeSetsController : ControllerBase
     }
     
     [HttpGet("/code-sets/occupations/{occupationCode}")]
-    [SwaggerOperation(Summary = "Gets a single occupation and its details by it's ISCO code", Description = "Gets a single occupation and its details by it's ISCO code.")]
+    [SwaggerOperation(Summary = "Gets a single occupation and its details by it's ESCO code", Description = "Gets a single occupation and its details by it's ESCO code.")]
     [ProducesResponseType(typeof(GetOccupation.Occupation),StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]

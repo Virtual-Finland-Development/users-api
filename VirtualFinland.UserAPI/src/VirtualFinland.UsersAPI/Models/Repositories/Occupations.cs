@@ -6,14 +6,17 @@ public class OccupationRoot
 {
     public class Occupation
     {
-        [JsonPropertyName("codeValue")]
+        [JsonPropertyName("notation")]
         public string? Id { get; set; }
-        
+
+        [JsonPropertyName("uri")]
+        public string? Uri { get; set; }
+
         [JsonPropertyName("prefLabel")]
         public LanguageTranslations? Name { get; set; }
-        
-        [JsonPropertyName("description")]
-        public LanguageTranslations? Description { get; set; }
+
+        [JsonPropertyName("broader")]
+        public List<string>? Broader { get; set; }
     }
 
     public class LanguageTranslations
@@ -25,7 +28,7 @@ public class OccupationRoot
         [JsonPropertyName("en")]
         public string? English { get; set; }
     }
-    
+
     [JsonPropertyName("results")]
 
     public List<Occupation>? Occupations { get; set; }
