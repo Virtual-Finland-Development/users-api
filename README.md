@@ -79,7 +79,7 @@ Two addresses:
 
 ### How to build AWS Lambda Deployment package
 
-Navigate to the VirtualFinland.UsersAPI project root folder and run the lambda tools package command.
+Navigate to the VirtualFinland.UsersAPI project root folder (./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI) and run the lambda tools package command.
 
 ```
   dotnet lambda package
