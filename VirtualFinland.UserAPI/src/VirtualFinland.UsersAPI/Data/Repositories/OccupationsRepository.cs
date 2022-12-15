@@ -25,11 +25,14 @@ public class OccupationsRepository : IOccupationsRepository
             return _occupations;
         }
 
-        var zipContents = await UnzipUrl(_occupationsUrl);
+        var httpClient = _httpClientFactory.CreateClient();
+        var httpResponseMessage = await httpClient.GetAsync(_occupationsUrl);
 
-        if (!string.IsNullOrEmpty(zipContents))
+        if (httpResponseMessage.IsSuccessStatusCode)
         {
-            var rootOccupationData = JsonSerializer.Deserialize<List<OccupationRoot.Occupation>>(zipContents);
+
+            // var rootOccupationData = JsonSerializer.Deserialize<OccupationRoot>(await httpResponseMessage.Content.ReadAsStreamAsync());
+            var rootOccupationData = JsonSerializer.Deserialize<List<OccupationRoot.Occupation>>(await httpResponseMessage.Content.ReadAsStringAsync());
 
             if (rootOccupationData is not null)
             {
@@ -39,30 +42,5 @@ public class OccupationsRepository : IOccupationsRepository
         }
 
         return new List<OccupationRoot.Occupation>();
-    }
-
-    /// <summary>
-    /// Downloads a zip file from the given url and returns the content of the first file in the zip archive.
-    /// </summary>
-    async Task<string> UnzipUrl(string zipUrl)
-    {
-        var httpClient = _httpClientFactory.CreateClient();
-        var httpResponseMessage = await httpClient.GetAsync(zipUrl);
-
-        if (httpResponseMessage.IsSuccessStatusCode)
-        {
-            var stream = await httpResponseMessage.Content.ReadAsStreamAsync();
-            using var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
-            var entry = zipArchive.Entries.FirstOrDefault();
-
-            if (entry is not null)
-            {
-                using var entryStream = entry.Open();
-                using var reader = new StreamReader(entryStream);
-                return await reader.ReadToEndAsync();
-            }
-        }
-
-        return string.Empty;
     }
 }

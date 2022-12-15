@@ -200,7 +200,7 @@ public static class UpdateUser
                 if(!string.IsNullOrEmpty(request.OccupationCode))
                 {
                     var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
-                    if (!occupations.Any(o => o.Id == request.OccupationCode))
+                    if (!occupations.Any(o => o.Notation == request.OccupationCode))
                     {
                         validationErrors.Add(new ValidationErrorDetail(nameof(request.OccupationCode), $"{nameof(request.OccupationCode)} does not match any known occupation code."));
                     }    

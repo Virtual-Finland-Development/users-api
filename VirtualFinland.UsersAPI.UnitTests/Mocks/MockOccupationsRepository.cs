@@ -10,9 +10,9 @@ public class MockOccupationsRepository : IOccupationsRepository
     {
         var occupations = new List<OccupationRoot.Occupation>()
         {
-            new OccupationRoot.Occupation() { Id = "01"},
-            new OccupationRoot.Occupation() { Id = "02"},
-            new OccupationRoot.Occupation() { Id = "03"}
+            new OccupationRoot.Occupation() { Notation = "01"},
+            new OccupationRoot.Occupation() { Notation = "02"},
+            new OccupationRoot.Occupation() { Notation = "03"}
         };
         
         return Task.FromResult<List<OccupationRoot.Occupation>?>(occupations);

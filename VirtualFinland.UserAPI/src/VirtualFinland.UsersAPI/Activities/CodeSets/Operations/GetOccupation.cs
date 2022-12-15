@@ -2,6 +2,7 @@ using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
@@ -32,14 +33,14 @@ public static class GetOccupation
 
             try
             {
-                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.Id);
+                var occupationRaw = occupationsRawData?.Single(o => o.Notation == request.Id);
 
-                return new Occupation(occupationRaw?.Id,
+                return new Occupation(occupationRaw?.Notation,
                     occupationRaw?.Uri,
-                    new LanguageTranslations(occupationRaw?.Name?.Finland,
-                        occupationRaw?.Name?.English,
-                        occupationRaw?.Name?.Swedish),
-                    occupationRaw?.Broader);
+                    new LanguageTranslations(occupationRaw?.PrefLabel?.Finland,
+                        occupationRaw?.PrefLabel?.English,
+                        occupationRaw?.PrefLabel?.Swedish),
+                    occupationRaw?.Narrower);
             }
             catch (InvalidOperationException e)
             {
@@ -49,7 +50,7 @@ public static class GetOccupation
     }
 
     [SwaggerSchema(Title = "OccupationCodeSetResponse")]
-    public record Occupation(string? Id, string? Uri, LanguageTranslations Name, List<string>? Broader);
+    public record Occupation(string? Notation, string? Uri, LanguageTranslations PrefLabel, List<OccupationRoot.Occupation>? Narrower);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);

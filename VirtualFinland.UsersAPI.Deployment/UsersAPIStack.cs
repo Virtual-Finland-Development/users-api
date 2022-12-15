@@ -48,7 +48,7 @@ public class UsersApiStack : Stack
 
         var countriesCodeSetConfigs = UploadListsData(bucket, tags, "countries.json", "CountriesCodeSetUrl");
 
-        var occupationsEscoListConfigs = UploadListsData(bucket, tags, "occupations.zip", "OccupationsCodeSetUrl");
+        var occupationsEscoListConfigs = UploadListsData(bucket, tags, "occupations.json", "OccupationsCodeSetUrl");
 
         var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {

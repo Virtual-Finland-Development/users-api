@@ -7,16 +7,16 @@ public class OccupationRoot
     public class Occupation
     {
         [JsonPropertyName("notation")]
-        public string? Id { get; set; }
+        public string? Notation { get; set; }
 
         [JsonPropertyName("uri")]
         public string? Uri { get; set; }
 
         [JsonPropertyName("prefLabel")]
-        public LanguageTranslations? Name { get; set; }
+        public LanguageTranslations? PrefLabel { get; set; }
 
-        [JsonPropertyName("broader")]
-        public List<string>? Broader { get; set; }
+        [JsonPropertyName("narrower")]
+        public List<Occupation>? Narrower { get; set; }
     }
 
     public class LanguageTranslations
