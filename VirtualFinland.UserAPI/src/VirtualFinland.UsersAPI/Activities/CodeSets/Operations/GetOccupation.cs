@@ -11,11 +11,11 @@ public static class GetOccupation
     [SwaggerSchema(Title = "OccupationCodeSetRequest")]
     public class Query : IRequest<Occupation>
     {
-        public string? Id { get; }
+        public string? Notation { get; }
         
-        public Query(string? id)
+        public Query(string? notation)
         {
-            this.Id = id;
+            this.Notation = notation;
         }
     }
 
@@ -41,7 +41,7 @@ public static class GetOccupation
                     FlattenOccupations(occupation, occupationsFlattened);
                 }
 
-                var occupationRaw = occupationsFlattened.Single(o => o.Notation == request.Id);
+                var occupationRaw = occupationsFlattened.Single(o => o.Notation == request.Notation);
 
                 return new Occupation(occupationRaw.Notation,
                     occupationRaw.Uri,
