@@ -27,24 +27,45 @@ public static class GetOccupation
         {
             _occupationsRepository = occupationsRepository;
         }
+
         public async Task<Occupation> Handle(Query request, CancellationToken cancellationToken)
         {
             var occupationsRawData = await _occupationsRepository.GetAllOccupations();
 
             try
             {
-                var occupationRaw = occupationsRawData?.Single(o => o.Notation == request.Id);
+                List<OccupationRoot.Occupation> occupationsFlattened = new();
 
-                return new Occupation(occupationRaw?.Notation,
-                    occupationRaw?.Uri,
-                    new LanguageTranslations(occupationRaw?.PrefLabel?.Finland,
-                        occupationRaw?.PrefLabel?.English,
-                        occupationRaw?.PrefLabel?.Swedish),
-                    occupationRaw?.Narrower);
+                foreach (var occupation in occupationsRawData)
+                {
+                    FlattenOccupations(occupation, occupationsFlattened);
+                }
+
+                var occupationRaw = occupationsFlattened.Single(o => o.Notation == request.Id);
+
+                return new Occupation(occupationRaw.Notation,
+                    occupationRaw.Uri,
+                    new LanguageTranslations(occupationRaw.PrefLabel?.Finland,
+                        occupationRaw.PrefLabel?.English,
+                        occupationRaw.PrefLabel?.Swedish),
+                    occupationRaw.Narrower);
             }
             catch (InvalidOperationException e)
             {
                 throw new NotFoundException("Occupation was not found.", e);
+            }
+        }
+
+        void FlattenOccupations(OccupationRoot.Occupation occupation, List<OccupationRoot.Occupation> occupations)
+        {
+            occupations.Add(occupation);
+
+            if (occupation.Narrower != null)
+            {
+                foreach (var childOccupation in occupation.Narrower)
+                {
+                    FlattenOccupations(childOccupation, occupations);
+                }
             }
         }
     }

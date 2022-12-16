@@ -17,7 +17,7 @@ public class OccupationsRepository : IOccupationsRepository
         GetAllOccupations().Wait();
     }
 
-    public async Task<List<OccupationRoot.Occupation>?> GetAllOccupations()
+    public async Task<List<OccupationRoot.Occupation>> GetAllOccupations()
     {
         // TODO: Better cache control, maybe use .NET Core 6 In-Memory Cache. Fastest solution at the moment.
         if (_occupations is not null)
@@ -30,8 +30,6 @@ public class OccupationsRepository : IOccupationsRepository
 
         if (httpResponseMessage.IsSuccessStatusCode)
         {
-
-            // var rootOccupationData = JsonSerializer.Deserialize<OccupationRoot>(await httpResponseMessage.Content.ReadAsStreamAsync());
             var rootOccupationData = JsonSerializer.Deserialize<List<OccupationRoot.Occupation>>(await httpResponseMessage.Content.ReadAsStringAsync());
 
             if (rootOccupationData is not null)
