@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b833c2e3-65dd-4dee-8e14-f9fdbda954f9",
+		"_postman_id": "2ae26570-3c6e-436b-8041-c9369c1fadd7",
 		"name": "UsersAPI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "22874660"
@@ -568,6 +568,24 @@
 			"response": []
 		},
 		{
+			"name": "Get All ISCO Occupations Flat List",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/code-sets/occupations-flat",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"code-sets",
+						"occupations-flat"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Get A Single  ISCO Occupation",
 			"event": [
 				{
@@ -673,6 +691,58 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Productizer User Consents Get",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Consents",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Consents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Productizer User Consents Write",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"immigrationDataConsent\": false,\n    \"jobsDataConsent\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/productizer/test/lassipatanen/User/Consents/Write",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"test",
+						"lassipatanen",
+						"User",
+						"Consents",
+						"Write"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
@@ -680,7 +750,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJiR0YxY21sQWRHVnpkR1Z5TG5SbGMzUmlaV1F1Wm1rIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi50ZXN0YmVkLmZpIiwiaWF0IjoxNjY5Nzg5ODIxLCJleHAiOjE2Njk4NzYyMjEsImF1ZCI6ImU2YTVhNjQ1LTBjZjYtNDhhMS05ZjA4LTNkNzJiZTNhY2VhZiIsIm5vbmNlIjoiNjY1Yzk5ZDYtMzg4OC00NDBiLWI0YTMtYWZiYTI5N2Y0ZmVmIiwiYWNyIjoiZmFrZS1hdXRoIiwiZW1haWwiOiJsYXVyaUB0ZXN0ZXIudGVzdGJlZC5maSJ9.HdlNyvOniwLqS4qzJ_wbPnml63M23Fn6CKbZ_8uCXbNMjRGtax6TTnzU7vcVCl2Tgv8snfKpvXtvx72TcbAf-1_3d3qDgHuYt4tOR26bNTtUDs-iMRp2_m6oT35yxOJhJmHP7Ql2nsKtHsQGh9-G9eF07DnUqeP_XGuVxXeWXbt7L752TBQnCzf7g0hUt9cDzaHcw3EgMmSZpiNMCsJZmbHDwzmaTMbO8A8glcQd10WP3QwRt2GTF7mFsH-bidMFCP1r5gI0g9J5TqgOiUwAcgwG4ZUi2_m_h-CvdMMMGjNDcyphB86t-3GhDXiWA2LZfpjituWcqaqGx5fprVl7GDnKqo0NSU22tZH5O2H9LNYWl2tZaTMBSO_VEoawQ24Rj-e4Qabvl_qpH3XneuTeYNHpkz9P8pN5AL1Cwj3wTb6LBZG4y2VI0CVGWWAl5a_1hcLs1n8-6MnPrsSYlr2wSGDpjL_gKqoSsP99GiSyAQy2FpF9Q8OuruJivD8oxwWPTAYcrlLAs6AE6rdjuS47U7eXyNHKv5-Ka7cuGLI4whN_yYWa-0_bRhUK3xCO6P9yVSxxVSw_JTI3_6FytjJ-4HDetfPeYpl190oDTpuU87DXHH-iV1aMkmLfsgcJ_6Hk0cYMYI0W8OCfEtkFjWR_k9RDtLRXgt7VUxi5dsDsjXw",
+				"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjVmMzUxZTE3YjNiOGU4ZTFhMzdlOTc1NzdmYWQ1ZjQzIn0.eyJzdWIiOiJNVEkwTTNKM2NtZGtZbVJtWkdaaVFIUmxjM1JsY2k1MFpYTjBZbVZrTG1acCIsImlzcyI6Imh0dHBzOi8vbG9naW4udGVzdGJlZC5maSIsImlhdCI6MTY3MTUxOTk3MiwiZXhwIjoxNjcxNjA2MzcyLCJhdWQiOiJlNmE1YTY0NS0wY2Y2LTQ4YTEtOWYwOC0zZDcyYmUzYWNlYWYiLCJub25jZSI6IjZmNTNlZjE2LWNmYzItNDFjYi1hODdkLTdlYzEzODc5MzJjYyIsImFjciI6ImZha2UtYXV0aCIsImVtYWlsIjoiMTI0M3J3cmdkYmRmZGZiQHRlc3Rlci50ZXN0YmVkLmZpIn0.cloL5kOMmv6WF4hH3X8AyuK04KEUVoIVntXfsSxKKLJIK3fgUdHw2GNN56t1YmCOXjAf_rVvN1xVF-KRtrVUd1yDvQ_gBuYPg4iT_zvtn1njPaWl4mpj2uy6X3FMpP6bzbDlQNS6iAsyRjMT-WA6zdlsACqHz2LtW9VnRU6OO4ZqG5DDBedHJFxnj8Vh3t-HnRFWGGx7INH4NhTxoAhgGweuv3zFjs-QgRZFg1YB2okG5oHAe_LAwmTkpPhEFA1xHcWRBokHsVGKsmpoLMpkqpHx2_A4key5jzsoEVHjpUFruDIy4awSGj0TJEnDJVZ-024qpZyjpbItEJBWg8qH0gbdrNgaIueY7hMSZDXLU2BeHP2_BoOtWFs8ijRDzz54jLCU9wK7xLbZCS7kbJ-81txK-LLTJrz1hlP9YmpoqtO1weop_3cB5xPw5vpVXC69cwSWmetEpwVkSil5bTwYgDuK5vLCbVHtizyC3RgVG8a-hWGxn6CFSHlnfpRaLMCyueSi28aLdJ9ZeR7is6MLxf_acaaDx7bNyJywo7vS64dCwp9CPM2lZEieHOkZ_5sERVylZB49M43DvDX-pDQLQ_y7yZF3pjZbTI3ikosPil-hQM7KetGE4tKOousjzmUeskvJj96MeOefkl2rF93NFrKSORYyzMR9D5Q4y5wEcAE",
 				"type": "string"
 			}
 		]
