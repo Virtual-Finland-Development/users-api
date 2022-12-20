@@ -49,7 +49,17 @@ public class CodeSetsController : ControllerBase
     {
         return Ok(await _mediator.Send(new GetAllOccupations.Query()));
     }
-    
+
+    [HttpGet("/code-sets/occupations-flat")]
+    [SwaggerOperation(Summary = "Get all available ISCO occupations, flattened list", Description = "Get all available ISCO occupations, flattened")]
+    [ProducesResponseType(typeof(List<GetAllOccupationsFlat.Occupation>), StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    [ResponseCache(Duration = 60)]
+    public async Task<IActionResult> GetAllOccupationsFlat()
+    {
+        return Ok(await _mediator.Send(new GetAllOccupationsFlat.Query()));
+    }
+
     [HttpGet("/code-sets/occupations/{occupationCode}")]
     [SwaggerOperation(Summary = "Gets a single occupation and its details by it's ISCO code", Description = "Gets a single occupation and its details by it's ISCO code.")]
     [ProducesResponseType(typeof(GetOccupation.Occupation),StatusCodes.Status200OK)]

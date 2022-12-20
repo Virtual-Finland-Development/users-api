@@ -21,57 +21,37 @@ public static class GetOccupation
 
     public class Handler : IRequestHandler<Query, Occupation>
     {
-        private readonly IOccupationsRepository _occupationsRepository;
+        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(IOccupationsRepository occupationsRepository)
+        public Handler(IOccupationsFlatRepository occupationsFlatRepository)
         {
-            _occupationsRepository = occupationsRepository;
+            _occupationsFlatRepository = occupationsFlatRepository;
         }
 
         public async Task<Occupation> Handle(Query request, CancellationToken cancellationToken)
         {
-            var occupationsRawData = await _occupationsRepository.GetAllOccupations();
+            var occupationsRawData = await _occupationsFlatRepository.GetAllOccupationsFlat();
 
             try
             {
-                List<OccupationRoot.Occupation> occupationsFlattened = new();
-
-                foreach (var occupation in occupationsRawData)
-                {
-                    FlattenOccupations(occupation, occupationsFlattened);
-                }
-
-                var occupationRaw = occupationsFlattened.Single(o => o.Notation == request.Notation);
+                var occupationRaw = occupationsRawData.Single(o => o.Notation == request.Notation);
 
                 return new Occupation(occupationRaw.Notation,
                     occupationRaw.Uri,
                     new LanguageTranslations(occupationRaw.PrefLabel?.Finland,
                         occupationRaw.PrefLabel?.English,
                         occupationRaw.PrefLabel?.Swedish),
-                    occupationRaw.Narrower);
+                    occupationRaw.Broader);
             }
             catch (InvalidOperationException e)
             {
                 throw new NotFoundException("Occupation was not found.", e);
             }
         }
-
-        void FlattenOccupations(OccupationRoot.Occupation occupation, List<OccupationRoot.Occupation> occupations)
-        {
-            occupations.Add(occupation);
-
-            if (occupation.Narrower != null)
-            {
-                foreach (var childOccupation in occupation.Narrower)
-                {
-                    FlattenOccupations(childOccupation, occupations);
-                }
-            }
-        }
     }
 
     [SwaggerSchema(Title = "OccupationCodeSetResponse")]
-    public record Occupation(string? Notation, string? Uri, LanguageTranslations PrefLabel, List<OccupationRoot.Occupation>? Narrower);
+    public record Occupation(string? Notation, string? Uri, LanguageTranslations PrefLabel, List<string>? Broader);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);
