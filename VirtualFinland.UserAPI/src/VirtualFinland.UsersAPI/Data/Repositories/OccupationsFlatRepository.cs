@@ -13,7 +13,7 @@ public class OccupationsFlatRepository : IOccupationsFlatRepository
     public OccupationsFlatRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _occupationsFlatUrl = Environment.GetEnvironmentVariable("CODE_SET_OCCUPATIONS_FLAT") ?? configuration["ExternalSources:OccupationsFlatURL"]; ;
+        _occupationsFlatUrl = Environment.GetEnvironmentVariable("CODE_SET_OCCUPATIONS_FLAT") ?? configuration["ExternalSources:OccupationsFlatURL"];
         GetAllOccupationsFlat().Wait();
     }
 
