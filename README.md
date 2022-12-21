@@ -70,6 +70,18 @@ Notice: If you are running a Linux or MacOS operating system you might need to p
     chmod 755 ./Tools/Scripts/startApiInDocker.sh
 ```
 
+#### With makefile
+
+```
+    make run
+```
+
+Or for arm64 CPUs
+
+```
+    make run-arm64
+```
+
 ### What address does the application use in local development
 
 Two addresses:
