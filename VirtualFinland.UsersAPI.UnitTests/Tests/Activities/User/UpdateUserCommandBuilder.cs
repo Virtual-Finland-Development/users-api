@@ -12,7 +12,7 @@ public class UpdateUserCommandBuilder
     private bool? _jobsDataConsent = true;
     private bool? _immigrationDataConsent = true;
     private string _countryOfBirthCode = "fi";
-    private string _nativeLanguageCode = "fi-FI";
+    private string _nativeLanguageCode = "fin";
     private string _occupationCode = "01";
     private string _citizenshipCode = "fi";
     private List<string>? _jobTitles = new() { "programmer" };

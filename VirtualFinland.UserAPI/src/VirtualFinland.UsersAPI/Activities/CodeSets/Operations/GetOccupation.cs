@@ -2,6 +2,7 @@ using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
@@ -10,37 +11,37 @@ public static class GetOccupation
     [SwaggerSchema(Title = "OccupationCodeSetRequest")]
     public class Query : IRequest<Occupation>
     {
-        public string? Id { get; }
+        public string? Notation { get; }
         
-        public Query(string? id)
+        public Query(string? notation)
         {
-            this.Id = id;
+            this.Notation = notation;
         }
     }
 
     public class Handler : IRequestHandler<Query, Occupation>
     {
-        private readonly IOccupationsRepository _occupationsRepository;
+        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(IOccupationsRepository occupationsRepository)
+        public Handler(IOccupationsFlatRepository occupationsFlatRepository)
         {
-            _occupationsRepository = occupationsRepository;
+            _occupationsFlatRepository = occupationsFlatRepository;
         }
+
         public async Task<Occupation> Handle(Query request, CancellationToken cancellationToken)
         {
-            var occupationsRawData = await _occupationsRepository.GetAllOccupations();
+            var occupationsRawData = await _occupationsFlatRepository.GetAllOccupationsFlat();
 
             try
             {
-                var occupationRaw = occupationsRawData?.Single(o => o.Id == request.Id);
+                var occupationRaw = occupationsRawData.Single(o => o.Notation == request.Notation);
 
-                return new Occupation(occupationRaw?.Id,
-                    new LanguageTranslations(occupationRaw?.Name?.Finland,
-                        occupationRaw?.Name?.English,
-                        occupationRaw?.Name?.Swedish),
-                    new LanguageTranslations(occupationRaw?.Description?.Finland,
-                        occupationRaw?.Description?.English,
-                        occupationRaw?.Description?.Swedish));
+                return new Occupation(occupationRaw.Notation,
+                    occupationRaw.Uri,
+                    new LanguageTranslations(occupationRaw.PrefLabel?.Finland,
+                        occupationRaw.PrefLabel?.English,
+                        occupationRaw.PrefLabel?.Swedish),
+                    occupationRaw.Broader);
             }
             catch (InvalidOperationException e)
             {
@@ -50,7 +51,7 @@ public static class GetOccupation
     }
 
     [SwaggerSchema(Title = "OccupationCodeSetResponse")]
-    public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
+    public record Occupation(string? Notation, string? Uri, LanguageTranslations PrefLabel, List<string>? Broader);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);

@@ -139,6 +139,7 @@ options.DefaultPolicy = allAuthorizationPolicyBuilder;
 builder.Services.AddResponseCaching();
 
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
+builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<UserSecurityService>();
@@ -177,11 +178,13 @@ using (var scope = app.Services.CreateScope())
     await dataContext.Database.MigrateAsync();
 
     var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
+    var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
     var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
     var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
 
     // Preload outside data that does not change
     await occupationsRepository.GetAllOccupations();
+    await occupationsFlatRepository.GetAllOccupationsFlat();
     await languageRepository.GetAllLanguages();
     await countriesRepository.GetAllCountries();
 

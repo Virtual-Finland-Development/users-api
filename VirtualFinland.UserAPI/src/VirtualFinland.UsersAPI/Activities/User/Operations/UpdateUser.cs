@@ -114,15 +114,15 @@ public static class UpdateUser
             private readonly ILogger<Handler> _logger;
             private readonly ILanguageRepository _languageRepository;
             private readonly ICountriesRepository _countriesRepository;
-            private readonly IOccupationsRepository _occupationsRepository;
+            private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsRepository occupationsRepository)
+            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsFlatRepository occupationsFlatRepository)
             {
                 _usersDbContext = usersDbContext;
                 _logger = logger;
                 _languageRepository = languageRepository;
                 _countriesRepository = countriesRepository;
-                _occupationsRepository = occupationsRepository;
+                _occupationsFlatRepository = occupationsFlatRepository;
             }
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
@@ -199,8 +199,8 @@ public static class UpdateUser
 
                 if(!string.IsNullOrEmpty(request.OccupationCode))
                 {
-                    var occupations = await _occupationsRepository.GetAllOccupations() ?? new List<OccupationRoot.Occupation>();
-                    if (!occupations.Any(o => o.Id == request.OccupationCode))
+                    var occupations = await _occupationsFlatRepository.GetAllOccupationsFlat() ?? new List<OccupationFlatRoot.Occupation>();
+                    if (!occupations.Any(o => o.Notation == request.OccupationCode))
                     {
                         validationErrors.Add(new ValidationErrorDetail(nameof(request.OccupationCode), $"{nameof(request.OccupationCode)} does not match any known occupation code."));
                     }    
