@@ -45,18 +45,7 @@ public class UsersDbContext : DbContext
                     v => string.Join(',', v!),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
-
-        modelBuilder.Entity<User>().HasData(new User
-        {
-            Id = WarmUpUserId,
-            FirstName = "WarmUpUser",
-            LastName = "WarmUpUser",
-            Created = DateTime.UtcNow,
-            Modified = DateTime.UtcNow
-        });
-
-        modelBuilder.Entity<User>().Property(u => u.Gender).HasConversion<string>();
-
+        
         modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity
         {
             Id = Guid.NewGuid(),
