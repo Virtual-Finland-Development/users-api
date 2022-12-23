@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -9,28 +7,26 @@ public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
 
-    public static Guid WarmUpUserId
-    {
-        get
-        {
-            return Guid.Parse("5a8af4b4-8cb4-44ac-8291-010614601719");
-        }
-    }
-
     public UsersDbContext(DbContextOptions options) : base(options)
     {
     }
-    
+
     public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
         _isTesting = isTesting;
     }
-    protected override void OnConfiguring
-        (DbContextOptionsBuilder optionsBuilder)
+
+    public static Guid WarmUpUserId => Guid.Parse("5a8af4b4-8cb4-44ac-8291-010614601719");
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+    public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        // Method intentionally left empty.
     }
-    
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -50,7 +46,7 @@ public class UsersDbContext : DbContext
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
 
-        modelBuilder.Entity<User>().HasData(new User()
+        modelBuilder.Entity<User>().HasData(new User
         {
             Id = WarmUpUserId,
             FirstName = "WarmUpUser",
@@ -61,7 +57,7 @@ public class UsersDbContext : DbContext
 
         modelBuilder.Entity<User>().Property(u => u.Gender).HasConversion<string>();
 
-        modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity()
+        modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity
         {
             Id = Guid.NewGuid(),
             Created = DateTime.UtcNow,
@@ -71,9 +67,4 @@ public class UsersDbContext : DbContext
             Issuer = Guid.NewGuid().ToString()
         });
     }
-    public DbSet<User> Users => Set<User>();
-
-    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
-
-    public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
 }
