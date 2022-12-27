@@ -3,18 +3,18 @@ using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Mocks;
 
-public class MockOccupationsRepository : IOccupationsRepository
+public class MockOccupationsRepository : IOccupationsFlatRepository
 {
 
-    public Task<List<OccupationRoot.Occupation>?> GetAllOccupations()
+    public Task<List<OccupationFlatRoot.Occupation>> GetAllOccupationsFlat()
     {
-        var occupations = new List<OccupationRoot.Occupation>()
+        var occupations = new List<OccupationFlatRoot.Occupation>()
         {
-            new OccupationRoot.Occupation() { Id = "01"},
-            new OccupationRoot.Occupation() { Id = "02"},
-            new OccupationRoot.Occupation() { Id = "03"}
+            new OccupationFlatRoot.Occupation() { Notation = "01"},
+            new OccupationFlatRoot.Occupation() { Notation = "02"},
+            new OccupationFlatRoot.Occupation() { Notation = "03"}
         };
         
-        return Task.FromResult<List<OccupationRoot.Occupation>?>(occupations);
+        return Task.FromResult<List<OccupationFlatRoot.Occupation>>(occupations);
     }
 }

@@ -1,6 +1,7 @@
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Activities.CodeSets.Operations;
 
@@ -24,19 +25,18 @@ public static class GetAllOccupations
         {
             var occupationsRawData = await _occupationsRepository.GetAllOccupations();
 
-            return occupationsRawData?.Where( o => int.TryParse(o.Id, out _)).Select(o => new Occupation(o.Id,
-                    new LanguageTranslations(o.Name?.Finland,
-                        o.Name?.English,
-                        o.Name?.Swedish),
-                    new LanguageTranslations(o.Description?.Finland,
-                        o.Description?.English,
-                        o.Description?.Swedish)))
-                .OrderBy(o=> int.Parse(o.Id!)).ToList() ?? new List<Occupation>();
+            return occupationsRawData?.Where( o => int.TryParse(o.Notation, out _)).Select(o => new Occupation(o.Notation,
+                    o.Uri,
+                    new LanguageTranslations(o.PrefLabel?.Finland,
+                        o.PrefLabel?.English,
+                        o.PrefLabel?.Swedish),
+                    o.Narrower))
+                .OrderBy(o=> int.Parse(o.Notation!)).ToList() ?? new List<Occupation>();
         }
     }
 
     [SwaggerSchema(Title = "OccupationsCodeSetResponse")]
-    public record Occupation(string? Id, LanguageTranslations Name, LanguageTranslations Description);
+    public record Occupation(string? Notation, string? Uri, LanguageTranslations PrefLabel ,List<OccupationRoot.Occupation>? Narrower);
 
     [SwaggerSchema(Title = "OccupationLanguageTranslationsCodeSetResponse")]
     public record LanguageTranslations(string? Fi, string? En, string? Sw);

@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.Repositories;
 
-public class OccupationRoot
+public class OccupationFlatRoot
 {
     public class Occupation
     {
@@ -15,8 +15,8 @@ public class OccupationRoot
         [JsonPropertyName("prefLabel")]
         public LanguageTranslations? PrefLabel { get; set; }
 
-        [JsonPropertyName("narrower")]
-        public List<Occupation>? Narrower { get; set; }
+        [JsonPropertyName("broader")]
+        public List<string>? Broader { get; set; }
     }
 
     public class LanguageTranslations
@@ -33,3 +33,4 @@ public class OccupationRoot
 
     public List<Occupation>? Occupations { get; set; }
 }
+
