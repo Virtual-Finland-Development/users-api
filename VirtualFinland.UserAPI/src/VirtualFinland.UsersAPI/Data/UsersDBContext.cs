@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
@@ -30,6 +31,8 @@ public class UsersDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfiguration(new UserConfig());
 
         if (_isTesting)
         {
