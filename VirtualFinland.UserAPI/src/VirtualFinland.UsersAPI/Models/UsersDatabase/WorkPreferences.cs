@@ -33,16 +33,10 @@ public class WorkPreferences : Auditable, IEntity
     // Relationships
     [JsonIgnore]
     public User? User { get; set; }
-    
+
     [Key]
     [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [ForeignKey(nameof(User))]
     public Guid Id { get; set; }
-}
-
-public abstract class Auditable
-{
-    public DateTime Created { get; set; }
-    public DateTime Modified { get; set; }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Education : IEntity
+public class Education : Auditable, IEntity
 {
     // ReSharper disable once MemberCanBePrivate.Global
     public enum EducationLevel
@@ -32,6 +32,4 @@ public class Education : IEntity
     public string? EducationOrganization { get; set; }
     
     public Guid Id { get; set; }
-    public DateTime Created { get; set; }
-    public DateTime Modified { get; set; }
 }
