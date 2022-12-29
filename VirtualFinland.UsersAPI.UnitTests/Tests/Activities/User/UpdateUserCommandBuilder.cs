@@ -127,8 +127,8 @@ public class UpdateUserCommandBuilder
             _jobTitles,
             _regions,
             _gender,
-            _dateOfBirth, 
-            _occupations, 
+            _dateOfBirth,
+            _occupations,
             _workPreferences);
     }
 }

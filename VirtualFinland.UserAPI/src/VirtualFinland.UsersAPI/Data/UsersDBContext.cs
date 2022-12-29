@@ -28,7 +28,9 @@ public class UsersDbContext : DbContext
     public DbSet<Education> Educations { get; set; }
     public DbSet<Language> Languages { get; set; }
     public DbSet<Occupation> Occupations { get; set; }
+
     public DbSet<Permit> Permits { get; set; }
+
     // Leave this out for now as it makes things difficult if both Person and User wants to link to WorkPreferences
     //public DbSet<Person> Persons { get; set; }
     public DbSet<Skills> Skills { get; set; }
@@ -60,7 +62,7 @@ public class UsersDbContext : DbContext
                     v => string.Join(',', v!),
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
-        
+
         modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity
         {
             Id = Guid.NewGuid(),

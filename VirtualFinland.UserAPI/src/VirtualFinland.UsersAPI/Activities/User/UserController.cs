@@ -1,13 +1,10 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
-using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
-using VirtualFinland.UserAPI.Middleware;
 
 namespace VirtualFinland.UserAPI.Activities.User;
 
