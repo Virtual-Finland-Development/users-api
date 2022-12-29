@@ -2,6 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.Shared;
 
+/// <summary>
+/// Region code based on ISO 3166-2:FI standard
+/// https://fi.wikipedia.org/wiki/ISO_3166-2:FI
+/// </summary>
 public enum Region
 {
     [JsonPropertyName("FI-01")] Fi01 = 1,
