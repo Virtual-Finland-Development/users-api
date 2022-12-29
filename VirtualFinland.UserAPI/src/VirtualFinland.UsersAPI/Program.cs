@@ -181,12 +181,13 @@ using (var scope = app.Services.CreateScope())
     var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
     var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
     var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-
-    // Preload outside data that does not change
-    await occupationsRepository.GetAllOccupations();
-    await occupationsFlatRepository.GetAllOccupationsFlat();
-    await languageRepository.GetAllLanguages();
-    await countriesRepository.GetAllCountries();
+    
+    Task.WaitAll(
+        occupationsRepository.GetAllOccupations(), 
+        occupationsFlatRepository.GetAllOccupationsFlat(), 
+        languageRepository.GetAllLanguages(), 
+        countriesRepository.GetAllCountries()
+    );
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
