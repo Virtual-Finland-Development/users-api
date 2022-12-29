@@ -5,6 +5,7 @@ using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;

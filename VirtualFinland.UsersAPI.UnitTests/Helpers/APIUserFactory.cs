@@ -1,5 +1,6 @@
 using Bogus;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;

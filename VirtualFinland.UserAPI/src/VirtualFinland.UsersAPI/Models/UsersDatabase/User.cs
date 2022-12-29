@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Models.Shared;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -50,15 +50,4 @@ public class User : IEntity
 
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
-}
-
-[JsonConverter(typeof(JsonStringEnumConverter))]
-public enum Gender
-{
-    [JsonPropertyName("Other")]
-    Other = 0,
-    [JsonPropertyName("Male")]
-    Male = 1,
-    [JsonPropertyName("Female")]
-    Female = 2
 }

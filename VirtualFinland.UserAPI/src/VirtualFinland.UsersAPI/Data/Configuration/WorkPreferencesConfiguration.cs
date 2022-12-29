@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data.Configuration;
