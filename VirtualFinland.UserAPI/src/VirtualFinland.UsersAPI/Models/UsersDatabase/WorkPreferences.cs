@@ -7,10 +7,6 @@ using System.Text.Json.Serialization;
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 // ReSharper disable once MemberCanBePrivate.Global
-public enum Municipality
-{
-    Lappeenranta = 405
-}
 
 // ReSharper disable once MemberCanBePrivate.Global
 public enum Region

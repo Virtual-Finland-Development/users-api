@@ -77,6 +77,14 @@ public static class UpdateUser
         }
     }
 
+    private sealed class WorkPreferencesValidator : AbstractValidator<WorkPreferences>
+    {
+        public WorkPreferencesValidator()
+        {
+            RuleForEach(wp => wp.PreferredMunicipalityEnum).IsInEnum();
+        }
+    }
+    
     public class AddressValidator : AbstractValidator<Address>
     {
         public AddressValidator()
@@ -101,6 +109,7 @@ public static class UpdateUser
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
             RuleFor(command => command.Gender).IsInEnum();
+            RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
         }
     }
     
