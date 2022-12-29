@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
@@ -25,7 +26,7 @@ public class UsersDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Method intentionally left empty.
+        optionsBuilder.AddInterceptors(new AuditInterceptor());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
