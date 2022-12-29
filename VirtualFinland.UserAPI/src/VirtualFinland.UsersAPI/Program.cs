@@ -1,6 +1,4 @@
 using System.Reflection;
-using Amazon.SecretsManager;
-using Amazon.SecretsManager.Extensions.Caching;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
@@ -191,7 +189,7 @@ using (var scope = app.Services.CreateScope())
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
-    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     updateUserWarmUpCommand.SetAuth(UsersDbContext.WarmUpUserId);
     
     await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;

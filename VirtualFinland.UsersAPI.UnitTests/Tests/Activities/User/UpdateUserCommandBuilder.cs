@@ -19,6 +19,8 @@ public class UpdateUserCommandBuilder
     private List<string>? _regions = new() { "Southern-Finland" };
     private Gender _gender = Gender.Male;
     private DateTime? _dateOfBirth = new(2022, 01,01);
+    private List<Occupation>? _occupations = new List<Occupation>();
+    private WorkPreferences? _workPreferences = new WorkPreferences();
 
     public UpdateUserCommandBuilder WithFirstName(string value)
     {
@@ -98,6 +100,18 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
+    public UpdateUserCommandBuilder WithOccupations(IEnumerable<Occupation> value)
+    {
+        _occupations = value.ToList();
+        return this;
+    }
+
+    public UpdateUserCommandBuilder WithWorkPreferences(WorkPreferences value)
+    {
+        _workPreferences = value;
+        return this;
+    }
+
     public UpdateUser.Command Build()
     {
         return new UpdateUser.Command(
@@ -113,7 +127,8 @@ public class UpdateUserCommandBuilder
             _jobTitles,
             _regions,
             _gender,
-            _dateOfBirth
-        );
+            _dateOfBirth, 
+            _occupations, 
+            _workPreferences);
     }
 }

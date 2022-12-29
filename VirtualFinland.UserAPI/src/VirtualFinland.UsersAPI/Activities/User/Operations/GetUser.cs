@@ -44,13 +44,17 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Users
+                .Include(u => u.Occupations)
+                .Include(u => u.WorkPreferences)
+                .SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
             
-            return new User(dbUser.Id,
+            return new User(
+                dbUser.Id,
                 dbUser.FirstName,
                 dbUser.LastName,
                 new Address(
@@ -70,12 +74,16 @@ public static class GetUser
                 dbUser.OccupationCode,
                 dbUser.CitizenshipCode,
                 dbUser.Gender,
-                dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+                dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                (dbUser.Occupations ?? new List<Occupation>()).ToList(),
+                dbUser.WorkPreferences 
+            );
         }
     }
     
     [SwaggerSchema(Title = "UserResponse")]
-    public record User(Guid Id,
+    public record User(
+        Guid Id,
         string? FirstName,
         string? LastName,
         Address? Address,
@@ -90,5 +98,8 @@ public static class GetUser
         string? OccupationCode,
         string? CitizenshipCode,
         Gender? Gender,
-        DateTime? DateOfBirth);
+        DateTime? DateOfBirth,
+        List<Occupation>? Occupations,
+        WorkPreferences? WorkPreferences
+    );
 }

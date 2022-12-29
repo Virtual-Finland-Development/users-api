@@ -19,31 +19,23 @@ public static class UpdateUser
     {
         public string? FirstName { get; }
         public string? LastName { get; }
-        
         public Address? Address { get; }
-        
         public bool? JobsDataConsent { get; }
-        
         public bool? ImmigrationDataConsent { get; }
-        
         public string? CountryOfBirthCode { get; }
-
         public string? NativeLanguageCode { get; }
-
         public string? OccupationCode { get; }
-
         public string? CitizenshipCode { get; }
-
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        
         public Gender? Gender { get; }
-        
         public DateTime? DateOfBirth { get; }
-        
+        public List<Occupation>? Occupations { get; }
+        public WorkPreferences? WorkPreferences { get; }
+
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
-        
+
         public Command(
             string? firstName,
             string? lastName,
@@ -57,26 +49,31 @@ public static class UpdateUser
             List<string>? jobTitles,
             List<string>? regions,
             Gender? gender,
-            DateTime? dateOfBirth)
+            DateTime? dateOfBirth,
+            List<Occupation>? occupations,
+            WorkPreferences? workPreferences
+        )
         {
-            this.FirstName = firstName;
-            this.LastName = lastName;
-            this.Address = address;
-            this.JobsDataConsent = jobsDataConsent;
-            this.ImmigrationDataConsent = immigrationDataConsent;
-            this.CountryOfBirthCode = countryOfBirthCode;
-            this.NativeLanguageCode = nativeLanguageCode;
-            this.OccupationCode = occupationCode;
-            this.CitizenshipCode = citizenshipCode;
-            this.JobTitles = jobTitles;
-            this.Regions = regions;
-            this.Gender = gender;
-            this.DateOfBirth = dateOfBirth;
+            FirstName = firstName;
+            LastName = lastName;
+            Address = address;
+            JobsDataConsent = jobsDataConsent;
+            ImmigrationDataConsent = immigrationDataConsent;
+            CountryOfBirthCode = countryOfBirthCode;
+            NativeLanguageCode = nativeLanguageCode;
+            OccupationCode = occupationCode;
+            CitizenshipCode = citizenshipCode;
+            JobTitles = jobTitles;
+            Regions = regions;
+            Gender = gender;
+            DateOfBirth = dateOfBirth;
+            Occupations = occupations;
+            WorkPreferences = workPreferences;
         }
 
         public void SetAuth(Guid? userDbId)
         {
-            this.UserId = userDbId;
+            UserId = userDbId;
         }
     }
 
@@ -127,7 +124,10 @@ public static class UpdateUser
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                var dbUser = await _usersDbContext.Users
+                    .Include(u => u.WorkPreferences)
+                    .Include(u => u.Occupations)
+                    .SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
                 
                 await VerifyUserUpdate(dbUser, request);
                 
@@ -159,7 +159,10 @@ public static class UpdateUser
                     dbUser.OccupationCode,
                     dbUser.CitizenshipCode,
                     dbUser.Gender,
-                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                    (dbUser.Occupations ?? new List<Occupation>()).ToList(),
+                    dbUser.WorkPreferences
+                );
             }
 
             private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
@@ -190,6 +193,8 @@ public static class UpdateUser
                 dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
+                dbUser.Occupations = request.Occupations ?? dbUser.Occupations;
+                dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
 
             }
 
@@ -270,20 +275,19 @@ public static class UpdateUser
 
                     return dbNewSearchProfile.Entity;
                 }
-                else
-                {
-                    dbUserDefaultSearchProfile.Name = dbUserDefaultSearchProfile.Name;
-                    dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
-                    dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
-                    dbUserDefaultSearchProfile.IsDefault = true;
-                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
+                
+                dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
+                dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
+                dbUserDefaultSearchProfile.IsDefault = true;
+                dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
-                    return dbUserDefaultSearchProfile;
-                }
+                return dbUserDefaultSearchProfile;
             }
         }
+
     [SwaggerSchema(Title = "UpdateUserResponse")]
-    public record User(Guid Id,
+    public record User(
+        Guid Id,
         string? FirstName,
         string? LastName,
         Address? Address,
@@ -298,5 +302,8 @@ public static class UpdateUser
         string? OccupationCode,
         string? CitizenshipCode,
         Gender? Gender,
-        DateTime? DateOfBirth);
+        DateTime? DateOfBirth,
+        List<Occupation>? Occupations,
+        WorkPreferences? WorkPreferences
+    );
 }
