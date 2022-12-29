@@ -4,9 +4,8 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data.Configuration;
 
-public class UserConfig : IEntityTypeConfiguration<User>
+public class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    
     public void Configure(EntityTypeBuilder<User> entity)
     {
         entity.HasData(new User
@@ -19,5 +18,7 @@ public class UserConfig : IEntityTypeConfiguration<User>
         });
 
         entity.Property(u => u.Gender).HasConversion<string>();
+
+        entity.HasOne(u => u.WorkPreferences).WithOne(wp => wp.User).HasForeignKey<WorkPreferences>(wp => wp.Id);
     }
 }

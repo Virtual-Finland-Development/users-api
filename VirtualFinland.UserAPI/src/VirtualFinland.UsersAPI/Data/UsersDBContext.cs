@@ -24,6 +24,16 @@ public class UsersDbContext : DbContext
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
     public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
 
+    public DbSet<Certification> Certifications { get; set; }
+    public DbSet<Education> Educations { get; set; }
+    public DbSet<Language> Languages { get; set; }
+    public DbSet<Occupation> Occupations { get; set; }
+    public DbSet<Permit> Permits { get; set; }
+    // Leave this out for now as it makes things difficult if both Person and User wants to link to WorkPreferences
+    //public DbSet<Person> Persons { get; set; }
+    public DbSet<Skills> Skills { get; set; }
+    public DbSet<WorkPreferences> WorkPreferences { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(new AuditInterceptor());
@@ -33,7 +43,8 @@ public class UsersDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new UserConfig());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
 
         if (_isTesting)
         {
