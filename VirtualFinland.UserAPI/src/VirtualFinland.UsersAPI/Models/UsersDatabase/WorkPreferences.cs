@@ -1,29 +1,48 @@
 // ReSharper disable ClassNeverInstantiated.Global
 
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class WorkPreferences
+// ReSharper disable once MemberCanBePrivate.Global
+public enum Municipality
 {
-    // ReSharper disable once MemberCanBePrivate.Global
-    public enum Municipality
-    {
-    }
+    Lappeenranta = 405
+}
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    public enum Region
-    {
-    }
+// ReSharper disable once MemberCanBePrivate.Global
+public enum Region
+{
+}
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    public enum WorkingTime
-    {
-    }
+// ReSharper disable once MemberCanBePrivate.Global
+public enum WorkingTime
+{
+}
 
-    public Region? PreferredRegionEnum { get; set; }
-    public Municipality? PreferredMunicipalityEnum { get; set; }
+public class WorkPreferences : Auditable, IEntity
+{
+    public ICollection<Region>? PreferredRegionEnum { get; set; }
+    public ICollection<Municipality>? PreferredMunicipalityEnum { get; set; }
     public string? EmploymentTypeCode { get; set; }
     public WorkingTime? WorkingTimeEnum { get; set; }
     public string? WorkingLanguageEnum { get; set; }
+
+    // Relationships
+    [JsonIgnore]
+    public User? User { get; set; }
+    
+    [Key]
+    [Required]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    [ForeignKey(nameof(User))]
+    public Guid Id { get; set; }
+}
+
+public abstract class Auditable
+{
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
 }
