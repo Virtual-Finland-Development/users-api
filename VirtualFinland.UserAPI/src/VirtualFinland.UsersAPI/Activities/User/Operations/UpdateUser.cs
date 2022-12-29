@@ -202,9 +202,48 @@ public static class UpdateUser
                 dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
-                dbUser.Occupations = request.Occupations ?? dbUser.Occupations;
+                dbUser.Occupations = GetUpdatedOccupations(dbUser.Occupations, request.Occupations);
                 dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
 
+            }
+
+            private static ICollection<Occupation>? GetUpdatedOccupations(
+                ICollection<Occupation>? dbUserOccupations, 
+                List<Occupation>? requestOccupations)
+            {
+                // Update occupations if the id matches from request to one existing id
+                // Otherwise create new occupation.
+                // All old occupations will be detached from user but not deleted from database
+                if (requestOccupations is { Count: > 0 })
+                {
+                    dbUserOccupations ??= new List<Occupation>();
+
+                    // Loop through all the occupations in the request
+                    foreach (var occupation in requestOccupations)
+                    {
+                        // Check if Id field is set
+                        if (occupation.Id == Guid.Empty)
+                        {
+                            // Id not set, add new occupation
+                            dbUserOccupations.Add(occupation);
+                            continue;
+                        }
+                        
+                        var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id);
+                        
+                        // TODO: Return some error about invalid guid ?
+                        if(existingOccupation is null) continue;
+                        
+                        // else update property values
+                        existingOccupation.Update(occupation);
+                    }
+                }
+                else
+                {
+                    return new List<Occupation>();
+                }
+
+                return dbUserOccupations;
             }
 
             private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)
