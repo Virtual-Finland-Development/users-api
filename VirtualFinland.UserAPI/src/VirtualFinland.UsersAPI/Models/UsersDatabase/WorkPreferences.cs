@@ -1,23 +1,11 @@
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Models.Shared;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 // ReSharper disable once MemberCanBePrivate.Global
-
-// ReSharper disable once MemberCanBePrivate.Global
-public enum Region
-{
-}
-
-// ReSharper disable once MemberCanBePrivate.Global
-public enum WorkingTime
-{
-}
-
 public class WorkPreferences : Auditable, IEntity
 {
     public ICollection<Region>? PreferredRegionEnum { get; set; }
