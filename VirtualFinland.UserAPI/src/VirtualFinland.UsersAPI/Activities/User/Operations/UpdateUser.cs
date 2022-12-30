@@ -84,8 +84,8 @@ public static class UpdateUser
             RuleForEach(wp => wp.PreferredMunicipalityEnum).IsInEnum();
         }
     }
-    
-    public class AddressValidator : AbstractValidator<Address>
+
+    private sealed class AddressValidator : AbstractValidator<Address>
     {
         public AddressValidator()
         {
