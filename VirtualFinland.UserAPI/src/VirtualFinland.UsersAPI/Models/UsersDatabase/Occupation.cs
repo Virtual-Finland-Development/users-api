@@ -1,4 +1,5 @@
 // ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 using System.ComponentModel.DataAnnotations;
 
@@ -12,7 +13,7 @@ public class Occupation : Auditable, IEntity
     [Url]
     public string? EscoUri { get; set; }
     
-    [MaxLength(5)] // TODO: Check this
+    [MaxLength(16)]
     public string? EscoCode { get; set; }
     
     // 50 years in same workplace should be plenty enough
