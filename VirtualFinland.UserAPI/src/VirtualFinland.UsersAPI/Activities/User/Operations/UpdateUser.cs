@@ -218,10 +218,10 @@ public static class UpdateUser
                     dbUser.WorkPreferences ??= new WorkPreferences();
                     
                     if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
-                        dbUser.WorkPreferences.PreferredMunicipalityEnum = GetUpdatedMunicipalities(request.WorkPreferences);
+                        dbUser.WorkPreferences.PreferredMunicipalityEnum = GetEnumsFromCollection<Municipality>(request.WorkPreferences.PreferredMunicipalityEnum);
                     
                     if(request.WorkPreferences.PreferredRegionEnum is not null)
-                        dbUser.WorkPreferences.PreferredRegionEnum = GetUpdatedRegions(request.WorkPreferences);
+                        dbUser.WorkPreferences.PreferredRegionEnum = GetEnumsFromCollection<Region>(request.WorkPreferences.PreferredRegionEnum);
                     
                     dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
                     dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
@@ -231,34 +231,17 @@ public static class UpdateUser
                 }
             }
 
-            private static ICollection<Municipality> GetUpdatedMunicipalities(WorkPreferencesRequestDto requestWorkPreferences)
+            private static ICollection<T> GetEnumsFromCollection<T>(ICollection<string> enums) where T : struct, Enum
             {
-                var updatedMunicipalities = new List<Municipality>();
+                var updatedRegions = new List<T>();
 
-                if (requestWorkPreferences.PreferredMunicipalityEnum is not { Count: > 0 })
-                    return updatedMunicipalities;
-                
-                foreach (var enumString in requestWorkPreferences.PreferredMunicipalityEnum)
-                {
-                    var isMunicipality = Enum.TryParse<Municipality>(enumString, out var municipality);
-                    if(isMunicipality)
-                        updatedMunicipalities.Add(municipality);
-                }
-
-                return updatedMunicipalities;
-            }
-            
-            private static ICollection<Region> GetUpdatedRegions(WorkPreferencesRequestDto requestWorkPreferences)
-            {
-                var updatedRegions = new List<Region>();
-
-                if (requestWorkPreferences.PreferredRegionEnum is not { Count: > 0 })
+                if (enums is not { Count: > 0 })
                     return updatedRegions;
-                
-                foreach (var enumString in requestWorkPreferences.PreferredRegionEnum)
+
+                foreach (var enumString in enums)
                 {
-                    var isRegion = Enum.TryParse<Region>(enumString, out var region);
-                    if(isRegion)
+                    var isRegion = Enum.TryParse<T>(enumString, out var region);
+                    if (isRegion)
                         updatedRegions.Add(region);
                 }
 
