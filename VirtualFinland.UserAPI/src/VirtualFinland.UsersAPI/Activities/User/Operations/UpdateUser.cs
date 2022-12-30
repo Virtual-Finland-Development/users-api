@@ -108,7 +108,7 @@ public static class UpdateUser
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
             RuleFor(command => command.Gender).IsInEnum();
-            RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
+            //RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
         }
     }
     
