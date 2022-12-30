@@ -206,14 +206,19 @@ public static class UpdateUser
                 dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
 
             }
-
+            
+            /// <summary>
+            /// Update occupations if id field in request matches existing id in database
+            /// otherwise create new occupations
+            /// all old occupations will be detached from user but not deleted from database
+            /// </summary>
+            /// <param name="dbUserOccupations"></param>
+            /// <param name="requestOccupations"></param>
+            /// <returns></returns>
             private static ICollection<Occupation>? GetUpdatedOccupations(
                 ICollection<Occupation>? dbUserOccupations, 
                 List<Occupation>? requestOccupations)
             {
-                // Update occupations if the id matches from request to one existing id
-                // Otherwise create new occupation.
-                // All old occupations will be detached from user but not deleted from database
                 if (requestOccupations is { Count: > 0 })
                 {
                     dbUserOccupations ??= new List<Occupation>();
