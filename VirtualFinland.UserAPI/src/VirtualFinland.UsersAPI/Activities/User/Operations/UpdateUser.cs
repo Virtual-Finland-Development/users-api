@@ -76,7 +76,7 @@ public static class UpdateUser
         }
     }
 
-    private sealed class WorkPreferencesValidator : AbstractValidator<WorkPreferences>
+    private sealed class WorkPreferencesValidator : AbstractValidator<WorkPreferencesRequestDto>
     {
         public WorkPreferencesValidator()
         {
