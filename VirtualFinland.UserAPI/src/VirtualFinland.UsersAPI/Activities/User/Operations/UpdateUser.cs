@@ -215,31 +215,27 @@ public static class UpdateUser
             /// <param name="dbUserOccupations"></param>
             /// <param name="requestOccupations"></param>
             /// <returns></returns>
-            private static ICollection<Occupation>? GetUpdatedOccupations(
-                ICollection<Occupation>? dbUserOccupations, 
+            private static ICollection<Occupation> GetUpdatedOccupations(
+                ICollection<Occupation>? dbUserOccupations,
                 List<Occupation>? requestOccupations)
             {
                 if (requestOccupations is { Count: > 0 })
                 {
                     dbUserOccupations ??= new List<Occupation>();
 
-                    // Loop through all the occupations in the request
                     foreach (var occupation in requestOccupations)
                     {
-                        // Check if Id field is set
                         if (occupation.Id == Guid.Empty)
                         {
-                            // Id not set, add new occupation
                             dbUserOccupations.Add(occupation);
                             continue;
                         }
-                        
+
                         var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id);
-                        
+
                         // TODO: Return some error about invalid guid ?
-                        if(existingOccupation is null) continue;
-                        
-                        // else update property values
+                        if (existingOccupation is null) continue;
+
                         existingOccupation.Update(occupation);
                     }
                 }
@@ -268,8 +264,8 @@ public static class UpdateUser
 
             private async Task<List<ValidationErrorDetail>>  ValidateLanguageCodesLogic(Command request)
             {
-
                 var validationErrors = new List<ValidationErrorDetail>();
+                
                 if (string.IsNullOrEmpty(request.NativeLanguageCode)) return validationErrors;
                 
                 var languages = await _languageRepository.GetAllLanguages();
@@ -280,6 +276,7 @@ public static class UpdateUser
 
                 return validationErrors;
             }
+            
             private async Task<List<ValidationErrorDetail>>  ValidateCountryCodesLogic(Command request)
             {
                 var validationErrors = new List<ValidationErrorDetail>();
