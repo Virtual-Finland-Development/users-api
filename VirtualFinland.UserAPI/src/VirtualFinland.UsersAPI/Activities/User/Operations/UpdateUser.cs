@@ -170,16 +170,16 @@ public static class UpdateUser
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
                     (dbUser.Occupations ?? new List<Occupation>()).ToList(),
                     new WorkPreferencesResponseDto
-                    {
-                        Id = dbUser.WorkPreferences?.Id,
-                        EmploymentTypeCode = dbUser.WorkPreferences?.EmploymentTypeCode,
-                        PreferredMunicipalityEnum = dbUser.WorkPreferences?.PreferredMunicipalityEnum,
-                        PreferredRegionEnum = dbUser.WorkPreferences?.PreferredRegionEnum,
-                        WorkingLanguageEnum = dbUser.WorkPreferences?.WorkingLanguageEnum,
-                        WorkingTimeEnum = dbUser.WorkPreferences?.WorkingTimeEnum,
-                        Created = dbUser.WorkPreferences?.Created,
-                        Modified = dbUser.WorkPreferences?.Modified
-                    }
+                    (
+                        dbUser.WorkPreferences?.Id,
+                        dbUser.WorkPreferences?.PreferredRegionEnum,
+                        dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                        dbUser.WorkPreferences?.EmploymentTypeCode,
+                        dbUser.WorkPreferences?.WorkingTimeEnum,
+                        dbUser.WorkPreferences?.WorkingLanguageEnum,
+                        dbUser.WorkPreferences?.Created,
+                        dbUser.WorkPreferences?.Modified
+                    )
                 );
             }
 
@@ -215,7 +215,6 @@ public static class UpdateUser
 
                 if (request.WorkPreferences is not null)
                 {
-                    
                     dbUser.WorkPreferences ??= new WorkPreferences();
                     
                     if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
@@ -230,8 +229,6 @@ public static class UpdateUser
                     Enum.TryParse<WorkingTime>(request.WorkPreferences.WorkingTimeEnum, out var workingTime);
                     dbUser.WorkPreferences.WorkingTimeEnum = workingTime;
                 }
-
-                //dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
             }
 
             private static ICollection<Municipality> GetUpdatedMunicipalities(WorkPreferencesRequestDto requestWorkPreferences)
@@ -416,25 +413,25 @@ public static class UpdateUser
         List<Occupation>? Occupations,
         WorkPreferencesResponseDto? WorkPreferences
     );
-    
+
     public record WorkPreferencesRequestDto
-    {
-        public ICollection<string>? PreferredRegionEnum { get; init; }
-        public ICollection<string>? PreferredMunicipalityEnum { get; init; }
-        public string? EmploymentTypeCode { get; init; }
-        public string? WorkingTimeEnum { get; init; }
-        public string? WorkingLanguageEnum { get; init; }
-    }
-    
+    (
+        ICollection<string>? PreferredRegionEnum,
+        ICollection<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum
+    );
+
     public record WorkPreferencesResponseDto
-    {
-        public ICollection<Region>? PreferredRegionEnum { get; init; }
-        public ICollection<Municipality>? PreferredMunicipalityEnum { get; init; }
-        public string? EmploymentTypeCode { get; init; }
-        public WorkingTime? WorkingTimeEnum { get; init; }
-        public string? WorkingLanguageEnum { get; init; }
-        public Guid? Id { get; init; }
-        public DateTime? Created { get; init; }
-        public DateTime? Modified { get; init; }
-    }
+    (
+        Guid? Id,
+        ICollection<Region>? PreferredRegionEnum,
+        ICollection<Municipality>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        WorkingTime? WorkingTimeEnum,
+        string? WorkingLanguageEnum,
+        DateTime? Created,
+        DateTime? Modified
+    );
 }
