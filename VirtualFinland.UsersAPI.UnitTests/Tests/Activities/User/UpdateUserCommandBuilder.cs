@@ -19,8 +19,8 @@ public class UpdateUserCommandBuilder
     private List<string>? _regions = new() { "Southern-Finland" };
     private Gender _gender = Gender.Male;
     private DateTime? _dateOfBirth = new(2022, 01,01);
-    private List<Occupation>? _occupations = new List<Occupation>();
-    private WorkPreferences? _workPreferences = new WorkPreferences();
+    private List<Occupation>? _occupations = new ();
+    private UpdateUser.WorkPreferencesRequestDto? _workPreferences = new ();
 
     public UpdateUserCommandBuilder WithFirstName(string value)
     {
@@ -106,7 +106,7 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
-    public UpdateUserCommandBuilder WithWorkPreferences(WorkPreferences value)
+    public UpdateUserCommandBuilder WithWorkPreferences(UpdateUser.WorkPreferencesRequestDto value)
     {
         _workPreferences = value;
         return this;

@@ -6,7 +6,6 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
-using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -31,7 +30,7 @@ public static class UpdateUser
         public Gender? Gender { get; }
         public DateTime? DateOfBirth { get; }
         public List<Occupation>? Occupations { get; }
-        public WorkPreferences? WorkPreferences { get; }
+        public WorkPreferencesRequestDto? WorkPreferences { get; }
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
@@ -51,7 +50,7 @@ public static class UpdateUser
             Gender? gender,
             DateTime? dateOfBirth,
             List<Occupation>? occupations,
-            WorkPreferences? workPreferences
+            WorkPreferencesRequestDto? workPreferences
         )
         {
             FirstName = firstName;
@@ -170,7 +169,17 @@ public static class UpdateUser
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
                     (dbUser.Occupations ?? new List<Occupation>()).ToList(),
-                    dbUser.WorkPreferences
+                    new WorkPreferencesResponseDto
+                    {
+                        Id = dbUser.WorkPreferences?.Id,
+                        EmploymentTypeCode = dbUser.WorkPreferences?.EmploymentTypeCode,
+                        PreferredMunicipalityEnum = dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                        PreferredRegionEnum = dbUser.WorkPreferences?.PreferredRegionEnum,
+                        WorkingLanguageEnum = dbUser.WorkPreferences?.WorkingLanguageEnum,
+                        WorkingTimeEnum = dbUser.WorkPreferences?.WorkingTimeEnum,
+                        Created = dbUser.WorkPreferences?.Created,
+                        Modified = dbUser.WorkPreferences?.Modified
+                    }
                 );
             }
 
@@ -203,10 +212,62 @@ public static class UpdateUser
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
                 dbUser.Occupations = GetUpdatedOccupations(dbUser.Occupations, request.Occupations);
-                dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
 
+                if (request.WorkPreferences is not null)
+                {
+                    
+                    dbUser.WorkPreferences ??= new WorkPreferences();
+                    
+                    if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
+                        dbUser.WorkPreferences.PreferredMunicipalityEnum = GetUpdatedMunicipalities(request.WorkPreferences);
+                    
+                    if(request.WorkPreferences.PreferredRegionEnum is not null)
+                        dbUser.WorkPreferences.PreferredRegionEnum = GetUpdatedRegions(request.WorkPreferences);
+                    
+                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
+                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
+
+                    Enum.TryParse<WorkingTime>(request.WorkPreferences.WorkingTimeEnum, out var workingTime);
+                    dbUser.WorkPreferences.WorkingTimeEnum = workingTime;
+                }
+
+                //dbUser.WorkPreferences = request.WorkPreferences ?? dbUser.WorkPreferences;
+            }
+
+            private static ICollection<Municipality> GetUpdatedMunicipalities(WorkPreferencesRequestDto requestWorkPreferences)
+            {
+                var updatedMunicipalities = new List<Municipality>();
+
+                if (requestWorkPreferences.PreferredMunicipalityEnum is not { Count: > 0 })
+                    return updatedMunicipalities;
+                
+                foreach (var enumString in requestWorkPreferences.PreferredMunicipalityEnum)
+                {
+                    var isMunicipality = Enum.TryParse<Municipality>(enumString, out var municipality);
+                    if(isMunicipality)
+                        updatedMunicipalities.Add(municipality);
+                }
+
+                return updatedMunicipalities;
             }
             
+            private static ICollection<Region> GetUpdatedRegions(WorkPreferencesRequestDto requestWorkPreferences)
+            {
+                var updatedRegions = new List<Region>();
+
+                if (requestWorkPreferences.PreferredRegionEnum is not { Count: > 0 })
+                    return updatedRegions;
+                
+                foreach (var enumString in requestWorkPreferences.PreferredRegionEnum)
+                {
+                    var isRegion = Enum.TryParse<Region>(enumString, out var region);
+                    if(isRegion)
+                        updatedRegions.Add(region);
+                }
+
+                return updatedRegions;
+            }
+
             /// <summary>
             /// Update occupations if id field in request matches existing id in database
             /// otherwise create new occupations
@@ -353,6 +414,27 @@ public static class UpdateUser
         Gender? Gender,
         DateTime? DateOfBirth,
         List<Occupation>? Occupations,
-        WorkPreferences? WorkPreferences
+        WorkPreferencesResponseDto? WorkPreferences
     );
+    
+    public record WorkPreferencesRequestDto
+    {
+        public ICollection<string>? PreferredRegionEnum { get; init; }
+        public ICollection<string>? PreferredMunicipalityEnum { get; init; }
+        public string? EmploymentTypeCode { get; init; }
+        public string? WorkingTimeEnum { get; init; }
+        public string? WorkingLanguageEnum { get; init; }
+    }
+    
+    public record WorkPreferencesResponseDto
+    {
+        public ICollection<Region>? PreferredRegionEnum { get; init; }
+        public ICollection<Municipality>? PreferredMunicipalityEnum { get; init; }
+        public string? EmploymentTypeCode { get; init; }
+        public WorkingTime? WorkingTimeEnum { get; init; }
+        public string? WorkingLanguageEnum { get; init; }
+        public Guid? Id { get; init; }
+        public DateTime? Created { get; init; }
+        public DateTime? Modified { get; init; }
+    }
 }
