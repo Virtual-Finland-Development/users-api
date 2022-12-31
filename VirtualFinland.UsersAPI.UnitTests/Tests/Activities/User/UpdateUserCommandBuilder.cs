@@ -20,7 +20,7 @@ public class UpdateUserCommandBuilder
     private Gender _gender = Gender.Male;
     private DateTime? _dateOfBirth = new(2022, 01,01);
     private List<Occupation>? _occupations = new ();
-    private UpdateUser.WorkPreferencesRequestDto? _workPreferences;
+    private UpdateUser.UpdateUserRequestWorkPreferences? _workPreferences;
 
     public UpdateUserCommandBuilder WithFirstName(string value)
     {
@@ -106,7 +106,7 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
-    public UpdateUserCommandBuilder WithWorkPreferences(UpdateUser.WorkPreferencesRequestDto value)
+    public UpdateUserCommandBuilder WithWorkPreferences(UpdateUser.UpdateUserRequestWorkPreferences value)
     {
         _workPreferences = value;
         return this;

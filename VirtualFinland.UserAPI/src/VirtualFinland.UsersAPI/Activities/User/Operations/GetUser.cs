@@ -47,11 +47,40 @@ public static class GetUser
             var dbUser = await _usersDbContext.Users
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)
-                .SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                .SingleAsync(o => o.Id == request.UserId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
+
+            List<UserResponseOccupation>? occupations = null;
+            if (dbUser.Occupations is not null)
+            {
+                occupations = dbUser.Occupations.Select(x => 
+                    new UserResponseOccupation
+                    (
+                        x.Id,
+                        x.EscoCode,
+                        x.EscoUri,
+                        x.NaceCode,
+                        x.WorkMonths
+                    )).ToList();
+            }
+
+            WorkPreferencesResponseDto? workPreferences = null;
+            if (dbUser.WorkPreferences is not null)
+            {
+                workPreferences = new WorkPreferencesResponseDto(
+                    dbUser.WorkPreferences?.Id,
+                    dbUser.WorkPreferences?.PreferredRegionEnum,
+                    dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                    dbUser.WorkPreferences?.EmploymentTypeCode,
+                    dbUser.WorkPreferences?.WorkingTimeEnum,
+                    dbUser.WorkPreferences?.WorkingLanguageEnum,
+                    dbUser.WorkPreferences?.Created,
+                    dbUser.WorkPreferences?.Modified
+                );
+            }
             
             return new User(
                 dbUser.Id,
@@ -75,12 +104,12 @@ public static class GetUser
                 dbUser.CitizenshipCode,
                 dbUser.Gender,
                 dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
-                (dbUser.Occupations ?? new List<Occupation>()).ToList(),
-                dbUser.WorkPreferences 
+                occupations,
+                workPreferences
             );
         }
     }
-    
+
     [SwaggerSchema(Title = "UserResponse")]
     public record User(
         Guid Id,
@@ -99,7 +128,31 @@ public static class GetUser
         string? CitizenshipCode,
         Gender? Gender,
         DateTime? DateOfBirth,
-        List<Occupation>? Occupations,
-        WorkPreferences? WorkPreferences
+        List<UserResponseOccupation>? Occupations,
+        WorkPreferencesResponseDto? WorkPreferences
     );
+
+    [SwaggerSchema(Title = "UserResponseWorkPreferences")]
+    public record WorkPreferencesResponseDto
+    (
+        Guid? Id,
+        ICollection<Region>? PreferredRegionEnum,
+        ICollection<Municipality>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        WorkingTime? WorkingTimeEnum,
+        string? WorkingLanguageEnum,
+        DateTime? Created,
+        DateTime? Modified
+    );
+
+    [SwaggerSchema(Title = "UserResponseOccupations")]
+    public record UserResponseOccupation(
+        Guid Id,
+        string? NaceCode,
+        string? EscoUri,
+        string? EscoCode,
+        int? WorkMonths
+    );
+
+
 }

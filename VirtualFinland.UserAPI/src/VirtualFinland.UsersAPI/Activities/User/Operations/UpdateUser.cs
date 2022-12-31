@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +31,7 @@ public static class UpdateUser
         public Gender? Gender { get; }
         public DateTime? DateOfBirth { get; }
         public List<Occupation>? Occupations { get; }
-        public WorkPreferencesRequestDto? WorkPreferences { get; }
+        public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
@@ -50,7 +51,7 @@ public static class UpdateUser
             Gender? gender,
             DateTime? dateOfBirth,
             List<Occupation>? occupations,
-            WorkPreferencesRequestDto? workPreferences
+            UpdateUserRequestWorkPreferences? workPreferences
         )
         {
             FirstName = firstName;
@@ -76,7 +77,7 @@ public static class UpdateUser
         }
     }
 
-    private sealed class WorkPreferencesValidator : AbstractValidator<WorkPreferencesRequestDto>
+    private sealed class WorkPreferencesValidator : AbstractValidator<UpdateUserRequestWorkPreferences>
     {
         public WorkPreferencesValidator()
         {
@@ -146,6 +147,14 @@ public static class UpdateUser
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
+                List<UpdateUserResponseOccupation>? occupations = null;
+                if (dbUser.Occupations is {Count: > 0})
+                {
+                    occupations = dbUser.Occupations.Select(x =>
+                            new UpdateUserResponseOccupation(x.Id, x.NaceCode, x.EscoUri, x.NaceCode, x.WorkMonths))
+                        .ToList();
+                }
+                
                 return new User(
                     dbUser.Id,
                     dbUser.FirstName,
@@ -168,8 +177,8 @@ public static class UpdateUser
                     dbUser.CitizenshipCode,
                     dbUser.Gender,
                     dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
-                    (dbUser.Occupations ?? new List<Occupation>()).ToList(),
-                    new WorkPreferencesResponseDto
+                    occupations,
+                    new UpdateUserResponseWorkPreferences
                     (
                         dbUser.WorkPreferences?.Id,
                         dbUser.WorkPreferences?.PreferredRegionEnum,
@@ -393,11 +402,12 @@ public static class UpdateUser
         string? CitizenshipCode,
         Gender? Gender,
         DateTime? DateOfBirth,
-        List<Occupation>? Occupations,
-        WorkPreferencesResponseDto? WorkPreferences
+        List<UpdateUserResponseOccupation>? Occupations,
+        UpdateUserResponseWorkPreferences? WorkPreferences
     );
-
-    public record WorkPreferencesRequestDto
+    
+    [SwaggerSchema(Title = "UpdateUserRequestWorkPreferences")]
+    public record UpdateUserRequestWorkPreferences
     (
         ICollection<string>? PreferredRegionEnum,
         ICollection<string>? PreferredMunicipalityEnum,
@@ -406,7 +416,8 @@ public static class UpdateUser
         string? WorkingLanguageEnum
     );
 
-    public record WorkPreferencesResponseDto
+    [SwaggerSchema(Title = "UpdateUserResponseWorkPreferences")]
+    public record UpdateUserResponseWorkPreferences
     (
         Guid? Id,
         ICollection<Region>? PreferredRegionEnum,
@@ -416,5 +427,14 @@ public static class UpdateUser
         string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified
+    );
+    
+    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    public record UpdateUserResponseOccupation(
+        Guid Id,
+        string? NaceCode,
+        string? EscoUri,
+        string? EscoCode,
+        int? WorkMonths
     );
 }
