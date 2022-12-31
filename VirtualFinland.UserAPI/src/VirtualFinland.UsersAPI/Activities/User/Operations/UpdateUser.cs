@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
