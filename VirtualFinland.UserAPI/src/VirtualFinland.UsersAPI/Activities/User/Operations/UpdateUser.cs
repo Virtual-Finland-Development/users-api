@@ -226,10 +226,10 @@ public static class UpdateUser
                     dbUser.WorkPreferences ??= new WorkPreferences();
                     
                     if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
-                        dbUser.WorkPreferences.PreferredMunicipalityEnum = GetEnumsFromCollection<Municipality>(request.WorkPreferences.PreferredMunicipalityEnum);
-                    
-                    if(request.WorkPreferences.PreferredRegionEnum is not null)
-                        dbUser.WorkPreferences.PreferredRegionEnum = GetEnumsFromCollection<Region>(request.WorkPreferences.PreferredRegionEnum);
+                        dbUser.WorkPreferences.PreferredMunicipalityEnum = request.WorkPreferences.PreferredMunicipalityEnum;
+
+                    if (request.WorkPreferences.PreferredRegionEnum is not null)
+                        dbUser.WorkPreferences.PreferredRegionEnum = request.WorkPreferences.PreferredRegionEnum;
                     
                     dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
                     dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
@@ -408,8 +408,8 @@ public static class UpdateUser
     [SwaggerSchema(Title = "UpdateUserRequestWorkPreferences")]
     public record UpdateUserRequestWorkPreferences
     (
-        ICollection<string>? PreferredRegionEnum,
-        ICollection<string>? PreferredMunicipalityEnum,
+        List<string>? PreferredRegionEnum,
+        List<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
         string? WorkingTimeEnum,
         string? WorkingLanguageEnum
@@ -419,8 +419,8 @@ public static class UpdateUser
     public record UpdateUserResponseWorkPreferences
     (
         Guid? Id,
-        ICollection<Region>? PreferredRegionEnum,
-        ICollection<Municipality>? PreferredMunicipalityEnum,
+        ICollection<string>? PreferredRegionEnum,
+        ICollection<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
         WorkingTime? WorkingTimeEnum,
         string? WorkingLanguageEnum,

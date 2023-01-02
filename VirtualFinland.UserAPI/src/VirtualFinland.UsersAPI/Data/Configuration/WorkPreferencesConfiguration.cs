@@ -10,6 +10,20 @@ public class WorkPreferencesConfiguration : IEntityTypeConfiguration<WorkPrefere
 {
     public void Configure(EntityTypeBuilder<WorkPreferences> entity)
     {
+        // Temporarily use list of strings until proper enum validation is in place
+        entity.Property(wp => wp.PreferredMunicipalityEnum).HasConversion(
+            v => string.Join(',', v),
+            v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+        );
+       
+        // Temporarily use list of strings until proper enum validation is in place
+        entity.Property(wp => wp.PreferredRegionEnum).HasConversion(
+            v => string.Join(',', v),
+            v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+        );
+            
+        // TODO: Configure these later on validation ticket
+        /*
         var municipalityConverter = new EnumCollectionJsonValueConverter<Municipality>();
         var municipalityComparer = new CollectionValueComparer<Municipality>();
         entity
@@ -24,5 +38,6 @@ public class WorkPreferencesConfiguration : IEntityTypeConfiguration<WorkPrefere
             .Property(wp => wp.PreferredRegionEnum)
             .HasConversion(regionConverter)
             .Metadata.SetValueComparer(regionComparer);
+        */
     }
 }

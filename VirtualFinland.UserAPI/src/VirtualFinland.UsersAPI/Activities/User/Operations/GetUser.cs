@@ -135,8 +135,8 @@ public static class GetUser
     public record WorkPreferencesResponseDto
     (
         Guid? Id,
-        ICollection<Region>? PreferredRegionEnum,
-        ICollection<Municipality>? PreferredMunicipalityEnum,
+        List<string>? PreferredRegionEnum,
+        List<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
         WorkingTime? WorkingTimeEnum,
         string? WorkingLanguageEnum,

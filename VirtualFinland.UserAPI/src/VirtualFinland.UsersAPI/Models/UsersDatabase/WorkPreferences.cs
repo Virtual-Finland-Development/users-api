@@ -8,8 +8,8 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 // ReSharper disable once MemberCanBePrivate.Global
 public class WorkPreferences : Auditable, IEntity
 {
-    public ICollection<Region>? PreferredRegionEnum { get; set; }
-    public ICollection<Municipality>? PreferredMunicipalityEnum { get; set; }
+    public List<string>? PreferredRegionEnum { get; set; }
+    public List<string>? PreferredMunicipalityEnum { get; set; }
     public string? EmploymentTypeCode { get; set; }
     public WorkingTime? WorkingTimeEnum { get; set; }
     public string? WorkingLanguageEnum { get; set; }
