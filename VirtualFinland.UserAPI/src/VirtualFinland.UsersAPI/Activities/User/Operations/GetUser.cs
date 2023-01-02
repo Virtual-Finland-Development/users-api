@@ -66,10 +66,10 @@ public static class GetUser
                     )).ToList();
             }
 
-            WorkPreferencesResponseDto? workPreferences = null;
+            UserResponseWorkPreferences? workPreferences = null;
             if (dbUser.WorkPreferences is not null)
             {
-                workPreferences = new WorkPreferencesResponseDto(
+                workPreferences = new UserResponseWorkPreferences(
                     dbUser.WorkPreferences?.Id,
                     dbUser.WorkPreferences?.PreferredRegionEnum,
                     dbUser.WorkPreferences?.PreferredMunicipalityEnum,
@@ -128,11 +128,11 @@ public static class GetUser
         Gender? Gender,
         DateTime? DateOfBirth,
         List<UserResponseOccupation>? Occupations,
-        WorkPreferencesResponseDto? WorkPreferences
+        UserResponseWorkPreferences? WorkPreferences
     );
 
     [SwaggerSchema(Title = "UserResponseWorkPreferences")]
-    public record WorkPreferencesResponseDto
+    public record UserResponseWorkPreferences
     (
         Guid? Id,
         List<string>? PreferredRegionEnum,
