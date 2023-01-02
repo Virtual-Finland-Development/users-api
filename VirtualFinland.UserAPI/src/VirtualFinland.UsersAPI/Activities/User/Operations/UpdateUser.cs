@@ -29,7 +29,7 @@ public static class UpdateUser
         public List<string>? Regions { get; }
         public Gender? Gender { get; }
         public DateTime? DateOfBirth { get; }
-        public List<Occupation>? Occupations { get; }
+        public List<UpdateUserRequestOccupation>? Occupations { get; }
         public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
 
         [SwaggerIgnore]
@@ -49,7 +49,7 @@ public static class UpdateUser
             List<string>? regions,
             Gender? gender,
             DateTime? dateOfBirth,
-            List<Occupation>? occupations,
+            List<UpdateUserRequestOccupation>? occupations,
             UpdateUserRequestWorkPreferences? workPreferences
         )
         {
@@ -266,17 +266,23 @@ public static class UpdateUser
             /// <returns></returns>
             private static ICollection<Occupation> GetUpdatedOccupations(
                 ICollection<Occupation>? dbUserOccupations,
-                List<Occupation>? requestOccupations)
+                List<UpdateUserRequestOccupation>? requestOccupations)
             {
+                dbUserOccupations ??= new List<Occupation>();
+                
                 if (requestOccupations is { Count: > 0 })
                 {
-                    dbUserOccupations ??= new List<Occupation>();
-
                     foreach (var occupation in requestOccupations)
                     {
                         if (occupation.Id == Guid.Empty)
                         {
-                            dbUserOccupations.Add(occupation);
+                            dbUserOccupations.Add(new Occupation
+                            {
+                                NaceCode = occupation.NaceCode,
+                                WorkMonths = occupation.WorkMonths,
+                                EscoUri = occupation.EscoUri,
+                                EscoCode = occupation.EscoCode
+                            });
                             continue;
                         }
 
@@ -285,10 +291,18 @@ public static class UpdateUser
                         // TODO: Return some error about invalid guid ?
                         if (existingOccupation is null) continue;
 
-                        existingOccupation.Update(occupation);
+                        if (occupation.Delete is true)
+                        {
+                            dbUserOccupations.Remove(existingOccupation);
+                        }
+                        
+                        existingOccupation.EscoCode = occupation.EscoCode ?? existingOccupation.EscoCode;
+                        existingOccupation.EscoUri = occupation.EscoUri ?? existingOccupation.EscoUri;
+                        existingOccupation.NaceCode = occupation.NaceCode ?? existingOccupation.NaceCode;
+                        existingOccupation.WorkMonths = occupation.WorkMonths ?? existingOccupation.WorkMonths;
                     }
                 }
-                else
+                else if (requestOccupations is { Count: 0 })
                 {
                     return new List<Occupation>();
                 }
@@ -435,5 +449,15 @@ public static class UpdateUser
         string? EscoUri,
         string? EscoCode,
         int? WorkMonths
+    );
+    
+    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    public record UpdateUserRequestOccupation(
+        Guid Id,
+        string? NaceCode,
+        string? EscoUri,
+        string? EscoCode,
+        int? WorkMonths,
+        bool? Delete = false
     );
 }
