@@ -25,13 +25,17 @@ public static class GetAllOccupationsFlat
         {
             var occupationsRawData = await _occupationsFlatRepository.GetAllOccupationsFlat();
 
-            return occupationsRawData?.Where(o => int.TryParse(o.Notation, out _)).Select(o => new Occupation(o.Notation,
+            return occupationsRawData
+                .Where(o => !string.IsNullOrEmpty(o.Notation))
+                .Select(o => new Occupation(
+                    o.Notation, 
                     o.Uri,
-                    new LanguageTranslations(o.PrefLabel?.Finland,
+                    new LanguageTranslations(
+                        o.PrefLabel?.Finland,
                         o.PrefLabel?.English,
                         o.PrefLabel?.Swedish),
                     o.Broader))
-                .OrderBy(o => int.Parse(o.Notation!)).ToList() ?? new List<Occupation>();
+                .ToList();
         }
     }
 
