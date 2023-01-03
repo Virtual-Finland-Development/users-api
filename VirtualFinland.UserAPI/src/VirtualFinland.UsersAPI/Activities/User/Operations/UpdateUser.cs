@@ -275,6 +275,8 @@ public static class UpdateUser
                     {
                         if (occupation.Id == Guid.Empty)
                         {
+                            if(occupation is {NaceCode: null, EscoCode: null, EscoUri: null, WorkMonths: null}) continue;
+                            
                             dbUserOccupations.Add(new Occupation
                             {
                                 NaceCode = occupation.NaceCode,
