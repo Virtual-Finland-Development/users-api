@@ -14,11 +14,14 @@ public class AuditInterceptor : SaveChangesInterceptor
             .Where(x => x.State == EntityState.Added)
             .Select(x => x.Entity);
         
-        foreach (var insertedEntry in insertedEntries)
+        if(insertedEntries is not null)
         {
-            if (insertedEntry is Auditable auditableEntity)
+            foreach (var insertedEntry in insertedEntries)
             {
-                auditableEntity.Created = DateTime.UtcNow;
+                if (insertedEntry is Auditable auditableEntity)
+                {
+                    auditableEntity.Created = DateTime.UtcNow;
+                }
             }
         }
 
@@ -27,14 +30,18 @@ public class AuditInterceptor : SaveChangesInterceptor
             .Where(x => x.State == EntityState.Modified)
             .Select(x => x.Entity);
 
-        foreach (var modifiedEntry in modifiedEntries)
+        if (modifiedEntries is not null)
         {
-            if (modifiedEntry is Auditable auditableEntity)
+            foreach (var modifiedEntry in modifiedEntries)
             {
-                auditableEntity.Modified = DateTime.UtcNow;
+                if (modifiedEntry is Auditable auditableEntity)
+                {
+                    auditableEntity.Modified = DateTime.UtcNow;
+                }
             }
         }
         
         return base.SavingChangesAsync(eventData, result, cancellationToken);
+        
     }
 }
