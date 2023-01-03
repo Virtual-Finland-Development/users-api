@@ -233,9 +233,8 @@ public static class UpdateUser
                     
                     dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
                     dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
-
-                    Enum.TryParse<WorkingTime>(request.WorkPreferences.WorkingTimeEnum, out var workingTime);
-                    dbUser.WorkPreferences.WorkingTimeEnum = workingTime;
+                    
+                    dbUser.WorkPreferences.WorkingTimeEnum = request.WorkPreferences.WorkingTimeEnum;
                 }
             }
 
@@ -436,7 +435,7 @@ public static class UpdateUser
         ICollection<string>? PreferredRegionEnum,
         ICollection<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
-        WorkingTime? WorkingTimeEnum,
+        string? WorkingTimeEnum,
         string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified

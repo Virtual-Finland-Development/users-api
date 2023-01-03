@@ -138,7 +138,7 @@ public static class GetUser
         List<string>? PreferredRegionEnum,
         List<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
-        WorkingTime? WorkingTimeEnum,
+        string? WorkingTimeEnum,
         string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified
