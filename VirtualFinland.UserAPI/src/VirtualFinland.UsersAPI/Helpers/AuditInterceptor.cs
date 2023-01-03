@@ -23,7 +23,7 @@ public class AuditInterceptor : SaveChangesInterceptor
             if (insertedEntry is Auditable auditableEntity)
                 auditableEntity.Created = DateTime.UtcNow;
 
-        var modifiedEntries = eventData.Context?.ChangeTracker
+        var modifiedEntries = eventData.Context.ChangeTracker
             .Entries()
             .Where(x => x.State == EntityState.Modified)
             .Select(x => x.Entity);
