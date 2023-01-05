@@ -149,8 +149,8 @@ public static class UpdateUser
                 List<UpdateUserResponseOccupation>? occupations = null;
                 if (dbUser.Occupations is {Count: > 0})
                 {
-                    occupations = dbUser.Occupations.Select(x =>
-                            new UpdateUserResponseOccupation(x.Id, x.NaceCode, x.EscoUri, x.NaceCode, x.WorkMonths))
+                    occupations = dbUser.Occupations.Select(o =>
+                            new UpdateUserResponseOccupation(o.Id, o.NaceCode, o.EscoUri, o.EscoCode, o.WorkMonths))
                         .ToList();
                 }
                 

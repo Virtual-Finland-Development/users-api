@@ -59,9 +59,9 @@ public static class GetUser
                     new UserResponseOccupation
                     (
                         x.Id,
-                        x.EscoCode,
-                        x.EscoUri,
                         x.NaceCode,
+                        x.EscoUri,
+                        x.EscoCode,
                         x.WorkMonths
                     )).ToList();
             }
