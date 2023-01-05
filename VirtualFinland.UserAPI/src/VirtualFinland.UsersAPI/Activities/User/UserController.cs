@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
@@ -100,6 +101,61 @@ public class UserController : ApiControllerBase
         {
             profileId = searchProfile.Id
         }, searchProfile);
+    }
+
+    [HttpPost("/user/occupations")]
+    [ProducesResponseType(typeof(UpdateOccupations.Occupation), StatusCodes.Status201Created)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> AddOccupation(AddOccupation.Command command)
+    {
+        command.SetAuth(await GetCurrentUserId());
+
+        var result = await Mediator.Send(command);
+
+        return CreatedAtAction(
+            nameof(AddOccupation), 
+            new { occupationId = result.Id }, 
+            result
+        );
+    }
+
+    [HttpPatch("/user/occupations")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> UpdateOccupations(List<UpdateOccupations.Occupation> occupations)
+    {
+        var command = new UpdateOccupations.Command(occupations);
+        command.SetAuth(await GetCurrentUserId());
+        
+        await Mediator.Send(command);
+        
+        return NoContent();
+    }
+
+    [HttpDelete("/user/occupations")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> DeleteSelectedOccupations(List<Guid> ids)
+    {
+        var command = new DeleteOccupations.Command(ids);
+        command.SetAuth(await GetCurrentUserId());
+        
+        await Mediator.Send(command);
+        
+        return NoContent();
+    }
+
+    [HttpPost("/user/occupations:delete-all")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> DeleteAllOccupations()
+    {
+        var command = new DeleteOccupations.Command();
+        command.SetAuth(await GetCurrentUserId());
+        
+        await Mediator.Send(command);
+        
+        return NoContent();
     }
 
 }

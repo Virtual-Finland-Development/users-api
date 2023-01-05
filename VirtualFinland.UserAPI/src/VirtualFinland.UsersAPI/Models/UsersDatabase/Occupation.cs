@@ -20,5 +20,8 @@ public class Occupation : Auditable, IEntity
     [Range(0, 600)]
     public int? WorkMonths { get; set; }
     
+    // Relationships
+    public Guid UserId { get; set; }
+    
     public Guid Id { get; set; }
 }
