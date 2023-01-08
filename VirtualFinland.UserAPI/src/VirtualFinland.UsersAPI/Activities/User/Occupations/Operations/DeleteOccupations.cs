@@ -6,7 +6,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class DeleteOccupations
 {
-    public class Command : IRequest<DeleteOccupationsResponse>
+    public class Command : IRequest
     {
         public Command()
         {
@@ -27,7 +27,7 @@ public static class DeleteOccupations
         }
     }
 
-    public class Handler : IRequestHandler<Command, DeleteOccupationsResponse>
+    public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
 
@@ -36,7 +36,7 @@ public static class DeleteOccupations
             _usersDbContext = usersDbContext;
         }
 
-        public async Task<DeleteOccupationsResponse> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupations = _usersDbContext.Occupations
                 .Where(o => o.UserId == request.UserId)
@@ -52,12 +52,7 @@ public static class DeleteOccupations
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            return new DeleteOccupationsResponse();
+            return Unit.Value;
         }
     }
-}
-
-public record DeleteOccupationsResponse
-{
-    public List<Guid> Ids { get; set; } = null!;
 }
