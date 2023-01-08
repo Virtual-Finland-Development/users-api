@@ -106,15 +106,15 @@ public class UserController : ApiControllerBase
     [HttpPost("/user/occupations")]
     [ProducesResponseType(typeof(UpdateOccupations.Occupation), StatusCodes.Status201Created)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> AddOccupation(AddOccupation.Command command)
+    public async Task<IActionResult> AddOccupation(List<AddOccupations.Occupation> occupations)
     {
+        var command = new AddOccupations.Command(occupations);
         command.SetAuth(await GetCurrentUserId());
 
         var result = await Mediator.Send(command);
 
         return CreatedAtAction(
             nameof(AddOccupation), 
-            new { occupationId = result.Id }, 
             result
         );
     }
