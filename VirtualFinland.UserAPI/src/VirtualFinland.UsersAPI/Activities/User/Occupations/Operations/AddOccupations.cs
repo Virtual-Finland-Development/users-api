@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
@@ -8,15 +9,15 @@ namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class AddOccupations
 {
-    public class Command : IRequest<List<Occupation>>
+    public class Command : IRequest<List<AddOccupationsResponse>>
     {
-        public Command(List<Occupation> occupations)
+        public Command(List<AddOccupationsRequest> occupations)
         {
             Occupations = occupations;
         }
 
         [SwaggerIgnore] public Guid? UserId { get; private set; }
-        public List<Occupation> Occupations { get; init; }
+        public List<AddOccupationsRequest> Occupations { get; init; }
 
         public void SetAuth(Guid? userDatabaseIdentifier)
         {
@@ -24,7 +25,7 @@ public static class AddOccupations
         }
     }
 
-    public class Handler : IRequestHandler<Command, List<Occupation>>
+    public class Handler : IRequestHandler<Command, List<AddOccupationsResponse>>
     {
         private readonly UsersDbContext _usersDbContext;
 
@@ -33,7 +34,7 @@ public static class AddOccupations
             _usersDbContext = usersDbContext;
         }
 
-        public async Task<List<Occupation>> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<List<AddOccupationsResponse>> Handle(Command request, CancellationToken cancellationToken)
         {
             var user = _usersDbContext.Users
                 .Include(u => u.Occupations)
@@ -59,10 +60,10 @@ public static class AddOccupations
             
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            var addedOccupations = new List<Occupation>();
+            var addedOccupations = new List<AddOccupationsResponse>();
             foreach (Models.UsersDatabase.Occupation entry in addedEntries)
             {
-                addedOccupations.Add(new Occupation
+                addedOccupations.Add(new AddOccupationsResponse
                 {
                     Id = entry.Id,
                     NaceCode = entry.NaceCode,
@@ -76,9 +77,19 @@ public static class AddOccupations
         }
     }
 
-    public record Occupation
+    [SwaggerSchema(Title = "AddOccupationsResponse")]
+    public record AddOccupationsResponse
     {
         public Guid Id { get; init; }
+        [MaxLength(7)] public string? NaceCode { get; init; }
+        [Url] public string? EscoUri { get; init; }
+        [MaxLength(16)] public string? EscoCode { get; init; }
+        [Range(0, 600)] public int? WorkMonths { get; init; }
+    }
+    
+    [SwaggerSchema(Title = "AddOccupationsRequest")]
+    public record AddOccupationsRequest
+    {
         [MaxLength(7)] public string? NaceCode { get; init; }
         [Url] public string? EscoUri { get; init; }
         [MaxLength(16)] public string? EscoCode { get; init; }
