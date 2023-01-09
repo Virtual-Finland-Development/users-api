@@ -6,7 +6,6 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
-using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -19,31 +18,23 @@ public static class UpdateUser
     {
         public string? FirstName { get; }
         public string? LastName { get; }
-        
         public Address? Address { get; }
-        
         public bool? JobsDataConsent { get; }
-        
         public bool? ImmigrationDataConsent { get; }
-        
         public string? CountryOfBirthCode { get; }
-
         public string? NativeLanguageCode { get; }
-
         public string? OccupationCode { get; }
-
         public string? CitizenshipCode { get; }
-
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        
         public Gender? Gender { get; }
-        
         public DateTime? DateOfBirth { get; }
-        
+        public List<UpdateUserRequestOccupation>? Occupations { get; }
+        public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
+
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
-        
+
         public Command(
             string? firstName,
             string? lastName,
@@ -57,30 +48,43 @@ public static class UpdateUser
             List<string>? jobTitles,
             List<string>? regions,
             Gender? gender,
-            DateTime? dateOfBirth)
+            DateTime? dateOfBirth,
+            List<UpdateUserRequestOccupation>? occupations,
+            UpdateUserRequestWorkPreferences? workPreferences
+        )
         {
-            this.FirstName = firstName;
-            this.LastName = lastName;
-            this.Address = address;
-            this.JobsDataConsent = jobsDataConsent;
-            this.ImmigrationDataConsent = immigrationDataConsent;
-            this.CountryOfBirthCode = countryOfBirthCode;
-            this.NativeLanguageCode = nativeLanguageCode;
-            this.OccupationCode = occupationCode;
-            this.CitizenshipCode = citizenshipCode;
-            this.JobTitles = jobTitles;
-            this.Regions = regions;
-            this.Gender = gender;
-            this.DateOfBirth = dateOfBirth;
+            FirstName = firstName;
+            LastName = lastName;
+            Address = address;
+            JobsDataConsent = jobsDataConsent;
+            ImmigrationDataConsent = immigrationDataConsent;
+            CountryOfBirthCode = countryOfBirthCode;
+            NativeLanguageCode = nativeLanguageCode;
+            OccupationCode = occupationCode;
+            CitizenshipCode = citizenshipCode;
+            JobTitles = jobTitles;
+            Regions = regions;
+            Gender = gender;
+            DateOfBirth = dateOfBirth;
+            Occupations = occupations;
+            WorkPreferences = workPreferences;
         }
 
         public void SetAuth(Guid? userDbId)
         {
-            this.UserId = userDbId;
+            UserId = userDbId;
         }
     }
 
-    public class AddressValidator : AbstractValidator<Address>
+    private sealed class WorkPreferencesValidator : AbstractValidator<UpdateUserRequestWorkPreferences>
+    {
+        public WorkPreferencesValidator()
+        {
+            RuleForEach(wp => wp.PreferredMunicipalityEnum).IsInEnum();
+        }
+    }
+
+    private sealed class AddressValidator : AbstractValidator<Address>
     {
         public AddressValidator()
         {
@@ -104,6 +108,7 @@ public static class UpdateUser
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
             RuleFor(command => command.Gender).IsInEnum();
+            //RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
         }
     }
     
@@ -127,7 +132,10 @@ public static class UpdateUser
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                var dbUser = await _usersDbContext.Users
+                    .Include(u => u.WorkPreferences)
+                    .Include(u => u.Occupations)
+                    .SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
                 
                 await VerifyUserUpdate(dbUser, request);
                 
@@ -138,6 +146,14 @@ public static class UpdateUser
                 
                 _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
+                List<UpdateUserResponseOccupation>? occupations = null;
+                if (dbUser.Occupations is {Count: > 0})
+                {
+                    occupations = dbUser.Occupations.Select(o =>
+                            new UpdateUserResponseOccupation(o.Id, o.NaceCode, o.EscoUri, o.EscoCode, o.WorkMonths))
+                        .ToList();
+                }
+                
                 return new User(
                     dbUser.Id,
                     dbUser.FirstName,
@@ -159,7 +175,20 @@ public static class UpdateUser
                     dbUser.OccupationCode,
                     dbUser.CitizenshipCode,
                     dbUser.Gender,
-                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue));
+                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                    occupations,
+                    new UpdateUserResponseWorkPreferences
+                    (
+                        dbUser.WorkPreferences?.Id,
+                        dbUser.WorkPreferences?.PreferredRegionEnum,
+                        dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                        dbUser.WorkPreferences?.EmploymentTypeCode,
+                        dbUser.WorkPreferences?.WorkingTimeEnum,
+                        dbUser.WorkPreferences?.WorkingLanguageEnum,
+                        dbUser.WorkPreferences?.Created,
+                        dbUser.WorkPreferences?.Modified
+                    )
+                );
             }
 
             private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
@@ -190,57 +219,146 @@ public static class UpdateUser
                 dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
                 dbUser.Gender = request.Gender ?? dbUser.Gender;
                 dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
+                dbUser.Occupations = GetUpdatedOccupations(dbUser.Occupations, request.Occupations);
 
+                if (request.WorkPreferences is not null)
+                {
+                    dbUser.WorkPreferences ??= new WorkPreferences();
+                    
+                    if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
+                        dbUser.WorkPreferences.PreferredMunicipalityEnum = request.WorkPreferences.PreferredMunicipalityEnum;
+
+                    if (request.WorkPreferences.PreferredRegionEnum is not null)
+                        dbUser.WorkPreferences.PreferredRegionEnum = request.WorkPreferences.PreferredRegionEnum;
+                    
+                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
+                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
+                    
+                    dbUser.WorkPreferences.WorkingTimeEnum = request.WorkPreferences.WorkingTimeEnum;
+                }
+            }
+
+            private static ICollection<T> GetEnumsFromCollection<T>(ICollection<string> enums) where T : struct, Enum
+            {
+                var updatedRegions = new List<T>();
+
+                if (enums is not { Count: > 0 })
+                    return updatedRegions;
+
+                foreach (var enumString in enums)
+                {
+                    var isRegion = Enum.TryParse<T>(enumString, out var region);
+                    if (isRegion)
+                        updatedRegions.Add(region);
+                }
+
+                return updatedRegions;
+            }
+
+            /// <summary>
+            /// Update occupations if id field in request matches existing id in database
+            /// otherwise create new occupations
+            /// all old occupations will be detached from user but not deleted from database
+            /// </summary>
+            /// <param name="dbUserOccupations"></param>
+            /// <param name="requestOccupations"></param>
+            /// <returns></returns>
+            private static ICollection<Occupation> GetUpdatedOccupations(
+                ICollection<Occupation>? dbUserOccupations,
+                List<UpdateUserRequestOccupation>? requestOccupations)
+            {
+                dbUserOccupations ??= new List<Occupation>();
+                
+                if (requestOccupations is { Count: > 0 })
+                {
+                    foreach (var occupation in requestOccupations)
+                    {
+                        if (occupation.Id == Guid.Empty)
+                        {
+                            if(occupation is {NaceCode: null, EscoCode: null, EscoUri: null, WorkMonths: null}) continue;
+                            
+                            dbUserOccupations.Add(new Occupation
+                            {
+                                NaceCode = occupation.NaceCode,
+                                WorkMonths = occupation.WorkMonths,
+                                EscoUri = occupation.EscoUri,
+                                EscoCode = occupation.EscoCode
+                            });
+                            continue;
+                        }
+
+                        var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id);
+
+                        // TODO: Return some error about invalid guid ?
+                        if (existingOccupation is null) continue;
+
+                        if (occupation.Delete is true)
+                        {
+                            dbUserOccupations.Remove(existingOccupation);
+                        }
+                        
+                        existingOccupation.EscoCode = occupation.EscoCode ?? existingOccupation.EscoCode;
+                        existingOccupation.EscoUri = occupation.EscoUri ?? existingOccupation.EscoUri;
+                        existingOccupation.NaceCode = occupation.NaceCode ?? existingOccupation.NaceCode;
+                        existingOccupation.WorkMonths = occupation.WorkMonths ?? existingOccupation.WorkMonths;
+                    }
+                }
+                else if (requestOccupations is { Count: 0 })
+                {
+                    return new List<Occupation>();
+                }
+
+                return dbUserOccupations;
             }
 
             private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)
             {
                 var validationErrors = new List<ValidationErrorDetail>();
 
-                if(!string.IsNullOrEmpty(request.OccupationCode))
-                {
-                    var occupations = await _occupationsFlatRepository.GetAllOccupationsFlat() ?? new List<OccupationFlatRoot.Occupation>();
-                    if (!occupations.Any(o => o.Notation == request.OccupationCode))
-                    {
-                        validationErrors.Add(new ValidationErrorDetail(nameof(request.OccupationCode), $"{nameof(request.OccupationCode)} does not match any known occupation code."));
-                    }    
-                }
+                if (string.IsNullOrEmpty(request.OccupationCode)) return validationErrors;
                 
+                var occupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
+                if (occupations.All(o => o.Notation != request.OccupationCode))
+                {
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.OccupationCode), $"{nameof(request.OccupationCode)} does not match any known occupation code."));
+                }
+
                 return validationErrors;
             }
 
             private async Task<List<ValidationErrorDetail>>  ValidateLanguageCodesLogic(Command request)
             {
                 var validationErrors = new List<ValidationErrorDetail>();
-
-                if (!string.IsNullOrEmpty(request.NativeLanguageCode))
+                
+                if (string.IsNullOrEmpty(request.NativeLanguageCode)) return validationErrors;
+                
+                var languages = await _languageRepository.GetAllLanguages();
+                if (languages.All(o => o.Id != request.NativeLanguageCode))
                 {
-                    var languages = await _languageRepository.GetAllLanguages();
-                    if (!languages.Any(o => o.Id == request.NativeLanguageCode))
-                    {
-                        validationErrors.Add(new ValidationErrorDetail(nameof(request.NativeLanguageCode), $"{nameof(request.NativeLanguageCode)} does not match any known language code."));
-                    }    
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.NativeLanguageCode), $"{nameof(request.NativeLanguageCode)} does not match any known language code."));
                 }
 
                 return validationErrors;
             }
+            
             private async Task<List<ValidationErrorDetail>>  ValidateCountryCodesLogic(Command request)
             {
-                var countries = new List<Country>();
                 var validationErrors = new List<ValidationErrorDetail>();
 
-                if (!string.IsNullOrEmpty(request.CitizenshipCode) || !string.IsNullOrEmpty(request.CountryOfBirthCode))
+                if (string.IsNullOrEmpty(request.CitizenshipCode) && string.IsNullOrEmpty(request.CountryOfBirthCode))
                 {
-                    countries = await _countriesRepository.GetAllCountries();
-                    if (!string.IsNullOrEmpty(request.CitizenshipCode) && !countries.Any(o => o.IsoCode == request.CitizenshipCode?.ToUpper()))
-                    {
-                        validationErrors.Add(new ValidationErrorDetail(nameof(request.CitizenshipCode), $"{nameof(request.CitizenshipCode)} does not match any known ISO 3166 country code."));
-                    }
+                    return validationErrors;
+                }
                 
-                    if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && !countries.Any(o => o.IsoCode == request.CountryOfBirthCode?.ToUpper()))
-                    {
-                        validationErrors.Add(new ValidationErrorDetail(nameof(request.CountryOfBirthCode), $"{nameof(request.CountryOfBirthCode)} does not match any known ISO 3166 country code."));
-                    }
+                var countries = await _countriesRepository.GetAllCountries();
+                if (!string.IsNullOrEmpty(request.CitizenshipCode) && countries.All(o => o.IsoCode != request.CitizenshipCode?.ToUpper()))
+                {
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.CitizenshipCode), $"{nameof(request.CitizenshipCode)} does not match any known ISO 3166 country code."));
+                }
+                
+                if (!string.IsNullOrEmpty(request.CountryOfBirthCode) && countries.All(o => o.IsoCode != request.CountryOfBirthCode?.ToUpper()))
+                {
+                    validationErrors.Add(new ValidationErrorDetail(nameof(request.CountryOfBirthCode), $"{nameof(request.CountryOfBirthCode)} does not match any known ISO 3166 country code."));
                 }
 
                 return validationErrors;
@@ -270,20 +388,19 @@ public static class UpdateUser
 
                     return dbNewSearchProfile.Entity;
                 }
-                else
-                {
-                    dbUserDefaultSearchProfile.Name = dbUserDefaultSearchProfile.Name;
-                    dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
-                    dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
-                    dbUserDefaultSearchProfile.IsDefault = true;
-                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
+                
+                dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
+                dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
+                dbUserDefaultSearchProfile.IsDefault = true;
+                dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
-                    return dbUserDefaultSearchProfile;
-                }
+                return dbUserDefaultSearchProfile;
             }
         }
+
     [SwaggerSchema(Title = "UpdateUserResponse")]
-    public record User(Guid Id,
+    public record User(
+        Guid Id,
         string? FirstName,
         string? LastName,
         Address? Address,
@@ -298,5 +415,50 @@ public static class UpdateUser
         string? OccupationCode,
         string? CitizenshipCode,
         Gender? Gender,
-        DateTime? DateOfBirth);
+        DateTime? DateOfBirth,
+        List<UpdateUserResponseOccupation>? Occupations,
+        UpdateUserResponseWorkPreferences? WorkPreferences
+    );
+    
+    [SwaggerSchema(Title = "UpdateUserRequestWorkPreferences")]
+    public record UpdateUserRequestWorkPreferences
+    (
+        List<string>? PreferredRegionEnum,
+        List<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum
+    );
+
+    [SwaggerSchema(Title = "UpdateUserResponseWorkPreferences")]
+    public record UpdateUserResponseWorkPreferences
+    (
+        Guid? Id,
+        ICollection<string>? PreferredRegionEnum,
+        ICollection<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum,
+        DateTime? Created,
+        DateTime? Modified
+    );
+    
+    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    public record UpdateUserResponseOccupation(
+        Guid Id,
+        string? NaceCode,
+        string? EscoUri,
+        string? EscoCode,
+        int? WorkMonths
+    );
+    
+    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    public record UpdateUserRequestOccupation(
+        Guid Id,
+        string? NaceCode,
+        string? EscoUri,
+        string? EscoCode,
+        int? WorkMonths,
+        bool? Delete = false
+    );
 }

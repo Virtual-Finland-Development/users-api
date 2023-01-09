@@ -1,10 +1,9 @@
 using System.Reflection;
-using Amazon.SecretsManager;
-using Amazon.SecretsManager.Extensions.Caching;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
@@ -29,26 +28,23 @@ builder.Services.AddControllers();
 // package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
-builder.Services.AddHttpClient("", c =>
-{
-
- });
+builder.Services.AddHttpClient("", _ => { });
 
 // Validate server configurations
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-var securityScheme = new OpenApiSecurityScheme()
+var securityScheme = new OpenApiSecurityScheme
 {
     Name = HeaderNames.Authorization,
     Type = SecuritySchemeType.Http,
     Scheme = "Bearer",
     BearerFormat = "JWT",
     In = ParameterLocation.Header,
-    Description = "JSON Web Token based security",
+    Description = "JSON Web Token based security"
 };
 
-var securityReq = new OpenApiSecurityRequirement()
+var securityReq = new OpenApiSecurityRequirement
 {
     {
         new OpenApiSecurityScheme
@@ -61,27 +57,33 @@ var securityReq = new OpenApiSecurityRequirement()
             Scheme = SecuritySchemeType.Http.ToString(),
             In = ParameterLocation.Header
         },
-        new string[]
-        {
-        }
+        Array.Empty<string>()
     }
 };
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(config =>
-{ //use fully qualified object names
-  config.CustomSchemaIds(s => s.FullName?.Replace("+", "."));
-  config.EnableAnnotations();
-  config.AddSecurityDefinition("Bearer", securityScheme);
-  config.AddSecurityRequirement(securityReq);
-  config.SchemaFilter<SwaggerSkipPropertyFilter>(); });
+{
+    //use fully qualified object names
+    config.CustomSchemaIds(s => s.FullName?.Replace("+", "."));
+    config.EnableAnnotations();
+    config.AddSecurityDefinition("Bearer", securityScheme);
+    config.AddSecurityRequirement(securityReq);
+    config.SchemaFilter<SwaggerSkipPropertyFilter>();
+});
 
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
-var secret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME")) : null;
+var secret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
+    ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
+    : null;
 var dbConnectionString = secret ?? builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<UsersDbContext>(options => { options.UseNpgsql(dbConnectionString, op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())); });
+builder.Services.AddDbContext<UsersDbContext>(options =>
+{
+    options.UseNpgsql(dbConnectionString,
+        op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
+});
 
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
@@ -91,49 +93,57 @@ sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
 builder.Services.AddAuthentication()
     .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
-    { JwksExtension.SetJwksOptions(c, new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
-
-      c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-      {
-          ValidateIssuer = true,
-          ValidateActor = false,
-          ValidateAudience = false,
-          ValidateLifetime = true,
-          ValidateIssuerSigningKey = true,
-          ValidIssuer = testBedIdentityProviderConfig.Issuer
-      }; }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
-    { JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
-      c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-      {
-          ValidateIssuer = true,
-          ValidateActor = false,
-          ValidateAudience = false,
-          ValidateLifetime = true,
-          ValidateIssuerSigningKey = true,
-          ValidIssuer = builder.Configuration["AuthGW:Issuer"]
-      }; })
-    .AddJwtBearer(Constants.Security.SinunaScheme, c =>
-    { 
-    JwksExtension.SetJwksOptions(c, new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
-
-    c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateActor = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = sinunaIdentityProviderConfig.Issuer
-    }; });
+        JwksExtension.SetJwksOptions(c, new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
+
+        c.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateActor = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = testBedIdentityProviderConfig.Issuer
+        };
+    }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
+    {
+        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
+        c.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateActor = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["AuthGW:Issuer"]
+        };
+    })
+    .AddJwtBearer(Constants.Security.SinunaScheme, c =>
+    {
+        JwksExtension.SetJwksOptions(c, new JwkOptions(sinunaIdentityProviderConfig.JwksOptionsUrl));
+
+        c.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateActor = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = sinunaIdentityProviderConfig.Issuer
+        };
+    });
 
 builder.Services.AddAuthorization(options =>
 {
+    var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
+        .AddAuthenticationSchemes(
+            Constants.Security.TestBedBearerScheme,
+            Constants.Security.SuomiFiBearerScheme,
+            Constants.Security.SinunaScheme
+        ).Build();
 
-var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().AddAuthenticationSchemes(
-    Constants.Security.TestBedBearerScheme, Constants.Security.SuomiFiBearerScheme, Constants.Security.SinunaScheme).Build();
-
-options.AddPolicy( Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
-options.DefaultPolicy = allAuthorizationPolicyBuilder;
+    options.AddPolicy(Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
+    options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 
 builder.Services.AddResponseCaching();
@@ -181,16 +191,17 @@ using (var scope = app.Services.CreateScope())
     var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
     var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
     var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-
-    // Preload outside data that does not change
-    await occupationsRepository.GetAllOccupations();
-    await occupationsFlatRepository.GetAllOccupationsFlat();
-    await languageRepository.GetAllLanguages();
-    await countriesRepository.GetAllCountries();
+    
+    Task.WaitAll(
+        occupationsRepository.GetAllOccupations(), 
+        occupationsFlatRepository.GetAllOccupationsFlat(), 
+        languageRepository.GetAllLanguages(), 
+        countriesRepository.GetAllCountries()
+    );
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
-    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     updateUserWarmUpCommand.SetAuth(UsersDbContext.WarmUpUserId);
     
     await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;

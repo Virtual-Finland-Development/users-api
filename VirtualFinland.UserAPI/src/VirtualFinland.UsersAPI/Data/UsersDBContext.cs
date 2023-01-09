@@ -1,6 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
+using VirtualFinland.UserAPI.Data.Configuration;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
@@ -9,31 +9,44 @@ public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
 
-    public static Guid WarmUpUserId
-    {
-        get
-        {
-            return Guid.Parse("5a8af4b4-8cb4-44ac-8291-010614601719");
-        }
-    }
-
     public UsersDbContext(DbContextOptions options) : base(options)
     {
     }
-    
+
     public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
         _isTesting = isTesting;
     }
-    protected override void OnConfiguring
-        (DbContextOptionsBuilder optionsBuilder)
+
+    public static Guid WarmUpUserId => Guid.Parse("5a8af4b4-8cb4-44ac-8291-010614601719");
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+    public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
+
+    public DbSet<Certification> Certifications { get; set; } = null!;
+    public DbSet<Education> Educations { get; set; } = null!;
+    public DbSet<Language> Languages { get; set; } = null!;
+    public DbSet<Occupation> Occupations { get; set; } = null!;
+
+    public DbSet<Permit> Permits { get; set; } = null!;
+
+    // Leave this out for now as it makes things difficult if both Person and User wants to link to WorkPreferences
+    //public DbSet<Person> Persons { get; set; }
+    public DbSet<Skills> Skills { get; set; } = null!;
+    public DbSet<WorkPreferences> WorkPreferences { get; set; } = null!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        optionsBuilder.AddInterceptors(new AuditInterceptor());
     }
-    
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
 
         if (_isTesting)
         {
@@ -50,18 +63,7 @@ public class UsersDbContext : DbContext
                     v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
         }
 
-        modelBuilder.Entity<User>().HasData(new User()
-        {
-            Id = WarmUpUserId,
-            FirstName = "WarmUpUser",
-            LastName = "WarmUpUser",
-            Created = DateTime.UtcNow,
-            Modified = DateTime.UtcNow
-        });
-
-        modelBuilder.Entity<User>().Property(u => u.Gender).HasConversion<string>();
-
-        modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity()
+        modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity
         {
             Id = Guid.NewGuid(),
             Created = DateTime.UtcNow,
@@ -71,9 +73,4 @@ public class UsersDbContext : DbContext
             Issuer = Guid.NewGuid().ToString()
         });
     }
-    public DbSet<User> Users => Set<User>();
-
-    public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
-
-    public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
 }

@@ -4,6 +4,7 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;

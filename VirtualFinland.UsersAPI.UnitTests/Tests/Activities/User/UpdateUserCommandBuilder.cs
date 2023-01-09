@@ -1,6 +1,5 @@
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 
@@ -19,6 +18,8 @@ public class UpdateUserCommandBuilder
     private List<string>? _regions = new() { "Southern-Finland" };
     private Gender _gender = Gender.Male;
     private DateTime? _dateOfBirth = new(2022, 01,01);
+    private List<UpdateUser.UpdateUserRequestOccupation>? _occupations = new ();
+    private UpdateUser.UpdateUserRequestWorkPreferences? _workPreferences;
 
     public UpdateUserCommandBuilder WithFirstName(string value)
     {
@@ -98,6 +99,18 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
+    public UpdateUserCommandBuilder WithOccupations(IEnumerable<UpdateUser.UpdateUserRequestOccupation> value)
+    {
+        _occupations = value.ToList();
+        return this;
+    }
+
+    public UpdateUserCommandBuilder WithWorkPreferences(UpdateUser.UpdateUserRequestWorkPreferences value)
+    {
+        _workPreferences = value;
+        return this;
+    }
+
     public UpdateUser.Command Build()
     {
         return new UpdateUser.Command(
@@ -113,7 +126,8 @@ public class UpdateUserCommandBuilder
             _jobTitles,
             _regions,
             _gender,
-            _dateOfBirth
-        );
+            _dateOfBirth,
+            _occupations,
+            _workPreferences);
     }
 }

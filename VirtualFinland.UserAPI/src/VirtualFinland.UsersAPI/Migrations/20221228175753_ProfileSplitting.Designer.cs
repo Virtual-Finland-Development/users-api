@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221228175753_ProfileSplitting")]
+    partial class ProfileSplitting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,11 +111,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("8314a11f-6954-45e0-802e-e45d891ffe3f"),
-                            Created = new DateTime(2023, 1, 5, 10, 45, 17, 453, DateTimeKind.Utc).AddTicks(4270),
-                            IdentityId = "6992e432-99f0-434e-b0a9-b68ef31df802",
-                            Issuer = "4c8727e5-0b70-445c-a95a-873c1d6de4a2",
-                            Modified = new DateTime(2023, 1, 5, 10, 45, 17, 453, DateTimeKind.Utc).AddTicks(4270),
+                            Id = new Guid("07621d0e-085a-414e-a2a2-2302ce7e0f8b"),
+                            Created = new DateTime(2022, 12, 28, 17, 57, 53, 791, DateTimeKind.Utc).AddTicks(5240),
+                            IdentityId = "a7c0db2e-a03f-4cf6-a5f2-290415bcb7fa",
+                            Issuer = "7a2de561-7f7e-4e3c-bc02-68b261f6bd99",
+                            Modified = new DateTime(2022, 12, 28, 17, 57, 53, 791, DateTimeKind.Utc).AddTicks(5240),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -155,8 +157,8 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("EscoCode")
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
 
                     b.Property<string>("EscoUri")
                         .HasColumnType("text");
@@ -168,7 +170,7 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("character varying(7)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.Property<int?>("WorkMonths")
@@ -338,13 +340,13 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 1, 5, 10, 45, 17, 453, DateTimeKind.Utc).AddTicks(2980),
+                            Created = new DateTime(2022, 12, 28, 17, 57, 53, 790, DateTimeKind.Utc).AddTicks(7550),
                             FirstName = "WarmUpUser",
                             Gender = "Other",
                             ImmigrationDataConsent = false,
                             JobsDataConsent = false,
                             LastName = "WarmUpUser",
-                            Modified = new DateTime(2023, 1, 5, 10, 45, 17, 453, DateTimeKind.Utc).AddTicks(2980)
+                            Modified = new DateTime(2022, 12, 28, 17, 57, 53, 790, DateTimeKind.Utc).AddTicks(7550)
                         });
                 });
 
@@ -372,8 +374,8 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("WorkingLanguageEnum")
                         .HasColumnType("text");
 
-                    b.Property<string>("WorkingTimeEnum")
-                        .HasColumnType("text");
+                    b.Property<int?>("WorkingTimeEnum")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -384,9 +386,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 {
                     b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.User", null)
                         .WithMany("Occupations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.WorkPreferences", b =>
