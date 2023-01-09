@@ -743,6 +743,114 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "{{host}}/user/occupations",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"escoUri\": \"http://data.europa.eu/esco/occupation/000e93a3-d956-4e45-aacb-f12c83fedf84\",\n        \"escoCode\": \"8121.4\",\n        \"naceCode\": \"62.01\",\n        \"workMonths\": 5\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/user/occupations",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"occupations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/user/occupations",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"<occupation_uuid>\",\n        \"naceCode\": \"62.01\",\n        \"escoUri\": \"http://data.europa.eu/esco/occupation/000e93a3-d956-4e45-aacb-f12c83fedf84\",\n        \"escoCode\": \"8121.4\",\n        \"workMonths\": 5\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/user/occupations",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"occupations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/user/occupations:delete-all",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/user/occupations:delete-all",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"occupations:delete-all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/user/occupations",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    \"<occupation_uuid>\"\n]\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/user/occupations",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"occupations"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
