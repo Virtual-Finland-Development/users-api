@@ -2,7 +2,6 @@ version: "3.1"
 
 services:
   usersapi:
-    container_name: usersApi
     image: virtualfinland/usersapi:latest
     build:
       context: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
@@ -18,7 +17,6 @@ services:
       AWS_REGION: eu-north-1
 
   postgresdb:
-    container_name: postgresdb
     image: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -29,8 +27,13 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: example
+    volumes:
+      - postgresdb:/var/lib/postgresql/data
 
   adminer:
     image: adminer
     ports:
       - 8080:8080
+
+volumes:
+  postgresdb:
