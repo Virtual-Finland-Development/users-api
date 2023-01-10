@@ -2,7 +2,6 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
