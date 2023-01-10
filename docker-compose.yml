@@ -5,7 +5,7 @@ services:
     image: virtualfinland/usersapi:latest
     build:
       context: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-      dockerfile: Dockerfile
+      dockerfile: ${USERAPI_DOCKERFILE:-Dockerfile}
     ports:
       - 5001:80
     depends_on:
