@@ -37,7 +37,7 @@ public static class Constants
                 return "DefaultTestBedBearerScheme";
             }
         }
-        
+
         public static string SuomiFiBearerScheme
         {
             get
@@ -45,7 +45,7 @@ public static class Constants
                 return "SuomiFiBearerScheme";
             }
         }
-        
+
         public static string SinunaScheme
         {
             get
@@ -72,12 +72,20 @@ public static class Constants
                 return "x-authorization-context";
             }
         }
-        
+
         public static string XAuthorizationProvider
         {
             get
             {
                 return "x-authorization-provider";
+            }
+        }
+
+        public static string XConsentToken
+        {
+            get
+            {
+                return "x-consent-token";
             }
         }
     }
