@@ -24,8 +24,8 @@ public class User : IEntity
     [MaxLength(512)]
     public string? Country { get; set; }
 
-    public bool ImmigrationDataConsent { get; set; }
-    public bool JobsDataConsent { get; set; }
+    public bool ImmigrationDataConsent { get; set; } // @OBSOLETE
+    public bool JobsDataConsent { get; set; } // @OBSOLETE
     public DateOnly? DateOfBirth { get; set; }
     public Gender Gender { get; set; }
 

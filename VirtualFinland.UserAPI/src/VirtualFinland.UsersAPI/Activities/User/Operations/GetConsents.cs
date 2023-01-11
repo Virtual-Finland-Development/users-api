@@ -7,6 +7,9 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
+/**
+* @OBSOLETE
+*/
 public static class GetConsents
 {
     [SwaggerSchema(Title = "ConsentsRequest")]
@@ -20,7 +23,7 @@ public static class GetConsents
             this.UserId = userId;
         }
     }
-    
+
     public class QueryValidator : AbstractValidator<Query>
     {
         public QueryValidator()
@@ -44,18 +47,18 @@ public static class GetConsents
         {
             var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
             _logger.LogDebug("User consents retrieved for user: {DbUserId}", dbUser.Id);
-            
+
             return new Consents(
                 dbUser.ImmigrationDataConsent,
                 dbUser.JobsDataConsent
                 );
         }
     }
-    
+
     [SwaggerSchema(Title = "ConsentsResponse")]
     public record Consents(
         bool ImmigrationDataConsent,
         bool JobsDataConsent
         );
-    
+
 }
