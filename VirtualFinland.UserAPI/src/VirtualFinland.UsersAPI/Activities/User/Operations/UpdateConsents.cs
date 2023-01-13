@@ -7,13 +7,16 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
+/**
+* @OBSOLETE
+*/
 public static class UpdateConsents
 {
     [SwaggerSchema(Title = "UpdateConsentsRequest")]
     public class Command : IRequest<Consents>
     {
         public bool? JobsDataConsent { get; set; }
-        
+
         public bool? ImmigrationDataConsent { get; set; }
 
         [SwaggerIgnore]
@@ -41,33 +44,33 @@ public static class UpdateConsents
     }
 
     public class Handler : IRequestHandler<Command, Consents>
+    {
+        private readonly UsersDbContext _usersDbContext;
+        private readonly ILogger<Handler> _logger;
+
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
-            private readonly UsersDbContext _usersDbContext;
-            private readonly ILogger<Handler> _logger;
-
-            public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
-            {
-                _usersDbContext = usersDbContext;
-                _logger = logger;
-            }
-
-            public async Task<Consents> Handle(Command request, CancellationToken cancellationToken)
-            {
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
-                
-                dbUser.Modified = DateTime.UtcNow;
-                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
-                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                
-                await _usersDbContext.SaveChangesAsync(cancellationToken);
-                
-                _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
-
-                return new Consents(
-                    dbUser.ImmigrationDataConsent,
-                    dbUser.JobsDataConsent);
-            }
+            _usersDbContext = usersDbContext;
+            _logger = logger;
         }
+
+        public async Task<Consents> Handle(Command request, CancellationToken cancellationToken)
+        {
+            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+
+            dbUser.Modified = DateTime.UtcNow;
+            dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
+            dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
+
+            await _usersDbContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+
+            return new Consents(
+                dbUser.ImmigrationDataConsent,
+                dbUser.JobsDataConsent);
+        }
+    }
     [SwaggerSchema(Title = "UpdateConsentsResponse")]
     public record Consents(
         bool ImmigrationDataConsent,

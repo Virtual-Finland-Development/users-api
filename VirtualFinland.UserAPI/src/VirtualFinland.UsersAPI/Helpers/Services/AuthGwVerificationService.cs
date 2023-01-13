@@ -17,14 +17,14 @@ public class AuthGwVerificationService
         _httpClientFactory = httpClientFactory;
         _userSecurityService = userSecurityService;
     }
-    
+
     public async Task<Guid?> GetCurrentUserId(HttpRequest httpRequest)
     {
         Guid? currentUserId = null;
         if (currentUserId == null)
         {
             var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-            
+
             if (!String.IsNullOrEmpty(token))
             {
                 var dbUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
@@ -34,7 +34,12 @@ public class AuthGwVerificationService
         return currentUserId;
     }
 
-    public async Task AuthGwVerification(HttpRequest request)
+    /// <summary>
+    /// Verifies the token from AuthGW
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="requireConsentToken">If enabled, pass the consent token to the authgw as a verification requirement</param>
+    public async Task AuthGwVerification(HttpRequest request, bool requireConsentToken = false)
     {
         try
         {
@@ -43,6 +48,12 @@ public class AuthGwVerificationService
             HttpClient httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
             httpClient.DefaultRequestHeaders.Add(Constants.Headers.XAuthorizationContext, Constants.Web.AuthGwApplicationContext);
+
+            if (requireConsentToken)
+            {
+                httpClient.DefaultRequestHeaders.Add(Constants.Headers.XConsentToken, request.Headers[Constants.Headers.XConsentToken].ToString());
+            }
+
             using HttpResponseMessage response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
             response.EnsureSuccessStatusCode();
         }
