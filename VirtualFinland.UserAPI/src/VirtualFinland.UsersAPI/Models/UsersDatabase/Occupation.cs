@@ -9,12 +9,10 @@ public class Occupation : Auditable, IEntity
 {
     [MaxLength(7)]
     public string? NaceCode { get; set; }
-    
-    [Url]
-    public string? EscoUri { get; set; }
-    
-    [MaxLength(16)]
-    public string? EscoCode { get; set; }
+
+    [Url] public string EscoUri { get; set; } = null!;
+
+    [MaxLength(16)] public string EscoCode { get; set; } = null!;
     
     // 50 years in same workplace should be plenty enough
     [Range(0, 600)]

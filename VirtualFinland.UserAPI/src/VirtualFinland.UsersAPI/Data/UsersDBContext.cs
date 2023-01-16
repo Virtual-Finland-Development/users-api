@@ -47,6 +47,7 @@ public class UsersDbContext : DbContext
 
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
+        modelBuilder.ApplyConfiguration(new OccupationConfiguration());
 
         if (_isTesting)
         {
