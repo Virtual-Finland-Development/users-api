@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.Shared;
@@ -8,23 +9,23 @@ namespace VirtualFinland.UserAPI.Models.Shared;
 /// </summary>
 public enum Region
 {
-    [JsonPropertyName("FI-01")] Fi01 = 1,
-    [JsonPropertyName("FI-02")] Fi02 = 2,
-    [JsonPropertyName("FI-03")] Fi03 = 3,
-    [JsonPropertyName("FI-04")] Fi04 = 4,
-    [JsonPropertyName("FI-05")] Fi05 = 5,
-    [JsonPropertyName("FI-06")] Fi06 = 6,
-    [JsonPropertyName("FI-07")] Fi07 = 7,
-    [JsonPropertyName("FI-08")] Fi08 = 8,
-    [JsonPropertyName("FI-09")] Fi09 = 9,
-    [JsonPropertyName("FI-10")] Fi10 = 10,
-    [JsonPropertyName("FI-11")] Fi11 = 11,
-    [JsonPropertyName("FI-12")] Fi12 = 12,
-    [JsonPropertyName("FI-13")] Fi13 = 13,
-    [JsonPropertyName("FI-14")] Fi14 = 14,
-    [JsonPropertyName("FI-15")] Fi15 = 15,
-    [JsonPropertyName("FI-16")] Fi16 = 16,
-    [JsonPropertyName("FI-17")] Fi17 = 17,
-    [JsonPropertyName("FI-18")] Fi18 = 18,
-    [JsonPropertyName("FI-19")] Fi19 = 19
+    [EnumMember(Value = "01")] Ahvenanmaa = 1,
+    [EnumMember(Value = "02")] EtelaKarjala = 2,
+    [EnumMember(Value = "03")] EtelaPohjanmaa = 3,
+    [EnumMember(Value = "04")] EtelaSavo = 4,
+    [EnumMember(Value = "05")] Kainuu = 5,
+    [EnumMember(Value = "06")] KantaHame = 6,
+    [EnumMember(Value = "07")] KeskiPohjanmaa = 7,
+    [EnumMember(Value = "08")] KeskiSuomi = 8,
+    [EnumMember(Value = "09")] Kymenlaakso = 9,
+    [EnumMember(Value = "10")] Lappi = 10,
+    [EnumMember(Value = "11")] Pirkanmaa = 11,
+    [EnumMember(Value = "12")] Pohjanmaa = 12,
+    [EnumMember(Value = "13")] PohjoisKarjala = 13,
+    [EnumMember(Value = "14")] PohjoisPohjanmaa = 14,
+    [EnumMember(Value = "15")] PohjoisSavo = 15,
+    [EnumMember(Value = "16")] PaijatHame = 16,
+    [EnumMember(Value = "17")] Satakunta = 17,
+    [EnumMember(Value = "18")] Uusimaa = 18,
+    [EnumMember(Value = "19")] VarsinaisSuomi = 19
 }
