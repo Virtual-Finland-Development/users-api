@@ -2,9 +2,11 @@
 
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Models.Shared;
 
+[JsonConverter(typeof(JsonEnumMemberValueConverterFactory))]
 public enum Municipality
 {
     [EnumMember(Value = "020")] Akaa = 020,

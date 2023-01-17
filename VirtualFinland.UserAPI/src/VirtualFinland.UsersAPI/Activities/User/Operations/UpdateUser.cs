@@ -224,35 +224,12 @@ public static class UpdateUser
                 if (request.WorkPreferences is not null)
                 {
                     dbUser.WorkPreferences ??= new WorkPreferences();
-                    
-                    if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
-                        dbUser.WorkPreferences.PreferredMunicipalityEnum = request.WorkPreferences.PreferredMunicipalityEnum;
-
-                    if (request.WorkPreferences.PreferredRegionEnum is not null)
-                        dbUser.WorkPreferences.PreferredRegionEnum = request.WorkPreferences.PreferredRegionEnum;
-                    
-                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
-                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
-                    
-                    dbUser.WorkPreferences.WorkingTimeEnum = request.WorkPreferences.WorkingTimeEnum;
+                    dbUser.WorkPreferences.PreferredMunicipalityEnum = request.WorkPreferences.PreferredMunicipalityEnum ?? dbUser.WorkPreferences.PreferredMunicipalityEnum;
+                    dbUser.WorkPreferences.PreferredRegionEnum = request.WorkPreferences.PreferredRegionEnum ?? dbUser.WorkPreferences.PreferredRegionEnum;
+                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageEnum;
+                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode ?? dbUser.WorkPreferences.EmploymentTypeCode;
+                    dbUser.WorkPreferences.WorkingTimeEnum = request.WorkPreferences.WorkingTimeEnum ?? dbUser.WorkPreferences.WorkingTimeEnum;
                 }
-            }
-
-            private static ICollection<T> GetEnumsFromCollection<T>(ICollection<string> enums) where T : struct, Enum
-            {
-                var updatedRegions = new List<T>();
-
-                if (enums is not { Count: > 0 })
-                    return updatedRegions;
-
-                foreach (var enumString in enums)
-                {
-                    var isRegion = Enum.TryParse<T>(enumString, out var region);
-                    if (isRegion)
-                        updatedRegions.Add(region);
-                }
-
-                return updatedRegions;
             }
 
             /// <summary>
@@ -423,10 +400,10 @@ public static class UpdateUser
     [SwaggerSchema(Title = "UpdateUserRequestWorkPreferences")]
     public record UpdateUserRequestWorkPreferences
     (
-        List<string>? PreferredRegionEnum,
-        List<string>? PreferredMunicipalityEnum,
-        string? EmploymentTypeCode,
-        string? WorkingTimeEnum,
+        List<Region>? PreferredRegionEnum,
+        List<Municipality>? PreferredMunicipalityEnum,
+        EmploymentType? EmploymentTypeCode,
+        WorkingTime? WorkingTimeEnum,
         string? WorkingLanguageEnum
     );
 
@@ -434,10 +411,10 @@ public static class UpdateUser
     public record UpdateUserResponseWorkPreferences
     (
         Guid? Id,
-        ICollection<string>? PreferredRegionEnum,
-        ICollection<string>? PreferredMunicipalityEnum,
-        string? EmploymentTypeCode,
-        string? WorkingTimeEnum,
+        ICollection<Region>? PreferredRegionEnum,
+        ICollection<Municipality>? PreferredMunicipalityEnum,
+        EmploymentType? EmploymentTypeCode,
+        WorkingTime? WorkingTimeEnum,
         string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified

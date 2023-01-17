@@ -71,8 +71,8 @@ public static class GetUser
             {
                 workPreferences = new UserResponseWorkPreferences(
                     dbUser.WorkPreferences?.Id,
-                    dbUser.WorkPreferences?.PreferredRegionEnum,
-                    dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                    dbUser.WorkPreferences?.PreferredRegionEnum?.Select(x => x).ToList(),
+                    dbUser.WorkPreferences?.PreferredMunicipalityEnum?.Select(x => x).ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeEnum,
                     dbUser.WorkPreferences?.WorkingLanguageEnum,
@@ -135,10 +135,10 @@ public static class GetUser
     public record UserResponseWorkPreferences
     (
         Guid? Id,
-        List<string>? PreferredRegionEnum,
-        List<string>? PreferredMunicipalityEnum,
-        string? EmploymentTypeCode,
-        string? WorkingTimeEnum,
+        List<Region>? PreferredRegionEnum,
+        List<Municipality>? PreferredMunicipalityEnum,
+        EmploymentType? EmploymentTypeCode,
+        WorkingTime? WorkingTimeEnum,
         string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified
@@ -152,6 +152,4 @@ public static class GetUser
         string? EscoCode,
         int? WorkMonths
     );
-
-
 }

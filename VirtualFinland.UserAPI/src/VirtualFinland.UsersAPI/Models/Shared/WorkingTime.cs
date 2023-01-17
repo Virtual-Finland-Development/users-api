@@ -1,8 +1,10 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Models.Shared;
 
+[JsonConverter(typeof(JsonEnumMemberValueConverterFactory))]
 public enum WorkingTime
 {
     [EnumMember(Value = "01")] DayShift = 1,

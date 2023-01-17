@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Models.Shared;
 
@@ -7,6 +8,7 @@ namespace VirtualFinland.UserAPI.Models.Shared;
 /// Region code based on ISO 3166-2:FI standard
 /// https://fi.wikipedia.org/wiki/ISO_3166-2:FI
 /// </summary>
+[JsonConverter(typeof(JsonEnumMemberValueConverterFactory))]
 public enum Region
 {
     [EnumMember(Value = "01")] Ahvenanmaa = 1,
