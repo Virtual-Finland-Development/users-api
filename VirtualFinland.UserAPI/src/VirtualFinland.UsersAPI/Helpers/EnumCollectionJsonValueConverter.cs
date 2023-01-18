@@ -9,8 +9,8 @@ public class EnumCollectionJsonValueConverter<T> : ValueConverter<ICollection<T>
         v => JsonConvert.SerializeObject(
             v.Select(EnumUtilities.GetEnumMemberValueOrDefault).ToList()
         ),
-        v => (JsonConvert.DeserializeObject<ICollection<string>>(v) ?? new List<string>())
-            .Select(Enum.Parse<T>)
+        v => (ICollection<T>)(JsonConvert.DeserializeObject<ICollection<string>>(v) ?? new List<string>())
+            .Select(EnumUtilities.GetEnumValueOrDefault<T>)
             .ToList()
         )
     {
