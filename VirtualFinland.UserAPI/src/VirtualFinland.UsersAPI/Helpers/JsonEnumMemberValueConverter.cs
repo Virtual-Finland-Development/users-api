@@ -16,7 +16,7 @@ public sealed class JsonEnumMemberValueConverter<T> : JsonConverter<T> where T :
         if (string.IsNullOrEmpty(enumString)) throw new JsonException();
 
         var enumValue = EnumUtilities.GetEnumValueOrDefault<T>(enumString);
-        if (!enumValue.HasValue) throw new JsonException($"Could not get enum value for {enumString}");
+        if (!enumValue.HasValue) throw new JsonException($"Invalid value {enumString}");
 
         return enumValue.Value;
     }
@@ -24,7 +24,7 @@ public sealed class JsonEnumMemberValueConverter<T> : JsonConverter<T> where T :
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         var enumOutput = EnumUtilities.GetEnumMemberValueOrDefault(value);
-        if (string.IsNullOrEmpty(enumOutput)) throw new JsonException("Oops");
+        if (string.IsNullOrEmpty(enumOutput)) throw new JsonException($"Could not get enum member value for {nameof(value)} = {value} in {typeof(T)}");
 
         writer.WriteStringValue(enumOutput);
     }
