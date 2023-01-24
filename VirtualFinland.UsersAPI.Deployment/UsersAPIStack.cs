@@ -112,7 +112,7 @@ public class UsersApiStack : Stack
             PolicyArn = ManagedPolicy.SecretsManagerReadWrite.ToString(), // TODO: Swap for secretManagerReadPolicy policy if configs correct
         });
 
-        var defaultSecurityGroup =Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
+        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = Output.Format($"{stackReferenceVpcId}")
         });
@@ -127,7 +127,7 @@ public class UsersApiStack : Stack
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
         
         var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{projectName}-dbConnectionStringSecret-{environment}");
-        var secretVersionDbConectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
+        var secretVersionDbConnectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
         {
             SecretId = secretDbConnectionString.Id,
             SecretString = Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
