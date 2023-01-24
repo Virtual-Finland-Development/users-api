@@ -4,6 +4,10 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
+/// <summary>
+///     Interceptor used to automatically set created and modified property values on classes that inherit from
+///     <see cref="Auditable" /> abstract class
+/// </summary>
 public class AuditInterceptor : SaveChangesInterceptor
 {
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
