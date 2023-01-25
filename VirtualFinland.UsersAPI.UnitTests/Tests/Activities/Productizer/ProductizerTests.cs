@@ -88,7 +88,7 @@ public class ProductizerTests : APITestBase
             .WithCitizenshipCode("12345678910")
             .WithJobTitles(null)
             .WithRegions(null)
-            .WithGender((Gender)3)
+            .WithGender((Gender)4)
             .WithDateOfBirth(null)
             .Build();
         command.SetAuth(dbEntities.user.Id);
