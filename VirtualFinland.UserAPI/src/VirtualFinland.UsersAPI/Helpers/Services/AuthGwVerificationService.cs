@@ -63,12 +63,12 @@ public class AuthGwVerificationService
         }
         catch (HttpRequestException e)
         {
-            _logger.LogWarning("AuthGW could verify token.");
+            _logger.LogWarning("AuthGW could verify token");
             throw new NotAuthorizedException(e.Message);
         }
         catch (ArgumentException e)
         {
-            _logger.LogWarning("AuthGW could verify token.");
+            _logger.LogWarning("AuthGW could verify token");
             throw new NotAuthorizedException(e.Message);
         }
     }

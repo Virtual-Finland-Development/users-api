@@ -21,16 +21,14 @@ public class AuthenticationTests : APITestBase
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockUserSecurityLogger = new Mock<ILogger<UserSecurityService>>();
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
-        var UserSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object, mockConfiguration.Object);
+        var userSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object);
 
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
         
-        var authenticationService = new AuthenticationService(UserSecurityService);
+        var authenticationService = new AuthenticationService(userSecurityService);
 
         // Act
         var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
@@ -55,14 +53,14 @@ public class AuthenticationTests : APITestBase
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage {});
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var UserSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object, mockConfiguration.Object);
+        var userSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object);
 
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:AuthorizeURL")]).Returns("https://someurl.com");
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, UserSecurityService);
+        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, userSecurityService);
 
         // Act
         var act = () => authGwVerificationService.AuthGwVerification(mockHttpRequest.Object);
