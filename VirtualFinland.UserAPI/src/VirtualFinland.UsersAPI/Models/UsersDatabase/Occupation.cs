@@ -1,27 +1,33 @@
-// ReSharper disable ClassNeverInstantiated.Global
-// ReSharper disable MemberCanBePrivate.Global
-
 using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class Occupation : Auditable, IEntity
 {
+    /// <summary>
+    ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101
+    /// </summary>
     [MaxLength(7)]
     public string? NaceCode { get; set; }
-    
+
     [Url]
     public string? EscoUri { get; set; }
-    
+
+    /// <summary>
+    ///     http://uri.suomi.fi/codelist/tulorekisteri/OccupationalTitles
+    /// </summary>
     [MaxLength(16)]
     public string? EscoCode { get; set; }
     
-    // 50 years in same workplace should be plenty enough
+    [MaxLength(256)]
+    public string? Employer { get; set; }
+
     [Range(0, 600)]
     public int? WorkMonths { get; set; }
-    
+
     // Relationships
-    public Guid UserId { get; set; }
-    
+    public Guid PersonId { get; set; }
+    public ICollection<Skills>? Skills { get; set; }
+
     public Guid Id { get; set; }
 }

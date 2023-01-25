@@ -1,5 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using FluentValidation;
 using MediatR;
@@ -8,11 +6,11 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;
 
@@ -23,26 +21,14 @@ public static class UpdateUser
     {
         public string? FirstName { get; }
         public string? LastName { get; }
-        
         public Address? Address { get; }
-        
-        public bool? JobsDataConsent { get; }
-        
-        public bool? ImmigrationDataConsent { get; }
-        
         public string? CountryOfBirthCode { get; }
-
         public string? NativeLanguageCode { get; }
-
         public string? OccupationCode { get; }
-
         public string? CitizenshipCode { get; }
-
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        
         public Gender? Gender { get; }
-        
         public DateTime? DateOfBirth { get; }
         
         [SwaggerIgnore]
@@ -51,8 +37,6 @@ public static class UpdateUser
         public Command(string? firstName,
             string? lastName,
             Address? address,
-            bool? jobsDataConsent,
-            bool? immigrationDataConsent,
             string? countryOfBirthCode,
             string? nativeLanguageCode,
             string? occupationCode,
@@ -62,19 +46,17 @@ public static class UpdateUser
             Gender? gender,
             DateTime? dateOfBirth)
         {
-            this.FirstName = firstName;
-            this.LastName = lastName;
-            this.Address = address;
-            this.JobsDataConsent = jobsDataConsent;
-            this.ImmigrationDataConsent = immigrationDataConsent;
-            this.CountryOfBirthCode = countryOfBirthCode;
-            this.NativeLanguageCode = nativeLanguageCode;
-            this.OccupationCode = occupationCode;
-            this.CitizenshipCode = citizenshipCode;
-            this.JobTitles = jobTitles;
-            this.Regions = regions;
-            this.Gender = gender;
-            this.DateOfBirth = dateOfBirth;
+            FirstName = firstName;
+            LastName = lastName;
+            Address = address;
+            CountryOfBirthCode = countryOfBirthCode;
+            NativeLanguageCode = nativeLanguageCode;
+            OccupationCode = occupationCode;
+            CitizenshipCode = citizenshipCode;
+            JobTitles = jobTitles;
+            Regions = regions;
+            Gender = gender;
+            DateOfBirth = dateOfBirth;
         }
 
         public void SetAuth(Guid? userDbId)
@@ -134,12 +116,13 @@ public static class UpdateUser
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-
-                var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                var dbUser = await _usersDbContext.Persons
+                    .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
+                    .SingleAsync(o => o.Id == request.UserId, cancellationToken);
                 
                 await VerifyUserUpdate(dbUser, request);
                 
-                var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
+                var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
                 dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
@@ -149,28 +132,28 @@ public static class UpdateUser
                 return new User
                 {
                     Id = dbUser.Id,
-                    FirstName = dbUser.FirstName,
+                    FirstName = dbUser.GivenName,
                     LastName = dbUser.LastName,
                     Address = new Address(
-                        dbUser.StreetAddress,
-                        dbUser.ZipCode,
-                        dbUser.City,
-                        dbUser.Country
+                        dbUser.AdditionalInformation?.Address?.StreetAddress,
+                        dbUser.AdditionalInformation?.Address?.ZipCode,
+                        dbUser.AdditionalInformation?.Address?.City,
+                        dbUser.AdditionalInformation?.Address?.Country
                     ),
-                    JobTitles = dbUserDefaultSearchProfile?.JobTitles ?? new List<string>(),
-                    Regions = dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
+                    JobTitles = dbUserDefaultSearchProfile.JobTitles ?? new List<string>(),
+                    Regions = dbUserDefaultSearchProfile.Regions ?? new List<string>(),
                     Created = dbUser.Created,
                     Modified = dbUser.Modified,
-                    CountryOfBirthCode = dbUser.CountryOfBirthCode,
-                    NativeLanguageCode = dbUser.NativeLanguageCode,
-                    OccupationCode = dbUser.OccupationCode,
-                    CitizenshipCode = dbUser.CitizenshipCode,
-                    Gender = dbUser.Gender,
-                    DateOfBirth = dbUser.DateOfBirth
+                    CountryOfBirthCode = dbUser.AdditionalInformation?.CountryOfBirthCode,
+                    NativeLanguageCode = dbUser.AdditionalInformation?.NativeLanguageCode,
+                    OccupationCode = dbUser.AdditionalInformation?.OccupationCode,
+                    CitizenshipCode = dbUser.AdditionalInformation?.CitizenshipCode,
+                    Gender = dbUser.AdditionalInformation?.Gender,
+                    DateOfBirth = dbUser.AdditionalInformation?.DateOfBirth
                 };
         }
 
-        private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
+        private async Task VerifyUserUpdate(Person dbUser, Command request)
             {
                 
                 var validationErrors = new List<ValidationErrorDetail>();
@@ -183,21 +166,25 @@ public static class UpdateUser
                     throw new BadRequestException("One or more validation errors occurred.", validationErrors);
                 }
 
-                dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
+                dbUser.GivenName = request.FirstName ?? dbUser.GivenName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.StreetAddress = request.Address?.StreetAddress ?? dbUser.StreetAddress;
-                dbUser.ZipCode = request.Address?.ZipCode ?? dbUser.ZipCode;
-                dbUser.City = request.Address?.City ?? dbUser.City;
-                dbUser.Country = request.Address?.Country ?? dbUser.Country;
+
+                dbUser.AdditionalInformation ??= new PersonAdditionalInformation();
+                dbUser.AdditionalInformation.Address ??= new Models.UsersDatabase.Address();
+                
+                dbUser.AdditionalInformation.Address.StreetAddress = request.Address?.StreetAddress ?? dbUser.AdditionalInformation.Address.StreetAddress;
+                dbUser.AdditionalInformation.Address.ZipCode = request.Address?.ZipCode ?? dbUser.AdditionalInformation.Address.ZipCode;
+                dbUser.AdditionalInformation.Address.City = request.Address?.City ?? dbUser.AdditionalInformation.Address.City;
+                dbUser.AdditionalInformation.Address.Country = request.Address?.Country ?? dbUser.AdditionalInformation.Address.Country;
                 dbUser.Modified = DateTime.UtcNow;
-                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
-                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.CitizenshipCode = request.CitizenshipCode ?? dbUser.CitizenshipCode;
-                dbUser.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.NativeLanguageCode; 
-                dbUser.OccupationCode = request.OccupationCode ?? dbUser.OccupationCode;
-                dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
-                dbUser.Gender = request.Gender ?? dbUser.Gender;
-                dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
+                dbUser.AdditionalInformation.CitizenshipCode = request.CitizenshipCode ?? dbUser.AdditionalInformation.CitizenshipCode;
+                dbUser.AdditionalInformation.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.AdditionalInformation.NativeLanguageCode; 
+                dbUser.AdditionalInformation.OccupationCode = request.OccupationCode ?? dbUser.AdditionalInformation.OccupationCode;
+                dbUser.AdditionalInformation.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.AdditionalInformation.CountryOfBirthCode;
+                dbUser.AdditionalInformation.Gender = request.Gender ?? dbUser.AdditionalInformation.Gender;
+                dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue
+                    ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault())
+                    : dbUser.AdditionalInformation.DateOfBirth;
 
             }
 
@@ -261,14 +248,14 @@ public static class UpdateUser
             /// <param name="dbUser"></param>
             /// <param name="request"></param>
             /// <param name="cancellationToken"></param>
-            private async Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
+            private async Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Person dbUser, Command request, CancellationToken cancellationToken)
             {
                 if (dbUserDefaultSearchProfile is null)
                 {
-                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new SearchProfile()
+                    var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new SearchProfile
                     {
                         Name = request.JobTitles?.FirstOrDefault(),
-                        UserId = dbUser.Id,
+                        PersonId = dbUser.Id,
                         JobTitles = request.JobTitles,
                         Regions = request.Regions,
                         Created = DateTime.UtcNow,
@@ -278,35 +265,34 @@ public static class UpdateUser
 
                     return dbNewSearchProfile.Entity;
                 }
-                else
-                {
-                    dbUserDefaultSearchProfile.Name = dbUserDefaultSearchProfile.Name;
-                    dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
-                    dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
-                    dbUserDefaultSearchProfile.IsDefault = true;
-                    dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
-                    return dbUserDefaultSearchProfile;
-                }
+                dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
+                dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
+                dbUserDefaultSearchProfile.IsDefault = true;
+                dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
+
+                return dbUserDefaultSearchProfile;
             }
         }
 
     [SwaggerSchema(Title = "UpdateUserResponse")]
-    public record User {
-        public Guid Id { get; init; } = default!;
-        public string? FirstName { get; init; } = default;
-        public string? LastName { get; init; } = default!;
-        public Address? Address { get; init; } = default!;
-        public List<string>? JobTitles { get; init; } = default!;
-        public List<string>? Regions { get; init; } = default!;
-        public DateTime Created { get; init; } = default!;
-        public DateTime Modified { get; init; } = default!;
-        public string? CountryOfBirthCode { get; init; } = default!;
-        public string? NativeLanguageCode { get; init; } = default!;
-        public string? OccupationCode { get; init; } = default!;
-        public string? CitizenshipCode { get; init; } = default!;
-        public Gender? Gender { get; init; } = default!;
+    public record User
+    {
+        public Guid Id { get; init; }
+        public string? FirstName { get; init; }
+        public string? LastName { get; init; }
+        public Address? Address { get; init; }
+        public List<string>? JobTitles { get; init; }
+        public List<string>? Regions { get; init; }
+        public DateTime Created { get; init; }
+        public DateTime Modified { get; init; }
+        public string? CountryOfBirthCode { get; init; }
+        public string? NativeLanguageCode { get; init; }
+        public string? OccupationCode { get; init; }
+        public string? CitizenshipCode { get; init; }
+        public Gender? Gender { get; init; }
+
         [JsonConverter(typeof(DateOnlyJsonConverter))]
-        public DateOnly? DateOfBirth { get; init; } = default!;
+        public DateOnly? DateOfBirth { get; init; }
     }
 }

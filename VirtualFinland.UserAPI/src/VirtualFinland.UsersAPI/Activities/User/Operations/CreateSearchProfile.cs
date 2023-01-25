@@ -54,12 +54,12 @@ public static class CreateSearchProfile
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
             
             var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
             {
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
-                UserId = dbUser.Id,
+                PersonId = dbUser.Id,
                 JobTitles = request.JobTitles,
                 Regions = request.Regions,
                 Created = DateTime.UtcNow,

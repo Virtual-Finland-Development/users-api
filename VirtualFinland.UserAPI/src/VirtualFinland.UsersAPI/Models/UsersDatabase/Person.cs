@@ -1,6 +1,5 @@
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -22,13 +21,16 @@ public class Person : Auditable, IEntity
     public string? ResidencyCode { get; set; }
 
     // Relationships
-    public virtual ICollection<Occupation>? Occupations { get; set; }
-    public virtual ICollection<Education>? Educations { get; set; }
-    public virtual ICollection<Certification>? Certifications { get; set; }
-    public virtual WorkPreferences? WorkPreferences { get; set; }
-    public virtual ICollection<Permit>? Permits { get; set; }
-    public virtual ICollection<Skills>? Skills { get; set; }
-    public virtual ICollection<Language>? LanguageSkills { get; set; }
+    public PersonAdditionalInformation? AdditionalInformation { get; set; }
+    public WorkPreferences? WorkPreferences { get; set; }
 
+    public ICollection<Occupation>? Occupations { get; set; }
+    public ICollection<Education>? Educations { get; set; }
+    public ICollection<Certification>? Certifications { get; set; }
+    public ICollection<Permit>? Permits { get; set; }
+    public ICollection<Skills>? Skills { get; set; }
+    public ICollection<Language>? LanguageSkills { get; set; }
+
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 }

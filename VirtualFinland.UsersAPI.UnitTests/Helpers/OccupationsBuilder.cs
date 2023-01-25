@@ -24,7 +24,7 @@ internal class OccupationsBuilder
             WorkMonths = _workMonths,
             Created = _created,
             Modified = _modified,
-            UserId = _userId
+            PersonId = _userId
         };
     }
 }

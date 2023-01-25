@@ -1,5 +1,3 @@
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;

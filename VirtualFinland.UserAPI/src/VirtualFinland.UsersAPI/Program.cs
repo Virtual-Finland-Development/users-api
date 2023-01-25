@@ -18,6 +18,7 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Models.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -201,10 +202,10 @@ using (var scope = app.Services.CreateScope())
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
-    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-    updateUserWarmUpCommand.SetAuth(UsersDbContext.WarmUpUserId);
+    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
     
-    await mediator?.Send(new GetUser.Query(UsersDbContext.WarmUpUserId))!;
+    await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
 

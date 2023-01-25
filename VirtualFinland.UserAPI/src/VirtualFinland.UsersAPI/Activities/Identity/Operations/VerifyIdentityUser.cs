@@ -43,8 +43,8 @@ public static class VerifyIdentityUser
             // Create a new system user is no one found based on given authentication information
             if (externalIdentity is null)
             {
-                var newDbUSer = await _usersDbContext.Users.AddAsync(new Models.UsersDatabase.User()
-                { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
+                var newDbUSer = await _usersDbContext.Persons.AddAsync(
+                    new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
                 await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity()
                 {
@@ -61,7 +61,7 @@ public static class VerifyIdentityUser
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
             
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             
             _logger.LogInformation("Verified an existing user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", claimsUserId, request.ClaimsIssuer);
             return new User(dbUser.Id, dbUser.Created, dbUser.Modified);

@@ -37,7 +37,7 @@ public static class UpdateOccupations
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupationsToUpdate = await _usersDbContext.Occupations
-                .Where(o => o.UserId == request.UserId)
+                .Where(o => o.PersonId == request.UserId)
                 .Where(o => request.Occupations.Select(e => e.Id).Contains(o.Id))
                 .ToListAsync(cancellationToken);
 
@@ -61,9 +61,17 @@ public static class UpdateOccupations
     public record Occupation
     {
         public Guid Id { get; init; }
-        [MaxLength(7)] public string? NaceCode { get; init; }
-        [Url] public string? EscoUri { get; init; }
-        [MaxLength(16)] public string? EscoCode { get; init; }
-        [Range(0, 600)] public int? WorkMonths { get; init; }
+
+        [MaxLength(7)]
+        public string? NaceCode { get; init; }
+
+        [Url]
+        public string? EscoUri { get; init; }
+
+        [MaxLength(16)]
+        public string? EscoCode { get; init; }
+
+        [Range(0, 600)]
+        public int? WorkMonths { get; init; }
     }
 }

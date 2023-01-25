@@ -42,9 +42,9 @@ public static class GetSearchProfiles
 
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
 
-            var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.UserId == dbUser.Id);
+            var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.PersonId == dbUser.Id);
             
             _logger.LogDebug("Retrieving search profiles");
 

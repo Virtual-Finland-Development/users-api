@@ -1,26 +1,38 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using VirtualFinland.UserAPI.Models.Shared;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-// ReSharper disable once MemberCanBePrivate.Global
 public class WorkPreferences : Auditable, IEntity
 {
-    public List<string>? PreferredRegionEnum { get; set; }
-    public List<string>? PreferredMunicipalityEnum { get; set; }
-    public string? EmploymentTypeCode { get; set; }
-    public string? WorkingTimeEnum { get; set; }
-    public string? WorkingLanguageEnum { get; set; }
+    /// <summary>
+    ///     Region.cs values
+    /// </summary>
+    public ICollection<Region>? PreferredRegionCode { get; set; }
 
-    // Relationships
-    [JsonIgnore]
-    public User? User { get; set; }
+    /// <summary>
+    ///     Municipality.cs values
+    /// </summary>
+    public ICollection<Municipality>? PreferredMunicipalityCode { get; set; }
 
-    [Key]
+    public EmploymentType? EmploymentTypeCode { get; set; }
+
+    /// <summary>
+    ///     WorkingTime.cs values
+    /// </summary>
+    public WorkingTime? WorkingTimeCode { get; set; }
+
+    /// <summary>
+    ///     Possible values are "fi", "en", "sv"
+    /// </summary>
+    [MaxLength(2)]
+    public WorkingLanguage? WorkingLanguageEnum { get; set; }
+
     [Required]
+    public Guid PersonId { get; set; }
+
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    [ForeignKey(nameof(User))]
     public Guid Id { get; set; }
 }

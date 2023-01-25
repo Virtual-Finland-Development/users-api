@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Principal;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
@@ -26,7 +26,7 @@ public class UserSecurityService
     /// <param name="claimsUserId"></param>
     /// <returns></returns>
     /// <exception cref="NotAuthorizedException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
-    public async Task<Models.UsersDatabase.User?> VerifyAndGetAuthenticatedUser(string token)
+    public async Task<Person> VerifyAndGetAuthenticatedUser(string token)
     {
         var issuer = this.GetTokenIssuer(token);
         var userId = this.GetTokenUserId(token);
@@ -34,7 +34,7 @@ public class UserSecurityService
         try
         {
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == userId && o.Issuer == issuer, CancellationToken.None);
-            return await _usersDbContext.Users.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            return await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
         }
         catch (InvalidOperationException e)
         {

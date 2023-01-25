@@ -1,6 +1,5 @@
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
@@ -10,8 +9,6 @@ public class UpdateUserCommandBuilder
     private string _firstName = "FirstName";
     private string _lastName = "LastName";
     private Address? _address = new AddressBuilder().Build();
-    private bool? _jobsDataConsent = true;
-    private bool? _immigrationDataConsent = true;
     private string _countryOfBirthCode = "fi";
     private string _nativeLanguageCode = "fin";
     private string _occupationCode = "01";
@@ -36,18 +33,6 @@ public class UpdateUserCommandBuilder
     public UpdateUserCommandBuilder WithAddress(Address value)
     {
         _address = value;
-        return this;
-    }
-
-    public UpdateUserCommandBuilder WithJobsDataConsent(bool? value)
-    {
-        _jobsDataConsent = value;
-        return this;
-    }
-
-    public UpdateUserCommandBuilder WithImmigrationDataConsent(bool? value)
-    {
-        _immigrationDataConsent = value;
         return this;
     }
 
@@ -105,8 +90,6 @@ public class UpdateUserCommandBuilder
             _firstName,
             _lastName,
             _address,
-            _jobsDataConsent,
-            _immigrationDataConsent,
             _countryOfBirthCode,
             _nativeLanguageCode,
             _occupationCode,

@@ -1,12 +1,10 @@
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class Skills : Auditable, IEntity
 {
-    // ReSharper disable once MemberCanBePrivate.Global
     public enum SkillLevel
     {
         Beginner,
@@ -15,12 +13,18 @@ public class Skills : Auditable, IEntity
     }
 
     [Url]
-    public string? EscoUrl { get; set; }
+    public string? EscoUri { get; set; }
 
-    [MaxLength(3)]
-    public string? LanguageCode { get; set; }
+    public SkillLevel SkillLevelEnum { get; set; }
 
-    public SkillLevel? SkillLevelEnum { get; set; }
+    [JsonIgnore]
+    public Person Person { get; set; } = null!;
+
+    [JsonIgnore]
+    public Guid? EducationId { get; set; }
+
+    [JsonIgnore]
+    public Guid? OccupationId { get; set; }
 
     public Guid Id { get; set; }
 }

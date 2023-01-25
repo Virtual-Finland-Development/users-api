@@ -31,17 +31,15 @@ public class UserTests : APITestBase
             .Match<GetUser.User>(o =>
                 o.DateOfBirth != null &&
                 o.Id == dbEntities.user.Id &&
-                o.Address!.StreetAddress == dbEntities.user.StreetAddress &&
-                o.FirstName == dbEntities.user.FirstName &&
+                o.Address!.StreetAddress == dbEntities.user.AdditionalInformation!.Address!.StreetAddress &&
+                o.FirstName == dbEntities.user.GivenName &&
                 o.LastName == dbEntities.user.LastName &&
-                o.ImmigrationDataConsent == dbEntities.user.ImmigrationDataConsent &&
-                o.JobsDataConsent == dbEntities.user.JobsDataConsent &&
-                o.CitizenshipCode == dbEntities.user.CitizenshipCode &&
-                o.OccupationCode == dbEntities.user.OccupationCode &&
-                o.NativeLanguageCode == dbEntities.user.CitizenshipCode &&
-                o.CountryOfBirthCode == dbEntities.user.CountryOfBirthCode &&
-                o.Gender == dbEntities.user.Gender &&
-                DateOnly.FromDateTime(o.DateOfBirth.Value) == dbEntities.user.DateOfBirth);
+                o.CitizenshipCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
+                o.OccupationCode == dbEntities.user.AdditionalInformation.OccupationCode &&
+                o.NativeLanguageCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
+                o.CountryOfBirthCode == dbEntities.user.AdditionalInformation.CountryOfBirthCode &&
+                o.Gender == dbEntities.user.AdditionalInformation.Gender &&
+                DateOnly.FromDateTime(o.DateOfBirth.Value) == dbEntities.user.AdditionalInformation.DateOfBirth);
         
     }
     
@@ -67,8 +65,6 @@ public class UserTests : APITestBase
                 o.Id == dbEntities.user.Id &&
                 o.FirstName == command.FirstName &&
                 o.LastName == command.LastName &&
-                o.ImmigrationDataConsent == command.ImmigrationDataConsent &&
-                o.JobsDataConsent == command.JobsDataConsent &&
                 o.CitizenshipCode == command.CitizenshipCode &&
                 o.NativeLanguageCode == command.NativeLanguageCode &&
                 o.OccupationCode == command.OccupationCode &&
@@ -186,8 +182,6 @@ public class UserTests : APITestBase
             .WithFirstName(new string('*', 256))
             .WithLastName(new string('*', 256))
             .WithAddress(new AddressBuilder().WithStreetAddress(new string('*', 256)).Build())
-            .WithJobsDataConsent(null)
-            .WithImmigrationDataConsent(null)
             .WithCountryOfBirthCode("12345678910")
             .WithNativeLanguageCode("12345678910")
             .WithOccupationCode("12345678910")
