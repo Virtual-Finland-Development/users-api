@@ -184,7 +184,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     City = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     Country = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gender = table.Column<string>(type: "text", nullable: false),
+                    Gender = table.Column<string>(type: "text", nullable: true),
                     CountryOfBirthCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                     NativeLanguageCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                     OccupationCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
@@ -211,7 +211,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     PreferredRegionCode = table.Column<string>(type: "text", nullable: true),
                     PreferredMunicipalityCode = table.Column<string>(type: "text", nullable: true),
                     EmploymentTypeCode = table.Column<string>(type: "text", nullable: true),
-                    WorkingTimeCode = table.Column<int>(type: "integer", nullable: true),
+                    WorkingTimeCode = table.Column<string>(type: "text", nullable: true),
                     WorkingLanguageEnum = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -234,7 +234,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     EscoUri = table.Column<string>(type: "text", nullable: true),
-                    SkillLevelEnum = table.Column<string>(type: "text", nullable: false),
+                    SkillLevelEnum = table.Column<string>(type: "text", nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     EducationId = table.Column<Guid>(type: "uuid", nullable: true),
                     OccupationId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -265,12 +265,12 @@ namespace VirtualFinland.UserAPI.Migrations
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
                 columns: new[] { "Id", "Created", "IdentityId", "Issuer", "Modified", "UserId" },
-                values: new object[] { new Guid("d843e9d4-e587-4a1c-b983-2286a60781ec"), new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4810), "19902fdf-f576-4571-89b3-ef9d6eba980f", "45f7b9fc-b29b-46dc-857d-c3c0fbdc8b1c", new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4810), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
+                values: new object[] { new Guid("b819e6ce-9ab4-4e6c-9989-ecfa3adcaf02"), new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650), "de0441cf-be3b-48fd-a69f-2dd864df8f9b", "40ad0f23-9914-46d8-86ac-b07f41a8005b", new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
 
             migrationBuilder.InsertData(
                 table: "Persons",
                 columns: new[] { "Id", "Created", "Email", "GivenName", "LastName", "Modified", "PhoneNumber", "ResidencyCode" },
-                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4680), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4680), null, null });
+                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560), null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certifications_PersonId",

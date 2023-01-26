@@ -150,11 +150,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("d843e9d4-e587-4a1c-b983-2286a60781ec"),
-                            Created = new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4810),
-                            IdentityId = "19902fdf-f576-4571-89b3-ef9d6eba980f",
-                            Issuer = "45f7b9fc-b29b-46dc-857d-c3c0fbdc8b1c",
-                            Modified = new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4810),
+                            Id = new Guid("b819e6ce-9ab4-4e6c-9989-ecfa3adcaf02"),
+                            Created = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650),
+                            IdentityId = "de0441cf-be3b-48fd-a69f-2dd864df8f9b",
+                            Issuer = "40ad0f23-9914-46d8-86ac-b07f41a8005b",
+                            Modified = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -295,10 +295,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4680),
+                            Created = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560),
                             GivenName = "WarmUpUserGivenName",
                             LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 1, 25, 8, 0, 29, 604, DateTimeKind.Utc).AddTicks(4680)
+                            Modified = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560)
                         });
                 });
 
@@ -323,7 +323,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Modified")
@@ -399,7 +398,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("SkillLevelEnum")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -441,8 +439,8 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(2)
                         .HasColumnType("character varying(2)");
 
-                    b.Property<int?>("WorkingTimeCode")
-                        .HasColumnType("integer");
+                    b.Property<string>("WorkingTimeCode")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

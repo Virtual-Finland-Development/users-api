@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Newtonsoft.Json;
-using VirtualFinland.UserAPI.Models.Shared;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -9,7 +8,7 @@ public class PersonAdditionalInformation : Auditable, IEntity
 {
     public Address? Address { get; set; }
     public DateOnly? DateOfBirth { get; set; }
-    public Gender Gender { get; set; }
+    public string? Gender { get; set; }
 
     [MaxLength(10)]
     public string? CountryOfBirthCode { get; set; }

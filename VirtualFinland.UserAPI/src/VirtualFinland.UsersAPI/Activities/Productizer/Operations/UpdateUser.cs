@@ -8,7 +8,6 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
-using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
@@ -28,7 +27,7 @@ public static class UpdateUser
         public string? CitizenshipCode { get; }
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        public Gender? Gender { get; }
+        public string? Gender { get; }
         public DateTime? DateOfBirth { get; }
         
         [SwaggerIgnore]
@@ -43,7 +42,7 @@ public static class UpdateUser
             string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
-            Gender? gender,
+            string? gender,
             DateTime? dateOfBirth)
         {
             FirstName = firstName;
@@ -290,7 +289,7 @@ public static class UpdateUser
         public string? NativeLanguageCode { get; init; }
         public string? OccupationCode { get; init; }
         public string? CitizenshipCode { get; init; }
-        public Gender? Gender { get; init; }
+        public string? Gender { get; init; }
 
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateOnly? DateOfBirth { get; init; }

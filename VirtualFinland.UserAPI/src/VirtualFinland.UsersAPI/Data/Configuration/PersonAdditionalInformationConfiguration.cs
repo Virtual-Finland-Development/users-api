@@ -8,8 +8,6 @@ public class PersonAdditionalInformationConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<PersonAdditionalInformation> entity)
     {
-        entity.Property(u => u.Gender).HasConversion<string>();
-
         entity.HasOne(e => e.Address).WithOne().HasForeignKey<Address>(a => a.Id);
         entity.ToTable("PersonAdditionalInformation");
     }

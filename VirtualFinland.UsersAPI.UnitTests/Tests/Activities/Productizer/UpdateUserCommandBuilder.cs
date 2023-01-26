@@ -6,17 +6,17 @@ namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
 
 public class UpdateUserCommandBuilder
 {
-    private string _firstName = "FirstName";
-    private string _lastName = "LastName";
     private Address? _address = new AddressBuilder().Build();
+    private string _citizenshipCode = "fi";
     private string _countryOfBirthCode = "fi";
+    private DateTime? _dateOfBirth = new(2022, 01, 01);
+    private string _firstName = "FirstName";
+    private string _gender = "Male";
+    private List<string>? _jobTitles = new() { "programmer" };
+    private string _lastName = "LastName";
     private string _nativeLanguageCode = "fin";
     private string _occupationCode = "01";
-    private string _citizenshipCode = "fi";
-    private List<string>? _jobTitles = new() { "programmer" };
     private List<string>? _regions = new() { "Southern-Finland" };
-    private Gender _gender = Gender.Male;
-    private DateTime? _dateOfBirth = new(2022, 01,01);
 
     public UpdateUserCommandBuilder WithFirstName(string value)
     {
@@ -72,7 +72,7 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
-    public UpdateUserCommandBuilder WithGender(Gender value)
+    public UpdateUserCommandBuilder WithGender(string value)
     {
         _gender = value;
         return this;

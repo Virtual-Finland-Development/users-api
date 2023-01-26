@@ -15,7 +15,7 @@ public static class EnumUtilities
     /// <param name="result"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private static bool TryParseWithMemberName<T>(string value, out T result) where T : struct
+    public static bool TryParseWithMemberName<T>(string value, out T result) where T : struct
     {
         result = default;
 

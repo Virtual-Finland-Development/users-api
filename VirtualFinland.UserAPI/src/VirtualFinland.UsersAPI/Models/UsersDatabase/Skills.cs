@@ -15,7 +15,7 @@ public class Skills : Auditable, IEntity
     [Url]
     public string? EscoUri { get; set; }
 
-    public SkillLevel SkillLevelEnum { get; set; }
+    public string? SkillLevelEnum { get; set; }
 
     [JsonIgnore]
     public Person Person { get; set; } = null!;

@@ -22,8 +22,8 @@ public class Language : Auditable, IEntity
 
     [MaxLength(3)]
     public string? LanguageCode { get; set; }
-    
-    public SkillLevel? CerfCode { get; set; }
+
+    public string? CerfCode { get; set; }
 
     public Guid Id { get; set; }
 }

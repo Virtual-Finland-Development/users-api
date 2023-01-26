@@ -26,6 +26,7 @@ public class UsersDbContext : DbContext
     public DbSet<Occupation> Occupations => Set<Occupation>();
     public DbSet<Permit> Permits => Set<Permit>();
     public DbSet<Person> Persons => Set<Person>();
+    public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
 
@@ -41,8 +42,6 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AddressConfiguration());
         modelBuilder.ApplyConfiguration(new PersonAdditionalInformationConfiguration());
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
-        modelBuilder.ApplyConfiguration(new SkillsConfiguration());
-        modelBuilder.ApplyConfiguration(new LanguageConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
 

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Data.Repositories;
-using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
@@ -88,7 +87,7 @@ public class ProductizerTests : APITestBase
             .WithCitizenshipCode("12345678910")
             .WithJobTitles(null)
             .WithRegions(null)
-            .WithGender((Gender)4)
+            .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
         command.SetAuth(dbEntities.user.Id);

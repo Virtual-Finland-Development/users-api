@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -26,7 +27,7 @@ public static class UpdateUser
         public string? CitizenshipCode { get; }
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        public Gender? Gender { get; }
+        public string? Gender { get; }
         public DateTime? DateOfBirth { get; }
         public List<UpdateUserRequestOccupation>? Occupations { get; }
         public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
@@ -44,7 +45,7 @@ public static class UpdateUser
             string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
-            Gender? gender,
+            string? gender,
             DateTime? dateOfBirth,
             List<UpdateUserRequestOccupation>? occupations,
             UpdateUserRequestWorkPreferences? workPreferences
@@ -75,7 +76,23 @@ public static class UpdateUser
     {
         public WorkPreferencesValidator()
         {
-            RuleForEach(wp => wp.PreferredMunicipalityEnum).IsInEnum();
+            RuleForEach(wp => wp.PreferredMunicipalityEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Municipality>(x, out _));
+
+            RuleForEach(wp => wp.PreferredRegionEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Region>(x, out _));
+
+            RuleFor(x => x.EmploymentTypeCode)
+                .Must(x => EnumUtilities.TryParseWithMemberName<EmploymentType>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.EmploymentTypeCode));
+
+            RuleFor(x => x.WorkingTimeEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x, out _))
+                .When(x => !string.IsNullOrEmpty(x.WorkingTimeEnum));
+
+            RuleFor(x => x.WorkingLanguageEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x, out _))
+                .When(x => !string.IsNullOrEmpty(x.WorkingLanguageEnum));
         }
     }
 
@@ -102,8 +119,12 @@ public static class UpdateUser
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
-            RuleFor(command => command.Gender).IsInEnum();
-            //RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
+            
+            RuleFor(command => command.Gender)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Gender>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.Gender));
+            
+            RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
         }
     }
     
@@ -409,7 +430,7 @@ public static class UpdateUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        Gender? Gender,
+        string? Gender,
         DateTime? DateOfBirth,
         List<UpdateUserResponseOccupation>? Occupations,
         UpdateUserResponseWorkPreferences? WorkPreferences
@@ -418,22 +439,22 @@ public static class UpdateUser
     [SwaggerSchema(Title = "UpdateUserRequestWorkPreferences")]
     public record UpdateUserRequestWorkPreferences
     (
-        List<Region>? PreferredRegionEnum,
-        List<Municipality>? PreferredMunicipalityEnum,
-        EmploymentType? EmploymentTypeCode,
-        WorkingTime? WorkingTimeEnum,
-        WorkingLanguage? WorkingLanguageEnum
+        List<string>? PreferredRegionEnum,
+        List<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum
     );
 
     [SwaggerSchema(Title = "UpdateUserResponseWorkPreferences")]
     public record UpdateUserResponseWorkPreferences
     (
         Guid? Id,
-        ICollection<Region>? PreferredRegionEnum,
-        ICollection<Municipality>? PreferredMunicipalityEnum,
-        EmploymentType? EmploymentTypeCode,
-        WorkingTime? WorkingTimeEnum,
-        WorkingLanguage? WorkingLanguageEnum,
+        ICollection<string>? PreferredRegionEnum,
+        ICollection<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified
     );

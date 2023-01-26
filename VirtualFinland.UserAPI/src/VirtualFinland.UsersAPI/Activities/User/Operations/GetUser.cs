@@ -5,8 +5,6 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
-using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -124,7 +122,7 @@ public static class GetUser
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        Gender? Gender,
+        string? Gender,
         DateTime? DateOfBirth,
         List<UserResponseOccupation>? Occupations,
         UserResponseWorkPreferences? WorkPreferences
@@ -134,11 +132,11 @@ public static class GetUser
     public record UserResponseWorkPreferences
     (
         Guid? Id,
-        List<Region>? PreferredRegionEnum,
-        List<Municipality>? PreferredMunicipalityEnum,
-        EmploymentType? EmploymentTypeCode,
-        WorkingTime? WorkingTimeEnum,
-        WorkingLanguage? WorkingLanguageEnum,
+        List<string>? PreferredRegionEnum,
+        List<string>? PreferredMunicipalityEnum,
+        string? EmploymentTypeCode,
+        string? WorkingTimeEnum,
+        string? WorkingLanguageEnum,
         DateTime? Created,
         DateTime? Modified
     );
