@@ -72,7 +72,7 @@ public class ProductizerController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
-        SaveOrUpdatePersonBasicInformation.Command command)
+        UpdatePersonBasicInformation.Command command)
     {
         await _authGwVerificationService.AuthGwVerification(Request);
         var userId = await _authGwVerificationService.GetCurrentUserId(Request);

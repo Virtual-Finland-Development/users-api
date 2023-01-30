@@ -31,7 +31,7 @@ public class PersonBasicInformation_UnitTests : APITestBase
         var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdatePersonBasicInformationCommandBuilder().Build();
         command.SetAuth(entities.user.Id);
-        var sut = new SaveOrUpdatePersonBasicInformation.Handler(_dbContext);
+        var sut = new UpdatePersonBasicInformation.Handler(_dbContext);
 
         var actual = await sut.Handle(command, CancellationToken.None);
 

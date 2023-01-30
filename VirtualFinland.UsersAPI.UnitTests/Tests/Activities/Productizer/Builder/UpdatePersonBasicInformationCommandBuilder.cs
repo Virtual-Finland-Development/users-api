@@ -10,9 +10,9 @@ public class UpdatePersonBasicInformationCommandBuilder
     private readonly string? _phoneNumber = "+35844123456789";
     private string? _residency = "FIN";
 
-    public SaveOrUpdatePersonBasicInformation.Command Build()
+    public UpdatePersonBasicInformation.Command Build()
     {
-        return new SaveOrUpdatePersonBasicInformation.Command(
+        return new UpdatePersonBasicInformation.Command(
             _givenName,
             _lastName,
             _email,

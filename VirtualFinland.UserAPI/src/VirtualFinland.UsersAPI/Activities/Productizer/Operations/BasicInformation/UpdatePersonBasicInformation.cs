@@ -6,7 +6,7 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
-public static class SaveOrUpdatePersonBasicInformation
+public static class UpdatePersonBasicInformation
 {
     public class Command : IRequest<UpdatePersonBasicInformationResponse>
     {
