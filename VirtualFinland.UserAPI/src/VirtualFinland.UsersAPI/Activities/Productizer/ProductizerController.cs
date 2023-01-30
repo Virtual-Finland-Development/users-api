@@ -8,6 +8,7 @@ using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
@@ -112,7 +113,7 @@ public class ProductizerController : ControllerBase
         {
             userId = await _authGwVerificationService.GetCurrentUserId(Request);
         }
-        catch (VerificationException)
+        catch (NotAuthorizedException)
         {
             Console.WriteLine("User didn't exist, try create new one");
             try
