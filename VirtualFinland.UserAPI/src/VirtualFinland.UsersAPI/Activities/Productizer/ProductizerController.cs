@@ -67,8 +67,8 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
-    [SwaggerOperation(Summary = "Get person job applicant profile",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+    [SwaggerOperation(Summary = "Update person basic information",
+        Description = "Updates dataproduct matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
@@ -98,8 +98,8 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
-    [SwaggerOperation(Summary = "Get person job applicant profile",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+    [SwaggerOperation(Summary = "Update person job applicant profile",
+        Description = "Updates dataproduct matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(
