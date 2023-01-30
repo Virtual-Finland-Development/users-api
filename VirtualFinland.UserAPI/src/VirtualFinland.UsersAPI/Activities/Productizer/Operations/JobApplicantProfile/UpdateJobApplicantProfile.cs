@@ -123,8 +123,7 @@ public static class UpdateJobApplicantProfile
             person.WorkPreferences.WorkingTimeCode = command.WorkPreferences.WorkingTime;
             person.WorkPreferences.WorkingLanguageEnum = command.WorkPreferences.WorkingLanguage;
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
-
-
+            
             await _context.SaveChangesAsync(cancellationToken);
 
             return new Response
@@ -158,7 +157,7 @@ public static class UpdateJobApplicantProfile
                     QualificationType = x.Type,
                     CertificationName = x.Name
                 }).ToList(),
-                Permits = person.Permits.FirstOrDefault()?.TypeCode ?? string.Empty,
+                Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
                 WorkPreferences = new Request.WorkPreferenceValues
                 {
                     PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode.ToList(),
@@ -188,7 +187,7 @@ public static class UpdateJobApplicantProfile
         public List<LanguageSkill> LanguageSkills { get; init; } = null!;
         public List<OtherSkill> OtherSkills { get; init; } = null!;
         public List<Certification> Certifications { get; init; } = null!;
-        public string Permits { get; init; } = null!;
+        public List<string> Permits { get; init; } = null!;
         public WorkPreferenceValues WorkPreferences { get; init; } = null!;
 
         public record Occupation

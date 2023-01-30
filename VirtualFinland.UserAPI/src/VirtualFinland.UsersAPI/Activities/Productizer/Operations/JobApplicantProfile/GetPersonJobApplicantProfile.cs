@@ -51,7 +51,7 @@ public static class GetPersonJobApplicantProfile
                         x.NaceCode,
                         x.WorkMonths ?? 0
                     )).ToList(),
-                
+
                 Educations = person.Educations.Select(x => new PersonJobApplicantProfileResponse.Education
                 {
                     EducationField = x.EducationFieldCode,
@@ -78,7 +78,7 @@ public static class GetPersonJobApplicantProfile
                         x.Type
                     )).ToList(),
 
-                permits = string.Join(",", person.Permits.Select(x => x.TypeCode).ToList()),
+                Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
                     person.WorkPreferences.PreferredMunicipalityCode.ToList(),
@@ -99,7 +99,7 @@ public record PersonJobApplicantProfileResponse
     public List<LanguageSkill> LanguageSkills { get; set; } = null!;
     public List<OtherSkill> OtherSkills { get; set; } = null!;
     public List<Certification> Certifications { get; set; } = null!;
-    public string permits { get; set; } = null!;
+    public List<string> Permits { get; set; } = null!;
     public WorkPreferences workPreferences { get; set; } = null!;
 
     public record Occupation(string? EscoIdentifier, string? EscoCode, string? NaceCode, int? WorkExperience);

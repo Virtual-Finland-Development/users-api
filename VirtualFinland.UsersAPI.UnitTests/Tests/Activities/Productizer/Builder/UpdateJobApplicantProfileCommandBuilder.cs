@@ -25,6 +25,17 @@ public class UpdateJobApplicantProfileCommandBuilder
             }
         };
 
+    private readonly List<UpdateJobApplicantProfile.Request.LanguageSkill>
+        _languageSkills = new()
+        {
+            new UpdateJobApplicantProfile.Request.LanguageSkill
+            {
+                EscoIdentifier = "http://data.europa.eu/esco/skill/6d3edede-8951-4621-a835-e04323300fa0",
+                LanguageCode = "en",
+                SkillLevel = "B2"
+            }
+        };
+
     private readonly List<UpdateJobApplicantProfile.Request.Occupation>
         _occupations = new()
         {
@@ -34,17 +45,6 @@ public class UpdateJobApplicantProfileCommandBuilder
                 EscoIdentifier = "http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97",
                 NaceCode = "62.01",
                 WorkExperience = 1
-            }
-        };
-
-    private readonly List<UpdateJobApplicantProfile.Request.LanguageSkill>
-        _languageSkills = new()
-        {
-            new UpdateJobApplicantProfile.Request.LanguageSkill
-            {
-                EscoIdentifier = "http://data.europa.eu/esco/skill/6d3edede-8951-4621-a835-e04323300fa0",
-                LanguageCode = "en",
-                SkillLevel = "B2"
             }
         };
 
@@ -63,15 +63,15 @@ public class UpdateJobApplicantProfileCommandBuilder
         "42"
     };
 
-    private readonly UpdateJobApplicantProfile.Request.WorkPreferenceValues
-        _workPreferences = new()
-        {
-            PreferredMunicipality = new List<string> { "091" },
-            PreferredRegion = new List<string> { "05" },
-            WorkingLanguage = "en",
-            WorkingTime = "03",
-            TypeOfEmployment = "permanent"
-        };
+    private UpdateJobApplicantProfile.Request.WorkPreferenceValues
+        _workPreferences = new UpdateJobApplicantProfileCommandWorkPreferencesBuilder().Build();
+
+    public UpdateJobApplicantProfileCommandBuilder WithWorkPreferences(
+        UpdateJobApplicantProfile.Request.WorkPreferenceValues value)
+    {
+        _workPreferences = value;
+        return this;
+    }
 
     public UpdateJobApplicantProfile.Command Build()
     {

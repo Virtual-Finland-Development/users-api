@@ -35,7 +35,25 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
         actual.LanguageSkills.Should().BeEquivalentTo(command.LanguageSkills);
         actual.OtherSkills.Should().BeEquivalentTo(command.OtherSkills);
         actual.Certifications.Should().BeEquivalentTo(command.Certifications);
-        //actual.Permits.Should().BeEquivalentTo(command.Permits);
+        actual.Permits.Should().BeEquivalentTo(command.Permits);
         actual.WorkPreferences.Should().BeEquivalentTo(command.WorkPreferences);
+    }
+
+    [Fact]
+    public async Task UpdateJobApplicantProfile_WithInvalidRegionCode_ThrowsError()
+    {
+        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var command = new UpdateJobApplicantProfileCommandBuilder()
+            .WithWorkPreferences(
+                new UpdateJobApplicantProfileCommandWorkPreferencesBuilder()
+                    .WithRegions(new List<string> { "05" })
+                    .Build()
+            ).Build();
+        command.SetAuth(entities.user.Id);
+        var sut = new UpdateJobApplicantProfile.Handler(_dbContext);
+
+        var act = () => sut.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
     }
 }
