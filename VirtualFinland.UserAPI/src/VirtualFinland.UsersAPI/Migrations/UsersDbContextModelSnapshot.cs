@@ -96,8 +96,8 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(1)
                         .HasColumnType("character varying(1)");
 
-                    b.Property<DateTime?>("GraduationDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateOnly?>("GraduationDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("InstitutionName")
                         .HasMaxLength(256)
@@ -150,11 +150,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("b819e6ce-9ab4-4e6c-9989-ecfa3adcaf02"),
-                            Created = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650),
-                            IdentityId = "de0441cf-be3b-48fd-a69f-2dd864df8f9b",
-                            Issuer = "40ad0f23-9914-46d8-86ac-b07f41a8005b",
-                            Modified = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650),
+                            Id = new Guid("a7b9ef7e-d75d-478d-a3ed-75f64a7e7b38"),
+                            Created = new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300),
+                            IdentityId = "118ff6e5-3644-4120-b4a0-3ebee2bfdc8b",
+                            Issuer = "fc108242-bd2f-4086-8e91-5b7e7b9a0d94",
+                            Modified = new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -295,10 +295,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560),
+                            Created = new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160),
                             GivenName = "WarmUpUserGivenName",
                             LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560)
+                            Modified = new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160)
                         });
                 });
 

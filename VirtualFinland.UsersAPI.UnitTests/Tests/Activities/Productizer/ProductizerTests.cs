@@ -7,6 +7,8 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
+using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
+using UpdateUserCommandBuilder = VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder.UpdateUserCommandBuilder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
 

@@ -1,8 +1,9 @@
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
+using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 
-namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
+namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder;
 
 public class UpdateUserCommandBuilder
 {

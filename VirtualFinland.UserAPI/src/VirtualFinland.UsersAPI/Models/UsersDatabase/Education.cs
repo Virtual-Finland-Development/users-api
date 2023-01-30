@@ -35,7 +35,7 @@ public class Education : Auditable, IEntity
     [MaxLength(4)]
     public string? EducationFieldCode { get; set; }
 
-    public DateTime? GraduationDate { get; set; }
+    public DateOnly? GraduationDate { get; set; }
 
     [MaxLength(256)]
     public string? InstitutionName { get; set; }

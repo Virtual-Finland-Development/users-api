@@ -91,7 +91,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     EducationLevelCode = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: true),
                     EducationFieldCode = table.Column<string>(type: "character varying(4)", maxLength: 4, nullable: true),
-                    GraduationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    GraduationDate = table.Column<DateOnly>(type: "date", nullable: true),
                     InstitutionName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -265,12 +265,12 @@ namespace VirtualFinland.UserAPI.Migrations
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
                 columns: new[] { "Id", "Created", "IdentityId", "Issuer", "Modified", "UserId" },
-                values: new object[] { new Guid("b819e6ce-9ab4-4e6c-9989-ecfa3adcaf02"), new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650), "de0441cf-be3b-48fd-a69f-2dd864df8f9b", "40ad0f23-9914-46d8-86ac-b07f41a8005b", new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9650), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
+                values: new object[] { new Guid("a7b9ef7e-d75d-478d-a3ed-75f64a7e7b38"), new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300), "118ff6e5-3644-4120-b4a0-3ebee2bfdc8b", "fc108242-bd2f-4086-8e91-5b7e7b9a0d94", new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
 
             migrationBuilder.InsertData(
                 table: "Persons",
                 columns: new[] { "Id", "Created", "Email", "GivenName", "LastName", "Modified", "PhoneNumber", "ResidencyCode" },
-                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 26, 14, 39, 39, 381, DateTimeKind.Utc).AddTicks(9560), null, null });
+                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160), null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certifications_PersonId",

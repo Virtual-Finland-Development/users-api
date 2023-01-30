@@ -1,6 +1,6 @@
 using VirtualFinland.UserAPI.Models.Shared;
 
-namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
+namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 
 internal class AddressBuilder
 {

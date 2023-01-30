@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
+using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 
