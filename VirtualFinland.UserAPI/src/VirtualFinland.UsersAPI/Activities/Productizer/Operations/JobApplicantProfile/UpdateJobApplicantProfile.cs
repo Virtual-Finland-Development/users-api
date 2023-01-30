@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -164,7 +165,11 @@ public static class UpdateJobApplicantProfile
                 WorkPreferences = new Request.WorkPreferenceValues
                 {
                     PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode.ToList(),
-                    PreferredRegion = person.WorkPreferences.PreferredRegionCode.ToList(),
+                    
+                    PreferredRegion = person.WorkPreferences.PreferredRegionCode
+                        .Select(RegionMapper.FromCodeSetToIso_3166_2)
+                        .ToList(),
+                    
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
                     WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum

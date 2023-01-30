@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
@@ -89,8 +90,8 @@ public static class GetPersonJobApplicantProfile
                 permits = string.Join(",", person.Permits?.Select(x => x.TypeCode).ToList()),
 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
-                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
-                    person.WorkPreferences?.PreferredRegionCode?.ToList(),
+                    person.WorkPreferences.PreferredMunicipalityCode.ToList(),
+                    person.WorkPreferences.PreferredRegionCode.Select(RegionMapper.FromCodeSetToIso_3166_2).ToList(),
                     person.WorkPreferences?.WorkingLanguageEnum,
                     person.WorkPreferences?.WorkingTimeCode,
                     person.WorkPreferences?.EmploymentTypeCode)
