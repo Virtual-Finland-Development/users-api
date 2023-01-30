@@ -11,19 +11,19 @@ public class PersonBuilder
     private readonly PersonAdditionalInformation _additionalInformation =
         new PersonAdditionalInformationBuilder().Build();
 
-    private readonly ICollection<Certification>? _certifications = new List<Certification>();
-    private readonly ICollection<Education>? _educations = new List<Education>();
+    private readonly ICollection<Certification> _certifications = new List<Certification>();
+    private readonly ICollection<Education> _educations = new List<Education>();
     private readonly string? _email = Faker.Person.Email;
     private readonly string _firstName = Faker.Person.FirstName;
-    private readonly ICollection<Language>? _languageSkills = new List<Language>();
+    private readonly ICollection<Language> _languageSkills = new List<Language>();
     private readonly string _lastName = Faker.Person.LastName;
-    private readonly ICollection<Permit>? _permits = new List<Permit>();
+    private readonly ICollection<Permit> _permits = new List<Permit>();
     private readonly string? _phoneNumber = Faker.Person.Phone;
     private readonly string? _residencyCode = "FR";
-    private readonly ICollection<Skills>? _skills = new List<Skills>();
+    private readonly ICollection<Skills> _skills = new List<Skills>();
     private Guid _id = Guid.Empty;
     private List<Occupation> _occupations = new() { new OccupationsBuilder().Build() };
-    private WorkPreferences? _workPreferences = new WorkPreferencesBuilder().Build();
+    private WorkPreferences _workPreferences = new WorkPreferencesBuilder().Build();
 
     public PersonBuilder WithId(Guid value)
     {

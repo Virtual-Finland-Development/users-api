@@ -107,13 +107,10 @@ public static class UpdateJobApplicantProfile
                 Type = x.QualificationType
             }).ToList();
 
-            // TODO: Set navigation property as required so that he object is always loaded and don't have purkka below
-
-            person.WorkPreferences ??= new WorkPreferences();
             foreach (var region in command.WorkPreferences.PreferredRegion)
             {
                 person.WorkPreferences.PreferredRegionCode = new List<string>();
-                person.WorkPreferences.PreferredRegionCode.Add(region);
+                person.WorkPreferences.PreferredRegionCode.Add(RegionMapper.FromIso_3166_2_ToCodeSet(region));
             }
 
             foreach (var municipality in command.WorkPreferences.PreferredMunicipality)
@@ -137,7 +134,7 @@ public static class UpdateJobApplicantProfile
                     EscoIdentifier = x.EscoUri,
                     EscoCode = x.EscoCode,
                     NaceCode = x.NaceCode,
-                    WorkExperience = (int)x.WorkMonths
+                    WorkExperience = x.WorkMonths
                 }).ToList(),
                 Educations = person.Educations.Select(x => new Request.Education
                 {
@@ -161,7 +158,7 @@ public static class UpdateJobApplicantProfile
                     QualificationType = x.Type,
                     CertificationName = x.Name
                 }).ToList(),
-                Permits = person.Permits.FirstOrDefault().TypeCode,
+                Permits = person.Permits.FirstOrDefault()?.TypeCode ?? string.Empty,
                 WorkPreferences = new Request.WorkPreferenceValues
                 {
                     PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode.ToList(),
@@ -186,26 +183,26 @@ public static class UpdateJobApplicantProfile
     [SwaggerSchema(Title = "UpdatePersonJobApplicantProfileRequest")]
     public record Request
     {
-        public List<Occupation> Occupations { get; set; } = null!;
-        public List<Education> Educations { get; set; } = null!;
-        public List<LanguageSkill> LanguageSkills { get; set; } = null!;
-        public List<OtherSkill> OtherSkills { get; set; } = null!;
-        public List<Certification> Certifications { get; set; } = null!;
-        public string Permits { get; set; } = null!;
-        public WorkPreferenceValues WorkPreferences { get; set; } = null!;
+        public List<Occupation> Occupations { get; init; } = null!;
+        public List<Education> Educations { get; init; } = null!;
+        public List<LanguageSkill> LanguageSkills { get; init; } = null!;
+        public List<OtherSkill> OtherSkills { get; init; } = null!;
+        public List<Certification> Certifications { get; init; } = null!;
+        public string Permits { get; init; } = null!;
+        public WorkPreferenceValues WorkPreferences { get; init; } = null!;
 
         public record Occupation
         {
             public string? EscoIdentifier { get; init; }
-            public string? EscoCode { get; set; }
-            public string? NaceCode { get; set; }
-            public int WorkExperience { get; set; }
+            public string? EscoCode { get; init; }
+            public string? NaceCode { get; init; }
+            public int? WorkExperience { get; init; }
         }
 
         public record Education
         {
-            public string? EducationLevel { get; set; }
-            public string? EducationField { get; set; }
+            public string? EducationLevel { get; init; }
+            public string? EducationField { get; init; }
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
@@ -213,30 +210,30 @@ public static class UpdateJobApplicantProfile
 
         public record LanguageSkill
         {
-            public string? EscoIdentifier { get; set; }
-            public string? LanguageCode { get; set; }
-            public string? SkillLevel { get; set; }
+            public string? EscoIdentifier { get; init; }
+            public string? LanguageCode { get; init; }
+            public string? SkillLevel { get; init; }
         }
 
         public record OtherSkill
         {
-            public string? EscoIdentifier { get; set; }
-            public string? SkillLevel { get; set; }
+            public string? EscoIdentifier { get; init; }
+            public string? SkillLevel { get; init; }
         }
 
         public record Certification
         {
-            public string? CertificationName { get; set; }
-            public string? QualificationType { get; set; }
+            public string? CertificationName { get; init; }
+            public string? QualificationType { get; init; }
         }
 
         public record WorkPreferenceValues
         {
-            public List<string> PreferredRegion { get; set; } = null!;
-            public List<string> PreferredMunicipality { get; set; } = null!;
-            public string? TypeOfEmployment { get; set; }
-            public string? WorkingTime { get; set; }
-            public string WorkingLanguage { get; set; } = null!;
+            public List<string> PreferredRegion { get; init; } = null!;
+            public List<string> PreferredMunicipality { get; init; } = null!;
+            public string? TypeOfEmployment { get; init; }
+            public string? WorkingTime { get; init; }
+            public string WorkingLanguage { get; init; } = null!;
         }
     }
 }

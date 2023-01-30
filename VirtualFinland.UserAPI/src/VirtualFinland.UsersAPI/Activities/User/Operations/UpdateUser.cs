@@ -87,11 +87,11 @@ public static class UpdateUser
                 .When(x => !string.IsNullOrEmpty(x.EmploymentTypeCode));
 
             RuleFor(x => x.WorkingTimeEnum)
-                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x, out _))
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x!, out _))
                 .When(x => !string.IsNullOrEmpty(x.WorkingTimeEnum));
 
             RuleFor(x => x.WorkingLanguageEnum)
-                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x, out _))
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x!, out _))
                 .When(x => !string.IsNullOrEmpty(x.WorkingLanguageEnum));
         }
     }

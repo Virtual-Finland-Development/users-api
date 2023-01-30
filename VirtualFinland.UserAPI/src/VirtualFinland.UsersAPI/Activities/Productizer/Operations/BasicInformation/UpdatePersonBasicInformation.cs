@@ -73,6 +73,6 @@ public static class UpdatePersonBasicInformation
         string? LastName,
         string Email,
         string? PhoneNumber,
-        string Residency
+        string? Residency
     );
 }

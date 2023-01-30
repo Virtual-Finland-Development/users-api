@@ -21,15 +21,15 @@ public class Person : Auditable, IEntity
     public string? ResidencyCode { get; set; }
 
     // Relationships
-    public PersonAdditionalInformation? AdditionalInformation { get; set; }
-    public WorkPreferences? WorkPreferences { get; set; }
+    public PersonAdditionalInformation AdditionalInformation { get; set; } = null!;
+    public WorkPreferences WorkPreferences { get; set; } = null!;
 
-    public ICollection<Occupation>? Occupations { get; set; }
-    public ICollection<Education>? Educations { get; set; }
-    public ICollection<Certification>? Certifications { get; set; }
-    public ICollection<Permit>? Permits { get; set; }
-    public ICollection<Skills>? Skills { get; set; }
-    public ICollection<Language>? LanguageSkills { get; set; }
+    public ICollection<Occupation> Occupations { get; set; } = null!;
+    public ICollection<Education> Educations { get; set; } = null!;
+    public ICollection<Certification> Certifications { get; set; } = null!;
+    public ICollection<Permit> Permits { get; set; } = null!;
+    public ICollection<Skills> Skills { get; set; } = null!;
+    public ICollection<Language> LanguageSkills { get; set; } = null!;
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }

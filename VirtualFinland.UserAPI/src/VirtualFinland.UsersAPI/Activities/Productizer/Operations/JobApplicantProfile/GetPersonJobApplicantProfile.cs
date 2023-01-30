@@ -44,50 +44,41 @@ public static class GetPersonJobApplicantProfile
 
             return new PersonJobApplicantProfileResponse
             {
-                Occupations = person.Occupations?.Select(x =>
+                Occupations = person.Occupations.Select(x =>
                     new PersonJobApplicantProfileResponse.Occupation(
                         x.EscoCode,
                         x.EscoUri,
                         x.NaceCode,
                         x.WorkMonths ?? 0
                     )).ToList(),
-
-                /*
-                Educations = person.Educations?.Select(x =>
-                    new PersonJobApplicantProfileResponse.Education(){}
-                        x.EducationFieldCode,
-                        x.EducationLevelCode,
-                        x.GraduationDate.ToString()
-                    )).ToList(),
-                */
-
-                Educations = person.Educations?.Select(x => new PersonJobApplicantProfileResponse.Education
+                
+                Educations = person.Educations.Select(x => new PersonJobApplicantProfileResponse.Education
                 {
                     EducationField = x.EducationFieldCode,
                     EducationLevel = x.EducationLevelCode,
                     GraduationDate = x.GraduationDate ?? DateOnly.MinValue
                 }).ToList(),
 
-                LanguageSkills = person.LanguageSkills?.Select(x =>
+                LanguageSkills = person.LanguageSkills.Select(x =>
                     new PersonJobApplicantProfileResponse.LanguageSkill(
                         x.EscoUri,
                         x.LanguageCode,
-                        x.CerfCode.ToString()
+                        x.CerfCode?.ToString()
                     )).ToList(),
 
-                OtherSkills = person.Skills?.Select(x =>
+                OtherSkills = person.Skills.Select(x =>
                     new PersonJobApplicantProfileResponse.OtherSkill(
                         x.EscoUri,
-                        x.SkillLevelEnum.ToString()
+                        x.SkillLevelEnum?.ToString()
                     )).ToList(),
 
-                Certifications = person.Certifications?.Select(x =>
+                Certifications = person.Certifications.Select(x =>
                     new PersonJobApplicantProfileResponse.Certification(
                         x.Name,
                         x.Type
                     )).ToList(),
 
-                permits = string.Join(",", person.Permits?.Select(x => x.TypeCode).ToList()),
+                permits = string.Join(",", person.Permits.Select(x => x.TypeCode).ToList()),
 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
                     person.WorkPreferences.PreferredMunicipalityCode.ToList(),
@@ -103,36 +94,36 @@ public static class GetPersonJobApplicantProfile
 [SwaggerSchema(Title = "PersonJobApplicantProfileResponse")]
 public record PersonJobApplicantProfileResponse
 {
-    public List<Occupation> Occupations { get; set; }
-    public List<Education> Educations { get; set; }
-    public List<LanguageSkill> LanguageSkills { get; set; }
-    public List<OtherSkill> OtherSkills { get; set; }
-    public List<Certification> Certifications { get; set; }
-    public string permits { get; set; }
-    public WorkPreferences workPreferences { get; set; }
+    public List<Occupation> Occupations { get; set; } = null!;
+    public List<Education> Educations { get; set; } = null!;
+    public List<LanguageSkill> LanguageSkills { get; set; } = null!;
+    public List<OtherSkill> OtherSkills { get; set; } = null!;
+    public List<Certification> Certifications { get; set; } = null!;
+    public string permits { get; set; } = null!;
+    public WorkPreferences workPreferences { get; set; } = null!;
 
-    public record Occupation(string EscoIdentifier, string EscoCode, string NaceCode, int WorkExperience);
+    public record Occupation(string? EscoIdentifier, string? EscoCode, string? NaceCode, int? WorkExperience);
 
     public record Education
     {
-        public string EducationLevel { get; set; }
-        public string EducationField { get; set; }
+        public string? EducationLevel { get; set; }
+        public string? EducationField { get; set; }
 
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateOnly? GraduationDate { get; set; }
     }
 
-    public record LanguageSkill(string EscoIdentifier, string LanguageCode, string SkillLevel);
+    public record LanguageSkill(string? EscoIdentifier, string? LanguageCode, string? SkillLevel);
 
-    public record OtherSkill(string EscoIdentifier, string SkillLevel);
+    public record OtherSkill(string? EscoIdentifier, string? SkillLevel);
 
-    public record Certification(string CertificationName, string QualificationType);
+    public record Certification(string? CertificationName, string? QualificationType);
 
     public record WorkPreferences(
         List<string> PreferredMunicipality,
         List<string> PreferredRegion,
-        string WorkingLanguage,
-        string WorkingTime,
-        string TypeOfEmployment
+        string? WorkingLanguage,
+        string? WorkingTime,
+        string? TypeOfEmployment
     );
 }

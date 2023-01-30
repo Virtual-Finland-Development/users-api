@@ -36,7 +36,7 @@ public static class GetPersonBasicInformation
             return new GetPersonBasicInformationResponse(
                 person.GivenName,
                 person.LastName,
-                person.Email, // TODO: Should we return empty string? If null this will throw error on testbed API
+                person.Email,
                 person.PhoneNumber,
                 person.ResidencyCode
             );
@@ -47,7 +47,7 @@ public static class GetPersonBasicInformation
     public record GetPersonBasicInformationResponse(
         string? GivenName,
         string? LastName,
-        string Email,
+        string? Email,
         string? PhoneNumber,
         string? Residency
     );

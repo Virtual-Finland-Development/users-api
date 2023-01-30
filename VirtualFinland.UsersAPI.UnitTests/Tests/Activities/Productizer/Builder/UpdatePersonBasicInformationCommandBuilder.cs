@@ -8,7 +8,7 @@ public class UpdatePersonBasicInformationCommandBuilder
     private readonly string? _givenName = "John";
     private readonly string? _lastName = "Doe";
     private readonly string? _phoneNumber = "+35844123456789";
-    private string? _residency = "FIN";
+    private string _residency = "FIN";
 
     public UpdatePersonBasicInformation.Command Build()
     {
