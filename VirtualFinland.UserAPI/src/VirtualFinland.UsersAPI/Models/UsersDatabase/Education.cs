@@ -39,8 +39,6 @@ public class Education : Auditable, IEntity
 
     [MaxLength(256)]
     public string? InstitutionName { get; set; }
-    
-    public ICollection<Skills>? Skills { get; set; }
 
     public Guid Id { get; set; }
 }

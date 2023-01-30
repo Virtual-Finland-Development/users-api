@@ -20,11 +20,5 @@ public class Skills : Auditable, IEntity
     [JsonIgnore]
     public Person Person { get; set; } = null!;
 
-    [JsonIgnore]
-    public Guid? EducationId { get; set; }
-
-    [JsonIgnore]
-    public Guid? OccupationId { get; set; }
-
     public Guid Id { get; set; }
 }

@@ -10,5 +10,8 @@ public class Certification : Auditable, IEntity
     [MaxLength(256)]
     public string? Type { get; set; }
     
+    [MaxLength(256)]
+    public string? InstitutionName { get; set; }
+    
     public Guid Id { get; set; }
 }

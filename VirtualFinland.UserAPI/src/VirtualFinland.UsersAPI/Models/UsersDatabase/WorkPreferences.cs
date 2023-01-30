@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -28,9 +29,12 @@ public class WorkPreferences : Auditable, IEntity
     [MaxLength(2)]
     public string? WorkingLanguageEnum { get; set; }
 
-    [Required]
-    public Guid PersonId { get; set; }
+    [JsonIgnore]
+    public Person Person { get; set; } = null!;
 
+    [Key]
+    [Required]
+    [ForeignKey(nameof(Person))]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 }

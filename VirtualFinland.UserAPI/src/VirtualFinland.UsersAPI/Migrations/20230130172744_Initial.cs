@@ -69,6 +69,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
                     Type = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    InstitutionName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -204,31 +205,6 @@ namespace VirtualFinland.UserAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WorkPreferences",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PreferredRegionCode = table.Column<string>(type: "text", nullable: true),
-                    PreferredMunicipalityCode = table.Column<string>(type: "text", nullable: true),
-                    EmploymentTypeCode = table.Column<string>(type: "text", nullable: true),
-                    WorkingTimeCode = table.Column<string>(type: "text", nullable: true),
-                    WorkingLanguageEnum = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: true),
-                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WorkPreferences", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WorkPreferences_Persons_PersonId",
-                        column: x => x.PersonId,
-                        principalTable: "Persons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Skills",
                 columns: table => new
                 {
@@ -236,24 +212,12 @@ namespace VirtualFinland.UserAPI.Migrations
                     EscoUri = table.Column<string>(type: "text", nullable: true),
                     SkillLevelEnum = table.Column<string>(type: "text", nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
-                    EducationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    OccupationId = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Skills", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Skills_Educations_EducationId",
-                        column: x => x.EducationId,
-                        principalTable: "Educations",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Skills_Occupations_OccupationId",
-                        column: x => x.OccupationId,
-                        principalTable: "Occupations",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Skills_Persons_PersonId",
                         column: x => x.PersonId,
@@ -262,15 +226,39 @@ namespace VirtualFinland.UserAPI.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "WorkPreferences",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PreferredRegionCode = table.Column<string>(type: "text", nullable: false),
+                    PreferredMunicipalityCode = table.Column<string>(type: "text", nullable: false),
+                    EmploymentTypeCode = table.Column<string>(type: "text", nullable: true),
+                    WorkingTimeCode = table.Column<string>(type: "text", nullable: true),
+                    WorkingLanguageEnum = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: true),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WorkPreferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WorkPreferences_Persons_Id",
+                        column: x => x.Id,
+                        principalTable: "Persons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
                 columns: new[] { "Id", "Created", "IdentityId", "Issuer", "Modified", "UserId" },
-                values: new object[] { new Guid("a7b9ef7e-d75d-478d-a3ed-75f64a7e7b38"), new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300), "118ff6e5-3644-4120-b4a0-3ebee2bfdc8b", "fc108242-bd2f-4086-8e91-5b7e7b9a0d94", new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(300), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
+                values: new object[] { new Guid("55829074-cc71-4b7d-942d-62e12ec2a2d2"), new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380), "3429e94e-e55e-4a5c-b5d5-62a11d5b0401", "9714f04a-1184-4ed7-a53d-ef12e5a7bcd8", new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
 
             migrationBuilder.InsertData(
                 table: "Persons",
                 columns: new[] { "Id", "Created", "Email", "GivenName", "LastName", "Modified", "PhoneNumber", "ResidencyCode" },
-                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 30, 7, 16, 1, 375, DateTimeKind.Utc).AddTicks(160), null, null });
+                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290), null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certifications_PersonId",
@@ -298,25 +286,9 @@ namespace VirtualFinland.UserAPI.Migrations
                 column: "PersonId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Skills_EducationId",
-                table: "Skills",
-                column: "EducationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Skills_OccupationId",
-                table: "Skills",
-                column: "OccupationId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Skills_PersonId",
                 table: "Skills",
                 column: "PersonId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WorkPreferences_PersonId",
-                table: "WorkPreferences",
-                column: "PersonId",
-                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -325,10 +297,16 @@ namespace VirtualFinland.UserAPI.Migrations
                 name: "Certifications");
 
             migrationBuilder.DropTable(
+                name: "Educations");
+
+            migrationBuilder.DropTable(
                 name: "ExternalIdentities");
 
             migrationBuilder.DropTable(
                 name: "Languages");
+
+            migrationBuilder.DropTable(
+                name: "Occupations");
 
             migrationBuilder.DropTable(
                 name: "Permits");
@@ -344,12 +322,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "WorkPreferences");
-
-            migrationBuilder.DropTable(
-                name: "Educations");
-
-            migrationBuilder.DropTable(
-                name: "Occupations");
 
             migrationBuilder.DropTable(
                 name: "Persons");

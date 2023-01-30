@@ -107,12 +107,13 @@ public static class UpdateJobApplicantProfile
                 Type = x.QualificationType
             }).ToList();
 
+            person.WorkPreferences ??= new WorkPreferences();
             foreach (var region in command.WorkPreferences.PreferredRegion)
             {
                 person.WorkPreferences.PreferredRegionCode = new List<string>();
                 person.WorkPreferences.PreferredRegionCode.Add(RegionMapper.FromIso_3166_2_ToCodeSet(region));
             }
-
+            
             foreach (var municipality in command.WorkPreferences.PreferredMunicipality)
             {
                 person.WorkPreferences.PreferredMunicipalityCode = new List<string>();

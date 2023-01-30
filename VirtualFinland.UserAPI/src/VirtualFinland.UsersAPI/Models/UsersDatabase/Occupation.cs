@@ -27,7 +27,6 @@ public class Occupation : Auditable, IEntity
 
     // Relationships
     public Guid PersonId { get; set; }
-    public ICollection<Skills>? Skills { get; set; }
 
     public Guid Id { get; set; }
 }

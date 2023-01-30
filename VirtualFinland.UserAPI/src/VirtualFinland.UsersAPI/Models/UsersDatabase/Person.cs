@@ -21,8 +21,8 @@ public class Person : Auditable, IEntity
     public string? ResidencyCode { get; set; }
 
     // Relationships
-    public PersonAdditionalInformation AdditionalInformation { get; set; } = null!;
-    public WorkPreferences WorkPreferences { get; set; } = null!;
+    public PersonAdditionalInformation? AdditionalInformation { get; set; } = null!;
+    public WorkPreferences? WorkPreferences { get; set; } = null!;
 
     public ICollection<Occupation> Occupations { get; set; } = null!;
     public ICollection<Education> Educations { get; set; } = null!;
