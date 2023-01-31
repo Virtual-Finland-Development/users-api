@@ -36,7 +36,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
         return Ok(await _mediator.Send(new GetUser.Query(await _authGwVerificationService.GetCurrentUserId(Request))));
     }
 
