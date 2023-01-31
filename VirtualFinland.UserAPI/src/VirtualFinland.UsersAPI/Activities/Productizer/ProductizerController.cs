@@ -14,7 +14,6 @@ using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
-[Authorize]
 [ApiController]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
@@ -107,31 +106,9 @@ public class ProductizerController : ControllerBase
         UpdateJobApplicantProfile.Command command)
     {
         await _authGwVerificationService.AuthGwVerification(Request, true);
+        var userId = await _authGwVerificationService.GetCurrentUserId(Request);
 
-        Guid? userId;
-        try
-        {
-            userId = await _authGwVerificationService.GetCurrentUserId(Request);
-        }
-        catch (NotAuthorizedException)
-        {
-            Console.WriteLine("User didn't exist, try create new one");
-            try
-            {
-                var claimsUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                                   User.FindFirst(Constants.Web.ClaimUserId)?.Value;
-                var issuer = User.Claims.First().Issuer;
-
-                var user = await _mediator.Send(new VerifyIdentityUser.Query(claimsUserId, issuer));
-
-                userId = user.Id;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
+        // TODO: If user doesn't exist we should create new one and use the new User ID
 
         command.SetAuth(userId);
 
