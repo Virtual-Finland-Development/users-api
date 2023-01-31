@@ -48,7 +48,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
         command.SetAuth(await _authGwVerificationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
@@ -60,7 +60,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
 
         var userId = await _authGwVerificationService.GetCurrentUserId(Request);
 
@@ -75,7 +75,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
         var userId = await _authGwVerificationService.GetCurrentUserId(Request);
 
         // TODO: If user doesn't exist we should create new one and use the new User ID
@@ -92,7 +92,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
         var userId = await _authGwVerificationService.GetCurrentUserId(Request);
 
         return Ok(await _mediator.Send(new GetPersonJobApplicantProfile.Query(userId)));
@@ -106,7 +106,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(
         UpdateJobApplicantProfile.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, false);
+        await _authGwVerificationService.AuthGwVerification(Request, true);
 
         Guid? userId;
         try
