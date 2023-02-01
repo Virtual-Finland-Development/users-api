@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Amazon.SecretsManager.Model.Internal.MarshallTransformations;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -12,16 +13,16 @@ namespace VirtualFinland.UserAPI.Migrations
         {
             // Empty database for this new "initial" migration
             migrationBuilder.Sql(@"DELETE FROM ""__EFMigrationsHistory""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Certifications""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Educations""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Languages""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Occupations""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Permits""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""SearchProfiles""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Skills""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""WorkPreferences""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""ExternalIdentities""");
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Users""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Certifications""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Educations""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Languages""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Occupations""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Permits""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""SearchProfiles""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Skills""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""WorkPreferences""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""ExternalIdentities""", true);
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Users""", true);
 
             migrationBuilder.CreateTable(
                 name: "ExternalIdentities",
