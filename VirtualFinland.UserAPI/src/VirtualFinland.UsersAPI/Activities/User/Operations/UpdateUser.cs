@@ -242,17 +242,11 @@ public static class UpdateUser
                 if (request.WorkPreferences is not null)
                 {
                     dbUser.WorkPreferences ??= new WorkPreferences();
-                    
-                    if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
-                        dbUser.WorkPreferences.PreferredMunicipalityCode = request.WorkPreferences.PreferredMunicipalityEnum;
-
-                    if (request.WorkPreferences.PreferredRegionEnum is not null)
-                        dbUser.WorkPreferences.PreferredRegionCode = request.WorkPreferences.PreferredRegionEnum;
-                    
-                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
-                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
-                    
-                    dbUser.WorkPreferences.WorkingTimeCode = request.WorkPreferences.WorkingTimeEnum;
+                    dbUser.WorkPreferences.PreferredMunicipalityCode = request.WorkPreferences.PreferredMunicipalityEnum ?? dbUser.WorkPreferences.PreferredMunicipalityCode;
+                    dbUser.WorkPreferences.PreferredRegionCode = request.WorkPreferences.PreferredRegionEnum ?? dbUser.WorkPreferences.PreferredRegionCode;
+                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageEnum;
+                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode ?? dbUser.WorkPreferences.EmploymentTypeCode;
+                    dbUser.WorkPreferences.WorkingTimeCode = request.WorkPreferences.WorkingTimeEnum ?? dbUser.WorkPreferences.WorkingTimeCode;
                 }
             }
 

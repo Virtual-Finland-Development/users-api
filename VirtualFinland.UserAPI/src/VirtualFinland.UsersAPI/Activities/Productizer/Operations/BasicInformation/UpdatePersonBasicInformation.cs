@@ -48,11 +48,11 @@ public static class UpdatePersonBasicInformation
         {
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
-            person.GivenName = request.GivenName;
-            person.LastName = request.LastName;
+            person.GivenName = request.GivenName ?? person.GivenName;
+            person.LastName = request.LastName ?? person.LastName;
             person.Email = request.Email;
-            person.PhoneNumber = request.PhoneNumber;
-            person.ResidencyCode = request.Residency; // TODO: This should probably just be string
+            person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
+            person.ResidencyCode = request.Residency ?? person.ResidencyCode;
 
             await _context.SaveChangesAsync(cancellationToken);
 
