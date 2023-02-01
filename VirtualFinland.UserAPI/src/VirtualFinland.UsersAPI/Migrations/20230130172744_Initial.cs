@@ -10,6 +10,19 @@ namespace VirtualFinland.UserAPI.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Empty database for this new "initial" migration
+            migrationBuilder.Sql(@"DELETE FROM ""__EFMigrationsHistory""", true);
+            migrationBuilder.DropTable(name: "Certifications");
+            migrationBuilder.DropTable(name: "Educations");
+            migrationBuilder.DropTable(name: "Languages");
+            migrationBuilder.DropTable(name: "Occupations");
+            migrationBuilder.DropTable(name: "Permits");
+            migrationBuilder.DropTable(name: "SearchProfiles");
+            migrationBuilder.DropTable(name: "Skills");
+            migrationBuilder.DropTable(name: "WorkPreferences");
+            migrationBuilder.DropTable(name: "ExternalIdentities");
+            migrationBuilder.DropTable(name: "Users");
+            
             migrationBuilder.CreateTable(
                 name: "ExternalIdentities",
                 columns: table => new
