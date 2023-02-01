@@ -12,17 +12,17 @@ namespace VirtualFinland.UserAPI.Migrations
         {
             // Empty database for this new "initial" migration
             migrationBuilder.Sql(@"DELETE FROM ""__EFMigrationsHistory""", true);
-            migrationBuilder.DropTable(name: "Certifications");
-            migrationBuilder.DropTable(name: "Educations");
-            migrationBuilder.DropTable(name: "Languages");
-            migrationBuilder.DropTable(name: "Occupations");
-            migrationBuilder.DropTable(name: "Permits");
-            migrationBuilder.DropTable(name: "SearchProfiles");
-            migrationBuilder.DropTable(name: "Skills");
-            migrationBuilder.DropTable(name: "WorkPreferences");
-            migrationBuilder.DropTable(name: "ExternalIdentities");
-            migrationBuilder.DropTable(name: "Users");
-            
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Certifications""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Educations""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Languages""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Occupations""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Permits""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""SearchProfiles""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Skills""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""WorkPreferences""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""ExternalIdentities""");
+            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Users""");
+
             migrationBuilder.CreateTable(
                 name: "ExternalIdentities",
                 columns: table => new
