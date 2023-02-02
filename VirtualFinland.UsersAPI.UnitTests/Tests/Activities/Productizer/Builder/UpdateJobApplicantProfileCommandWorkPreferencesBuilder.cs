@@ -6,7 +6,7 @@ internal class UpdateJobApplicantProfileCommandWorkPreferencesBuilder
 {
     private readonly string? _employmentTypeCode = "permanent";
     private readonly List<string> _municipalities = new() { "091" };
-    private readonly string? _workingLanguage = "en";
+    private readonly string _workingLanguage = "en";
     private readonly string? _workingTime = "03";
     private List<string> _regions = new() { "FI-06" };
 
