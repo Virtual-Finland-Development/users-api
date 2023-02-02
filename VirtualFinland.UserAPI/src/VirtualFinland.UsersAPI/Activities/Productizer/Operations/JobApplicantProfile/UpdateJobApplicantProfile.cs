@@ -113,7 +113,7 @@ public static class UpdateJobApplicantProfile
                 person.WorkPreferences.PreferredRegionCode = new List<string>();
                 person.WorkPreferences.PreferredRegionCode.Add(RegionMapper.FromIso_3166_2_ToCodeSet(region));
             }
-            
+
             foreach (var municipality in command.WorkPreferences.PreferredMunicipality)
             {
                 person.WorkPreferences.PreferredMunicipalityCode = new List<string>();
@@ -124,8 +124,16 @@ public static class UpdateJobApplicantProfile
             person.WorkPreferences.WorkingTimeCode = command.WorkPreferences.WorkingTime;
             person.WorkPreferences.WorkingLanguageEnum = command.WorkPreferences.WorkingLanguage;
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
-            
-            await _context.SaveChangesAsync(cancellationToken);
+
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException e)
+            {
+                throw new BadRequestException(e.InnerException?.Message ?? e.Message);
+            }
+
 
             return new Response
             {

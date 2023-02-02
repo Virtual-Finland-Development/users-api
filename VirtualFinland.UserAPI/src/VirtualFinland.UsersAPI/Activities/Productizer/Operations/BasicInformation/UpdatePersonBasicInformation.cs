@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
@@ -54,7 +55,15 @@ public static class UpdatePersonBasicInformation
             person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException e)
+            {
+                throw new BadRequestException(e.InnerException?.Message ?? e.Message);
+            }
+
 
             return new UpdatePersonBasicInformationResponse
             (
