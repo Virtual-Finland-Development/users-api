@@ -9,12 +9,12 @@ public class WorkPreferences : Auditable, IEntity
     /// <summary>
     ///     Region.cs values
     /// </summary>
-    public ICollection<string> PreferredRegionCode { get; set; } = null!;
+    public ICollection<string>? PreferredRegionCode { get; set; }
 
     /// <summary>
     ///     Municipality.cs values
     /// </summary>
-    public ICollection<string> PreferredMunicipalityCode { get; set; } = null!;
+    public ICollection<string>? PreferredMunicipalityCode { get; set; }
 
     public string? EmploymentTypeCode { get; set; }
 
