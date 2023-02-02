@@ -12,8 +12,8 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     public async Task GetJobApplicantProfile_WithExistingUser_ReturnsData()
     {
         var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var query = new GetPersonJobApplicantProfile.Query(entities.user.Id);
-        var sut = new GetPersonJobApplicantProfile.Handler(_dbContext);
+        var query = new GetJobApplicantProfile.Query(entities.user.Id);
+        var sut = new GetJobApplicantProfile.Handler(_dbContext);
 
         var actual = await sut.Handle(query, CancellationToken.None);
 

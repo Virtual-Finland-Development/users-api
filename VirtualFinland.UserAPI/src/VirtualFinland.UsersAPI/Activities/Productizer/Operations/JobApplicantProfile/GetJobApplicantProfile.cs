@@ -8,7 +8,7 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
-public static class GetPersonJobApplicantProfile
+public static class GetJobApplicantProfile
 {
     public class Query : IRequest<PersonJobApplicantProfileResponse>
     {

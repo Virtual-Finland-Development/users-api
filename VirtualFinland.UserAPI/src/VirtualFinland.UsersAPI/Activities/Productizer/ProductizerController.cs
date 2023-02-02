@@ -94,7 +94,7 @@ public class ProductizerController : ControllerBase
         await _authGwVerificationService.AuthGwVerification(Request, true);
         var userId = await _authGwVerificationService.GetCurrentUserId(Request);
 
-        return Ok(await _mediator.Send(new GetPersonJobApplicantProfile.Query(userId)));
+        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
