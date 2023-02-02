@@ -81,8 +81,8 @@ public static class GetPersonJobApplicantProfile
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
                 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
-                    person.WorkPreferences?.PreferredMunicipalityCode.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.PreferredRegionCode.Select(RegionMapper.FromCodeSetToIso_3166_2).ToList() ?? new List<string>(),
+                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
+                    person.WorkPreferences?.PreferredRegionCode?.Select(RegionMapper.FromCodeSetToIso_3166_2).ToList() ?? new List<string>(),
                     person.WorkPreferences?.WorkingLanguageEnum,
                     person.WorkPreferences?.WorkingTimeCode,
                     person.WorkPreferences?.EmploymentTypeCode)

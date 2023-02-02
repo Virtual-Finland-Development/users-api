@@ -161,11 +161,11 @@ public static class UpdateJobApplicantProfile
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
                 WorkPreferences = new Request.WorkPreferenceValues
                 {
-                    PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode.ToList(),
+                    PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     
-                    PreferredRegion = person.WorkPreferences.PreferredRegionCode
+                    PreferredRegion = person.WorkPreferences.PreferredRegionCode?
                         .Select(RegionMapper.FromCodeSetToIso_3166_2)
-                        .ToList(),
+                        .ToList() ?? new List<string>(),
                     
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
