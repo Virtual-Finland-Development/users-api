@@ -119,7 +119,7 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}",  e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",  e.Message);
             try
             {
                 var claimsUserId =
