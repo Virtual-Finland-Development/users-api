@@ -1,4 +1,3 @@
-using System.Security;
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,18 +14,26 @@ using VirtualFinland.UserAPI.Helpers.Services;
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
+[Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
 {
+    private readonly AuthenticationService _authenticationService;
     private readonly AuthGwVerificationService _authGwVerificationService;
     private readonly IMediator _mediator;
 
-    public ProductizerController(IMediator mediator, AuthGwVerificationService authGwVerificationService)
+    public ProductizerController(
+        IMediator mediator,
+        AuthGwVerificationService authGwVerificationService, AuthenticationService authenticationService)
     {
         _mediator = mediator;
         _authGwVerificationService = authGwVerificationService;
+        _authenticationService = authenticationService;
     }
+
+    
+
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)",
@@ -36,8 +43,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-        return Ok(await _mediator.Send(new GetUser.Query(await _authGwVerificationService.GetCurrentUserId(Request))));
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -47,8 +54,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-        command.SetAuth(await _authGwVerificationService.GetCurrentUserId(Request));
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
 
@@ -59,11 +66,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-
-        var userId = await _authGwVerificationService.GetCurrentUserId(Request);
-
-        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(await GetUserIdOrCreateNewUserWithId())));
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
@@ -74,13 +78,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-        var userId = await _authGwVerificationService.GetCurrentUserId(Request);
-
-        // TODO: If user doesn't exist we should create new one and use the new User ID
-
-        command.SetAuth(userId);
-
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
 
@@ -91,27 +90,49 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-        var userId = await _authGwVerificationService.GetCurrentUserId(Request);
-
-        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(await GetUserIdOrCreateNewUserWithId())));
     }
-
+    
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
         Description = "Updates dataproduct matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(
-        UpdateJobApplicantProfile.Command command)
+    public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        await _authGwVerificationService.AuthGwVerification(Request, true);
-        var userId = await _authGwVerificationService.GetCurrentUserId(Request);
-
-        // TODO: If user doesn't exist we should create new one and use the new User ID
-
-        command.SetAuth(userId);
-
+        await _authGwVerificationService.VerifyTokens(Request, true);
+        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
+    }
+
+    private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
+    {
+        Guid? userId;
+        try
+        {
+            userId = await _authenticationService.GetCurrentUserId(Request);
+        }
+        catch (NotAuthorizedException e)
+        {
+            Console.WriteLine(e.Message);
+            try
+            {
+                var claimsUserId =
+                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                    User.FindFirst(Constants.Web.ClaimUserId)?.Value;
+                var claimsIssuer = User.Claims.First().Issuer;
+                var query = new VerifyIdentityUser.Query(claimsUserId, claimsIssuer);
+                var createdUser = await _mediator.Send(query);
+                userId = createdUser.Id;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception.Message);
+                throw;
+            }
+        }
+
+        return userId;
     }
 }

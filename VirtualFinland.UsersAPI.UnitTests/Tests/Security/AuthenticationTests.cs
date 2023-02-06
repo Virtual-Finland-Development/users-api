@@ -1,6 +1,3 @@
-using System.Net;
-using System.Security.Claims;
-using System.Security.Principal;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -43,7 +40,6 @@ public class AuthenticationTests : APITestBase
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<AuthGwVerificationService>>();
-        var mockUserSecurityLogger = new Mock<ILogger<UserSecurityService>>();
         var mockConfiguration = new Mock<IConfiguration>();
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHttpClientFactory = new Mock<IHttpClientFactory>();
@@ -53,17 +49,16 @@ public class AuthenticationTests : APITestBase
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage {});
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var userSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object);
 
         mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:AuthorizeURL")]).Returns("https://someurl.com");
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object, userSecurityService);
+        var authGwVerificationService = new AuthGwVerificationService(mockLogger.Object, mockConfiguration.Object, mockHttpClientFactory.Object);
 
         // Act
-        var act = () => authGwVerificationService.AuthGwVerification(mockHttpRequest.Object);
+        var act = () => authGwVerificationService.VerifyTokens(mockHttpRequest.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();

@@ -29,7 +29,13 @@ public class IdentityController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> VerifyIdentityUser()
     {
-        var user = await _mediator.Send(new VerifyIdentityUser.Query(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? this.User.FindFirst(Constants.Web.ClaimUserId)?.Value, this.User.Claims.First().Issuer));
+        var user = await _mediator.Send(
+            new VerifyIdentityUser.Query(
+                this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? 
+                this.User.FindFirst(Constants.Web.ClaimUserId)?.Value, 
+                this.User.Claims.First().Issuer
+            )
+        );
 
         return Ok(user);
     }

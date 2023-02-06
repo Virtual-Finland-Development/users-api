@@ -17,9 +17,7 @@ public class IdentityTests : APITestBase
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var query = new VerifyIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
-        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
+        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -35,9 +33,7 @@ public class IdentityTests : APITestBase
         var faker = new Faker("en");
         var query = new VerifyIdentityUser.Query(faker.Random.Guid().ToString(), faker.Random.String(10));
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:Issuer")]).Returns("IssuerIdentity");
-        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object, mockConfiguration.Object);
+        var handler = new VerifyIdentityUser.Handler(_dbContext, mockLogger.Object);
         
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
