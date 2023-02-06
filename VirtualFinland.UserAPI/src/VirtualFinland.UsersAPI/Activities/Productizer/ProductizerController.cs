@@ -22,14 +22,18 @@ public class ProductizerController : ControllerBase
     private readonly AuthenticationService _authenticationService;
     private readonly AuthGwVerificationService _authGwVerificationService;
     private readonly IMediator _mediator;
+    private readonly ILogger<ProductizerController> _logger;
 
     public ProductizerController(
         IMediator mediator,
-        AuthGwVerificationService authGwVerificationService, AuthenticationService authenticationService)
+        AuthGwVerificationService authGwVerificationService, 
+        AuthenticationService authenticationService, 
+        ILogger<ProductizerController> logger)
     {
         _mediator = mediator;
         _authGwVerificationService = authGwVerificationService;
         _authenticationService = authenticationService;
+        _logger = logger;
     }
 
     
@@ -115,7 +119,7 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}",  e.Message);
             try
             {
                 var claimsUserId =
@@ -125,10 +129,11 @@ public class ProductizerController : ControllerBase
                 var query = new VerifyIdentityUser.Query(claimsUserId, claimsIssuer);
                 var createdUser = await _mediator.Send(query);
                 userId = createdUser.Id;
+                _logger.LogInformation("New user was created with Id: {UserId}", userId);
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception.Message);
+                _logger.LogError("Could not create new user. Error message: {Error}", exception.Message);
                 throw;
             }
         }
