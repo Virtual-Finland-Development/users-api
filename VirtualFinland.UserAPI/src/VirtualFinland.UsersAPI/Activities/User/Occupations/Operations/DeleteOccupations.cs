@@ -39,7 +39,7 @@ public static class DeleteOccupations
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupations = _usersDbContext.Occupations
-                .Where(o => o.UserId == request.UserId)
+                .Where(o => o.PersonId == request.UserId)
                 .ToList();
 
             var occupationsToRemove = request.Ids switch

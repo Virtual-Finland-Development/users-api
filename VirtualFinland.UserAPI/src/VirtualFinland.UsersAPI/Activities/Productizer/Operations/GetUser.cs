@@ -45,13 +45,14 @@ public static class GetUser
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
 
-            var dbUser = await _usersDbContext.Users
-                .Include(u => u.Occupations)
-                .Include(u => u.WorkPreferences)
-                .SingleAsync(o => o.Id == request.UserId, cancellationToken);
+            var dbUser = await _usersDbContext.Persons
+                .Include(p => p.Occupations)
+                .Include(p => p.WorkPreferences)
+                .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
+                .SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
-            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
+            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
 
             List<UserResponseOccupation>? occupations = null;
@@ -71,10 +72,10 @@ public static class GetUser
             if (dbUser.WorkPreferences is not null)
             {
                 workPreferences = new UserResponseWorkPreferences(
-                    dbUser.WorkPreferences?.PreferredRegionEnum,
-                    dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                    dbUser.WorkPreferences?.PreferredRegionCode?.ToList(),
+                    dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
-                    dbUser.WorkPreferences?.WorkingTimeEnum,
+                    dbUser.WorkPreferences?.WorkingTimeCode,
                     dbUser.WorkPreferences?.WorkingLanguageEnum,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
@@ -84,24 +85,24 @@ public static class GetUser
             return new User
             {
                 Id = dbUser.Id,
-                FirstName = dbUser.FirstName,
+                FirstName = dbUser.GivenName,
                 LastName = dbUser.LastName,
                 Address = new Address(
-                        dbUser.StreetAddress,
-                        dbUser.ZipCode,
-                        dbUser.City,
-                        dbUser.Country
+                        dbUser.AdditionalInformation?.Address?.StreetAddress,
+                        dbUser.AdditionalInformation?.Address?.ZipCode,
+                        dbUser.AdditionalInformation?.Address?.City,
+                        dbUser.AdditionalInformation?.Address?.Country
                     ),
                 JobTitles = dbUserDefaultSearchProfile?.JobTitles ?? new List<string>(),
                 Regions = dbUserDefaultSearchProfile?.Regions ?? new List<string>(),
                 Created = dbUser.Created,
                 Modified = dbUser.Modified,
-                CountryOfBirthCode = dbUser.CountryOfBirthCode,
-                NativeLanguageCode = dbUser.NativeLanguageCode,
-                OccupationCode = dbUser.OccupationCode,
-                CitizenshipCode = dbUser.CitizenshipCode,
-                Gender = dbUser.Gender,
-                DateOfBirth = dbUser.DateOfBirth,
+                CountryOfBirthCode = dbUser.AdditionalInformation?.CountryOfBirthCode,
+                NativeLanguageCode = dbUser.AdditionalInformation?.NativeLanguageCode,
+                OccupationCode = dbUser.AdditionalInformation?.OccupationCode,
+                CitizenshipCode = dbUser.AdditionalInformation?.CitizenshipCode,
+                Gender = dbUser.AdditionalInformation?.Gender,
+                DateOfBirth = dbUser.AdditionalInformation?.DateOfBirth,
                 Occupations = occupations,
                 WorkPreferences = workPreferences
             };
@@ -123,13 +124,15 @@ public static class GetUser
         public string? NativeLanguageCode { get; init; }
         public string? OccupationCode { get; init; }
         public string? CitizenshipCode { get; init; }
-        public Gender? Gender { get; init; }
+        public string? Gender { get; init; }
+
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateOnly? DateOfBirth { get; init; }
+
         public List<UserResponseOccupation>? Occupations { get; init; }
         public UserResponseWorkPreferences? WorkPreferences { get; init; }
     }
-    
+
     [SwaggerSchema(Title = "UserResponseWorkPreferences")]
     public record UserResponseWorkPreferences
     (

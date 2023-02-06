@@ -18,23 +18,17 @@ public class UsersDbContext : DbContext
         _isTesting = isTesting;
     }
 
-    public static Guid WarmUpUserId => Guid.Parse("5a8af4b4-8cb4-44ac-8291-010614601719");
-
-    public DbSet<User> Users => Set<User>();
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
     public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
-
-    public DbSet<Certification> Certifications { get; set; } = null!;
-    public DbSet<Education> Educations { get; set; } = null!;
-    public DbSet<Language> Languages { get; set; } = null!;
-    public DbSet<Occupation> Occupations { get; set; } = null!;
-
-    public DbSet<Permit> Permits { get; set; } = null!;
-
-    // Leave this out for now as it makes things difficult if both Person and User wants to link to WorkPreferences
-    //public DbSet<Person> Persons { get; set; }
-    public DbSet<Skills> Skills { get; set; } = null!;
-    public DbSet<WorkPreferences> WorkPreferences { get; set; } = null!;
+    public DbSet<Certification> Certifications => Set<Certification>();
+    public DbSet<Education> Educations => Set<Education>();
+    public DbSet<Language> Languages => Set<Language>();
+    public DbSet<Occupation> Occupations => Set<Occupation>();
+    public DbSet<Permit> Permits => Set<Permit>();
+    public DbSet<Person> Persons => Set<Person>();
+    public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
+    public DbSet<Skills> Skills => Set<Skills>();
+    public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -45,32 +39,12 @@ public class UsersDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new AddressConfiguration());
+        modelBuilder.ApplyConfiguration(new PersonAdditionalInformationConfiguration());
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
 
-        if (_isTesting)
-        {
-            modelBuilder.Entity<SearchProfile>()
-                .Property(e => e.JobTitles)
-                .HasConversion(
-                    v => string.Join(',', v!),
-                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
+        if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
 
-            modelBuilder.Entity<SearchProfile>()
-                .Property(e => e.Regions)
-                .HasConversion(
-                    v => string.Join(',', v!),
-                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
-        }
-
-        modelBuilder.Entity<ExternalIdentity>().HasData(new ExternalIdentity
-        {
-            Id = Guid.NewGuid(),
-            Created = DateTime.UtcNow,
-            Modified = DateTime.UtcNow,
-            UserId = WarmUpUserId,
-            IdentityId = Guid.NewGuid().ToString(),
-            Issuer = Guid.NewGuid().ToString()
-        });
+        modelBuilder.Seed();
     }
 }

@@ -851,6 +851,150 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "{{host}}/productizer/draft/Person/BasicInformation",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Authorization-Context",
+						"value": "",
+						"type": "default"
+					},
+					{
+						"key": "X-Consent-Token",
+						"value": "",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/productizer/draft/Person/BasicInformation",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"draft",
+						"Person",
+						"BasicInformation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/productizer/draft/Person/JobApplicantProfile",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Authorization-Context",
+						"value": "",
+						"type": "default"
+					},
+					{
+						"key": "X-Consent-Token",
+						"value": "",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/productizer/draft/Person/JobApplicantProfile",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"draft",
+						"Person",
+						"JobApplicantProfile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/productizer/draft/Person/BasicInformation/Write",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Authorization-Context",
+						"value": "",
+						"type": "default"
+					},
+					{
+						"key": "X-Consent-Token",
+						"value": "",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"givenName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe.example@example.com\",\n    \"phoneNumber\": \"1121234567\",\n    \"residency\": \"fin\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/productizer/draft/Person/BasicInformation/Write",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"draft",
+						"Person",
+						"BasicInformation",
+						"Write"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/productizer/draft/Person/JobApplicantProfile/Write",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Authorization-Context",
+						"value": "",
+						"type": "default"
+					},
+					{
+						"key": "X-Consent-Token",
+						"value": "",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"occupations\": [\n        {\n            \"escoIdentifier\": \"http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97\",\n            \"escoCode\": \"2654.1.7\",\n            \"naceCode\": \"62.01\",\n            \"workExperience\": 5\n        }\n    ],\n    \"educations\": [\n        {\n            \"educationLevel\": \"7\",\n            \"educationField\": \"0731\",\n            \"graduationDate\": \"2022-01-31\"\n        }\n    ],\n    \"languageSkills\": [\n        {\n            \"escoIdentifier\": \"http://data.europa.eu/esco/skill/6d3edede-8951-4621-a835-e04323300fa0\",\n            \"languageCode\": \"en\",\n            \"skillLevel\": \"B2\"\n        }\n    ],\n    \"otherSkills\": [\n        {\n            \"escoIdentifier\": \"http://data.europa.eu/esco/skill/869fc2ce-478f-4420-8766-e1f02cec4fb2\",\n            \"skillLevel\": \"beginner\"\n        }\n    ],\n    \"certifications\": [\n        {\n            \"certificationName\": \"Hygiene passport\",\n            \"qualificationType\": \"Institutional\"\n        }\n    ],\n    \"permits\": [\"042\", \"322\"],\n    \"workPreferences\": {\n        \"preferredRegion\": [\"FI-18\"],\n        \"preferredMunicipality\": [\"091\"],\n        \"typeOfEmployment\": \"permanent\",\n        \"workingTime\": \"03\",\n        \"workingLanguage\": \"en\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/productizer/draft/Person/JobApplicantProfile/Write",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"productizer",
+						"draft",
+						"Person",
+						"JobApplicantProfile",
+						"Write"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {

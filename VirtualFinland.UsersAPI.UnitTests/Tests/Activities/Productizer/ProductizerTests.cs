@@ -1,15 +1,14 @@
-using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using FluentAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
+using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Data.Repositories;
-using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
-using UpdateUser = VirtualFinland.UserAPI.Activities.Productizer.Operations.UpdateUser;
+using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
+using UpdateUserCommandBuilder = VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder.UpdateUserCommandBuilder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
 
@@ -32,15 +31,15 @@ public class ProductizerTests : APITestBase
             .Match<GetUser.User>(o =>
                 o.DateOfBirth != null &&
                 o.Id == dbEntities.user.Id &&
-                o.Address!.StreetAddress == dbEntities.user.StreetAddress &&
-                o.FirstName == dbEntities.user.FirstName &&
+                o.Address!.StreetAddress == dbEntities.user.AdditionalInformation!.Address!.StreetAddress &&
+                o.FirstName == dbEntities.user.GivenName &&
                 o.LastName == dbEntities.user.LastName &&
-                o.CitizenshipCode == dbEntities.user.CitizenshipCode &&
-                o.OccupationCode == dbEntities.user.OccupationCode &&
-                o.NativeLanguageCode == dbEntities.user.CitizenshipCode &&
-                o.CountryOfBirthCode == dbEntities.user.CountryOfBirthCode &&
-                o.Gender == dbEntities.user.Gender &&
-                o.DateOfBirth == dbEntities.user.DateOfBirth);
+                o.CitizenshipCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
+                o.OccupationCode == dbEntities.user.AdditionalInformation.OccupationCode &&
+                o.NativeLanguageCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
+                o.CountryOfBirthCode == dbEntities.user.AdditionalInformation.CountryOfBirthCode &&
+                o.Gender == dbEntities.user.AdditionalInformation.Gender &&
+                o.DateOfBirth == dbEntities.user.AdditionalInformation.DateOfBirth);
         
     }
     
@@ -84,15 +83,13 @@ public class ProductizerTests : APITestBase
             .WithFirstName(new string('*', 256))
             .WithLastName(new string('*', 256))
             .WithAddress(new AddressBuilder().WithStreetAddress(new string('*', 256)).Build())
-            .WithJobsDataConsent(null)
-            .WithImmigrationDataConsent(null)
             .WithCountryOfBirthCode("12345678910")
             .WithNativeLanguageCode("12345678910")
             .WithOccupationCode("12345678910")
             .WithCitizenshipCode("12345678910")
             .WithJobTitles(null)
             .WithRegions(null)
-            .WithGender((Gender)3)
+            .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
         command.SetAuth(dbEntities.user.Id);

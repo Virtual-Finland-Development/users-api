@@ -1,6 +1,7 @@
 using Bogus;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using Person = VirtualFinland.UserAPI.Models.UsersDatabase.Person;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -11,10 +12,10 @@ public class APIUserFactory
     /// </summary>
     /// <param name="dbContext"></param>
     /// <returns></returns>
-    public static async Task<(User user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
+    public static async Task<(Person user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
         UsersDbContext dbContext)
     {
-        var dbUser = dbContext.Users.Add(new UserBuilder().Build());
+        var dbUser = dbContext.Persons.Add(new PersonBuilder().Build());
 
         var faker = new Faker();
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
@@ -37,10 +38,10 @@ public class APIUserFactory
     /// <param name="dbContext"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public static async Task<(User user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
+    public static async Task<(Person user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
         UsersDbContext dbContext, Guid userId)
     {
-        var dbUser = dbContext.Users.Add(new UserBuilder().WithId(userId).Build());
+        var dbUser = dbContext.Persons.Add(new PersonBuilder().WithId(userId).Build());
 
         var faker = new Faker();
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity

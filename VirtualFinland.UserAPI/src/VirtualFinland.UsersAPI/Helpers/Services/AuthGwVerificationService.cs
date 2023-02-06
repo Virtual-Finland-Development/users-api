@@ -20,18 +20,13 @@ public class AuthGwVerificationService
 
     public async Task<Guid?> GetCurrentUserId(HttpRequest httpRequest)
     {
-        Guid? currentUserId = null;
-        if (currentUserId == null)
-        {
-            var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
+        var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
 
-            if (!String.IsNullOrEmpty(token))
-            {
-                var dbUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
-                currentUserId = dbUser?.Id;
-            }
-        }
-        return currentUserId;
+        if (string.IsNullOrEmpty(token)) return null;
+
+        var dbUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
+
+        return dbUser.Id;
     }
 
     /// <summary>
@@ -63,12 +58,12 @@ public class AuthGwVerificationService
         }
         catch (HttpRequestException e)
         {
-            _logger.LogWarning("AuthGW could verify token.");
+            _logger.LogWarning("AuthGW could verify token");
             throw new NotAuthorizedException(e.Message);
         }
         catch (ArgumentException e)
         {
-            _logger.LogWarning("AuthGW could verify token.");
+            _logger.LogWarning("AuthGW could verify token");
             throw new NotAuthorizedException(e.Message);
         }
     }

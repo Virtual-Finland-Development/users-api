@@ -1,12 +1,12 @@
-// ReSharper disable ClassNeverInstantiated.Global
-
 using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class Language : Auditable, IEntity
 {
-    // ReSharper disable once MemberCanBePrivate.Global
+    /// <summary>
+    ///     http://uri.suomi.fi/codelist/dataecon/cerf
+    /// </summary>
     public enum SkillLevel
     {
         A1,
@@ -23,7 +23,7 @@ public class Language : Auditable, IEntity
     [MaxLength(3)]
     public string? LanguageCode { get; set; }
 
-    public SkillLevel? SkillLevelEnum { get; set; }
+    public string? CerfCode { get; set; }
 
     public Guid Id { get; set; }
 }

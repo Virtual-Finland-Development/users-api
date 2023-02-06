@@ -1,24 +1,22 @@
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Models.Shared;
 
-namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
+namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 
 public class UpdateUserCommandBuilder
 {
-    private string _firstName = "FirstName";
-    private string _lastName = "LastName";
     private Address? _address = new AddressBuilder().Build();
-    private bool? _jobsDataConsent = true;
-    private bool? _immigrationDataConsent = true;
+    private string _citizenshipCode = "fi";
     private string _countryOfBirthCode = "fi";
+    private DateTime? _dateOfBirth = new(2022, 01, 01);
+    private string _firstName = "FirstName";
+    private string _gender = "Male";
+    private List<string>? _jobTitles = new() { "programmer" };
+    private string _lastName = "LastName";
     private string _nativeLanguageCode = "fin";
     private string _occupationCode = "01";
-    private string _citizenshipCode = "fi";
-    private List<string>? _jobTitles = new() { "programmer" };
+    private List<UpdateUser.UpdateUserRequestOccupation>? _occupations = new();
     private List<string>? _regions = new() { "Southern-Finland" };
-    private Gender _gender = Gender.Male;
-    private DateTime? _dateOfBirth = new(2022, 01,01);
-    private List<UpdateUser.UpdateUserRequestOccupation>? _occupations = new ();
     private UpdateUser.UpdateUserRequestWorkPreferences? _workPreferences;
 
     public UpdateUserCommandBuilder WithFirstName(string value)
@@ -36,18 +34,6 @@ public class UpdateUserCommandBuilder
     public UpdateUserCommandBuilder WithAddress(Address value)
     {
         _address = value;
-        return this;
-    }
-
-    public UpdateUserCommandBuilder WithJobsDataConsent(bool? value)
-    {
-        _jobsDataConsent = value;
-        return this;
-    }
-
-    public UpdateUserCommandBuilder WithImmigrationDataConsent(bool? value)
-    {
-        _immigrationDataConsent = value;
         return this;
     }
 
@@ -87,7 +73,7 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
-    public UpdateUserCommandBuilder WithGender(Gender value)
+    public UpdateUserCommandBuilder WithGender(string value)
     {
         _gender = value;
         return this;
@@ -117,8 +103,6 @@ public class UpdateUserCommandBuilder
             _firstName,
             _lastName,
             _address,
-            _jobsDataConsent,
-            _immigrationDataConsent,
             _countryOfBirthCode,
             _nativeLanguageCode,
             _occupationCode,

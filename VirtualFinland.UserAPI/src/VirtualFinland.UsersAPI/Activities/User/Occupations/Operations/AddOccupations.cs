@@ -36,7 +36,7 @@ public static class AddOccupations
 
         public async Task<List<AddOccupationsResponse>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var user = _usersDbContext.Users
+            var user = _usersDbContext.Persons
                 .Include(u => u.Occupations)
                 .FirstOrDefault(u => u.Id == request.UserId);
 
@@ -81,18 +81,33 @@ public static class AddOccupations
     public record AddOccupationsResponse
     {
         public Guid Id { get; init; }
-        [MaxLength(7)] public string? NaceCode { get; init; }
-        [Url] public string? EscoUri { get; init; }
-        [MaxLength(16)] public string? EscoCode { get; init; }
-        [Range(0, 600)] public int? WorkMonths { get; init; }
+
+        [MaxLength(7)]
+        public string? NaceCode { get; init; }
+
+        [Url]
+        public string? EscoUri { get; init; }
+
+        [MaxLength(16)]
+        public string? EscoCode { get; init; }
+
+        [Range(0, 600)]
+        public int? WorkMonths { get; init; }
     }
-    
+
     [SwaggerSchema(Title = "AddOccupationsRequest")]
     public record AddOccupationsRequest
     {
-        [MaxLength(7)] public string? NaceCode { get; init; }
-        [Url] public string? EscoUri { get; init; }
-        [MaxLength(16)] public string? EscoCode { get; init; }
-        [Range(0, 600)] public int? WorkMonths { get; init; }
+        [MaxLength(7)]
+        public string? NaceCode { get; init; }
+
+        [Url]
+        public string? EscoUri { get; init; }
+
+        [MaxLength(16)]
+        public string? EscoCode { get; init; }
+
+        [Range(0, 600)]
+        public int? WorkMonths { get; init; }
     }
 }

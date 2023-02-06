@@ -40,26 +40,7 @@ public class UserController : ApiControllerBase
         command.SetAuth(await this.GetCurrentUserId());
         return Ok(await Mediator.Send(command));
     }
-    
-    [HttpGet("/user/consents")]
-    [SwaggerOperation(Summary = "Get the current logged user personal consents", Description = "Returns the current logged user own personal consents.")]
-    [ProducesResponseType(typeof(GetConsents.Consents),StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> GetUserConsents()
-    {
-        return Ok(await Mediator.Send(new GetConsents.Query(await this.GetCurrentUserId())));
-    }
-    
-    [HttpPatch("/user/consents")]
-    [SwaggerOperation(Summary = "Updates the current logged user personal consents", Description = "Updates the current logged user own personal consents.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> UpdateUserConsents(UpdateConsents.Command command)
-    {
-        command.SetAuth(await this.GetCurrentUserId());
-        return Ok(await Mediator.Send(command));
-    }
-    
+
     [HttpGet("/user/search-profiles/")]
     [ProducesResponseType(typeof(IList<GetSearchProfiles.SearchProfile>),StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]

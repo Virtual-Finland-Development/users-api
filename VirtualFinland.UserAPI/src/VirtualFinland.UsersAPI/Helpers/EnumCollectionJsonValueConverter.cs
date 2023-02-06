@@ -3,11 +3,13 @@ using Newtonsoft.Json;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
-public class EnumCollectionJsonValueConverter<T> : ValueConverter<ICollection<T>, string> where T : Enum
+public class EnumCollectionJsonValueConverter<T> : ValueConverter<ICollection<T>, string> where T : struct, Enum
 {
     public EnumCollectionJsonValueConverter() : base(
-        v => JsonConvert.SerializeObject(v.Select(e => e.ToString()).ToList()),
-        v => JsonConvert.DeserializeObject<ICollection<string>>(v).Select(e => (T)Enum.Parse(typeof(T), e)).ToList())
+        v => JsonConvert.SerializeObject(v.Select(EnumUtilities.GetEnumMemberValueOrDefault).ToList()),
+        v => (JsonConvert.DeserializeObject<ICollection<string>>(v) ?? new List<string>())
+            .Select(e => (T)Enum.Parse(typeof(T), e))
+            .ToList())
     {
     }
 }

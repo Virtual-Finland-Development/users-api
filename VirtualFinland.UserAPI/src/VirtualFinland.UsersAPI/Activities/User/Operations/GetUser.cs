@@ -43,13 +43,14 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Users
+            var dbUser = await _usersDbContext.Persons
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)
+                .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
-            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
+            var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
 
             List<UserResponseOccupation>? occupations = null;
@@ -71,38 +72,36 @@ public static class GetUser
             {
                 workPreferences = new UserResponseWorkPreferences(
                     dbUser.WorkPreferences?.Id,
-                    dbUser.WorkPreferences?.PreferredRegionEnum,
-                    dbUser.WorkPreferences?.PreferredMunicipalityEnum,
+                    dbUser.WorkPreferences?.PreferredRegionCode?.ToList(),
+                    dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
-                    dbUser.WorkPreferences?.WorkingTimeEnum,
+                    dbUser.WorkPreferences?.WorkingTimeCode,
                     dbUser.WorkPreferences?.WorkingLanguageEnum,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
                 );
             }
-            
+
             return new User(
                 dbUser.Id,
-                dbUser.FirstName,
+                dbUser.GivenName,
                 dbUser.LastName,
                 new Address(
-                    dbUser.StreetAddress,
-                    dbUser.ZipCode,
-                    dbUser.City,
-                    dbUser.Country
-                ),
+                        dbUser.AdditionalInformation?.Address?.StreetAddress,
+                        dbUser.AdditionalInformation?.Address?.ZipCode,
+                        dbUser.AdditionalInformation?.Address?.City,
+                        dbUser.AdditionalInformation?.Address?.Country
+                 ),
                 dbUserDefaultSearchProfile?.JobTitles,
                 dbUserDefaultSearchProfile?.Regions,
                 dbUser.Created,
                 dbUser.Modified,
-                dbUser.ImmigrationDataConsent,
-                dbUser.JobsDataConsent,
-                dbUser.CountryOfBirthCode,
-                dbUser.NativeLanguageCode,
-                dbUser.OccupationCode,
-                dbUser.CitizenshipCode,
-                dbUser.Gender,
-                dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                dbUser.AdditionalInformation?.CountryOfBirthCode,
+                dbUser.AdditionalInformation?.NativeLanguageCode,
+                dbUser.AdditionalInformation?.OccupationCode,
+                dbUser.AdditionalInformation?.CitizenshipCode,
+                dbUser.AdditionalInformation?.Gender,
+                dbUser.AdditionalInformation?.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
                 occupations,
                 workPreferences
             );
@@ -119,13 +118,11 @@ public static class GetUser
         List<string>? Regions,
         DateTime Created,
         DateTime Modified,
-        bool ImmigrationDataConsent,
-        bool JobsDataConsent,
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        Gender? Gender,
+        string? Gender,
         DateTime? DateOfBirth,
         List<UserResponseOccupation>? Occupations,
         UserResponseWorkPreferences? WorkPreferences

@@ -5,9 +5,11 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -19,15 +21,13 @@ public static class UpdateUser
         public string? FirstName { get; }
         public string? LastName { get; }
         public Address? Address { get; }
-        public bool? JobsDataConsent { get; }
-        public bool? ImmigrationDataConsent { get; }
         public string? CountryOfBirthCode { get; }
         public string? NativeLanguageCode { get; }
         public string? OccupationCode { get; }
         public string? CitizenshipCode { get; }
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        public Gender? Gender { get; }
+        public string? Gender { get; }
         public DateTime? DateOfBirth { get; }
         public List<UpdateUserRequestOccupation>? Occupations { get; }
         public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
@@ -39,15 +39,13 @@ public static class UpdateUser
             string? firstName,
             string? lastName,
             Address? address,
-            bool? jobsDataConsent,
-            bool? immigrationDataConsent,
             string? countryOfBirthCode,
             string? nativeLanguageCode,
             string? occupationCode,
             string? citizenshipCode,
             List<string>? jobTitles,
             List<string>? regions,
-            Gender? gender,
+            string? gender,
             DateTime? dateOfBirth,
             List<UpdateUserRequestOccupation>? occupations,
             UpdateUserRequestWorkPreferences? workPreferences
@@ -56,8 +54,6 @@ public static class UpdateUser
             FirstName = firstName;
             LastName = lastName;
             Address = address;
-            JobsDataConsent = jobsDataConsent;
-            ImmigrationDataConsent = immigrationDataConsent;
             CountryOfBirthCode = countryOfBirthCode;
             NativeLanguageCode = nativeLanguageCode;
             OccupationCode = occupationCode;
@@ -80,7 +76,23 @@ public static class UpdateUser
     {
         public WorkPreferencesValidator()
         {
-            RuleForEach(wp => wp.PreferredMunicipalityEnum).IsInEnum();
+            RuleForEach(wp => wp.PreferredMunicipalityEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Municipality>(x, out _));
+
+            RuleForEach(wp => wp.PreferredRegionEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Region>(x, out _));
+
+            RuleFor(x => x.EmploymentTypeCode)
+                .Must(x => EnumUtilities.TryParseWithMemberName<EmploymentType>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.EmploymentTypeCode));
+
+            RuleFor(x => x.WorkingTimeEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.WorkingTimeEnum));
+
+            RuleFor(x => x.WorkingLanguageEnum)
+                .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.WorkingLanguageEnum));
         }
     }
 
@@ -107,8 +119,12 @@ public static class UpdateUser
             RuleFor(command => command.OccupationCode).MaximumLength(10);
             RuleFor(command => command.NativeLanguageCode).MaximumLength(10);
             RuleFor(command => command.CountryOfBirthCode).MaximumLength(10);
-            RuleFor(command => command.Gender).IsInEnum();
-            //RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
+            
+            RuleFor(command => command.Gender)
+                .Must(x => EnumUtilities.TryParseWithMemberName<Gender>(x!, out _))
+                .When(x => !string.IsNullOrEmpty(x.Gender));
+            
+            RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator()!);
         }
     }
     
@@ -132,14 +148,15 @@ public static class UpdateUser
 
             public async Task<User> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dbUser = await _usersDbContext.Users
+                var dbUser = await _usersDbContext.Persons
                     .Include(u => u.WorkPreferences)
                     .Include(u => u.Occupations)
-                    .SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+                    .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
+                    .SingleAsync(o => o.Id == request.UserId, cancellationToken);
                 
                 await VerifyUserUpdate(dbUser, request);
                 
-                var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault == true && o.UserId == dbUser.Id, cancellationToken);
+                var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
                 dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
@@ -153,45 +170,45 @@ public static class UpdateUser
                             new UpdateUserResponseOccupation(o.Id, o.NaceCode, o.EscoUri, o.EscoCode, o.WorkMonths))
                         .ToList();
                 }
-                
+
                 return new User(
                     dbUser.Id,
-                    dbUser.FirstName,
+                    dbUser.GivenName,
                     dbUser.LastName,
                     new Address(
-                        dbUser.StreetAddress,
-                        dbUser.ZipCode, // TODO: Return actual data
-                        dbUser.City,
-                        dbUser.Country
+                        dbUser.AdditionalInformation?.Address?.StreetAddress,
+                        dbUser.AdditionalInformation?.Address?.ZipCode,
+                        dbUser.AdditionalInformation?.Address?.City,
+                        dbUser.AdditionalInformation?.Address?.Country
                     ),
                     dbUserDefaultSearchProfile.JobTitles,
                     dbUserDefaultSearchProfile.Regions,
                     dbUser.Created,
                     dbUser.Modified,
-                    dbUser.ImmigrationDataConsent,
-                    dbUser.JobsDataConsent,
-                    dbUser.CountryOfBirthCode,
-                    dbUser.NativeLanguageCode,
-                    dbUser.OccupationCode,
-                    dbUser.CitizenshipCode,
-                    dbUser.Gender,
-                    dbUser.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                    dbUser.AdditionalInformation?.CountryOfBirthCode,
+                    dbUser.AdditionalInformation?.NativeLanguageCode,
+                    dbUser.AdditionalInformation?.OccupationCode,
+                    dbUser.AdditionalInformation?.CitizenshipCode,
+                    dbUser.AdditionalInformation?.Gender,
+                    dbUser.AdditionalInformation?.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
                     occupations,
-                    new UpdateUserResponseWorkPreferences
-                    (
-                        dbUser.WorkPreferences?.Id,
-                        dbUser.WorkPreferences?.PreferredRegionEnum,
-                        dbUser.WorkPreferences?.PreferredMunicipalityEnum,
-                        dbUser.WorkPreferences?.EmploymentTypeCode,
-                        dbUser.WorkPreferences?.WorkingTimeEnum,
-                        dbUser.WorkPreferences?.WorkingLanguageEnum,
-                        dbUser.WorkPreferences?.Created,
-                        dbUser.WorkPreferences?.Modified
-                    )
+                    dbUser.WorkPreferences is null
+                        ? null
+                        : new UpdateUserResponseWorkPreferences
+                        (
+                            dbUser.WorkPreferences?.Id,
+                            dbUser.WorkPreferences?.PreferredRegionCode,
+                            dbUser.WorkPreferences?.PreferredMunicipalityCode,
+                            dbUser.WorkPreferences?.EmploymentTypeCode,
+                            dbUser.WorkPreferences?.WorkingTimeCode,
+                            dbUser.WorkPreferences?.WorkingLanguageEnum,
+                            dbUser.WorkPreferences?.Created,
+                            dbUser.WorkPreferences?.Modified
+                        )
                 );
             }
 
-            private async Task VerifyUserUpdate(Models.UsersDatabase.User dbUser, Command request)
+            private async Task VerifyUserUpdate(Person dbUser, Command request)
             {
                 
                 var validationErrors = new List<ValidationErrorDetail>();
@@ -204,37 +221,32 @@ public static class UpdateUser
                     throw new BadRequestException("One or more validation errors occurred.", validationErrors);
                 }
 
-                dbUser.FirstName = request.FirstName ?? dbUser.FirstName;
+                dbUser.AdditionalInformation ??= new PersonAdditionalInformation();
+                dbUser.AdditionalInformation.Address ??= new Models.UsersDatabase.Address();
+                
+                dbUser.GivenName = request.FirstName ?? dbUser.GivenName;
                 dbUser.LastName = request.LastName ?? dbUser.LastName;
-                dbUser.StreetAddress = request.Address?.StreetAddress ?? dbUser.StreetAddress;
-                dbUser.ZipCode = request.Address?.ZipCode ?? dbUser.ZipCode;
-                dbUser.City = request.Address?.City ?? dbUser.City;
-                dbUser.Country = request.Address?.Country ?? dbUser.Country;
+                dbUser.AdditionalInformation.Address.StreetAddress = request.Address?.StreetAddress ?? dbUser.AdditionalInformation.Address.StreetAddress;
+                dbUser.AdditionalInformation.Address.ZipCode = request.Address?.ZipCode ?? dbUser.AdditionalInformation.Address.ZipCode;
+                dbUser.AdditionalInformation.Address.City = request.Address?.City ?? dbUser.AdditionalInformation.Address.City;
+                dbUser.AdditionalInformation.Address.Country = request.Address?.Country ?? dbUser.AdditionalInformation.Address.Country;
                 dbUser.Modified = DateTime.UtcNow;
-                dbUser.ImmigrationDataConsent = request.ImmigrationDataConsent ?? dbUser.ImmigrationDataConsent;
-                dbUser.JobsDataConsent = request.JobsDataConsent ?? dbUser.JobsDataConsent;
-                dbUser.CitizenshipCode = request.CitizenshipCode ?? dbUser.CitizenshipCode;
-                dbUser.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.NativeLanguageCode; 
-                dbUser.OccupationCode = request.OccupationCode ?? dbUser.OccupationCode;
-                dbUser.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.CountryOfBirthCode;
-                dbUser.Gender = request.Gender ?? dbUser.Gender;
-                dbUser.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.DateOfBirth;
+                dbUser.AdditionalInformation.CitizenshipCode = request.CitizenshipCode ?? dbUser.AdditionalInformation.CitizenshipCode;
+                dbUser.AdditionalInformation.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.AdditionalInformation.NativeLanguageCode; 
+                dbUser.AdditionalInformation.OccupationCode = request.OccupationCode ?? dbUser.AdditionalInformation.OccupationCode;
+                dbUser.AdditionalInformation.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.AdditionalInformation.CountryOfBirthCode;
+                dbUser.AdditionalInformation.Gender = request.Gender ?? dbUser.AdditionalInformation.Gender;
+                dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.AdditionalInformation.DateOfBirth;
                 dbUser.Occupations = GetUpdatedOccupations(dbUser.Occupations, request.Occupations);
 
                 if (request.WorkPreferences is not null)
                 {
                     dbUser.WorkPreferences ??= new WorkPreferences();
-                    
-                    if(request.WorkPreferences.PreferredMunicipalityEnum is not null)
-                        dbUser.WorkPreferences.PreferredMunicipalityEnum = request.WorkPreferences.PreferredMunicipalityEnum;
-
-                    if (request.WorkPreferences.PreferredRegionEnum is not null)
-                        dbUser.WorkPreferences.PreferredRegionEnum = request.WorkPreferences.PreferredRegionEnum;
-                    
-                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum;
-                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode;
-                    
-                    dbUser.WorkPreferences.WorkingTimeEnum = request.WorkPreferences.WorkingTimeEnum;
+                    dbUser.WorkPreferences.PreferredMunicipalityCode = request.WorkPreferences.PreferredMunicipalityEnum ?? dbUser.WorkPreferences.PreferredMunicipalityCode;
+                    dbUser.WorkPreferences.PreferredRegionCode = request.WorkPreferences.PreferredRegionEnum ?? dbUser.WorkPreferences.PreferredRegionCode;
+                    dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageEnum;
+                    dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode ?? dbUser.WorkPreferences.EmploymentTypeCode;
+                    dbUser.WorkPreferences.WorkingTimeCode = request.WorkPreferences.WorkingTimeEnum ?? dbUser.WorkPreferences.WorkingTimeCode;
                 }
             }
 
@@ -371,14 +383,14 @@ public static class UpdateUser
             /// <param name="dbUser"></param>
             /// <param name="request"></param>
             /// <param name="cancellationToken"></param>
-            private async Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Models.UsersDatabase.User dbUser, Command request, CancellationToken cancellationToken)
+            private async Task<SearchProfile> VerifyUserSearchProfile(SearchProfile? dbUserDefaultSearchProfile, Person dbUser, Command request, CancellationToken cancellationToken)
             {
                 if (dbUserDefaultSearchProfile is null)
                 {
                     var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new SearchProfile()
                     {
                         Name = request.JobTitles?.FirstOrDefault(),
-                        UserId = dbUser.Id,
+                        PersonId = dbUser.Id,
                         JobTitles = request.JobTitles,
                         Regions = request.Regions,
                         Created = DateTime.UtcNow,
@@ -408,13 +420,11 @@ public static class UpdateUser
         List<string>? Regions,
         DateTime Created,
         DateTime Modified,
-        bool ImmigrationDataConsent,
-        bool JobsDataConsent,
         string? CountryOfBirthCode,
         string? NativeLanguageCode,
         string? OccupationCode,
         string? CitizenshipCode,
-        Gender? Gender,
+        string? Gender,
         DateTime? DateOfBirth,
         List<UpdateUserResponseOccupation>? Occupations,
         UpdateUserResponseWorkPreferences? WorkPreferences
@@ -443,7 +453,7 @@ public static class UpdateUser
         DateTime? Modified
     );
     
-    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    [SwaggerSchema(Title = "UpdateUserResponseOccupation")]
     public record UpdateUserResponseOccupation(
         Guid Id,
         string? NaceCode,
@@ -452,7 +462,7 @@ public static class UpdateUser
         int? WorkMonths
     );
     
-    [SwaggerSchema(Title = "UpdateUserResponseOccupations")]
+    [SwaggerSchema(Title = "UpdateUserRequestOccupation")]
     public record UpdateUserRequestOccupation(
         Guid Id,
         string? NaceCode,
