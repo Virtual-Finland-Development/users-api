@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+namespace VirtualFinland.UserAPI.Helpers;
+
 public class DateOnlyJsonConverter : JsonConverter<DateOnly?>
 {
     private const string Format = "yyyy-MM-dd";
