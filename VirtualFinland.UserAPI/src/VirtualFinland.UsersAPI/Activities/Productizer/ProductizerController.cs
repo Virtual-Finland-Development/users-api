@@ -70,7 +70,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, false);
         return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(await GetUserIdOrCreateNewUserWithId())));
     }
 
@@ -82,7 +82,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, false);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
@@ -94,7 +94,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, false);
         return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(await GetUserIdOrCreateNewUserWithId())));
     }
     
@@ -105,7 +105,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, false);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
