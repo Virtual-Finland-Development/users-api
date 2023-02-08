@@ -12,6 +12,7 @@ internal class WorkPreferencesBuilder
     private readonly List<string> _regions = new() { "05" };
     private readonly string? _workingLanguage = "fi";
     private readonly string? _workingTime = "01";
+    private readonly string? _naceCode = "42.323";
 
     public WorkPreferences Build()
     {
@@ -23,6 +24,7 @@ internal class WorkPreferencesBuilder
             EmploymentTypeCode = _employmentTypeCode,
             WorkingTimeCode = _workingTime,
             WorkingLanguageEnum = _workingLanguage,
+            NaceCode = _naceCode,
             Created = _created,
             Modified = _modified
         };

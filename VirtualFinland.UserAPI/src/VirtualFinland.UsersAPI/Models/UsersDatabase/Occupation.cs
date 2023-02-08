@@ -4,12 +4,6 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class Occupation : Auditable, IEntity
 {
-    /// <summary>
-    ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101
-    /// </summary>
-    [MaxLength(7)]
-    public string? NaceCode { get; set; }
-
     [Url]
     public string? EscoUri { get; set; }
 

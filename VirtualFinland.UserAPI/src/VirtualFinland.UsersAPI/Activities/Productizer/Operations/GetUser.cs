@@ -64,7 +64,6 @@ public static class GetUser
                     (
                         x.EscoUri,
                         x.EscoCode,
-                        x.NaceCode,
                         x.WorkMonths
                     )).ToList();
             }
@@ -78,6 +77,7 @@ public static class GetUser
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
                     dbUser.WorkPreferences?.WorkingLanguageEnum,
+                    dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
                 );
@@ -142,6 +142,7 @@ public static class GetUser
         string? TypeOfEmployment,
         string? WorkingTime,
         string? WorkingLanguage,
+        string? NaceCode,
         DateTime? Created,
         DateTime? Modified
     );
@@ -150,7 +151,6 @@ public static class GetUser
     public record UserResponseOccupation(
         string? EscoIdentifier,
         string? EscoCode,
-        string? NaceCode,
         int? WorkExperience
     );
 }

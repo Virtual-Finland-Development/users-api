@@ -28,6 +28,12 @@ public class WorkPreferences : Auditable, IEntity
     /// </summary>
     [MaxLength(2)]
     public string? WorkingLanguageEnum { get; set; }
+    
+    /// <summary>
+    ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101
+    /// </summary>
+    [MaxLength(7)]
+    public string? NaceCode { get; set; }
 
     [JsonIgnore]
     public Person Person { get; set; } = null!;

@@ -44,7 +44,6 @@ public static class AddOccupations
             {
                 var newOccupation = new Models.UsersDatabase.Occupation
                 {
-                    NaceCode = occupation.NaceCode,
                     EscoCode = occupation.EscoCode,
                     EscoUri = occupation.EscoUri,
                     WorkMonths = occupation.WorkMonths
@@ -66,7 +65,6 @@ public static class AddOccupations
                 addedOccupations.Add(new AddOccupationsResponse
                 {
                     Id = entry.Id,
-                    NaceCode = entry.NaceCode,
                     EscoUri = entry.EscoUri,
                     EscoCode = entry.EscoCode,
                     WorkMonths = entry.WorkMonths
@@ -82,9 +80,6 @@ public static class AddOccupations
     {
         public Guid Id { get; init; }
 
-        [MaxLength(7)]
-        public string? NaceCode { get; init; }
-
         [Url]
         public string? EscoUri { get; init; }
 
@@ -98,9 +93,6 @@ public static class AddOccupations
     [SwaggerSchema(Title = "AddOccupationsRequest")]
     public record AddOccupationsRequest
     {
-        [MaxLength(7)]
-        public string? NaceCode { get; init; }
-
         [Url]
         public string? EscoUri { get; init; }
 

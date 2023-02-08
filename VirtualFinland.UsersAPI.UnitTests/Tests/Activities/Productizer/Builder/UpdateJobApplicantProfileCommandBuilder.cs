@@ -43,7 +43,6 @@ public class UpdateJobApplicantProfileCommandBuilder
             {
                 EscoCode = "2654.1.7",
                 EscoIdentifier = "http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97",
-                NaceCode = "62.01",
                 WorkExperience = 1
             }
         };

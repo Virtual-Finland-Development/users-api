@@ -48,7 +48,6 @@ public static class GetJobApplicantProfile
                     new PersonJobApplicantProfileResponse.Occupation(
                         x.EscoCode,
                         x.EscoUri,
-                        x.NaceCode,
                         x.WorkMonths ?? 0
                     )).ToList(),
 
@@ -85,7 +84,9 @@ public static class GetJobApplicantProfile
                     person.WorkPreferences?.PreferredRegionCode?.Select(RegionMapper.FromCodeSetToIso_3166_2).ToList() ?? new List<string>(),
                     person.WorkPreferences?.WorkingLanguageEnum,
                     person.WorkPreferences?.WorkingTimeCode,
-                    person.WorkPreferences?.EmploymentTypeCode)
+                    person.WorkPreferences?.EmploymentTypeCode, 
+                    person.WorkPreferences?.NaceCode
+                )
             };
         }
     }
@@ -102,7 +103,7 @@ public record PersonJobApplicantProfileResponse
     public List<string> Permits { get; set; } = null!;
     public WorkPreferences workPreferences { get; set; } = null!;
 
-    public record Occupation(string? EscoIdentifier, string? EscoCode, string? NaceCode, int? WorkExperience);
+    public record Occupation(string? EscoIdentifier, string? EscoCode, int? WorkExperience);
 
     public record Education
     {
@@ -124,6 +125,7 @@ public record PersonJobApplicantProfileResponse
         List<string> PreferredRegion,
         string? WorkingLanguage,
         string? WorkingTime,
-        string? TypeOfEmployment
+        string? TypeOfEmployment,
+        string? NaceCode 
     );
 }

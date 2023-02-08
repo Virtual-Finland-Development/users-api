@@ -46,7 +46,6 @@ public static class UpdateOccupations
             foreach (var occupation in request.Occupations)
             {
                 var editable = userOccupationsToUpdate.First(o => o.Id == occupation.Id);
-                editable.NaceCode = occupation.NaceCode ?? editable.NaceCode;
                 editable.EscoUri = occupation.EscoUri ?? editable.EscoUri;
                 editable.EscoCode = occupation.EscoCode ?? editable.EscoCode;
                 editable.WorkMonths = occupation.WorkMonths ?? editable.WorkMonths;
@@ -61,9 +60,6 @@ public static class UpdateOccupations
     public record Occupation
     {
         public Guid Id { get; init; }
-
-        [MaxLength(7)]
-        public string? NaceCode { get; init; }
 
         [Url]
         public string? EscoUri { get; init; }
