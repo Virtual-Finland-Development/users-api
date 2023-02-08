@@ -111,7 +111,7 @@ public static class UpdateJobApplicantProfile
             foreach (var region in command.WorkPreferences.PreferredRegion)
             {
                 person.WorkPreferences.PreferredRegionCode = new List<string>();
-                person.WorkPreferences.PreferredRegionCode.Add(RegionMapper.FromIso_3166_2_ToCodeSet(region));
+                person.WorkPreferences.PreferredRegionCode.Add(region);
             }
 
             foreach (var municipality in command.WorkPreferences.PreferredMunicipality)
@@ -170,11 +170,7 @@ public static class UpdateJobApplicantProfile
                 WorkPreferences = new Request.WorkPreferenceValues
                 {
                     PreferredMunicipality = person.WorkPreferences.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
-                    
-                    PreferredRegion = person.WorkPreferences.PreferredRegionCode?
-                        .Select(RegionMapper.FromCodeSetToIso_3166_2)
-                        .ToList() ?? new List<string>(),
-                    
+                    PreferredRegion = person.WorkPreferences.PreferredRegionCode?.ToList() ?? new List<string>(),
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
                     WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum
