@@ -167,7 +167,7 @@ public static class UpdateUser
                 if (dbUser.Occupations is {Count: > 0})
                 {
                     occupations = dbUser.Occupations.Select(o =>
-                            new UpdateUserResponseOccupation(o.Id, o.NaceCode, o.EscoUri, o.EscoCode, o.WorkMonths))
+                            new UpdateUserResponseOccupation(o.Id, o.EscoUri, o.EscoCode, o.WorkMonths))
                         .ToList();
                 }
 
@@ -202,6 +202,7 @@ public static class UpdateUser
                             dbUser.WorkPreferences?.EmploymentTypeCode,
                             dbUser.WorkPreferences?.WorkingTimeCode,
                             dbUser.WorkPreferences?.WorkingLanguageEnum,
+                            dbUser.WorkPreferences?.NaceCode,
                             dbUser.WorkPreferences?.Created,
                             dbUser.WorkPreferences?.Modified
                         )
@@ -247,6 +248,7 @@ public static class UpdateUser
                     dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageEnum;
                     dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode ?? dbUser.WorkPreferences.EmploymentTypeCode;
                     dbUser.WorkPreferences.WorkingTimeCode = request.WorkPreferences.WorkingTimeEnum ?? dbUser.WorkPreferences.WorkingTimeCode;
+                    dbUser.WorkPreferences.NaceCode = request.WorkPreferences.NaceCode ?? dbUser.WorkPreferences.NaceCode;
                 }
             }
 
@@ -287,11 +289,10 @@ public static class UpdateUser
                     {
                         if (occupation.Id == Guid.Empty)
                         {
-                            if(occupation is {NaceCode: null, EscoCode: null, EscoUri: null, WorkMonths: null}) continue;
+                            if(occupation is {EscoCode: null, EscoUri: null, WorkMonths: null}) continue;
                             
                             dbUserOccupations.Add(new Occupation
                             {
-                                NaceCode = occupation.NaceCode,
                                 WorkMonths = occupation.WorkMonths,
                                 EscoUri = occupation.EscoUri,
                                 EscoCode = occupation.EscoCode
@@ -311,7 +312,6 @@ public static class UpdateUser
                         
                         existingOccupation.EscoCode = occupation.EscoCode ?? existingOccupation.EscoCode;
                         existingOccupation.EscoUri = occupation.EscoUri ?? existingOccupation.EscoUri;
-                        existingOccupation.NaceCode = occupation.NaceCode ?? existingOccupation.NaceCode;
                         existingOccupation.WorkMonths = occupation.WorkMonths ?? existingOccupation.WorkMonths;
                     }
                 }
@@ -437,7 +437,8 @@ public static class UpdateUser
         List<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
         string? WorkingTimeEnum,
-        string? WorkingLanguageEnum
+        string? WorkingLanguageEnum,
+        string? NaceCode
     );
 
     [SwaggerSchema(Title = "UpdateUserResponseWorkPreferences")]
@@ -449,6 +450,7 @@ public static class UpdateUser
         string? EmploymentTypeCode,
         string? WorkingTimeEnum,
         string? WorkingLanguageEnum,
+        string? NaceCode,
         DateTime? Created,
         DateTime? Modified
     );
@@ -456,7 +458,6 @@ public static class UpdateUser
     [SwaggerSchema(Title = "UpdateUserResponseOccupation")]
     public record UpdateUserResponseOccupation(
         Guid Id,
-        string? NaceCode,
         string? EscoUri,
         string? EscoCode,
         int? WorkMonths
@@ -465,7 +466,6 @@ public static class UpdateUser
     [SwaggerSchema(Title = "UpdateUserRequestOccupation")]
     public record UpdateUserRequestOccupation(
         Guid Id,
-        string? NaceCode,
         string? EscoUri,
         string? EscoCode,
         int? WorkMonths,

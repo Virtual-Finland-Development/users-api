@@ -77,7 +77,6 @@ public static class UpdateJobApplicantProfile
             {
                 EscoUri = x.EscoIdentifier,
                 EscoCode = x.EscoCode,
-                NaceCode = x.NaceCode,
                 WorkMonths = x.WorkExperience
             }).ToList();
 
@@ -123,6 +122,7 @@ public static class UpdateJobApplicantProfile
             person.WorkPreferences.EmploymentTypeCode = command.WorkPreferences.TypeOfEmployment;
             person.WorkPreferences.WorkingTimeCode = command.WorkPreferences.WorkingTime;
             person.WorkPreferences.WorkingLanguageEnum = command.WorkPreferences.WorkingLanguage;
+            person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
 
             try
@@ -141,7 +141,6 @@ public static class UpdateJobApplicantProfile
                 {
                     EscoIdentifier = x.EscoUri,
                     EscoCode = x.EscoCode,
-                    NaceCode = x.NaceCode,
                     WorkExperience = x.WorkMonths
                 }).ToList(),
                 Educations = person.Educations.Select(x => new Request.Education
@@ -177,7 +176,8 @@ public static class UpdateJobApplicantProfile
                     
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
-                    WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum
+                    WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum,
+                    NaceCode = person.WorkPreferences.NaceCode
                 }
             };
         }
@@ -203,7 +203,6 @@ public static class UpdateJobApplicantProfile
         {
             public string? EscoIdentifier { get; init; }
             public string? EscoCode { get; init; }
-            public string? NaceCode { get; init; }
             public int? WorkExperience { get; init; }
         }
 
@@ -242,6 +241,7 @@ public static class UpdateJobApplicantProfile
             public string? TypeOfEmployment { get; init; }
             public string? WorkingTime { get; init; }
             public string WorkingLanguage { get; init; } = null!;
+            public string? NaceCode { get; init; }
         }
     }
 }

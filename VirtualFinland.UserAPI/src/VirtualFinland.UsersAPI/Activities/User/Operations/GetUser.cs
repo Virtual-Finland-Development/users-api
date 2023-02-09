@@ -60,7 +60,6 @@ public static class GetUser
                     new UserResponseOccupation
                     (
                         x.Id,
-                        x.NaceCode,
                         x.EscoUri,
                         x.EscoCode,
                         x.WorkMonths
@@ -77,6 +76,7 @@ public static class GetUser
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
                     dbUser.WorkPreferences?.WorkingLanguageEnum,
+                    dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
                 );
@@ -137,6 +137,7 @@ public static class GetUser
         string? EmploymentTypeCode,
         string? WorkingTimeEnum,
         string? WorkingLanguageEnum,
+        string? NaceCode,
         DateTime? Created,
         DateTime? Modified
     );
@@ -144,7 +145,6 @@ public static class GetUser
     [SwaggerSchema(Title = "UserResponseOccupations")]
     public record UserResponseOccupation(
         Guid Id,
-        string? NaceCode,
         string? EscoUri,
         string? EscoCode,
         int? WorkMonths
