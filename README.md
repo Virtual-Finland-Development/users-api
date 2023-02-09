@@ -30,6 +30,16 @@ https://www.pulumi.com/docs/get-started/install/
 Docker is used to support local development but not necessary.  
 https://docs.docker.com/get-docker/
 
+#### Docker requirements
+
+If using docker compose, the following network must be created: `vfd-network`.
+
+Create the network with the following command:
+
+```
+docker network create vfd-network
+```
+
 ## Project Structure
 
 1. **VirtualFinland.UsersAPI**: The API functionalities
