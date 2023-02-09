@@ -81,7 +81,7 @@ public static class GetJobApplicantProfile
                 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
                     person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.PreferredRegionCode?.Select(RegionMapper.FromCodeSetToIso_3166_2).ToList() ?? new List<string>(),
+                    person.WorkPreferences?.PreferredRegionCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.WorkingLanguageEnum,
                     person.WorkPreferences?.WorkingTimeCode,
                     person.WorkPreferences?.EmploymentTypeCode, 

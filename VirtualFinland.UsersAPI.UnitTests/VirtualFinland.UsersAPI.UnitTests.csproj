@@ -32,4 +32,8 @@
       <ProjectReference Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Tests\Helpers" />
+    </ItemGroup>
+
 </Project>
