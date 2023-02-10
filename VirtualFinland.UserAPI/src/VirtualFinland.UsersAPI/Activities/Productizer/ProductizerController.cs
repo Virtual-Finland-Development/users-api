@@ -35,10 +35,7 @@ public class ProductizerController : ControllerBase
         _authenticationService = authenticationService;
         _logger = logger;
     }
-
     
-
-
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)",
         Description = "Returns the current logged user own personal details and his default search profile.")]
@@ -71,7 +68,20 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> GetPersonBasicInformation()
     {
         await _authGwVerificationService.VerifyTokens(Request, false);
-        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(await GetUserIdOrCreateNewUserWithId())));
+
+        Guid? userId;
+        try
+        {
+            userId = await _authenticationService.GetCurrentUserId(Request);
+        }
+        catch (NotAuthorizedException)
+        {
+            _logger.LogInformation(
+                "Person was not found in database while trying to retrieve person basic information");
+            return new NotFoundObjectResult("Person not found");
+        }
+
+        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
@@ -95,7 +105,20 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
         await _authGwVerificationService.VerifyTokens(Request, false);
-        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(await GetUserIdOrCreateNewUserWithId())));
+
+        Guid? userId;
+        try
+        {
+            userId = await _authenticationService.GetCurrentUserId(Request);
+        }
+        catch (NotAuthorizedException)
+        {
+            _logger.LogInformation(
+                "Person was not found in database while trying to retrieve person job applicant profile");
+            return new NotFoundObjectResult("Person not found");
+        }
+        
+        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
     }
     
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
