@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
@@ -14,7 +13,6 @@ using VirtualFinland.UserAPI.Helpers.Services;
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
-[Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
