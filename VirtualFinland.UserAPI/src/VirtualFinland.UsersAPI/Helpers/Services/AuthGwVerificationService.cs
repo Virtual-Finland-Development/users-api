@@ -39,7 +39,7 @@ public class AuthGwVerificationService
             if (requireConsentToken)
             {
                 if (!request.Headers.ContainsKey(Constants.Headers.XConsentToken))
-                    throw new NotAuthorizedException("Consent token is missing.");
+                    throw new NotAuthorizedException("Consent token is missing");
 
                 httpClient.DefaultRequestHeaders.Add(
                     Constants.Headers.XConsentToken,
