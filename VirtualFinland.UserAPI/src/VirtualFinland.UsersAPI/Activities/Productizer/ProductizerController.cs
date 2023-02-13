@@ -26,8 +26,8 @@ public class ProductizerController : ControllerBase
 
     public ProductizerController(
         IMediator mediator,
-        AuthGwVerificationService authGwVerificationService, 
-        AuthenticationService authenticationService, 
+        AuthGwVerificationService authGwVerificationService,
+        AuthenticationService authenticationService,
         ILogger<ProductizerController> logger)
     {
         _mediator = mediator;
@@ -35,7 +35,7 @@ public class ProductizerController : ControllerBase
         _authenticationService = authenticationService;
         _logger = logger;
     }
-    
+
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)",
         Description = "Returns the current logged user own personal details and his default search profile.")]
@@ -78,7 +78,7 @@ public class ProductizerController : ControllerBase
         {
             _logger.LogInformation(
                 "Person was not found in database while trying to retrieve person basic information");
-            return new NotFoundObjectResult("Person not found");
+            throw new NotFoundException("Person not found");
         }
 
         return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
@@ -115,12 +115,12 @@ public class ProductizerController : ControllerBase
         {
             _logger.LogInformation(
                 "Person was not found in database while trying to retrieve person job applicant profile");
-            return new NotFoundObjectResult("Person not found");
+            throw new NotFoundException("Person not found");
         }
-        
+
         return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
     }
-    
+
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
         Description = "Updates dataproduct matching endpoint path from Testbed")]
@@ -142,7 +142,7 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",  e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
             try
             {
                 var claimsUserId =
