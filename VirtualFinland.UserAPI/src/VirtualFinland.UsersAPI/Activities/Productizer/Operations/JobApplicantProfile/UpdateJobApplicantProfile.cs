@@ -121,7 +121,13 @@ public static class UpdateJobApplicantProfile
 
             person.WorkPreferences.EmploymentTypeCode = command.WorkPreferences.TypeOfEmployment;
             person.WorkPreferences.WorkingTimeCode = command.WorkPreferences.WorkingTime;
-            person.WorkPreferences.WorkingLanguageEnum = command.WorkPreferences.WorkingLanguage;
+
+            foreach (var workingLanguage in command.WorkPreferences.WorkingLanguage)
+            {
+                person.WorkPreferences.WorkingLanguageCode = new List<string>(); // @TODO: fix theses if bug, seems bug
+                person.WorkPreferences.WorkingLanguageCode.Add(workingLanguage);
+            }
+
             person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
 
@@ -172,7 +178,7 @@ public static class UpdateJobApplicantProfile
                     PreferredRegion = person.WorkPreferences.PreferredRegionCode?.ToList() ?? new List<string>(),
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
-                    WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum,
+                    WorkingLanguage = person.WorkPreferences.WorkingLanguageCode?.ToList() ?? new List<string>(),
                     NaceCode = person.WorkPreferences.NaceCode
                 }
             };
@@ -236,7 +242,7 @@ public static class UpdateJobApplicantProfile
             public List<string> PreferredMunicipality { get; init; } = null!;
             public string? TypeOfEmployment { get; init; }
             public string? WorkingTime { get; init; }
-            public string WorkingLanguage { get; init; } = null!;
+            public List<string> WorkingLanguage { get; init; } = null!;
             public string? NaceCode { get; init; }
         }
     }

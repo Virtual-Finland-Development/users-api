@@ -82,7 +82,7 @@ public static class GetJobApplicantProfile
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
                     person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.PreferredRegionCode?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingLanguageEnum?.Length > 0 ? new List<string> { person.WorkPreferences.WorkingLanguageEnum } : new List<string>(), // Transform enum to list
+                    person.WorkPreferences?.WorkingLanguageCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.WorkingTimeCode,
                     person.WorkPreferences?.EmploymentTypeCode,
                     person.WorkPreferences?.NaceCode

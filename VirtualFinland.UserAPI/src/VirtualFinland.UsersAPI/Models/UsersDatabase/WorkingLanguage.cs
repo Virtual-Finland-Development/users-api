@@ -1,12 +1,13 @@
-using System.Text.Json;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonEnumMemberValueConverterFactory))]
 public enum WorkingLanguage
 {
-    Fi = 1,
-    En = 2,
-    Sv = 3
+    [EnumMember(Value = "fi")] Fi = 1,
+    [EnumMember(Value = "en")] En = 2,
+    [EnumMember(Value = "sv")] Sv = 3
 }
