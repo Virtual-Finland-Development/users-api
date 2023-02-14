@@ -124,8 +124,8 @@ public static class UpdateJobApplicantProfile
 
             foreach (var workingLanguage in command.WorkPreferences.WorkingLanguage)
             {
-                person.WorkPreferences.WorkingLanguageCode = new List<string>(); // @TODO: fix theses if bug, seems bug
-                person.WorkPreferences.WorkingLanguageCode.Add(workingLanguage);
+                person.WorkPreferences.WorkingLanguageEnum = new List<string>(); // @TODO: fix theses if bug, seems bug
+                person.WorkPreferences.WorkingLanguageEnum.Add(workingLanguage);
             }
 
             person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
@@ -178,7 +178,7 @@ public static class UpdateJobApplicantProfile
                     PreferredRegion = person.WorkPreferences.PreferredRegionCode?.ToList() ?? new List<string>(),
                     WorkingTime = person.WorkPreferences.WorkingTimeCode,
                     TypeOfEmployment = person.WorkPreferences.EmploymentTypeCode,
-                    WorkingLanguage = person.WorkPreferences.WorkingLanguageCode?.ToList() ?? new List<string>(),
+                    WorkingLanguage = person.WorkPreferences.WorkingLanguageEnum?.ToList() ?? new List<string>(),
                     NaceCode = person.WorkPreferences.NaceCode
                 }
             };

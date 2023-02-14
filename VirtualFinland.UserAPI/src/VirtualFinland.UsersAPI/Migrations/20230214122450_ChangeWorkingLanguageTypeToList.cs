@@ -13,33 +13,27 @@ namespace VirtualFinland.UserAPI.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("fb064d95-0733-4cf0-a836-0642a04fd46b"));
 
-            migrationBuilder.AddColumn<string>(
-                name: "WorkingLanguageCode",
+            migrationBuilder.AlterColumn<string>(
+                name: "WorkingLanguageEnum",
                 table: "WorkPreferences",
                 type: "text",
-                nullable: true);
-
-            // Copy data from WorkingLanguageEnum to WorkingLanguageCode
-            migrationBuilder.Sql(@"
-                UPDATE ""WorkPreferences""
-                SET ""WorkingLanguageCode"" = ""WorkingLanguageEnum""
-                WHERE ""WorkingLanguageEnum"" IS NOT NULL");
-
-            migrationBuilder.DropColumn(
-                name: "WorkingLanguageEnum",
-                table: "WorkPreferences");
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(2)",
+                oldMaxLength: 2,
+                oldNullable: true);
 
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
                 columns: new[] { "Id", "Created", "IdentityId", "Issuer", "Modified", "UserId" },
-                values: new object[] { new Guid("38acc6f7-45bf-4956-8793-046de6bc5826"), new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9268), "57beee60-54ef-4f2c-87dd-e2ea1a84d1f6", "c90f971f-c08b-4524-aa37-59bd85e408a5", new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9269), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
+                values: new object[] { new Guid("e870bcad-b6f2-4dfa-b7c8-c5c9595b7a26"), new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7405), "f3316a85-a400-4c39-ab42-66afaa1d67be", "e667371b-0499-4e3b-82e8-d5d6959c68b7", new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7405), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
 
             migrationBuilder.UpdateData(
                 table: "Persons",
                 keyColumn: "Id",
                 keyValue: new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
                 columns: new[] { "Created", "Modified" },
-                values: new object[] { new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9186), new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9187) });
+                values: new object[] { new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7323), new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7323) });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -47,25 +41,24 @@ namespace VirtualFinland.UserAPI.Migrations
             migrationBuilder.DeleteData(
                 table: "ExternalIdentities",
                 keyColumn: "Id",
-                keyValue: new Guid("38acc6f7-45bf-4956-8793-046de6bc5826"));
+                keyValue: new Guid("e870bcad-b6f2-4dfa-b7c8-c5c9595b7a26"));
 
-            migrationBuilder.AddColumn<string>(
+            // Regress the comma separated list data back to single value
+            // Take first two characters of comma separated list as enum value
+            migrationBuilder.Sql(@"
+                UPDATE ""WorkPreferences""
+                SET ""WorkingLanguageEnum"" = substring(""WorkingLanguageEnum"", 1, 2) 
+                WHERE ""WorkingLanguageEnum"" IS NOT NULL");
+
+            migrationBuilder.AlterColumn<string>(
                 name: "WorkingLanguageEnum",
                 table: "WorkPreferences",
                 type: "character varying(2)",
                 maxLength: 2,
-                nullable: true);
-
-            // Copy data from WorkingLanguageCode to WorkingLanguageEnum
-            // Take first two characters of comma separated list as enum value
-            migrationBuilder.Sql(@"
-                UPDATE ""WorkPreferences""
-                SET ""WorkingLanguageEnum"" = substring(""WorkingLanguageCode"", 1, 2) 
-                WHERE ""WorkingLanguageCode"" IS NOT NULL");
-
-            migrationBuilder.DropColumn(
-               name: "WorkingLanguageCode",
-               table: "WorkPreferences");
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
 
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",

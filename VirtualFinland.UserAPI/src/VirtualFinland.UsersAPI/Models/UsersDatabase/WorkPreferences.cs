@@ -26,7 +26,7 @@ public class WorkPreferences : Auditable, IEntity
     /// <summary>
     ///     WorkingLanguage.cs values
     /// </summary>
-    public ICollection<string>? WorkingLanguageCode { get; set; }
+    public ICollection<string>? WorkingLanguageEnum { get; set; }
 
     /// <summary>
     ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101

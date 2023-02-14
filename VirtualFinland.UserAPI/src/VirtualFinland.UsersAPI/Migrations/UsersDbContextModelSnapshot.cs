@@ -154,11 +154,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("38acc6f7-45bf-4956-8793-046de6bc5826"),
-                            Created = new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9268),
-                            IdentityId = "57beee60-54ef-4f2c-87dd-e2ea1a84d1f6",
-                            Issuer = "c90f971f-c08b-4524-aa37-59bd85e408a5",
-                            Modified = new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9269),
+                            Id = new Guid("e870bcad-b6f2-4dfa-b7c8-c5c9595b7a26"),
+                            Created = new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7405),
+                            IdentityId = "f3316a85-a400-4c39-ab42-66afaa1d67be",
+                            Issuer = "e667371b-0499-4e3b-82e8-d5d6959c68b7",
+                            Modified = new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7405),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -295,10 +295,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9186),
+                            Created = new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7323),
                             GivenName = "WarmUpUserGivenName",
                             LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 2, 14, 9, 39, 37, 747, DateTimeKind.Utc).AddTicks(9187)
+                            Modified = new DateTime(2023, 2, 14, 12, 24, 50, 429, DateTimeKind.Utc).AddTicks(7323)
                         });
                 });
 
@@ -426,7 +426,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("PreferredRegionCode")
                         .HasColumnType("text");
 
-                    b.Property<string>("WorkingLanguageCode")
+                    b.Property<string>("WorkingLanguageEnum")
                         .HasColumnType("text");
 
                     b.Property<string>("WorkingTimeCode")

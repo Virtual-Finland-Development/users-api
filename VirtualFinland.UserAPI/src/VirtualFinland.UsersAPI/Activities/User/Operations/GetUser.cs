@@ -75,7 +75,7 @@ public static class GetUser
                     dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
-                    dbUser.WorkPreferences?.WorkingLanguageCode?.ToList(),
+                    dbUser.WorkPreferences?.WorkingLanguageEnum?.ToList(),
                     dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified

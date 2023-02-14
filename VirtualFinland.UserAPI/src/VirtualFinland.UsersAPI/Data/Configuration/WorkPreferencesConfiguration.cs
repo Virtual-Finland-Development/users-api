@@ -18,7 +18,7 @@ public class WorkPreferencesConfiguration : IEntityTypeConfiguration<WorkPrefere
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );
 
-        entity.Property(wp => wp.WorkingLanguageCode).HasConversion(
+        entity.Property(wp => wp.WorkingLanguageEnum).HasConversion(
             v => string.Join(',', v),
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );

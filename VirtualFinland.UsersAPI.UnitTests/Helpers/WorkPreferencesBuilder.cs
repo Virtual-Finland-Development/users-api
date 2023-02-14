@@ -23,7 +23,7 @@ internal class WorkPreferencesBuilder
             PreferredMunicipalityCode = _municipalities,
             EmploymentTypeCode = _employmentTypeCode,
             WorkingTimeCode = _workingTime,
-            WorkingLanguageCode = _workingLanguage,
+            WorkingLanguageEnum = _workingLanguage,
             NaceCode = _naceCode,
             Created = _created,
             Modified = _modified

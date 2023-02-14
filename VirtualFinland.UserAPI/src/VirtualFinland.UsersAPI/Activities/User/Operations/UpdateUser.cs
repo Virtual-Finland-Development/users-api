@@ -200,7 +200,7 @@ public static class UpdateUser
                         dbUser.WorkPreferences?.PreferredMunicipalityCode,
                         dbUser.WorkPreferences?.EmploymentTypeCode,
                         dbUser.WorkPreferences?.WorkingTimeCode,
-                        dbUser.WorkPreferences?.WorkingLanguageCode,
+                        dbUser.WorkPreferences?.WorkingLanguageEnum,
                         dbUser.WorkPreferences?.NaceCode,
                         dbUser.WorkPreferences?.Created,
                         dbUser.WorkPreferences?.Modified
@@ -244,7 +244,7 @@ public static class UpdateUser
                 dbUser.WorkPreferences ??= new WorkPreferences();
                 dbUser.WorkPreferences.PreferredMunicipalityCode = request.WorkPreferences.PreferredMunicipalityEnum ?? dbUser.WorkPreferences.PreferredMunicipalityCode;
                 dbUser.WorkPreferences.PreferredRegionCode = request.WorkPreferences.PreferredRegionEnum ?? dbUser.WorkPreferences.PreferredRegionCode;
-                dbUser.WorkPreferences.WorkingLanguageCode = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageCode;
+                dbUser.WorkPreferences.WorkingLanguageEnum = request.WorkPreferences.WorkingLanguageEnum ?? dbUser.WorkPreferences.WorkingLanguageEnum;
                 dbUser.WorkPreferences.EmploymentTypeCode = request.WorkPreferences.EmploymentTypeCode ?? dbUser.WorkPreferences.EmploymentTypeCode;
                 dbUser.WorkPreferences.WorkingTimeCode = request.WorkPreferences.WorkingTimeEnum ?? dbUser.WorkPreferences.WorkingTimeCode;
                 dbUser.WorkPreferences.NaceCode = request.WorkPreferences.NaceCode ?? dbUser.WorkPreferences.NaceCode;
