@@ -24,11 +24,10 @@ public class WorkPreferences : Auditable, IEntity
     public string? WorkingTimeCode { get; set; }
 
     /// <summary>
-    ///     Possible values are "fi", "en", "sv"
+    ///     WorkingLanguage.cs values
     /// </summary>
-    [MaxLength(2)]
-    public string? WorkingLanguageEnum { get; set; }
-    
+    public ICollection<string>? WorkingLanguageEnum { get; set; }
+
     /// <summary>
     ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101
     /// </summary>

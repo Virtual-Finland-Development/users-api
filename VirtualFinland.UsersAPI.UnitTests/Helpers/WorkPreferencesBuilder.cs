@@ -10,7 +10,7 @@ internal class WorkPreferencesBuilder
     private readonly DateTime _modified = default;
     private readonly List<string> _municipalities = new() { "405" };
     private readonly List<string> _regions = new() { "05" };
-    private readonly string? _workingLanguage = "fi";
+    private readonly List<string> _workingLanguage = new List<string>() { "fi" };
     private readonly string? _workingTime = "01";
     private readonly string? _naceCode = "42.323";
 

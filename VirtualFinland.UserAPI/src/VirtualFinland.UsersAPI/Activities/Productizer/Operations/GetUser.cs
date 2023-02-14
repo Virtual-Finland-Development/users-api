@@ -59,7 +59,7 @@ public static class GetUser
             List<UserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is not null)
             {
-                occupations = dbUser.Occupations.Select(x => 
+                occupations = dbUser.Occupations.Select(x =>
                     new UserResponseOccupation
                     (
                         x.EscoUri,
@@ -76,13 +76,13 @@ public static class GetUser
                     dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
-                    dbUser.WorkPreferences?.WorkingLanguageEnum,
+                    dbUser.WorkPreferences?.WorkingLanguageEnum?.ToList().Aggregate((a, b) => a + "," + b), // Definition needs a string, transform to comma separated list
                     dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
                 );
             }
-            
+
             return new User
             {
                 Id = dbUser.Id,
