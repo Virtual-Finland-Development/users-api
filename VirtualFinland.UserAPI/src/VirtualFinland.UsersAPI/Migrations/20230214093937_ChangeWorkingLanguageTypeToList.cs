@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,15 +13,21 @@ namespace VirtualFinland.UserAPI.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("fb064d95-0733-4cf0-a836-0642a04fd46b"));
 
-            migrationBuilder.DropColumn(
-                name: "WorkingLanguageEnum",
-                table: "WorkPreferences");
-
             migrationBuilder.AddColumn<string>(
                 name: "WorkingLanguageCode",
                 table: "WorkPreferences",
                 type: "text",
                 nullable: true);
+
+            // Copy data from WorkingLanguageEnum to WorkingLanguageCode
+            migrationBuilder.Sql(@"
+                UPDATE ""WorkPreferences""
+                SET ""WorkingLanguageCode"" = Array[""WorkingLanguageEnum""]
+                WHERE ""WorkingLanguageEnum"" IS NOT NULL");
+
+            migrationBuilder.DropColumn(
+                name: "WorkingLanguageEnum",
+                table: "WorkPreferences");
 
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
@@ -44,16 +49,22 @@ namespace VirtualFinland.UserAPI.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("38acc6f7-45bf-4956-8793-046de6bc5826"));
 
-            migrationBuilder.DropColumn(
-                name: "WorkingLanguageCode",
-                table: "WorkPreferences");
-
             migrationBuilder.AddColumn<string>(
                 name: "WorkingLanguageEnum",
                 table: "WorkPreferences",
                 type: "character varying(2)",
                 maxLength: 2,
                 nullable: true);
+
+            // Copy data from WorkingLanguageCode to WorkingLanguageEnum
+            migrationBuilder.Sql(@"
+                UPDATE ""WorkPreferences""
+                SET ""WorkingLanguageEnum"" = ""WorkingLanguageCode""[1]
+                WHERE array_length(""WorkingLanguageCode"", 1) > 0;");
+
+            migrationBuilder.DropColumn(
+               name: "WorkingLanguageCode",
+               table: "WorkPreferences");
 
             migrationBuilder.InsertData(
                 table: "ExternalIdentities",
