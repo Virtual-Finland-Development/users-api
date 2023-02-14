@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Prometheus;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
@@ -70,6 +71,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
+        using var progress = MetricsRegistry.JobApplicantProfileReadDuration.TrackInProgress();
         await _authGwVerificationService.VerifyTokens(Request, false);
         return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(await GetUserIdOrCreateNewUserWithId())));
     }
@@ -130,6 +132,7 @@ public class ProductizerController : ControllerBase
                 var createdUser = await _mediator.Send(query);
                 userId = createdUser.Id;
                 _logger.LogInformation("New user was created with Id: {UserId}", userId);
+                MetricsRegistry.UsersCreated.Inc();
             }
             catch (Exception exception)
             {

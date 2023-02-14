@@ -7,6 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using Prometheus;
+using Serilog;
+using Serilog.Events;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
@@ -19,6 +22,7 @@ using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
+using ILogger = Serilog.ILogger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,20 @@ builder.Services.AddControllers();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient("", _ => { });
+
+// Logger before DI is set up
+ILogger logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .CreateLogger();
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+});
 
 // Validate server configurations
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
@@ -160,6 +178,9 @@ builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
 
 var app = builder.Build();
 
+// Prometheus server
+app.UseMetricServer();
+
 // Configure the HTTP request pipeline.
 if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtensions.IsStaging(app.Environment))
 {
@@ -175,15 +196,19 @@ if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtension
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.UseHttpMetrics();   
 app.UseResponseCaching();
 
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
+    logger.Information("Starting app");
+    
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();

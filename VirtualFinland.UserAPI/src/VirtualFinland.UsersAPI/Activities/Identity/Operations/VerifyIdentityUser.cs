@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Identity.Operations;
@@ -59,6 +60,7 @@ public static class VerifyIdentityUser
                 _logger.LogInformation(
                     "Verified and created a new user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}",
                     claimsUserId, request.ClaimsIssuer);
+                MetricsRegistry.UsersCreated.Inc();
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
 

@@ -26,6 +26,7 @@ public class AuthGwVerificationService
     /// <param name="requireConsentToken">If true, pass the consent token to the AuthGW as a verification requirement</param>
     public async Task VerifyTokens(HttpRequest request, bool requireConsentToken = false)
     {
+        MetricsRegistry.AuthenticationRequestsCounter.Inc();
         try
         {
             var token = request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
