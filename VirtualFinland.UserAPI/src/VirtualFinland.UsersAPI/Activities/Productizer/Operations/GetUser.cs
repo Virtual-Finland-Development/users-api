@@ -76,7 +76,7 @@ public static class GetUser
                     dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
-                    dbUser.WorkPreferences?.WorkingLanguageEnum?.ToList(),
+                    dbUser.WorkPreferences?.WorkingLanguageEnum?.ToList().Aggregate((a, b) => a + "," + b), // Definition needs a string, transform to comma separated list
                     dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
@@ -141,7 +141,7 @@ public static class GetUser
         List<string>? PreferredMunicipality,
         string? TypeOfEmployment,
         string? WorkingTime,
-        List<string>? WorkingLanguage,
+        string? WorkingLanguage,
         string? NaceCode,
         DateTime? Created,
         DateTime? Modified
