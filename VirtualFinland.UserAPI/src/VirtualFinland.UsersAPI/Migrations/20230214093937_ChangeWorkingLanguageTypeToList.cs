@@ -22,7 +22,7 @@ namespace VirtualFinland.UserAPI.Migrations
             // Copy data from WorkingLanguageEnum to WorkingLanguageCode
             migrationBuilder.Sql(@"
                 UPDATE ""WorkPreferences""
-                SET ""WorkingLanguageCode"" = Array[""WorkingLanguageEnum""]
+                SET ""WorkingLanguageCode"" = ""WorkingLanguageEnum""
                 WHERE ""WorkingLanguageEnum"" IS NOT NULL");
 
             migrationBuilder.DropColumn(
@@ -57,10 +57,11 @@ namespace VirtualFinland.UserAPI.Migrations
                 nullable: true);
 
             // Copy data from WorkingLanguageCode to WorkingLanguageEnum
+            // Take first two characters of comma separated list as enum value
             migrationBuilder.Sql(@"
                 UPDATE ""WorkPreferences""
-                SET ""WorkingLanguageEnum"" = ""WorkingLanguageCode""[1]
-                WHERE array_length(""WorkingLanguageCode"", 1) > 0;");
+                SET ""WorkingLanguageEnum"" = substring(""WorkingLanguageCode"", 1, 2) 
+                WHERE ""WorkingLanguageCode"" IS NOT NULL");
 
             migrationBuilder.DropColumn(
                name: "WorkingLanguageCode",
