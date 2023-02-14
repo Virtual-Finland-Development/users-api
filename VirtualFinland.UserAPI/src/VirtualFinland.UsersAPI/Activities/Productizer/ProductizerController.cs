@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -7,7 +6,6 @@ using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
@@ -143,11 +141,9 @@ public class ProductizerController : ControllerBase
             _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
             try
             {
-                var claimsUserId =
-                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                    User.FindFirst(Constants.Web.ClaimUserId)?.Value;
-                var claimsIssuer = User.Claims.First().Issuer;
-                var query = new VerifyIdentityUser.Query(claimsUserId, claimsIssuer);
+                // Token should be verified before this point
+                var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
+                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
                 var createdUser = await _mediator.Send(query);
                 userId = createdUser.Id;
                 _logger.LogInformation("New user was created with Id: {UserId}", userId);
