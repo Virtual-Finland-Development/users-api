@@ -107,24 +107,25 @@ public static class UpdateJobApplicantProfile
             }).ToList();
 
             person.WorkPreferences ??= new WorkPreferences();
+
+            person.WorkPreferences.PreferredRegionCode = new List<string>();
             foreach (var region in command.WorkPreferences.PreferredRegion)
             {
-                person.WorkPreferences.PreferredRegionCode = new List<string>();
                 person.WorkPreferences.PreferredRegionCode.Add(region);
             }
 
+            person.WorkPreferences.PreferredMunicipalityCode = new List<string>();
             foreach (var municipality in command.WorkPreferences.PreferredMunicipality)
             {
-                person.WorkPreferences.PreferredMunicipalityCode = new List<string>();
                 person.WorkPreferences.PreferredMunicipalityCode.Add(municipality);
             }
 
             person.WorkPreferences.EmploymentTypeCode = command.WorkPreferences.TypeOfEmployment;
             person.WorkPreferences.WorkingTimeCode = command.WorkPreferences.WorkingTime;
 
+            person.WorkPreferences.WorkingLanguageEnum = new List<string>();
             foreach (var workingLanguage in command.WorkPreferences.WorkingLanguage)
             {
-                person.WorkPreferences.WorkingLanguageEnum = new List<string>(); // @TODO: fix theses if bug, seems bug
                 person.WorkPreferences.WorkingLanguageEnum.Add(workingLanguage);
             }
 
