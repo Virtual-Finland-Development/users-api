@@ -129,6 +129,10 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
+    /// <summary>
+    ///     If user is not found in database, create new user and return users Id
+    ///     - authentication header / token should be verified before calling this method
+    /// </summary>
     private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
     {
         Guid? userId;
@@ -141,7 +145,6 @@ public class ProductizerController : ControllerBase
             _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
             try
             {
-                // Token should be verified before this point
                 var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
                 var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
                 var createdUser = await _mediator.Send(query);
