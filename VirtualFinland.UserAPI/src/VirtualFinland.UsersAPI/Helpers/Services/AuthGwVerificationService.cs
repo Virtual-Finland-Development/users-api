@@ -48,7 +48,7 @@ public class AuthGwVerificationService
                     request.Headers[Constants.Headers.XConsentToken].ToString());
             }
 
-            using var response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
+            using var response = await httpClient.PostAsync(_configuration["AuthGW:EndpointHostUrl"] + _configuration["AuthGW:AuthorizeEndpoint"], null);
             response.EnsureSuccessStatusCode();
         }
         catch (HttpRequestException e)

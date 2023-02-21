@@ -24,7 +24,7 @@ public class AuthenticationTests : APITestBase
 
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
-        
+
         var authenticationService = new AuthenticationService(userSecurityService);
 
         // Act
@@ -33,7 +33,7 @@ public class AuthenticationTests : APITestBase
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
     }
-    
+
     [Fact]
     public async Task Should_FailAuthGwVerificationIfEmptyToken()
     {
@@ -45,12 +45,12 @@ public class AuthenticationTests : APITestBase
         var mockHttpClientFactory = new Mock<IHttpClientFactory>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        mockHttpMessageHandler.Protected()  
+        mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage {});
+            .ReturnsAsync(new HttpResponseMessage { });
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
 
-        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:AuthorizeURL")]).Returns("https://someurl.com");
+        mockConfiguration.SetupGet(x => x[It.Is<string>(s => s == "AuthGW:EndpointHostUrl")]).Returns("https://someurl.com");
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);

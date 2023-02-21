@@ -30,6 +30,9 @@ public class UsersApiStack : Stack
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
+        var authGwStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/authentication-gw/{environment}");
+        var authenticationGwEndpointUrl = authGwStackReference.GetOutput("endpoint");
+
         InputMap<string> tags = new InputMap<string>()
         {
             {
@@ -82,7 +85,7 @@ public class UsersApiStack : Stack
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
-        
+
         var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{projectName}-LambdaSecretManagerPolicy-{environment}", new()
         {
             Path = "/",
@@ -105,7 +108,7 @@ public class UsersApiStack : Stack
             }),
         });
 
-        
+
         var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-SecretManager-{environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{role.Name}"),
@@ -116,16 +119,16 @@ public class UsersApiStack : Stack
         {
             VpcId = Output.Format($"{stackReferenceVpcId}")
         });
-        
+
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = defaultSecurityGroup.Apply(o=> $"{o.Id}"),
+            SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
             SubnetIds = privateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
-        
+
         var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{projectName}-dbConnectionStringSecret-{environment}");
         var secretVersionDbConnectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
         {
@@ -158,9 +161,15 @@ public class UsersApiStack : Stack
                     },
                     {
                         "CODE_SET_OCCUPATIONS_FLAT", Output.Format($"{occupationsFlatListConfigs}")
-                    }, 
+                    },
                     {
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
+                    },
+                    {
+                        "AuthGW:EndpointURL", authenticationGwEndpointUrl
+                    },
+                    {
+                        "SuomiFI:JwksJsonHostURL", authenticationGwEndpointUrl
                     }
                 }
             },
@@ -190,7 +199,7 @@ public class UsersApiStack : Stack
         this.ApplicationUrl = functionUrl.FunctionUrlResult;
         VpcId = Output.Format($"{stackReferenceVpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
-        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
+        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
     }
 
     private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
@@ -273,8 +282,8 @@ public class UsersApiStack : Stack
 
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
-    
-    
+
+
     [Output] public Output<string> DbConnectionStringSecretId { get; set; }
 
 }

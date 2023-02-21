@@ -108,7 +108,7 @@ builder.Services.AddAuthentication()
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
-        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
+        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonHostURL"] + builder.Configuration["SuomiFi:JwksJsonPath"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -116,7 +116,7 @@ builder.Services.AddAuthentication()
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["AuthGW:Issuer"]
+            ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
         };
     })
     .AddJwtBearer(Constants.Security.SinunaScheme, c =>
@@ -156,12 +156,12 @@ builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddTransient<AuthGwVerificationService>();
-builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
+builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtensions.IsStaging(app.Environment))
+if (!EnvironmentExtensions.IsProduction(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -192,11 +192,11 @@ using (var scope = app.Services.CreateScope())
     var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
     var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
     var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-    
+
     Task.WaitAll(
-        occupationsRepository.GetAllOccupations(), 
-        occupationsFlatRepository.GetAllOccupationsFlat(), 
-        languageRepository.GetAllLanguages(), 
+        occupationsRepository.GetAllOccupations(),
+        occupationsFlatRepository.GetAllOccupationsFlat(),
+        languageRepository.GetAllLanguages(),
         countriesRepository.GetAllCountries()
     );
 
@@ -204,7 +204,7 @@ using (var scope = app.Services.CreateScope())
     var mediator = scope.ServiceProvider.GetService<IMediator>();
     var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
     updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
-    
+
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
