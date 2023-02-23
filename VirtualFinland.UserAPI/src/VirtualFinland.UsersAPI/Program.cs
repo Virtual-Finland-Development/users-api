@@ -108,6 +108,7 @@ builder.Services.AddAuthentication()
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
+        c.RequireHttpsMetadata = !EnvironmentExtensions.IsLocal(builder.Environment);
         JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonHostURL"] + builder.Configuration["SuomiFi:JwksJsonPath"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
