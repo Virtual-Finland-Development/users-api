@@ -7,10 +7,10 @@
     "VirtualFinland.UserAPI": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:22530",
+      "applicationUrl": "http://localhost:5001",
       "launchUrl": "swagger/index.html",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "dev"
+        "ASPNETCORE_ENVIRONMENT": "local"
       }
     }
   }
