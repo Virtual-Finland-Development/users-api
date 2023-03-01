@@ -15,4 +15,10 @@ public class AuthenticationService
         var person = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
         return person.Id;
     }
+
+    public UserSecurityService.JWTTokenResult ParseAuthenticationHeader(HttpRequest httpRequest)
+    {
+        var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
+        return _userSecurityService.ParseJWTToken(token);
+    }
 }

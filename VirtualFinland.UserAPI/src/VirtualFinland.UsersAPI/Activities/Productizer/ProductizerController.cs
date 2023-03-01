@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Prometheus;
 using Swashbuckle.AspNetCore.Annotations;
@@ -9,13 +7,11 @@ using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
-[Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
@@ -27,8 +23,8 @@ public class ProductizerController : ControllerBase
 
     public ProductizerController(
         IMediator mediator,
-        AuthGwVerificationService authGwVerificationService, 
-        AuthenticationService authenticationService, 
+        AuthGwVerificationService authGwVerificationService,
+        AuthenticationService authenticationService,
         ILogger<ProductizerController> logger)
     {
         _mediator = mediator;
@@ -36,9 +32,6 @@ public class ProductizerController : ControllerBase
         _authenticationService = authenticationService;
         _logger = logger;
     }
-
-    
-
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)",
@@ -73,7 +66,20 @@ public class ProductizerController : ControllerBase
     {
         using var progress = MetricsRegistry.JobApplicantProfileReadDuration.TrackInProgress();
         await _authGwVerificationService.VerifyTokens(Request, false);
-        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(await GetUserIdOrCreateNewUserWithId())));
+
+        Guid? userId;
+        try
+        {
+            userId = await _authenticationService.GetCurrentUserId(Request);
+        }
+        catch (NotAuthorizedException)
+        {
+            _logger.LogInformation(
+                "Person was not found in database while trying to retrieve person basic information");
+            throw new NotFoundException("Person not found");
+        }
+
+        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
@@ -97,9 +103,22 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
         await _authGwVerificationService.VerifyTokens(Request, false);
-        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(await GetUserIdOrCreateNewUserWithId())));
+
+        Guid? userId;
+        try
+        {
+            userId = await _authenticationService.GetCurrentUserId(Request);
+        }
+        catch (NotAuthorizedException)
+        {
+            _logger.LogInformation(
+                "Person was not found in database while trying to retrieve person job applicant profile");
+            throw new NotFoundException("Person not found");
+        }
+
+        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
     }
-    
+
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
         Description = "Updates dataproduct matching endpoint path from Testbed")]
@@ -112,6 +131,10 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
+    /// <summary>
+    ///     If user is not found in database, create new user and return users Id
+    ///     - authentication header / token should be verified before calling this method
+    /// </summary>
     private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
     {
         Guid? userId;
@@ -121,14 +144,11 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",  e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
             try
             {
-                var claimsUserId =
-                    User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                    User.FindFirst(Constants.Web.ClaimUserId)?.Value;
-                var claimsIssuer = User.Claims.First().Issuer;
-                var query = new VerifyIdentityUser.Query(claimsUserId, claimsIssuer);
+                var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
+                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
                 var createdUser = await _mediator.Send(query);
                 userId = createdUser.Id;
                 _logger.LogInformation("New user was created with Id: {UserId}", userId);

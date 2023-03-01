@@ -56,7 +56,7 @@ public static class GetUser
             List<UserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is not null)
             {
-                occupations = dbUser.Occupations.Select(x => 
+                occupations = dbUser.Occupations.Select(x =>
                     new UserResponseOccupation
                     (
                         x.Id,
@@ -75,7 +75,7 @@ public static class GetUser
                     dbUser.WorkPreferences?.PreferredMunicipalityCode?.ToList(),
                     dbUser.WorkPreferences?.EmploymentTypeCode,
                     dbUser.WorkPreferences?.WorkingTimeCode,
-                    dbUser.WorkPreferences?.WorkingLanguageEnum,
+                    dbUser.WorkPreferences?.WorkingLanguageEnum?.ToList(),
                     dbUser.WorkPreferences?.NaceCode,
                     dbUser.WorkPreferences?.Created,
                     dbUser.WorkPreferences?.Modified
@@ -136,7 +136,7 @@ public static class GetUser
         List<string>? PreferredMunicipalityEnum,
         string? EmploymentTypeCode,
         string? WorkingTimeEnum,
-        string? WorkingLanguageEnum,
+        List<string>? WorkingLanguageEnum,
         string? NaceCode,
         DateTime? Created,
         DateTime? Modified

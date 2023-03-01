@@ -30,6 +30,8 @@ public class AuthGwVerificationService
         try
         {
             var token = request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
+            if (string.IsNullOrEmpty(token))
+                throw new NotAuthorizedException("Token is missing");
 
             var httpClient = _httpClientFactory.CreateClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
@@ -40,7 +42,7 @@ public class AuthGwVerificationService
             if (requireConsentToken)
             {
                 if (!request.Headers.ContainsKey(Constants.Headers.XConsentToken))
-                    throw new NotAuthorizedException("Consent token is missing.");
+                    throw new NotAuthorizedException("Consent token is missing");
 
                 httpClient.DefaultRequestHeaders.Add(
                     Constants.Headers.XConsentToken,

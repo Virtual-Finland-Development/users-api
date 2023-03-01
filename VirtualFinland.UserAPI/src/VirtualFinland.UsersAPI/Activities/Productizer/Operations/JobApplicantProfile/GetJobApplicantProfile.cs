@@ -46,8 +46,8 @@ public static class GetJobApplicantProfile
             {
                 Occupations = person.Occupations.Select(x =>
                     new PersonJobApplicantProfileResponse.Occupation(
-                        x.EscoCode,
                         x.EscoUri,
+                        x.EscoCode,
                         x.WorkMonths ?? 0
                     )).ToList(),
 
@@ -78,13 +78,13 @@ public static class GetJobApplicantProfile
                     )).ToList(),
 
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
-                
+
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
                     person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.PreferredRegionCode?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingLanguageEnum,
+                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.WorkingTimeCode,
-                    person.WorkPreferences?.EmploymentTypeCode, 
+                    person.WorkPreferences?.EmploymentTypeCode,
                     person.WorkPreferences?.NaceCode
                 )
             };
@@ -123,9 +123,9 @@ public record PersonJobApplicantProfileResponse
     public record WorkPreferences(
         List<string> PreferredMunicipality,
         List<string> PreferredRegion,
-        string? WorkingLanguage,
+        List<string> WorkingLanguage,
         string? WorkingTime,
         string? TypeOfEmployment,
-        string? NaceCode 
+        string? NaceCode
     );
 }
