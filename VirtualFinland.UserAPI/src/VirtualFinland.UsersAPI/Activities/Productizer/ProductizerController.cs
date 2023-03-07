@@ -19,17 +19,20 @@ public class ProductizerController : ControllerBase
     private readonly AuthGwVerificationService _authGwVerificationService;
     private readonly IMediator _mediator;
     private readonly ILogger<ProductizerController> _logger;
+    private readonly string _userProfileDataSourceURI;
 
     public ProductizerController(
         IMediator mediator,
         AuthGwVerificationService authGwVerificationService,
         AuthenticationService authenticationService,
-        ILogger<ProductizerController> logger)
+        ILogger<ProductizerController> logger,
+        IConfiguration configuration)
     {
         _mediator = mediator;
         _authGwVerificationService = authGwVerificationService;
         _authenticationService = authenticationService;
         _logger = logger;
+        _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"];
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
@@ -40,7 +43,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, _userProfileDataSourceURI);
         return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
     }
 
@@ -51,7 +54,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, true);
+        await _authGwVerificationService.VerifyTokens(Request, _userProfileDataSourceURI);
         command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
@@ -63,7 +66,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request, false);
+        await _authGwVerificationService.VerifyTokens(Request);
 
         Guid? userId;
         try
@@ -88,7 +91,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, false);
+        await _authGwVerificationService.VerifyTokens(Request);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
@@ -100,7 +103,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request, false);
+        await _authGwVerificationService.VerifyTokens(Request);
 
         Guid? userId;
         try
@@ -124,7 +127,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, false);
+        await _authGwVerificationService.VerifyTokens(Request);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }

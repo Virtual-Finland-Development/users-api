@@ -22,5 +22,7 @@ public static class Constants
         public static string XAuthorizationContext => "x-authorization-context";
         public static string XAuthorizationProvider => "x-authorization-provider";
         public static string XConsentToken => "x-consent-token";
+        public static string XconsentDataSource => "x-consent-data-source";
+        public static string XconsentUserId => "x-consent-user-id";
     }
 }
