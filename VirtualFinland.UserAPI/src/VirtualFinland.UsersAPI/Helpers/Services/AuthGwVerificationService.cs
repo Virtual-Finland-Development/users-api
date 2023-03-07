@@ -1,7 +1,10 @@
 using System.Net.Http.Headers;
+using System.Text.Json;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Models.Shared;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
+
 
 public class AuthGwVerificationService
 {
@@ -23,8 +26,9 @@ public class AuthGwVerificationService
     ///     Verifies the token from AuthGW
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="requireConsentToken">If true, pass the consent token to the AuthGW as a verification requirement</param>
-    public async Task VerifyTokens(HttpRequest request, bool requireConsentToken = false)
+    /// <param name="requireConsentTokenForDataSource">If provided, verify the consent for the data source</param>
+    /// <param name="requireConsentUserId">If provided, verify the consent user id matches</param>
+    public async Task<AuthorizeResponse> VerifyTokens(HttpRequest request, string requireConsentTokenForDataSource = "", string requireConsentUserId = "")
     {
         try
         {
@@ -38,7 +42,7 @@ public class AuthGwVerificationService
                 Constants.Headers.XAuthorizationContext,
                 Constants.Web.AuthGwApplicationContext);
 
-            if (requireConsentToken)
+            if (requireConsentTokenForDataSource.Length > 0)
             {
                 if (!request.Headers.ContainsKey(Constants.Headers.XConsentToken))
                     throw new NotAuthorizedException("Consent token is missing");
@@ -46,10 +50,20 @@ public class AuthGwVerificationService
                 httpClient.DefaultRequestHeaders.Add(
                     Constants.Headers.XConsentToken,
                     request.Headers[Constants.Headers.XConsentToken].ToString());
+
+                httpClient.DefaultRequestHeaders.Add(Constants.Headers.XconsentDataSource,
+                    requireConsentTokenForDataSource);
+
+                if (requireConsentUserId.Length > 0)
+                    httpClient.DefaultRequestHeaders.Add(Constants.Headers.XconsentUserId,
+                        requireConsentUserId);
             }
 
             using var response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
             response.EnsureSuccessStatusCode();
+
+            return await JsonSerializer.DeserializeAsync<AuthorizeResponse>(await response.Content.ReadAsStreamAsync()) ??
+                   throw new NotAuthorizedException("AuthGW could not verify token");
         }
         catch (HttpRequestException e)
         {
