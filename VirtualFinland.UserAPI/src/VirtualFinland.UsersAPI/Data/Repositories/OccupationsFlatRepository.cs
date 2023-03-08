@@ -1,5 +1,4 @@
-﻿using System.IO.Compression;
-using System.Text.Json;
+﻿using System.Text.Json;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
@@ -14,7 +13,6 @@ public class OccupationsFlatRepository : IOccupationsFlatRepository
     {
         _httpClientFactory = httpClientFactory;
         _occupationsFlatUrl = Environment.GetEnvironmentVariable("CODE_SET_OCCUPATIONS_FLAT") ?? configuration["ExternalSources:OccupationsFlatURL"];
-        GetAllOccupationsFlat().Wait();
     }
 
     public async Task<List<OccupationFlatRoot.Occupation>> GetAllOccupationsFlat()
@@ -25,11 +23,12 @@ public class OccupationsFlatRepository : IOccupationsFlatRepository
             return _occupationsFlat;
         }
 
-        var zipContents = await UnzipUrl(_occupationsFlatUrl);
+        var httpClient = _httpClientFactory.CreateClient();
+        var httpResponseMessage = await httpClient.GetAsync(_occupationsFlatUrl);
 
-        if (!string.IsNullOrEmpty(zipContents))
+        if (httpResponseMessage.IsSuccessStatusCode)
         {
-            var rootOccupationFlatData = JsonSerializer.Deserialize<List<OccupationFlatRoot.Occupation>>(zipContents);
+            var rootOccupationFlatData = JsonSerializer.Deserialize<List<OccupationFlatRoot.Occupation>>(await httpResponseMessage.Content.ReadAsStringAsync());
 
             if (rootOccupationFlatData is not null)
             {
@@ -39,30 +38,5 @@ public class OccupationsFlatRepository : IOccupationsFlatRepository
         }
 
         return new List<OccupationFlatRoot.Occupation>();
-    }
-
-    /// <summary>
-    /// Downloads a zip file from the given url and returns the content of the first file in the zip archive.
-    /// </summary>
-    async Task<string> UnzipUrl(string zipUrl)
-    {
-        var httpClient = _httpClientFactory.CreateClient();
-        var httpResponseMessage = await httpClient.GetAsync(zipUrl);
-
-        if (httpResponseMessage.IsSuccessStatusCode)
-        {
-            var stream = await httpResponseMessage.Content.ReadAsStreamAsync();
-            using var zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
-            var entry = zipArchive.Entries.FirstOrDefault();
-
-            if (entry is not null)
-            {
-                using var entryStream = entry.Open();
-                using var reader = new StreamReader(entryStream);
-                return await reader.ReadToEndAsync();
-            }
-        }
-
-        return string.Empty;
     }
 }

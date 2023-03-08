@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Text.Json;
 using VirtualFinland.UserAPI.Models.Repositories;
 
@@ -14,7 +13,6 @@ public class OccupationsRepository : IOccupationsRepository
     {
         _httpClientFactory = httpClientFactory;
         _occupationsUrl = Environment.GetEnvironmentVariable("CODE_SET_OCCUPATIONS") ?? configuration["ExternalSources:OccupationsEscoURL"]; ;
-        GetAllOccupations().Wait();
     }
 
     public async Task<List<OccupationRoot.Occupation>> GetAllOccupations()

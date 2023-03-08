@@ -156,7 +156,7 @@ builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddTransient<AuthGwVerificationService>();
-builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
+builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 
 var app = builder.Build();
 
@@ -188,23 +188,11 @@ using (var scope = app.Services.CreateScope())
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
 
-    var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
-    var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
-    var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
-    var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-    
-    Task.WaitAll(
-        occupationsRepository.GetAllOccupations(), 
-        occupationsFlatRepository.GetAllOccupationsFlat(), 
-        languageRepository.GetAllLanguages(), 
-        countriesRepository.GetAllCountries()
-    );
-
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
     var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
     updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
-    
+
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
