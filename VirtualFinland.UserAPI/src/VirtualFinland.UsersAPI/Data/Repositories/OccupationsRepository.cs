@@ -12,7 +12,7 @@ public class OccupationsRepository : IOccupationsRepository
     public OccupationsRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _occupationsUrl = Environment.GetEnvironmentVariable("CODE_SET_OCCUPATIONS") ?? configuration["ExternalSources:OccupationsEscoURL"]; ;
+        _occupationsUrl = configuration["ExternalSources:OccupationsEscoURL"]; ;
     }
 
     public async Task<List<OccupationRoot.Occupation>> GetAllOccupations()
