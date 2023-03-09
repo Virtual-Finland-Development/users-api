@@ -48,7 +48,7 @@ public class UsersApiStack : Stack
 
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
 
-        var bucket = CreateBucket(tags, environment, projectName);
+        var bucket = CreateBucket(tags, environment, projectName); // @TODO: Remove if not needed
 
         var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {
@@ -255,9 +255,6 @@ public class UsersApiStack : Stack
     }
 
     [Output] public Output<string> ApplicationUrl { get; set; }
-    [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
-    [Output] public Output<string> OccupationsCodeSetUrl { get; set; } = null!;
-    [Output] public Output<string> OccupationsFlatCodeSetUrl { get; set; } = null!;
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
 
