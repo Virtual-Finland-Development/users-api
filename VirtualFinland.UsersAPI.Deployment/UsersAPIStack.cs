@@ -169,7 +169,7 @@ public class UsersApiStack : Stack
                         "AuthGW:EndpointHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
                     },
                     {
-                        "SuomiFI:JwksJsonHostURL", Output.Format($"{authenticationGwEndpointUrl}")
+                        "SuomiFI:JwksJsonHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
                     }
                 }
             },
