@@ -17,8 +17,12 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+      - name: Restore NuGet Packages
+        run: dotnet restore ./VirtualFinland.UserAPI.sln
+      - name: Build Solution
+        run: dotnet build ./VirtualFinland.UserAPI.sln --no-restore --verbosity normal
       - name: Pulumi Users API Integration Tests
-        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
+        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore --verbosity normal
       - name: Install AWS Dotnet CLI Lambda Tools
         run: dotnet tool install -g Amazon.Lambda.Tools
       - name: Build UserAPI Lamda Package
