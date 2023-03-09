@@ -3,10 +3,8 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
-using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 using UpdateUserCommandBuilder = VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder.UpdateUserCommandBuilder;
 
@@ -22,7 +20,7 @@ public class ProductizerTests : APITestBase
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
         var query = new GetUser.Query(dbEntities.user.Id);
         var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
-        
+
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
@@ -40,9 +38,9 @@ public class ProductizerTests : APITestBase
                 o.CountryOfBirthCode == dbEntities.user.AdditionalInformation.CountryOfBirthCode &&
                 o.Gender == dbEntities.user.AdditionalInformation.Gender &&
                 o.DateOfBirth == dbEntities.user.AdditionalInformation.DateOfBirth);
-        
+
     }
-    
+
     [Fact]
     public async Task Should_UpdateUserAsync()
     {
@@ -51,11 +49,11 @@ public class ProductizerTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
-        
+
         // Act
         var result = await sut.Handle(command, CancellationToken.None);
 
@@ -70,9 +68,9 @@ public class ProductizerTests : APITestBase
                 o.OccupationCode == command.OccupationCode &&
                 o.CountryOfBirthCode == command.CountryOfBirthCode &&
                 o.Gender == command.Gender);
-        
+
     }
-    
+
     [Fact]
     public async Task Should_FailUserUpdateWithMaxLengths_FluentValidation()
     {
@@ -96,7 +94,7 @@ public class ProductizerTests : APITestBase
 
         // Assert
         var result = validator.TestValidate(command);
-        
+
         result.ShouldHaveValidationErrorFor(user => user.FirstName);
         result.ShouldHaveValidationErrorFor(user => user.LastName);
         result.ShouldHaveValidationErrorFor(user => user.Address!.StreetAddress);

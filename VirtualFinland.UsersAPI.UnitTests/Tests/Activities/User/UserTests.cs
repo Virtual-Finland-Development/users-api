@@ -3,7 +3,6 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
@@ -49,7 +48,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
@@ -79,7 +78,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCitizenshipCode("not a code").Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
@@ -100,7 +99,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCountryOfBirthCode("not a code").Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
@@ -121,7 +120,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithNativeLanguageCode("not a code").Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
@@ -142,7 +141,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithOccupationCode("not a code").Build();
         command.SetAuth(dbEntities.user.Id);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
@@ -162,7 +161,7 @@ public class UserTests : APITestBase
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
-        var languageRepository = new LanguageRepository();
+        var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(Guid.Empty);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
