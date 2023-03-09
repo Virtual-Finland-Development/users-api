@@ -15,7 +15,7 @@ services:
       ASPNETCORE_ENVIRONMENT: dev
       CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
       AWS_REGION: eu-north-1
-      "ExternalSources:CodesetApiBaseUrl": "http://host.docker.internal:3166/resources"
+      "CodesetApiBaseUrl": "http://host.docker.internal:3166/resources"
     networks:
       - vfd-network
     extra_hosts:

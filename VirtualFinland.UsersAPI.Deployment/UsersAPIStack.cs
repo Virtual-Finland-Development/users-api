@@ -152,7 +152,7 @@ public class UsersApiStack : Stack
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
                     },
                     {
-                        "ExternalSources:CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
+                        "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                 }
             },

@@ -23,9 +23,9 @@ public static class ServerConfigurationValidation
             validationExceptions.Add("AuthGW:JwksJsonURL is missing");
         }
 
-        if (string.IsNullOrEmpty(configuration["ExternalSources:CodesetApiBaseUrl"]))
+        if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))
         {
-            validationExceptions.Add("ExternalSources:CodesetApiBaseUrl is missing");
+            validationExceptions.Add("CodesetApiBaseUrl is missing");
         }
 
         if (validationExceptions.Count > 0)
