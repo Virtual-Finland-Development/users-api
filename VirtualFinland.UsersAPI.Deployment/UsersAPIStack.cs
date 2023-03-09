@@ -30,6 +30,10 @@ public class UsersApiStack : Stack
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
+        var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{environment}");
+        var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
+
+
         InputMap<string> tags = new InputMap<string>()
         {
             {
@@ -45,12 +49,6 @@ public class UsersApiStack : Stack
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
 
         var bucket = CreateBucket(tags, environment, projectName);
-
-        var countriesCodeSetConfigs = UploadListsData(bucket, tags, "countries.json", "CountriesCodeSetUrl");
-
-        var occupationsEscoListConfigs = UploadListsData(bucket, tags, "occupations.json", "OccupationsCodeSetUrl");
-
-        var occupationsFlatListConfigs = UploadListsData(bucket, tags, "occupations-flat.zip", "OccupationsFlatCodeSetUrl");
 
         var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {
@@ -82,7 +80,7 @@ public class UsersApiStack : Stack
             Role = Output.Format($"{role.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
-        
+
         var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{projectName}-LambdaSecretManagerPolicy-{environment}", new()
         {
             Path = "/",
@@ -105,7 +103,7 @@ public class UsersApiStack : Stack
             }),
         });
 
-        
+
         var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-SecretManager-{environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{role.Name}"),
@@ -116,16 +114,16 @@ public class UsersApiStack : Stack
         {
             VpcId = Output.Format($"{stackReferenceVpcId}")
         });
-        
+
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = defaultSecurityGroup.Apply(o=> $"{o.Id}"),
+            SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
             SubnetIds = privateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
-        
+
         var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{projectName}-dbConnectionStringSecret-{environment}");
         var secretVersionDbConnectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
         {
@@ -151,17 +149,20 @@ public class UsersApiStack : Stack
                         "ASPNETCORE_ENVIRONMENT", environment
                     },
                     {
-                        "CODE_SET_COUNTRIES", Output.Format($"{countriesCodeSetConfigs}")
-                    },
-                    {
-                        "CODE_SET_OCCUPATIONS", Output.Format($"{occupationsEscoListConfigs}")
-                    },
-                    {
-                        "CODE_SET_OCCUPATIONS_FLAT", Output.Format($"{occupationsFlatListConfigs}")
-                    }, 
-                    {
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
-                    }
+                    },
+                    {
+                        "ExternalSources:ISO3166CountriesURL", Output.Format($"{codesetsEndpointUrl}/resources/ISO3166CountriesURL")
+                    },
+                    {
+                        "ExternalSources:OccupationsEscoURL", Output.Format($"{codesetsEndpointUrl}/resources/OccupationsEscoURL")
+                    },
+                    {
+                        "ExternalSources:OccupationsFlatURL", Output.Format($"{codesetsEndpointUrl}/resources/OccupationsFlatURL")
+                    },
+                    {
+                        "ExternalSources:ISO639Languages", Output.Format($"{codesetsEndpointUrl}/resources/ISO639Languages")
+                    },
                 }
             },
             Code = new FileArchive(appArtifactPath),
@@ -190,7 +191,7 @@ public class UsersApiStack : Stack
         this.ApplicationUrl = functionUrl.FunctionUrlResult;
         VpcId = Output.Format($"{stackReferenceVpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
-        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o=> $"{o.Id}");
+        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
     }
 
     private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
@@ -273,8 +274,8 @@ public class UsersApiStack : Stack
 
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
-    
-    
+
+
     [Output] public Output<string> DbConnectionStringSecretId { get; set; }
 
 }

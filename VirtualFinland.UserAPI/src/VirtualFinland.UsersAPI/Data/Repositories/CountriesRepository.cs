@@ -12,7 +12,7 @@ public class CountriesRepository : ICountriesRepository
     public CountriesRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _iso3166CountriesUrl = Environment.GetEnvironmentVariable("CODE_SET_COUNTRIES") ?? configuration["ExternalSources:ISO3166CountriesURL"];
+        _iso3166CountriesUrl = configuration["ExternalSources:ISO3166CountriesURL"];
         GetAllCountries().Wait();
     }
     public async Task<List<Country>> GetAllCountries()
@@ -21,7 +21,7 @@ public class CountriesRepository : ICountriesRepository
         {
             return _countries;
         }
-        
+
         var httpClient = _httpClientFactory.CreateClient();
         var httpResponseMessage = await httpClient.GetAsync(_iso3166CountriesUrl);
 
