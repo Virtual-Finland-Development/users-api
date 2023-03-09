@@ -152,16 +152,7 @@ public class UsersApiStack : Stack
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
                     },
                     {
-                        "ExternalSources:ISO3166CountriesURL", Output.Format($"{codesetsEndpointUrl}/resources/ISO3166CountriesURL")
-                    },
-                    {
-                        "ExternalSources:OccupationsEscoURL", Output.Format($"{codesetsEndpointUrl}/resources/OccupationsEscoURL")
-                    },
-                    {
-                        "ExternalSources:OccupationsFlatURL", Output.Format($"{codesetsEndpointUrl}/resources/OccupationsFlatURL")
-                    },
-                    {
-                        "ExternalSources:ISO639Languages", Output.Format($"{codesetsEndpointUrl}/resources/ISO639Languages")
+                        "ExternalSources:CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                 }
             },

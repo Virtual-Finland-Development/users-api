@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
@@ -9,10 +10,10 @@ public class OccupationsFlatRepository : IOccupationsFlatRepository
     private readonly string _occupationsFlatUrl;
     private List<OccupationFlatRoot.Occupation>? _occupationsFlat;
 
-    public OccupationsFlatRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public OccupationsFlatRepository(IOptions<CodesetConfig> settings, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _occupationsFlatUrl = configuration["ExternalSources:OccupationsFlatURL"];
+        _occupationsFlatUrl = settings.Value.OccupationsFlatUrl;
     }
 
     public async Task<List<OccupationFlatRoot.Occupation>> GetAllOccupationsFlat()
