@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
@@ -10,10 +11,10 @@ public class LanguageRepository : ILanguageRepository
     private List<Language>? _languages;
 
 
-    public LanguageRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public LanguageRepository(IOptions<CodesetConfig> settings, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _languagesUrl = Environment.GetEnvironmentVariable("CODE_SET_LANGUAGES") ?? configuration["ExternalSources:ISO639Languages"]; ;
+        _languagesUrl = settings.Value.IsoLanguages;
     }
 
     public async Task<List<Language>> GetAllLanguages()
