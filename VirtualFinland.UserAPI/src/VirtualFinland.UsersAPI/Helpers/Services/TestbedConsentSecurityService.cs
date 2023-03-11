@@ -80,9 +80,6 @@ public class TestbedConsentSecurityService
             throw new NotAuthorizedException("Consent token algorithm must be RS256");
         }
 
-        //_logger.LogInformation("Consent payload: {0}", validJwt.Payload.SerializeToJson());
-        //_logger.LogInformation("IdToken payload: {0}", idToken.Payload.SerializeToJson());
-
         // Check rest of the consent claims
         if (consentToken.Payload.Acr != idToken.Payload.Acr)
             throw new NotAuthorizedException("Token mismatch: acr");
@@ -116,10 +113,6 @@ public class TestbedConsentSecurityService
             {
                 dataSource = dataSourceUri
             });
-
-            /* _logger.LogInformation("idToken: {0}", idToken);
-            _logger.LogInformation("consentToken: {0}", consentToken);
-            _logger.LogInformation("payload: {0}", payload); */
 
             var httpContent = new StringContent(payload, Encoding.UTF8, "application/json");
             using var response = await httpClient.PostAsync(_config.ConsentVerifyUrl, httpContent);
