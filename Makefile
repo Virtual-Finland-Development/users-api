@@ -9,4 +9,4 @@ prep-deploy: test
 	dotnet lambda package --project-location ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
 
 deploy: prep-deploy
-	pulumi -C ./VirtualFinland.UsersAPI.Deployment up
+	pulumi -C ./VirtualFinland.UsersAPI.Deployment up --yes
