@@ -162,7 +162,6 @@ builder.Services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConf
 builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
-builder.Services.AddTransient<AuthGwVerificationService>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.Configure<CodesetConfig>(builder.Configuration);
 

@@ -18,7 +18,6 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 public class ProductizerController : ControllerBase
 {
     private readonly AuthenticationService _authenticationService;
-    private readonly AuthGwVerificationService _authGwVerificationService;
     private readonly TestbedConsentSecurityService _consentSecurityService;
 
     private readonly IMediator _mediator;
@@ -27,14 +26,12 @@ public class ProductizerController : ControllerBase
 
     public ProductizerController(
         IMediator mediator,
-        AuthGwVerificationService authGwVerificationService,
         AuthenticationService authenticationService,
         TestbedConsentSecurityService consentSecurityService,
         ILogger<ProductizerController> logger,
         IConfiguration configuration)
     {
         _mediator = mediator;
-        _authGwVerificationService = authGwVerificationService;
         _authenticationService = authenticationService;
         _consentSecurityService = consentSecurityService;
         _logger = logger;
