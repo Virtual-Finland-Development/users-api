@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
@@ -11,12 +12,15 @@ using VirtualFinland.UserAPI.Helpers.Services;
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
+[Authorize]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
 {
     private readonly AuthenticationService _authenticationService;
     private readonly AuthGwVerificationService _authGwVerificationService;
+    private readonly TestbedConsentSecurityService _consentSecurityService;
+
     private readonly IMediator _mediator;
     private readonly ILogger<ProductizerController> _logger;
     private readonly string _userProfileDataSourceURI;
@@ -25,12 +29,14 @@ public class ProductizerController : ControllerBase
         IMediator mediator,
         AuthGwVerificationService authGwVerificationService,
         AuthenticationService authenticationService,
+        TestbedConsentSecurityService consentSecurityService,
         ILogger<ProductizerController> logger,
         IConfiguration configuration)
     {
         _mediator = mediator;
         _authGwVerificationService = authGwVerificationService;
         _authenticationService = authenticationService;
+        _consentSecurityService = consentSecurityService;
         _logger = logger;
         _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"];
     }
@@ -43,7 +49,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _authGwVerificationService.VerifyTokens(Request, _userProfileDataSourceURI);
+        await _consentSecurityService.VerifyConsentTokenRequest(Request, _userProfileDataSourceURI);
         return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
     }
 
@@ -54,7 +60,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request, _userProfileDataSourceURI);
+        await _consentSecurityService.VerifyConsentTokenRequest(Request, _userProfileDataSourceURI);
         command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
@@ -66,8 +72,6 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request);
-
         Guid? userId;
         try
         {
@@ -91,7 +95,6 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
@@ -103,8 +106,6 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        await _authGwVerificationService.VerifyTokens(Request);
-
         Guid? userId;
         try
         {
@@ -127,7 +128,6 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        await _authGwVerificationService.VerifyTokens(Request);
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }

@@ -89,6 +89,10 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 
+
+IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration);
+testBedConsentProviderConfig.LoadPublicKeys();
+
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
@@ -146,6 +150,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
     options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 
 builder.Services.AddResponseCaching();
 
@@ -153,6 +158,8 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
+builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddTransient<AuthGwVerificationService>();
@@ -185,6 +192,9 @@ app.UseResponseCaching();
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Bootstrapping application");
+
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
@@ -197,7 +207,7 @@ using (var scope = app.Services.CreateScope())
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-
+    logger.LogInformation("Compeleted bootstrapping application");
 }
 
 
