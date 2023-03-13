@@ -106,7 +106,7 @@ public class TestbedConsentSecurityService
         try
         {
             var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(idToken);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
             httpClient.DefaultRequestHeaders.Add(Constants.Headers.XConsentToken, consentToken);
 
             var payload = JsonSerializer.Serialize(new
