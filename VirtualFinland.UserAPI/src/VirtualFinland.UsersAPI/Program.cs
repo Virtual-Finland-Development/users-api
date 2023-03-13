@@ -158,6 +158,7 @@ builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddTransient<AuthGwVerificationService>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
+builder.Services.Configure<CodesetConfig>(builder.Configuration);
 
 var app = builder.Build();
 
@@ -188,18 +189,6 @@ using (var scope = app.Services.CreateScope())
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
-
-    var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
-    var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
-    var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
-    var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-
-    Task.WaitAll(
-        occupationsRepository.GetAllOccupations(),
-        occupationsFlatRepository.GetAllOccupationsFlat(),
-        languageRepository.GetAllLanguages(),
-        countriesRepository.GetAllCountries()
-    );
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();

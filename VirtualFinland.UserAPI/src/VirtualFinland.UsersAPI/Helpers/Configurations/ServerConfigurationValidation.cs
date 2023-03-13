@@ -23,14 +23,9 @@ public static class ServerConfigurationValidation
             validationExceptions.Add("SuomiFi:JwksJsonHostUrl is missing");
         }
 
-        if (string.IsNullOrEmpty(configuration["ExternalSources:CodeSetsSuomiFiURL"]))
+        if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))
         {
-            validationExceptions.Add("ExternalSources:CodeSetsSuomiFiURL is missing");
-        }
-
-        if (string.IsNullOrEmpty(configuration["ExternalSources:ISO3166CountriesURL"]))
-        {
-            validationExceptions.Add("ExternalSources:ISO3166CountriesURL is missing");
+            validationExceptions.Add("CodesetApiBaseUrl is missing");
         }
 
         if (validationExceptions.Count > 0)

@@ -32,6 +32,9 @@ public class UsersApiStack : Stack
 
         var authGwStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/authentication-gw/{environment}");
         var authenticationGwEndpointUrl = authGwStackReference.GetOutput("endpoint");
+        var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{environment}");
+        var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
+
 
         InputMap<string> tags = new InputMap<string>()
         {
@@ -47,13 +50,7 @@ public class UsersApiStack : Stack
 
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
 
-        var bucket = CreateBucket(tags, environment, projectName);
-
-        var countriesCodeSetConfigs = UploadListsData(bucket, tags, "countries.json", "CountriesCodeSetUrl");
-
-        var occupationsEscoListConfigs = UploadListsData(bucket, tags, "occupations.json", "OccupationsCodeSetUrl");
-
-        var occupationsFlatListConfigs = UploadListsData(bucket, tags, "occupations-flat.zip", "OccupationsFlatCodeSetUrl");
+        var bucket = CreateBucket(tags, environment, projectName); // @TODO: Remove if not needed
 
         var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
         {
@@ -154,23 +151,17 @@ public class UsersApiStack : Stack
                         "ASPNETCORE_ENVIRONMENT", environment
                     },
                     {
-                        "CODE_SET_COUNTRIES", Output.Format($"{countriesCodeSetConfigs}")
-                    },
-                    {
-                        "CODE_SET_OCCUPATIONS", Output.Format($"{occupationsEscoListConfigs}")
-                    },
-                    {
-                        "CODE_SET_OCCUPATIONS_FLAT", Output.Format($"{occupationsFlatListConfigs}")
-                    },
-                    {
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
                     },
                     {
-                        "AuthGW:EndpointHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
+                        "AuthGW__EndpointHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
                     },
                     {
-                        "SuomiFI:JwksJsonHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
-                    }
+                        "SuomiFI__JwksJsonHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
+                    },
+                    {
+                        "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
+                    },
                 }
             },
             Code = new FileArchive(appArtifactPath),
@@ -272,9 +263,6 @@ public class UsersApiStack : Stack
     }
 
     [Output] public Output<string> ApplicationUrl { get; set; }
-    [Output] public Output<string> CountriesCodeSetUrl { get; set; } = null!;
-    [Output] public Output<string> OccupationsCodeSetUrl { get; set; } = null!;
-    [Output] public Output<string> OccupationsFlatCodeSetUrl { get; set; } = null!;
 
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
 
