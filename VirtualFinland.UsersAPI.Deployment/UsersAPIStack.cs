@@ -154,9 +154,6 @@ public class UsersApiStack : Stack
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
                     },
                     {
-                        "AuthGW__EndpointHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
-                    },
-                    {
                         "SuomiFI__JwksJsonHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
                     },
                     {

@@ -8,11 +8,11 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
     private readonly IConfiguration _configuration;
     private string? _issuer;
     private string? _jwksOptionsUrl;
-    private readonly int _configUrlMaxRetryCount = 5;
+    private const int _configUrlMaxRetryCount = 5;
     /// <summary>
     /// How long to wait in milliseconds before trying again to retrieve the openid configs
     /// </summary>
-    private readonly int _configUrlRetryWaitTime = 3000;
+    private const int _configUrlRetryWaitTime = 3000;
 
     public string? JwksOptionsUrl
     {
@@ -35,7 +35,7 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
         var httpResponse = await httpClient.GetAsync(configUrl);
-        
+
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {
             if (httpResponse.IsSuccessStatusCode)
@@ -46,16 +46,16 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
 
                 if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                 {
-                    break;    
+                    break;
                 }
-            }    
-            Thread.Sleep(_configUrlRetryWaitTime);
+            }
+            await Task.Delay(_configUrlRetryWaitTime);
         }
-        
+
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
         if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
         {
-            throw new ApplicationException("Failed to retrieve TestBed OpenID configurations.");
+            throw new Exception("Failed to retrieve TestBed OpenID configurations.");
         }
     }
 }
