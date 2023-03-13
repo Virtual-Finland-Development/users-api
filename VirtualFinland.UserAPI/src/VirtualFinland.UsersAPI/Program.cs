@@ -108,7 +108,8 @@ builder.Services.AddAuthentication()
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
-        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
+        c.RequireHttpsMetadata = !EnvironmentExtensions.IsLocal(builder.Environment);
+        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:JwksJsonHostUrl"] + builder.Configuration["SuomiFi:JwksJsonPath"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -116,7 +117,7 @@ builder.Services.AddAuthentication()
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["AuthGW:Issuer"]
+            ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
         };
     })
     .AddJwtBearer(Constants.Security.SinunaScheme, c =>
@@ -162,7 +163,7 @@ builder.Services.Configure<CodesetConfig>(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtensions.IsStaging(app.Environment))
+if (!EnvironmentExtensions.IsProduction(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();

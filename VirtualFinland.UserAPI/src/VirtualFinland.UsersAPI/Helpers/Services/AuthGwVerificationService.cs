@@ -59,7 +59,7 @@ public class AuthGwVerificationService
                         requireConsentUserId);
             }
 
-            using var response = await httpClient.PostAsync(_configuration["AuthGW:AuthorizeURL"], null);
+            using var response = await httpClient.PostAsync(_configuration["AuthGW:EndpointHostUrl"] + _configuration["AuthGW:AuthorizeEndpoint"], null);
             response.EnsureSuccessStatusCode();
 
             return await JsonSerializer.DeserializeAsync<AuthorizeResponse>(await response.Content.ReadAsStreamAsync()) ??
