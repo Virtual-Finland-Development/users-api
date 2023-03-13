@@ -46,7 +46,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _consentSecurityService.VerifyConsentTokenRequest(Request, _userProfileDataSourceURI);
+        await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
     }
 
@@ -57,7 +57,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _consentSecurityService.VerifyConsentTokenRequest(Request, _userProfileDataSourceURI);
+        await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }

@@ -22,14 +22,14 @@ public class TestbedConsentSecurityService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task VerifyConsentTokenRequest(HttpRequest request, string dataSourceUri)
+    public async Task VerifyConsentTokenRequestHeaders(IHeaderDictionary headers, string dataSourceUri)
     {
         _logger.LogInformation("Verifying consent request");
-        var idToken = request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
+        var idToken = headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         if (string.IsNullOrEmpty(idToken))
             throw new NotAuthorizedException("Authorization token is missing");
 
-        var consentToken = request.Headers[Constants.Headers.XConsentToken].ToString();
+        var consentToken = headers[Constants.Headers.XConsentToken].ToString();
         if (string.IsNullOrEmpty(consentToken))
             throw new NotAuthorizedException("Consent token is missing");
 
@@ -53,7 +53,7 @@ public class TestbedConsentSecurityService
 
         var issuerPublicKey = _config.GetKey(consentToken.Header.Kid);
         if (issuerPublicKey == null)
-            throw new NotAuthorizedException("Cosent token signing key not found");
+            throw new NotAuthorizedException("Consent token signing key not found");
 
         var validationParameters = new TokenValidationParameters()
         {
@@ -67,7 +67,7 @@ public class TestbedConsentSecurityService
 
         var handler = new JwtSecurityTokenHandler();
 
-        var principal = handler.ValidateToken(consentTokenRaw, validationParameters, out var validToken);
+        handler.ValidateToken(consentTokenRaw, validationParameters, out var validToken);
         JwtSecurityToken? validJwt = validToken as JwtSecurityToken;
 
         if (validJwt == null)
@@ -141,7 +141,7 @@ public class TestbedConsentSecurityService
         return canReadToken ? tokenHandler.ReadJwtToken(token) : null;
     }
 
-    class ConsentVerifyResponse
+    private class ConsentVerifyResponse
     {
         [JsonPropertyName("verified")]
         public bool Verified { get; set; }
