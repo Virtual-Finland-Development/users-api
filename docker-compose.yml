@@ -15,8 +15,8 @@ services:
       ASPNETCORE_ENVIRONMENT: local
       CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
       AWS_REGION: eu-north-1
-      "SuomiFi:JwksJsonHostUrl": ${SuomiFi:JwksJsonHostUrl:-http://host.docker.internal:4078}
-      "AuthGW:EndpointHostUrl": ${AuthGW:EndpointHostUrl:-http://host.docker.internal:4078}
+      "SuomiFi__JwksJsonHostUrl": ${SuomiFi__JwksJsonHostUrl:-http://host.docker.internal:4078}
+      "AuthGW__EndpointHostUrl": ${AuthGW__EndpointHostUrl:-http://host.docker.internal:4078}
       "CodesetApiBaseUrl": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
     networks:
       - vfd-network
