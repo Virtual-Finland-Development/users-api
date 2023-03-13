@@ -34,7 +34,7 @@ public class AuthenticationTests : APITestBase
     }
 
     [Fact]
-    public async Task Should_FailAuthGwVerificationIfEmptyToken()
+    public async Task Should_FailAuthVerificationIfEmptyToken()
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);

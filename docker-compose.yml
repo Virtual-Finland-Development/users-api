@@ -12,10 +12,11 @@ services:
       postgresdb:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: dev
+      ASPNETCORE_ENVIRONMENT: local
       CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
       AWS_REGION: eu-north-1
-      "CodesetApiBaseUrl": "http://host.docker.internal:3166/resources"
+      "SuomiFi__JwksJsonHostUrl": ${SuomiFi__JwksJsonHostUrl:-http://host.docker.internal:4078}
+      "CodesetApiBaseUrl": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
     networks:
       - vfd-network
     extra_hosts:

@@ -6,7 +6,6 @@ public static class Constants
     {
         public static string ServerUserAgent => "UsersAPI/1.0.0";
         public static string ClaimUserId => "userId";
-        public static string AuthGwApplicationContext => "user-api-productizer";
     }
 
     public static class Security
