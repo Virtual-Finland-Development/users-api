@@ -30,8 +30,6 @@ public class UsersApiStack : Stack
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
 
-        var authGwStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/authentication-gw/{environment}");
-        var authenticationGwEndpointUrl = authGwStackReference.GetOutput("endpoint");
         var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{environment}");
         var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
 
@@ -152,9 +150,6 @@ public class UsersApiStack : Stack
                     },
                     {
                         "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
-                    },
-                    {
-                        "SuomiFI__JwksJsonHostUrl", Output.Format($"{authenticationGwEndpointUrl}")
                     },
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")

@@ -18,9 +18,9 @@ public static class ServerConfigurationValidation
             validationExceptions.Add("Sinuna:OpenIDConfigurationURL is missing");
         }
 
-        if (string.IsNullOrEmpty(configuration["SuomiFi:JwksJsonHostUrl"]))
+        if (string.IsNullOrEmpty(configuration["SuomiFi:AuthorizationJwksJsonUrl"]))
         {
-            validationExceptions.Add("SuomiFi:JwksJsonHostUrl is missing");
+            validationExceptions.Add("SuomiFi:AuthorizationJwksJsonUrl is missing");
         }
 
         if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))
