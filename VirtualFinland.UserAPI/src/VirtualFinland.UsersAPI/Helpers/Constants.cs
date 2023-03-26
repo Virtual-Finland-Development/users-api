@@ -6,7 +6,6 @@ public static class Constants
     {
         public static string ServerUserAgent => "UsersAPI/1.0.0";
         public static string ClaimUserId => "userId";
-        public static string AuthGwApplicationContext => "user-api-productizer";
     }
 
     public static class Security
@@ -22,5 +21,7 @@ public static class Constants
         public static string XAuthorizationContext => "x-authorization-context";
         public static string XAuthorizationProvider => "x-authorization-provider";
         public static string XConsentToken => "x-consent-token";
+        public static string XconsentDataSource => "x-consent-data-source";
+        public static string XconsentUserId => "x-consent-user-id";
     }
 }

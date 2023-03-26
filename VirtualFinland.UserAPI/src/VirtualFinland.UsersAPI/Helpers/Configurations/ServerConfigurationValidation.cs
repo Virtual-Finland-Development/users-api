@@ -7,30 +7,25 @@ public static class ServerConfigurationValidation
     public static void ValidateServer(IConfiguration configuration)
     {
         var validationExceptions = new List<string>();
-        
+
         if (string.IsNullOrEmpty(configuration["Testbed:OpenIDConfigurationURL"]))
         {
             validationExceptions.Add("Testbed:OpenIDConfigurationURL is missing");
         }
-        
+
         if (string.IsNullOrEmpty(configuration["Sinuna:OpenIDConfigurationURL"]))
         {
             validationExceptions.Add("Sinuna:OpenIDConfigurationURL is missing");
         }
-        
-        if (string.IsNullOrEmpty(configuration["AuthGW:JwksJsonURL"]))
+
+        if (string.IsNullOrEmpty(configuration["SuomiFi:AuthorizationJwksJsonUrl"]))
         {
-            validationExceptions.Add("AuthGW:JwksJsonURL is missing");
+            validationExceptions.Add("SuomiFi:AuthorizationJwksJsonUrl is missing");
         }
 
-        if (string.IsNullOrEmpty(configuration["ExternalSources:CodeSetsSuomiFiURL"]))
+        if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))
         {
-            validationExceptions.Add("ExternalSources:CodeSetsSuomiFiURL is missing");
-        }
-        
-        if (string.IsNullOrEmpty(configuration["ExternalSources:ISO3166CountriesURL"]))
-        {
-            validationExceptions.Add("ExternalSources:ISO3166CountriesURL is missing");
+            validationExceptions.Add("CodesetApiBaseUrl is missing");
         }
 
         if (validationExceptions.Count > 0)

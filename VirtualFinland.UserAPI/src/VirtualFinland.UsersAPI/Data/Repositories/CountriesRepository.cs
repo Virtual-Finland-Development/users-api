@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
@@ -9,19 +10,19 @@ public class CountriesRepository : ICountriesRepository
     private readonly string _iso3166CountriesUrl;
     private List<Country>? _countries;
 
-    public CountriesRepository(IConfiguration configuration, IHttpClientFactory httpClientFactory)
+    public CountriesRepository(IOptions<CodesetConfig> settings, IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
-        _iso3166CountriesUrl = Environment.GetEnvironmentVariable("CODE_SET_COUNTRIES") ?? configuration["ExternalSources:ISO3166CountriesURL"];
-        GetAllCountries().Wait();
+        _iso3166CountriesUrl = settings.Value.IsoCountriesUrl;
     }
+
     public async Task<List<Country>> GetAllCountries()
     {
         if (_countries is not null)
         {
             return _countries;
         }
-        
+
         var httpClient = _httpClientFactory.CreateClient();
         var httpResponseMessage = await httpClient.GetAsync(_iso3166CountriesUrl);
 

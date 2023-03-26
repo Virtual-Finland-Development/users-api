@@ -12,33 +12,21 @@ public class MockCountriesRepository : ICountriesRepository
         {
             new Country()
             {
-                Name = new Country.CountryName()
-                {
-                    Common = "Finland"
-                },
                 IsoCode = "FI",
                 IsoCodeThreeLetter = "FIN"
             },
             new Country()
             {
-                Name = new Country.CountryName()
-                {
-                    Common = "Laos"
-                },
                 IsoCode = "LA",
                 IsoCodeThreeLetter = "LAO"
             },
             new Country()
             {
-                Name = new Country.CountryName()
-                {
-                    Common = "Tuvalu"
-                },
                 IsoCode = "TV",
                 IsoCodeThreeLetter = "TUV"
             },
         };
-        
+
         return Task.FromResult<List<Country>>(countries);
     }
 }

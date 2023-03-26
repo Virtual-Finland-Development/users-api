@@ -107,6 +107,10 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 
+
+IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration);
+testBedConsentProviderConfig.LoadPublicKeys();
+
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
@@ -126,7 +130,8 @@ builder.Services.AddAuthentication()
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
-        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["AuthGW:JwksJsonURL"]));
+        c.RequireHttpsMetadata = !EnvironmentExtensions.IsLocal(builder.Environment);
+        JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:AuthorizationJwksJsonUrl"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -134,7 +139,7 @@ builder.Services.AddAuthentication()
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["AuthGW:Issuer"]
+            ValidIssuer = builder.Configuration["SuomiFi:Issuer"]
         };
     })
     .AddJwtBearer(Constants.Security.SinunaScheme, c =>
@@ -164,6 +169,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
     options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 
 builder.Services.AddResponseCaching();
 
@@ -171,10 +177,12 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
+builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
-builder.Services.AddTransient<AuthGwVerificationService>();
-builder.Services.AddFluentValidation(new[] {Assembly.GetExecutingAssembly()});
+builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
+builder.Services.Configure<CodesetConfig>(builder.Configuration);
 
 var app = builder.Build();
 
@@ -182,7 +190,7 @@ var app = builder.Build();
 app.UseMetricServer();
 
 // Configure the HTTP request pipeline.
-if (EnvironmentExtensions.IsDevelopment(app.Environment) || EnvironmentExtensions.IsStaging(app.Environment))
+if (!EnvironmentExtensions.IsProduction(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -207,33 +215,22 @@ app.UseResponseCaching();
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
-    logger.Information("Starting app");
-    
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogInformation("Bootstrapping application");
+
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
     await dataContext.Database.MigrateAsync();
-
-    var occupationsRepository = scope.ServiceProvider.GetRequiredService<IOccupationsRepository>();
-    var occupationsFlatRepository = scope.ServiceProvider.GetRequiredService<IOccupationsFlatRepository>();
-    var languageRepository = scope.ServiceProvider.GetRequiredService<ILanguageRepository>();
-    var countriesRepository = scope.ServiceProvider.GetRequiredService<ICountriesRepository>();
-    
-    Task.WaitAll(
-        occupationsRepository.GetAllOccupations(), 
-        occupationsFlatRepository.GetAllOccupationsFlat(), 
-        languageRepository.GetAllLanguages(), 
-        countriesRepository.GetAllCountries()
-    );
 
     // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
     var mediator = scope.ServiceProvider.GetService<IMediator>();
     var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
     updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
-    
+
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-
+    logger.LogInformation("Compeleted bootstrapping application");
 }
 
 
