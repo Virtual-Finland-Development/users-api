@@ -6,9 +6,9 @@ public class Certification : Auditable, IEntity
 {
     [MaxLength(512)]
     public string? Name { get; set; }
-    
-    [MaxLength(256)]
-    public string? Type { get; set; }
+
+    [Url]
+    public string? EscoUri { get; set; }
     
     [MaxLength(256)]
     public string? InstitutionName { get; set; }

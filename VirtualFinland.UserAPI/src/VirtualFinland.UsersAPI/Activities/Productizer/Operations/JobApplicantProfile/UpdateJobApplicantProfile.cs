@@ -103,7 +103,8 @@ public static class UpdateJobApplicantProfile
             person.Certifications = command.Certifications.Select(x => new Certification
             {
                 Name = x.CertificationName,
-                Type = x.QualificationType
+                EscoUri = x.EscoIdentifier,
+                InstitutionName = x.InstitutionName
             }).ToList();
 
             person.WorkPreferences ??= new WorkPreferences();
@@ -148,13 +149,16 @@ public static class UpdateJobApplicantProfile
                 {
                     EscoIdentifier = x.EscoUri,
                     EscoCode = x.EscoCode,
-                    WorkExperience = x.WorkMonths
+                    WorkExperience = x.WorkMonths,
+                    Employer = x.Employer
                 }).ToList(),
                 Educations = person.Educations.Select(x => new Request.Education
                 {
+                    EducationName = x.Name,
                     EducationField = x.EducationFieldCode,
                     EducationLevel = x.EducationLevelCode,
-                    GraduationDate = x.GraduationDate
+                    GraduationDate = x.GraduationDate,
+                    InstitutionName = x.InstitutionName
                 }).ToList(),
                 LanguageSkills = person.LanguageSkills.Select(x => new Request.LanguageSkill
                 {
@@ -169,8 +173,9 @@ public static class UpdateJobApplicantProfile
                 }).ToList(),
                 Certifications = person.Certifications.Select(x => new Request.Certification
                 {
-                    QualificationType = x.Type,
-                    CertificationName = x.Name
+                    CertificationName = x.Name,
+                    EscoIdentifier = x.EscoUri,
+                    InstitutionName = x.InstitutionName
                 }).ToList(),
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
                 WorkPreferences = new Request.WorkPreferenceValues
@@ -207,15 +212,19 @@ public static class UpdateJobApplicantProfile
             public string? EscoIdentifier { get; init; }
             public string? EscoCode { get; init; }
             public int? WorkExperience { get; init; }
+            public string? Employer { get; set; }
         }
 
         public record Education
         {
+            public string? EducationName { get; init; }
             public string? EducationLevel { get; init; }
             public string? EducationField { get; init; }
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
+            
+            public string? InstitutionName { get; set; }
         }
 
         public record LanguageSkill
@@ -234,7 +243,8 @@ public static class UpdateJobApplicantProfile
         public record Certification
         {
             public string? CertificationName { get; init; }
-            public string? QualificationType { get; init; }
+            public string? EscoIdentifier { get; init; }
+            public string? InstitutionName { get; init; }
         }
 
         public record WorkPreferenceValues

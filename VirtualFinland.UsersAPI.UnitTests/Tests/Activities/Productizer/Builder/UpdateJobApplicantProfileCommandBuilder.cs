@@ -9,8 +9,9 @@ public class UpdateJobApplicantProfileCommandBuilder
         {
             new UpdateJobApplicantProfile.Request.Certification
             {
-                CertificationName = "Hygiene passport",
-                QualificationType = "Institutional"
+                CertificationName = "Cloud provider certification",
+                EscoIdentifier = "http://data.europa.eu/esco/skill/b85711bc-32d6-42af-ae0f-e2e566d0dfca",
+                InstitutionName = "Skill Academy"
             }
         };
 
@@ -19,9 +20,11 @@ public class UpdateJobApplicantProfileCommandBuilder
         {
             new UpdateJobApplicantProfile.Request.Education
             {
+                EducationName = "Master chef",
                 EducationField = "0731",
                 EducationLevel = "7",
-                GraduationDate = new DateOnly(2022, 01, 31)
+                GraduationDate = new DateOnly(2022, 01, 31),
+                InstitutionName = "Chef School"
             }
         };
 
@@ -43,7 +46,8 @@ public class UpdateJobApplicantProfileCommandBuilder
             {
                 EscoCode = "2654.1.7",
                 EscoIdentifier = "http://data.europa.eu/esco/occupation/0022f466-426c-41a4-ac96-a235c945cf97",
-                WorkExperience = 1
+                WorkExperience = 1,
+                Employer = "VFD"
             }
         };
 
