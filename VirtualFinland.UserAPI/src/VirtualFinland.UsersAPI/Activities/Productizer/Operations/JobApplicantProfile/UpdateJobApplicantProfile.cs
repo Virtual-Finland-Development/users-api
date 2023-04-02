@@ -77,14 +77,17 @@ public static class UpdateJobApplicantProfile
             {
                 EscoUri = x.EscoIdentifier,
                 EscoCode = x.EscoCode,
-                WorkMonths = x.WorkExperience
+                WorkMonths = x.WorkExperience,
+                Employer = x.Employer
             }).ToList();
 
             person.Educations = command.Educations.Select(x => new Education
             {
+                Name = x.EducationName,
                 EducationLevelCode = x.EducationLevel,
                 EducationFieldCode = x.EducationField,
-                GraduationDate = x.GraduationDate
+                GraduationDate = x.GraduationDate,
+                InstitutionName = x.InstitutionName
             }).ToList();
 
             person.LanguageSkills = command.LanguageSkills.Select(x => new Language
@@ -243,18 +246,18 @@ public static class UpdateJobApplicantProfile
         public record Certification
         {
             public string? CertificationName { get; init; }
-            public string? EscoIdentifier { get; init; }
+            public List<string>? EscoIdentifier { get; init; }
             public string? InstitutionName { get; init; }
         }
 
         public record WorkPreferenceValues
         {
+            public string? NaceCode { get; init; }
             public List<string> PreferredRegion { get; init; } = null!;
             public List<string> PreferredMunicipality { get; init; } = null!;
             public string? TypeOfEmployment { get; init; }
             public string? WorkingTime { get; init; }
             public List<string> WorkingLanguage { get; init; } = null!;
-            public string? NaceCode { get; init; }
         }
     }
 }

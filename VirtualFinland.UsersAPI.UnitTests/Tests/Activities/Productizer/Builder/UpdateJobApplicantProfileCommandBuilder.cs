@@ -10,7 +10,10 @@ public class UpdateJobApplicantProfileCommandBuilder
             new UpdateJobApplicantProfile.Request.Certification
             {
                 CertificationName = "Cloud provider certification",
-                EscoIdentifier = "http://data.europa.eu/esco/skill/b85711bc-32d6-42af-ae0f-e2e566d0dfca",
+                EscoIdentifier = new List<string>
+                {
+                    "http://data.europa.eu/esco/skill/b85711bc-32d6-42af-ae0f-e2e566d0dfca"
+                },
                 InstitutionName = "Skill Academy"
             }
         };

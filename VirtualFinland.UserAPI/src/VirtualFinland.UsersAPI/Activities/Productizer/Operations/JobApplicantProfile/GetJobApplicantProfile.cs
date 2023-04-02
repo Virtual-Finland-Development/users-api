@@ -54,9 +54,11 @@ public static class GetJobApplicantProfile
 
                 Educations = person.Educations.Select(x => new PersonJobApplicantProfileResponse.Education
                 {
+                    EducationName = x.Name,
                     EducationField = x.EducationFieldCode,
                     EducationLevel = x.EducationLevelCode,
-                    GraduationDate = x.GraduationDate ?? DateOnly.MinValue
+                    GraduationDate = x.GraduationDate ?? DateOnly.MinValue,
+                    InstitutionName = x.InstitutionName
                 }).ToList(),
 
                 LanguageSkills = person.LanguageSkills.Select(x =>
@@ -82,12 +84,12 @@ public static class GetJobApplicantProfile
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
-                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
+                    person.WorkPreferences?.NaceCode,
                     person.WorkPreferences?.PreferredRegionCode?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingTimeCode,
+                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.EmploymentTypeCode,
-                    person.WorkPreferences?.NaceCode
+                    person.WorkPreferences?.WorkingTimeCode,
+                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>()
                 )
             };
         }
@@ -106,8 +108,8 @@ public record PersonJobApplicantProfileResponse
     public WorkPreferences workPreferences { get; set; } = null!;
 
     public record Occupation(
-        string? EscoIdentifier, 
-        string? EscoCode, 
+        string? EscoIdentifier,
+        string? EscoCode,
         int? WorkExperience,
         string? Employer
     );
@@ -128,14 +130,14 @@ public record PersonJobApplicantProfileResponse
 
     public record OtherSkill(string? EscoIdentifier, string? SkillLevel);
 
-    public record Certification(string? CertificationName, string? EscoIdentifier, string? InstitutionName);
+    public record Certification(string? CertificationName, List<string>? EscoIdentifier, string? InstitutionName);
 
     public record WorkPreferences(
-        List<string> PreferredMunicipality,
+        string? NaceCode,
         List<string> PreferredRegion,
-        List<string> WorkingLanguage,
-        string? WorkingTime,
+        List<string> PreferredMunicipality,
         string? TypeOfEmployment,
-        string? NaceCode
+        string? WorkingTime,
+        List<string> WorkingLanguage
     );
 }

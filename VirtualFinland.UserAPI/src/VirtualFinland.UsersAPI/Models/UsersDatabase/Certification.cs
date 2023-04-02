@@ -8,7 +8,7 @@ public class Certification : Auditable, IEntity
     public string? Name { get; set; }
 
     [Url]
-    public string? EscoUri { get; set; }
+    public List<string>? EscoUri { get; set; }
     
     [MaxLength(256)]
     public string? InstitutionName { get; set; }
