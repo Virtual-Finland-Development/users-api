@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
@@ -12,9 +13,10 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230401063938_UpdateCertificationTypeToEscoUri")]
+    partial class UpdateCertificationTypeToEscoUri
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,11 +155,11 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("5346f52e-9927-436a-b515-f566c226b853"),
-                            Created = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5580),
-                            IdentityId = "31098ce8-537e-4da3-b18d-3a4e0a34e900",
-                            Issuer = "95b22fff-872b-4929-87e8-4db8509b61f3",
-                            Modified = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5580),
+                            Id = new Guid("5fecb1a4-0682-4246-95c1-7b3192f28692"),
+                            Created = new DateTime(2023, 4, 1, 6, 39, 38, 67, DateTimeKind.Utc).AddTicks(3220),
+                            IdentityId = "0aa52102-b7d8-4abc-86d2-39bcd3916cf7",
+                            Issuer = "2c0c4e0e-fc7f-4545-a10e-7710d8f95ba0",
+                            Modified = new DateTime(2023, 4, 1, 6, 39, 38, 67, DateTimeKind.Utc).AddTicks(3220),
                             UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
                         });
                 });
@@ -294,10 +296,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         new
                         {
                             Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5470),
+                            Created = new DateTime(2023, 4, 1, 6, 39, 38, 67, DateTimeKind.Utc).AddTicks(3090),
                             GivenName = "WarmUpUserGivenName",
                             LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5470)
+                            Modified = new DateTime(2023, 4, 1, 6, 39, 38, 67, DateTimeKind.Utc).AddTicks(3090)
                         });
                 });
 

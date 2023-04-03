@@ -48,14 +48,17 @@ public static class GetJobApplicantProfile
                     new PersonJobApplicantProfileResponse.Occupation(
                         x.EscoUri,
                         x.EscoCode,
-                        x.WorkMonths ?? 0
+                        x.WorkMonths ?? 0,
+                        x.Employer
                     )).ToList(),
 
                 Educations = person.Educations.Select(x => new PersonJobApplicantProfileResponse.Education
                 {
+                    EducationName = x.Name,
                     EducationField = x.EducationFieldCode,
                     EducationLevel = x.EducationLevelCode,
-                    GraduationDate = x.GraduationDate ?? DateOnly.MinValue
+                    GraduationDate = x.GraduationDate ?? DateOnly.MinValue,
+                    InstitutionName = x.InstitutionName
                 }).ToList(),
 
                 LanguageSkills = person.LanguageSkills.Select(x =>
@@ -74,18 +77,19 @@ public static class GetJobApplicantProfile
                 Certifications = person.Certifications.Select(x =>
                     new PersonJobApplicantProfileResponse.Certification(
                         x.Name,
-                        x.Type
+                        x.EscoUri,
+                        x.InstitutionName
                     )).ToList(),
 
                 Permits = (from p in person.Permits where p.TypeCode is not null select p.TypeCode).ToList(),
 
                 workPreferences = new PersonJobApplicantProfileResponse.WorkPreferences(
-                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
+                    person.WorkPreferences?.NaceCode,
                     person.WorkPreferences?.PreferredRegionCode?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>(),
-                    person.WorkPreferences?.WorkingTimeCode,
+                    person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.EmploymentTypeCode,
-                    person.WorkPreferences?.NaceCode
+                    person.WorkPreferences?.WorkingTimeCode,
+                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>()
                 )
             };
         }
@@ -103,29 +107,37 @@ public record PersonJobApplicantProfileResponse
     public List<string> Permits { get; set; } = null!;
     public WorkPreferences workPreferences { get; set; } = null!;
 
-    public record Occupation(string? EscoIdentifier, string? EscoCode, int? WorkExperience);
+    public record Occupation(
+        string? EscoIdentifier,
+        string? EscoCode,
+        int? WorkExperience,
+        string? Employer
+    );
 
     public record Education
     {
+        public string? EducationName { get; set; }
         public string? EducationLevel { get; set; }
         public string? EducationField { get; set; }
 
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateOnly? GraduationDate { get; set; }
+
+        public string? InstitutionName { get; set; }
     }
 
     public record LanguageSkill(string? EscoIdentifier, string? LanguageCode, string? SkillLevel);
 
     public record OtherSkill(string? EscoIdentifier, string? SkillLevel);
 
-    public record Certification(string? CertificationName, string? QualificationType);
+    public record Certification(string? CertificationName, List<string>? EscoIdentifier, string? InstitutionName);
 
     public record WorkPreferences(
-        List<string> PreferredMunicipality,
+        string? NaceCode,
         List<string> PreferredRegion,
-        List<string> WorkingLanguage,
-        string? WorkingTime,
+        List<string> PreferredMunicipality,
         string? TypeOfEmployment,
-        string? NaceCode
+        string? WorkingTime,
+        List<string> WorkingLanguage
     );
 }
