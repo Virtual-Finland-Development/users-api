@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 

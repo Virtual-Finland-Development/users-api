@@ -6,7 +6,7 @@
   "profiles": {
     "VirtualFinland.UserAPI": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:5001",
       "launchUrl": "swagger/index.html",
       "environmentVariables": {

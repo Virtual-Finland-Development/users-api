@@ -1,13 +1,14 @@
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinlandDevelopment.Shared.Attributes;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
@@ -17,25 +18,16 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
 {
-    private readonly AuthenticationService _authenticationService;
-    private readonly TestbedConsentSecurityService _consentSecurityService;
-
     private readonly IMediator _mediator;
+    private readonly AuthenticationService _authenticationService;
     private readonly ILogger<ProductizerController> _logger;
-    private readonly string _userProfileDataSourceURI;
 
-    public ProductizerController(
-        IMediator mediator,
-        AuthenticationService authenticationService,
-        TestbedConsentSecurityService consentSecurityService,
-        ILogger<ProductizerController> logger,
-        IConfiguration configuration)
+    public ProductizerController(IMediator mediator, AuthenticationService authenticationService,
+        ILogger<ProductizerController> logger)
     {
         _mediator = mediator;
         _authenticationService = authenticationService;
-        _consentSecurityService = consentSecurityService;
         _logger = logger;
-        _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"];
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
@@ -44,9 +36,9 @@ public class ProductizerController : ControllerBase
     [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
+    [VerifyConsentAuthorization("test/lassipatanen/User/Profile")]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
     }
 
@@ -55,16 +47,16 @@ public class ProductizerController : ControllerBase
         Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
+    [VerifyConsentAuthorization("test/lassipatanen/User/Profile/Write")]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation")]
     [SwaggerOperation(Summary = "Get person basic information",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+        Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
@@ -86,7 +78,7 @@ public class ProductizerController : ControllerBase
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
     [SwaggerOperation(Summary = "Update person basic information",
-        Description = "Updates dataproduct matching endpoint path from Testbed")]
+        Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
@@ -98,7 +90,7 @@ public class ProductizerController : ControllerBase
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile")]
     [SwaggerOperation(Summary = "Get person job applicant profile",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+        Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
@@ -120,7 +112,7 @@ public class ProductizerController : ControllerBase
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
-        Description = "Updates dataproduct matching endpoint path from Testbed")]
+        Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
@@ -142,7 +134,8 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",
+                e.Message);
             try
             {
                 var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);

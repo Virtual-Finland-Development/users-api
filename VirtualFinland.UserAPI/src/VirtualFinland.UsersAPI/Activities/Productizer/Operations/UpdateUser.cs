@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;

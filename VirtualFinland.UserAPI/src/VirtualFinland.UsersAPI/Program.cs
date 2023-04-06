@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
+using VirtualFinland.UserAPI.Activities.Productizer;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
@@ -17,8 +18,11 @@ using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
+using VirtualFinlandDevelopment.Shared.Attributes;
+using VirtualFinlandDevelopment.Shared.Environments;
+using VirtualFinlandDevelopment.Shared.Middlewares;
+using VirtualFinlandDevelopment.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,10 +93,6 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 
-
-IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration);
-testBedConsentProviderConfig.LoadPublicKeys();
-
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
@@ -112,7 +112,7 @@ builder.Services.AddAuthentication()
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
-        c.RequireHttpsMetadata = !EnvironmentExtensions.IsLocal(builder.Environment);
+        c.RequireHttpsMetadata = !builder.Environment.IsLocal();
         JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:AuthorizationJwksJsonUrl"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
@@ -151,7 +151,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
     options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
-builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHandlerMiddleware>();
 
 builder.Services.AddResponseCaching();
 
@@ -159,12 +159,15 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
-builder.Services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
-builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.Configure<CodesetConfig>(builder.Configuration);
+
+builder.Services.RegisterTestbedConsentProvider(
+    providerOptions => { builder.Configuration.GetSection("Testbed").Bind(providerOptions); },
+    portalOptions => { builder.Configuration.GetSection("ConsentPortalOptions").Bind(portalOptions); }
+);
 
 var app = builder.Build();
 
@@ -181,7 +184,7 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
+app.UseErrorHandlerMiddleware();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -205,9 +208,9 @@ using (var scope = app.Services.CreateScope())
     updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
 
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
-    await mediator?.Send(updateUserWarmUpCommand)!;
-    await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    logger.LogInformation("Compeleted bootstrapping application");
+    await mediator.Send(updateUserWarmUpCommand);
+    await mediator.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty));
+    logger.LogInformation("Completed bootstrapping application");
 }
 
 

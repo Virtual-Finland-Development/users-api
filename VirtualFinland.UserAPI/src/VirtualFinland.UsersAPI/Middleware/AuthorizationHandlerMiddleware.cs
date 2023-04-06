@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
-public class AuthorizationHanderMiddleware : IAuthorizationMiddlewareResultHandler
+namespace VirtualFinland.UserAPI.Middleware;
+
+public class AuthorizationHandlerMiddleware : IAuthorizationMiddlewareResultHandler
 {
-    private readonly AuthorizationMiddlewareResultHandler defaultHandler = new();
+    private readonly AuthorizationMiddlewareResultHandler _defaultHandler = new();
 
     public async Task HandleAsync(
         RequestDelegate next,
@@ -13,11 +15,9 @@ public class AuthorizationHanderMiddleware : IAuthorizationMiddlewareResultHandl
         PolicyAuthorizationResult authorizeResult)
     {
         if (!authorizeResult.Succeeded)
-        {
             throw new NotAuthorizedException("Access denied"); // Pass to the error handler middleware
-        }
 
         // Fall back to the default implementation.
-        await defaultHandler.HandleAsync(next, context, policy, authorizeResult);
+        await _defaultHandler.HandleAsync(next, context, policy, authorizeResult);
     }
 }

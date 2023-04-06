@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 

@@ -3,10 +3,10 @@ using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 
