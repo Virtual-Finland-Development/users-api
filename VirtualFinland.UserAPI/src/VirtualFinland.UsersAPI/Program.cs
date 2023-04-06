@@ -8,7 +8,6 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
-using VirtualFinland.UserAPI.Activities.Productizer;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
@@ -17,12 +16,11 @@ using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
-using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinlandDevelopment.Shared.Attributes;
 using VirtualFinlandDevelopment.Shared.Environments;
 using VirtualFinlandDevelopment.Shared.Middlewares;
 using VirtualFinlandDevelopment.Shared.Services;
+using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 var builder = WebApplication.CreateBuilder(args);
 
