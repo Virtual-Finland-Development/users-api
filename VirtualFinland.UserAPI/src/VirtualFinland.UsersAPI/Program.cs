@@ -21,6 +21,10 @@ using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -203,8 +207,7 @@ app.UseResponseCaching();
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Bootstrapping application");
+    Log.Information("Bootstrapping application");
 
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
@@ -218,7 +221,8 @@ using (var scope = app.Services.CreateScope())
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    logger.LogInformation("Completed bootstrapping application");
+    
+    Log.Information("Completed bootstrapping application");
 }
 
 
