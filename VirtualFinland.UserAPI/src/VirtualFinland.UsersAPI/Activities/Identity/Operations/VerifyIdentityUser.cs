@@ -60,7 +60,6 @@ public static class VerifyIdentityUser
                 _logger.LogInformation(
                     "Verified and created a new user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}",
                     claimsUserId, request.ClaimsIssuer);
-                MetricsRegistry.UsersCreated.Inc();
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
 
