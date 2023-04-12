@@ -55,6 +55,8 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
                     N = k.N,
                     E = k.E
                 }).ToList();
+                
+                break;
             }
             await Task.Delay(_configUrlRetryWaitTime);
         }
