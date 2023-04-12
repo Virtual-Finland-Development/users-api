@@ -35,10 +35,12 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient("", _ => { });
 
+/*
 // Logger before DI is set up
 ILogger logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .CreateLogger();
+*/
 
 builder.Host.UseSerilog((context, services, configuration) =>
 {
@@ -209,7 +211,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseHttpMetrics();   
+app.UseHttpMetrics();
 app.UseResponseCaching();
 
 // Pre-Initializations and server start optimizations
@@ -230,7 +232,7 @@ using (var scope = app.Services.CreateScope())
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    logger.LogInformation("Compeleted bootstrapping application");
+    logger.LogInformation("Completed bootstrapping application");
 }
 
 
