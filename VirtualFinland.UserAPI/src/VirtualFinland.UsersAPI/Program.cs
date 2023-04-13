@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using Serilog;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
@@ -20,6 +21,10 @@ using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -30,6 +35,15 @@ builder.Services.AddControllers();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient("", _ => { });
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+});
 
 // Validate server configurations
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
@@ -183,6 +197,7 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -192,8 +207,7 @@ app.UseResponseCaching();
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Bootstrapping application");
+    Log.Information("Bootstrapping application");
 
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
@@ -207,7 +221,8 @@ using (var scope = app.Services.CreateScope())
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    logger.LogInformation("Compeleted bootstrapping application");
+    
+    Log.Information("Completed bootstrapping application");
 }
 
 
