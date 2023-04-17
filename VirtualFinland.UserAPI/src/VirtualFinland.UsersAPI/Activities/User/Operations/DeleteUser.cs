@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
@@ -9,7 +8,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class DeleteUser
 {
-    public class Command : IRequest<DeleteUserResponse>
+    public class Command : IRequest
     {
         public Command()
         { }
@@ -23,7 +22,7 @@ public static class DeleteUser
         }
     }
 
-    public class Handler : IRequestHandler<Command, DeleteUserResponse>
+    public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _context;
 
@@ -32,7 +31,7 @@ public static class DeleteUser
             _context = context;
         }
 
-        public async Task<DeleteUserResponse> Handle(Command request,
+        public async Task<Unit> Handle(Command request,
             CancellationToken cancellationToken)
         {
             var person = await _context.Persons
@@ -63,11 +62,7 @@ public static class DeleteUser
             }
 
 
-            return new DeleteUserResponse
-            ();
+            return Unit.Value;
         }
     }
-
-    [SwaggerSchema(Title = "DeleteUserResponse")]
-    public record DeleteUserResponse();
 }
