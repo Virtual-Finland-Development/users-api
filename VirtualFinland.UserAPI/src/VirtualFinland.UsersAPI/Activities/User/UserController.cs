@@ -17,20 +17,20 @@ public class UserController : ApiControllerBase
 {
     public UserController(IMediator mediator, AuthenticationService authenticationService) : base(mediator, authenticationService)
     {
-        
+
     }
-    
+
 
     [HttpGet("/user")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile", Description = "Returns the current logged user own personal details and his default search profile.")]
-    [ProducesResponseType(typeof(GetUser.User),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId())));
     }
-    
+
     [HttpPatch("/user")]
     [SwaggerOperation(Summary = "Updates the current logged user personal profile", Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -41,16 +41,27 @@ public class UserController : ApiControllerBase
         return Ok(await Mediator.Send(command));
     }
 
+    [HttpDelete("/user")]
+    [SwaggerOperation(Summary = "Deletes the current logged user personal profile", Description = "Deletes the current logged user own personal details job applicant profile.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> DeleteUser()
+    {
+        var command = new DeleteUser.Command();
+        command.SetAuth(await this.GetCurrentUserId());
+        return Ok(await Mediator.Send(command));
+    }
+
     [HttpGet("/user/search-profiles/")]
-    [ProducesResponseType(typeof(IList<GetSearchProfiles.SearchProfile>),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IList<GetSearchProfiles.SearchProfile>), StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
         return await Mediator.Send(new GetSearchProfiles.Query(await this.GetCurrentUserId()));
     }
-    
+
     [HttpGet("/user/search-profiles/{profileId}")]
-    [ProducesResponseType( typeof(GetSearchProfile.SearchProfile), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetSearchProfile.SearchProfile), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
@@ -59,7 +70,7 @@ public class UserController : ApiControllerBase
 
         return Ok(searchProfile);
     }
-    
+
     [HttpPatch("/user/search-profiles/{profileId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
@@ -69,7 +80,7 @@ public class UserController : ApiControllerBase
         await Mediator.Send(command);
         return NoContent();
     }
-    
+
     [HttpPost("/user/search-profiles")]
     [ProducesResponseType(typeof(CreateSearchProfile.SearchProfile), StatusCodes.Status201Created)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
@@ -95,7 +106,7 @@ public class UserController : ApiControllerBase
         var result = await Mediator.Send(command);
 
         return CreatedAtAction(
-            nameof(AddOccupation), 
+            nameof(AddOccupation),
             result
         );
     }
@@ -107,9 +118,9 @@ public class UserController : ApiControllerBase
     {
         var command = new UpdateOccupations.Command(occupations);
         command.SetAuth(await GetCurrentUserId());
-        
+
         await Mediator.Send(command);
-        
+
         return NoContent();
     }
 
@@ -120,9 +131,9 @@ public class UserController : ApiControllerBase
     {
         var command = new DeleteOccupations.Command(ids);
         command.SetAuth(await GetCurrentUserId());
-        
+
         await Mediator.Send(command);
-        
+
         return NoContent();
     }
 
@@ -133,9 +144,9 @@ public class UserController : ApiControllerBase
     {
         var command = new DeleteOccupations.Command();
         command.SetAuth(await GetCurrentUserId());
-        
+
         await Mediator.Send(command);
-        
+
         return NoContent();
     }
 
