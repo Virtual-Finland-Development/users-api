@@ -1,6 +1,6 @@
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
@@ -19,9 +19,9 @@ public class ProductizerController : ControllerBase
 {
     private readonly AuthenticationService _authenticationService;
     private readonly TestbedConsentSecurityService _consentSecurityService;
+    private readonly ILogger<ProductizerController> _logger;
 
     private readonly IMediator _mediator;
-    private readonly ILogger<ProductizerController> _logger;
     private readonly string _userProfileDataSourceURI;
 
     public ProductizerController(
@@ -64,7 +64,7 @@ public class ProductizerController : ControllerBase
 
     [HttpPost("productizer/draft/Person/BasicInformation")]
     [SwaggerOperation(Summary = "Get person basic information",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+        Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
@@ -81,12 +81,16 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
+        var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
+
+        if (!IsPersonBasicInformationCreated(result)) return NotFound();
+
+        return Ok(result);
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
     [SwaggerOperation(Summary = "Update person basic information",
-        Description = "Updates dataproduct matching endpoint path from Testbed")]
+        Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
@@ -98,7 +102,7 @@ public class ProductizerController : ControllerBase
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile")]
     [SwaggerOperation(Summary = "Get person job applicant profile",
-        Description = "Gets dataproduct matching endpoint path from Testbed")]
+        Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
@@ -115,12 +119,16 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
+        var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
+
+        if (!IsJobApplicantProfileCreated(result)) return NotFound();
+
+        return Ok(result);
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
-        Description = "Updates dataproduct matching endpoint path from Testbed")]
+        Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
@@ -142,7 +150,8 @@ public class ProductizerController : ControllerBase
         }
         catch (NotAuthorizedException e)
         {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user", e.Message);
+            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",
+                e.Message);
             try
             {
                 var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
@@ -159,5 +168,36 @@ public class ProductizerController : ControllerBase
         }
 
         return userId;
+    }
+    
+    private static bool IsPersonBasicInformationCreated(
+        GetPersonBasicInformation.GetPersonBasicInformationResponse response)
+    {
+        if (!string.IsNullOrEmpty(response.Email) || !string.IsNullOrEmpty(response.Residency) ||
+            !string.IsNullOrEmpty(response.GivenName) || !string.IsNullOrEmpty(response.LastName) ||
+            !string.IsNullOrEmpty(response.PhoneNumber))
+            return true;
+
+
+        return false;
+    }
+
+    private static bool IsJobApplicantProfileCreated(PersonJobApplicantProfileResponse response)
+    {
+        if (response.Certifications.Any() || response.Educations.Any() || response.Occupations.Any() ||
+            response.Permits.Any() || response.LanguageSkills.Any() || response.OtherSkills.Any())
+            return true;
+
+        if (response.workPreferences.PreferredMunicipality.Any() ||
+            response.workPreferences.PreferredRegion.Any() ||
+            response.workPreferences.WorkingLanguage.Any())
+            return true;
+
+        if (!string.IsNullOrEmpty(response.workPreferences.WorkingTime) ||
+            !string.IsNullOrEmpty(response.workPreferences.NaceCode) ||
+            !string.IsNullOrEmpty(response.workPreferences.TypeOfEmployment))
+            return true;
+
+        return false;
     }
 }
