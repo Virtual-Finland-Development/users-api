@@ -47,6 +47,7 @@ public class UsersApiStack : Stack
         var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
 
         var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
+        DbName = dbConfigs.dbName;
 
         var bucket = CreateBucket(tags, environment, projectName); // @TODO: Remove if not needed
 
@@ -185,7 +186,7 @@ public class UsersApiStack : Stack
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
+    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName, Output<string> dbName) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
@@ -218,7 +219,7 @@ public class UsersApiStack : Stack
 
         this.DbPassword = password.Result;
 
-        return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName);
+        return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName, rdsPostGreInstance.Name);
     }
 
     public Bucket CreateBucket(InputMap<string> tags, string environment, string projectName)
@@ -265,5 +266,5 @@ public class UsersApiStack : Stack
 
 
     [Output] public Output<string> DbConnectionStringSecretId { get; set; }
-
+    [Output] public Output<string> DbName { get; set; }
 }
