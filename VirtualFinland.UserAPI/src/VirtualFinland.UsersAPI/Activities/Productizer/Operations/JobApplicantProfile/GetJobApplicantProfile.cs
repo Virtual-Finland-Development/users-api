@@ -90,7 +90,7 @@ public static class GetJobApplicantProfile
                     person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.EmploymentTypeCode,
                     person.WorkPreferences?.WorkingTimeCode,
-                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? throw new NotFoundException()
+                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>()
                 )
             };
         }
