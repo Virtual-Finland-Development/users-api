@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
@@ -89,7 +90,7 @@ public static class GetJobApplicantProfile
                     person.WorkPreferences?.PreferredMunicipalityCode?.ToList() ?? new List<string>(),
                     person.WorkPreferences?.EmploymentTypeCode,
                     person.WorkPreferences?.WorkingTimeCode,
-                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? new List<string>()
+                    person.WorkPreferences?.WorkingLanguageEnum?.ToList() ?? throw new NotFoundException()
                 )
             };
         }

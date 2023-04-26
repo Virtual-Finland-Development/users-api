@@ -83,7 +83,7 @@ public class ProductizerController : ControllerBase
 
         var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
 
-        if (!IsPersonBasicInformationCreated(result)) return NotFound();
+        if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) return NotFound();
 
         return Ok(result);
     }
@@ -121,7 +121,7 @@ public class ProductizerController : ControllerBase
 
         var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
 
-        if (!IsJobApplicantProfileCreated(result)) return NotFound();
+        if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) return NotFound();
 
         return Ok(result);
     }
@@ -168,36 +168,5 @@ public class ProductizerController : ControllerBase
         }
 
         return userId;
-    }
-    
-    private static bool IsPersonBasicInformationCreated(
-        GetPersonBasicInformation.GetPersonBasicInformationResponse response)
-    {
-        if (!string.IsNullOrEmpty(response.Email) || !string.IsNullOrEmpty(response.Residency) ||
-            !string.IsNullOrEmpty(response.GivenName) || !string.IsNullOrEmpty(response.LastName) ||
-            !string.IsNullOrEmpty(response.PhoneNumber))
-            return true;
-
-
-        return false;
-    }
-
-    private static bool IsJobApplicantProfileCreated(PersonJobApplicantProfileResponse response)
-    {
-        if (response.Certifications.Any() || response.Educations.Any() || response.Occupations.Any() ||
-            response.Permits.Any() || response.LanguageSkills.Any() || response.OtherSkills.Any())
-            return true;
-
-        if (response.workPreferences.PreferredMunicipality.Any() ||
-            response.workPreferences.PreferredRegion.Any() ||
-            response.workPreferences.WorkingLanguage.Any())
-            return true;
-
-        if (!string.IsNullOrEmpty(response.workPreferences.WorkingTime) ||
-            !string.IsNullOrEmpty(response.workPreferences.NaceCode) ||
-            !string.IsNullOrEmpty(response.workPreferences.TypeOfEmployment))
-            return true;
-
-        return false;
     }
 }
