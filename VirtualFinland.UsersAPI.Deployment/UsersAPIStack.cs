@@ -181,9 +181,10 @@ public class UsersApiStack : Stack
         });
 
         this.ApplicationUrl = functionUrl.FunctionUrlResult;
-        VpcId = Output.Format($"{stackReferenceVpcId}");
+        this.VpcId = Output.Format($"{stackReferenceVpcId}");
         this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
         this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
+        this.LambdaId = lambdaFunction.Id;
     }
 
     private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName, Output<string> dbIdentifier) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
@@ -255,16 +256,13 @@ public class UsersApiStack : Stack
         return output;
     }
 
+    // Outputs for Pulumi service
     [Output] public Output<string> ApplicationUrl { get; set; }
-
     [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
-
     [Output] public Output<string> VpcId { get; set; }
-
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
-
-
     [Output] public Output<string> DbConnectionStringSecretId { get; set; }
     [Output] public Output<string> DbIdentifier { get; set; }
+    [Output] public Output<string> LambdaId { get; set; }
 }
