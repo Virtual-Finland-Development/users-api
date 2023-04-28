@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using Prometheus;
 using Serilog;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
@@ -195,9 +196,11 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
-
+app.UseMetricServer();
 app.UseSerilogRequestLogging();
+app.UseHttpMetrics();
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
