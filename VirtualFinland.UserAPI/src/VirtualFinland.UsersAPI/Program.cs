@@ -111,6 +111,7 @@ testBedConsentProviderConfig.LoadPublicKeys();
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
+#region Authentication
 builder.Services.AddAuthentication()
     .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
     {
@@ -167,6 +168,7 @@ builder.Services.AddAuthorization(options =>
     options.DefaultPolicy = allAuthorizationPolicyBuilder;
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
+#endregion 
 
 builder.Services.AddResponseCaching();
 
