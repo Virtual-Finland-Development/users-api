@@ -30,6 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks();
 
 // Add AWS Lambda support. When application is run in Lambda Kestrel is swapped out as the web server with Amazon.Lambda.AspNetCoreServer. This
 // package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
@@ -42,6 +43,8 @@ builder.Host.UseSerilog((context, services, configuration) =>
     configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
+        .Filter.ByExcluding(c => c.Properties.Any(p => p.Value.ToString().Contains("/metrics")))
+        .Filter.ByExcluding(c => c.Properties.Any(p => p.Value.ToString().Contains("/health")))
         .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
         .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
 });
@@ -200,13 +203,18 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 
 app.UseMetricServer();
 app.UseSerilogRequestLogging();
-app.UseHttpMetrics();
-
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseHttpMetrics();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHealthChecks("/health");
+    endpoints.MapControllers();
+});
+
 app.UseResponseCaching();
 
 // Pre-Initializations and server start optimizations
