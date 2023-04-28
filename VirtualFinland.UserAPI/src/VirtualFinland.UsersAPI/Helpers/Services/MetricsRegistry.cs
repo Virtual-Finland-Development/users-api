@@ -13,4 +13,10 @@ public static class MetricsRegistry
 
     public static Gauge JobApplicantProfileReadDuration =>
         Metrics.CreateGauge("productizer_job_applicant_profile_read_duration", "number of something");
+    
+    public static Counter JobApplicantProfilesRead => Metrics.CreateCounter(
+        "users_api_productizer_job_applicant_profiles_read", "How many times have job applicant profile been read");
+
+    public static Counter ProductizerEndpointCalls => Metrics.CreateCounter(
+        "users_api_productizer_calls", "How many calls have productizer endpoints received", "productizer", "usersApi");
 }
