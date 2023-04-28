@@ -69,6 +69,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
+        MetricsRegistry.ProductizerEndpointCalls.Inc();
         Guid? userId;
         try
         {
@@ -92,6 +93,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
+        MetricsRegistry.ProductizerEndpointCalls.Inc();
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
@@ -103,6 +105,9 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
+        MetricsRegistry.ProductizerEndpointCalls.Inc();
+        MetricsRegistry.JobApplicantProfilesRead.Inc();
+        
         Guid? userId;
         try
         {
@@ -125,6 +130,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
+        MetricsRegistry.ProductizerEndpointCalls.Inc();
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
         return Ok(await _mediator.Send(command));
     }
