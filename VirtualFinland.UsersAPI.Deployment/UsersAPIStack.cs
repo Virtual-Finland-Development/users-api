@@ -48,7 +48,6 @@ public class UsersApiStack : Stack
         DbIdentifier = dbConfigs.DbIdentifier;
 
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
-        DbConnectionStringSecretId = secretManagerSecret.Name;
 
         var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
@@ -72,7 +71,6 @@ public class UsersApiStack : Stack
 
     // Outputs for Pulumi service
     [Output] public Output<string>? ApplicationUrl { get; set; }
-    [Output] public Output<string>? DbConnectionStringSecretId { get; set; }
     [Output] public Output<string>? DbIdentifier { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
 }
