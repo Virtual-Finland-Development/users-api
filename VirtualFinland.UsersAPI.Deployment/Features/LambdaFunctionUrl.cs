@@ -85,13 +85,12 @@ class LambdaFunctionUrl
         var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
-            PolicyArn = ManagedPolicy.SecretsManagerReadWrite.ToString(), // TODO: Swap for secretManagerReadPolicy policy if configs correct
+            PolicyArn = secretManagerReadPolicy.Arn
         });
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = stackSetup.VpcSetup.VpcId,
-            Tags = stackSetup.Tags
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
@@ -151,10 +150,8 @@ class LambdaFunctionUrl
 
         ApplicationUrl = functionUrl.FunctionUrlResult;
         LambdaFunctionArn = lambdaFunction.Arn;
-        DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
     }
 
     public Output<string> ApplicationUrl = default!;
-    public Output<string> DefaultSecurityGroupId = default!;
     public Output<string> LambdaFunctionArn = default!;
 }
