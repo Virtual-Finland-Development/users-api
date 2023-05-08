@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Pulumi;
 using Pulumi.Aws.Rds;
 using Pulumi.Random;
@@ -11,11 +10,11 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, UsersApiStack.StackSetup stackSetup, Output<IEnumerable<string>> PrivateSubnetIds)
+    public PostgresDatabase(Config config, UsersApiStack.StackSetup stackSetup)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
-            SubnetIds = PrivateSubnetIds,
+            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
         });
 
         var password = new RandomPassword("password", new()
