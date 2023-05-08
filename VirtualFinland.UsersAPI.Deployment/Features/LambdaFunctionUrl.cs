@@ -45,7 +45,8 @@ class LambdaFunctionUrl
                         }
                     }
                 }
-            })
+            }),
+            Tags = stackSetup.Tags
         });
 
         var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
@@ -77,6 +78,7 @@ class LambdaFunctionUrl
                     },
                 },
             })),
+            Tags = stackSetup.Tags,
         });
 
 
@@ -88,7 +90,8 @@ class LambdaFunctionUrl
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
-            VpcId = stackSetup.VpcSetup.VpcId
+            VpcId = stackSetup.VpcSetup.VpcId,
+            Tags = stackSetup.Tags
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
@@ -106,7 +109,7 @@ class LambdaFunctionUrl
             Runtime = "dotnet6",
             Handler = "VirtualFinland.UsersAPI",
             Timeout = 30,
-            MemorySize = 1024,
+            MemorySize = 2048,
             Environment = new FunctionEnvironmentArgs
             {
                 Variables =
@@ -123,7 +126,8 @@ class LambdaFunctionUrl
                 }
             },
             Code = new FileArchive(appArtifactPath),
-            VpcConfig = functionVpcArgs
+            VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
         });
 
         var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs

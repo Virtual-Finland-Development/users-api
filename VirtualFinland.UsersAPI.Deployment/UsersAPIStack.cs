@@ -40,7 +40,7 @@ public class UsersApiStack : Stack
             VpcSetup = new VpcSetup()
             {
                 VpcId = Output.Format($"{infraStackReferenceVpcId}"),
-                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList
+                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList as Output<IEnumerable<string>>
             }
         };
 
@@ -67,7 +67,7 @@ public class UsersApiStack : Stack
     public record VpcSetup
     {
         public Input<string>? VpcId = default!;
-        public Output<IEnumerable<string?>>? PrivateSubnetIds = default!;
+        public Output<IEnumerable<string>> PrivateSubnetIds = default!;
     }
 
     // Outputs for Pulumi service
