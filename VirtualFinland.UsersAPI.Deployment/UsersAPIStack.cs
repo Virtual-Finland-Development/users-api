@@ -45,8 +45,6 @@ public class UsersApiStack : Stack
         };
 
         var dbConfigs = new PostgresDatabase(config, stackSetup);
-        DbIdentifier = dbConfigs.DbIdentifier;
-
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
 
         var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
@@ -71,6 +69,5 @@ public class UsersApiStack : Stack
 
     // Outputs for Pulumi service
     [Output] public Output<string>? ApplicationUrl { get; set; }
-    [Output] public Output<string>? DbIdentifier { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
 }
