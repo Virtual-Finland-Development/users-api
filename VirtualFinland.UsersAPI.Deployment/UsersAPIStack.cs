@@ -8,7 +8,6 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Aws.S3;
 using Pulumi.Command.Local;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common;
@@ -29,10 +28,7 @@ public class UsersApiStack : Stack
         var stackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{environment}");
         var stackReferencePrivateSubnetIds = stackReference.GetOutput("PrivateSubnetIds");
         var stackReferenceVpcId = stackReference.GetOutput("VpcId");
-
-        var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{environment}");
-        var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
-
+        VpcId = Output.Format($"{stackReferenceVpcId}");
 
         InputMap<string> tags = new InputMap<string>()
         {
@@ -45,13 +41,99 @@ public class UsersApiStack : Stack
         };
 
         var privateSubnetIds = stackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
+        PrivateSubNetIds = privateSubnetIds;
 
-        var dbConfigs = InitializePostGresDatabase(config, tags, isProductionEnvironment, privateSubnetIds, environment, projectName);
-        DbIdentifier = dbConfigs.dbIdentifier;
+        var stackSetup = new StackSetup()
+        {
+            ProjectName = projectName,
+            Environment = environment,
+            IsProductionEnvironment = isProductionEnvironment,
+            Tags = tags,
+        };
 
-        var bucket = CreateBucket(tags, environment, projectName); // @TODO: Remove if not needed
+        var dbConfigs = InitializePostGresDatabase(config, stackSetup);
+        DbIdentifier = dbConfigs.DbIdentifier;
 
-        var role = new Role($"{projectName}-LambdaRole-{environment}", new RoleArgs
+        var secretManagerSecret = InitializeSecretManagerForDatabaseCredentials(config, stackSetup, dbConfigs);
+        DbConnectionStringSecretId = secretManagerSecret.Name;
+
+        var lambdaFunctionConfigs = InitializeLambdaFunction(config, stackSetup);
+        ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
+        DefaultSecurityGroupId = lambdaFunctionConfigs.DefaultSecurityGroupId;
+        LambdaId = lambdaFunctionConfigs.LambdaFunctionArn;
+    }
+
+    /// <summary>
+    /// Creates the users-api database
+    /// </summary>
+    private DatabaseSetup InitializePostGresDatabase(Config config, StackSetup stackSetup)
+    {
+        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
+        {
+            SubnetIds = PrivateSubNetIds,
+
+        });
+
+        var password = new RandomPassword("password", new()
+        {
+            Length = 16,
+            Special = false,
+            OverrideSpecial = "_%@",
+        });
+
+        var rdsPostGreInstance = new Instance($"{stackSetup.ProjectName}-postgres-db-{stackSetup.Environment}", new InstanceArgs()
+        {
+            Engine = "postgres",
+            InstanceClass = "db.t3.micro",
+            AllocatedStorage = 20,
+
+            DbSubnetGroupName = dbSubNetGroup.Name,
+            DbName = config.Require("dbName"),
+            Username = config.Require("dbAdmin"),
+            Password = password.Result,
+            Tags = stackSetup.Tags,
+            PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
+            SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
+        });
+
+        this.DbPassword = password.Result;
+
+        return new DatabaseSetup()
+        {
+            DbHostName = rdsPostGreInstance.Endpoint,
+            DbIdentifier = rdsPostGreInstance.Identifier,
+            DbPassword = password.Result,
+        };
+    }
+
+    /// <summary>
+    /// Creates the users-api database credentials in AWS Secrets Manager
+    /// </summary>
+    private Pulumi.Aws.SecretsManager.Secret InitializeSecretManagerForDatabaseCredentials(Config config, StackSetup stackSetup, DatabaseSetup dbConfigs)
+    {
+        var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{stackSetup.ProjectName}-dbConnectionStringSecret-{stackSetup.Environment}");
+        new Pulumi.Aws.SecretsManager.SecretVersion($"{stackSetup.ProjectName}-dbConnectionStringSecretVersion-{stackSetup.Environment}", new()
+        {
+            SecretId = secretDbConnectionString.Id,
+            SecretString = Output.All(dbConfigs.DbHostName, dbConfigs.DbPassword)
+                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}"),
+        });
+
+        return secretDbConnectionString;
+    }
+
+
+    /// <summary>
+    /// Creates the users-api lambda function and related resources
+    /// </summary>
+    private LambdaFunctionSetup InitializeLambdaFunction(Config config, StackSetup stackSetup)
+    {
+        // External references
+        var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
+        var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
+
+        // Lambda function
+        var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -76,13 +158,13 @@ public class UsersApiStack : Stack
             })
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-{environment}", new RolePolicyAttachmentArgs
+        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
-            Role = Output.Format($"{role.Name}"),
+            Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{projectName}-LambdaSecretManagerPolicy-{environment}", new()
+        var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
         {
             Path = "/",
             Description = "Users-API Secret Get Policy",
@@ -105,39 +187,29 @@ public class UsersApiStack : Stack
         });
 
 
-        var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{projectName}-LambdaRoleAttachment-SecretManager-{environment}", new RolePolicyAttachmentArgs
+        var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
-            Role = Output.Format($"{role.Name}"),
+            Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.SecretsManagerReadWrite.ToString(), // TODO: Swap for secretManagerReadPolicy policy if configs correct
         });
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
-            VpcId = Output.Format($"{stackReferenceVpcId}")
+            VpcId = VpcId
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
-            SubnetIds = privateSubnetIds
+            SubnetIds = PrivateSubNetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
 
-        var secretDbConnectionString = new Pulumi.Aws.SecretsManager.Secret($"{projectName}-dbConnectionStringSecret-{environment}");
-        var secretVersionDbConnectionString = new Pulumi.Aws.SecretsManager.SecretVersion($"{projectName}-dbConnectionStringSecretVersion-{environment}", new()
+        var lambdaFunction = new Function($"{stackSetup.ProjectName}-{stackSetup.Environment}", new FunctionArgs
         {
-            SecretId = secretDbConnectionString.Id,
-            SecretString = Output.All(dbConfigs.dbHostName, dbConfigs.dbPassword)
-                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}"),
-        });
-
-        DbConnectionStringSecretId = secretDbConnectionString.Name;
-
-        var lambdaFunction = new Function($"{projectName}-{environment}", new FunctionArgs
-        {
-            Role = role.Arn,
+            Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "VirtualFinland.UsersAPI",
             Timeout = 30,
@@ -147,10 +219,10 @@ public class UsersApiStack : Stack
                 Variables =
                 {
                     {
-                        "ASPNETCORE_ENVIRONMENT", environment
+                        "ASPNETCORE_ENVIRONMENT", stackSetup.Environment
                     },
                     {
-                        "DB_CONNECTION_SECRET_NAME", secretDbConnectionString.Name
+                        "DB_CONNECTION_SECRET_NAME", DbConnectionStringSecretId
                     },
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
@@ -161,13 +233,13 @@ public class UsersApiStack : Stack
             VpcConfig = functionVpcArgs
         });
 
-        var functionUrl = new FunctionUrl($"{projectName}-FunctionUrl-{environment}", new FunctionUrlArgs
+        var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs
         {
             FunctionName = lambdaFunction.Arn,
             AuthorizationType = "NONE"
         });
 
-        var localCommand = new Command($"{projectName}-AddPermissions-{environment}", new CommandArgs
+        new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
         {
             Create = Output.Format(
                 $"aws lambda add-permission --function-name {lambdaFunction.Arn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")
@@ -180,85 +252,40 @@ public class UsersApiStack : Stack
             }
         });
 
-        this.ApplicationUrl = functionUrl.FunctionUrlResult;
-        this.VpcId = Output.Format($"{stackReferenceVpcId}");
-        this.PrivateSubNetIds = functionVpcArgs.SubnetIds;
-        this.DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}");
-        this.LambdaId = lambdaFunction.Id;
+        return new LambdaFunctionSetup()
+        {
+            ApplicationUrl = functionUrl.FunctionUrlResult,
+            LambdaFunctionArn = lambdaFunction.Arn,
+            DefaultSecurityGroupId = defaultSecurityGroup.Apply(o => $"{o.Id}"),
+        };
     }
 
-    private (Output<string> dbPassword, Output<string> dbHostName, Output<string> dbSubnetGroupName, Output<string> dbIdentifier) InitializePostGresDatabase(Config config, InputMap<string> tags, bool isProductionEnvironment, InputList<string> privateSubNetIds, string environment, string projectName)
+    public record StackSetup
     {
-        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
-        {
-
-            SubnetIds = privateSubNetIds,
-
-        });
-
-        var password = new RandomPassword("password", new()
-        {
-            Length = 16,
-            Special = false,
-            OverrideSpecial = "_%@",
-        });
-
-        var rdsPostGreInstance = new Instance($"{projectName}-postgres-db-{environment}", new InstanceArgs()
-        {
-            Engine = "postgres",
-            InstanceClass = "db.t3.micro",
-            AllocatedStorage = 20,
-
-            DbSubnetGroupName = dbSubNetGroup.Name,
-            DbName = config.Require("dbName"),
-            Username = config.Require("dbAdmin"),
-            Password = password.Result,
-            Tags = tags,
-            PubliclyAccessible = !isProductionEnvironment, // DEV: For Production set to FALSE
-            SkipFinalSnapshot = !isProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
-        });
-
-        this.DbPassword = password.Result;
-
-        return (password.Result, rdsPostGreInstance.Address, rdsPostGreInstance.DbSubnetGroupName, rdsPostGreInstance.Identifier);
+        public InputMap<string> Tags = default!;
+        public bool IsProductionEnvironment;
+        public string Environment = default!;
+        public string ProjectName = default!;
     }
 
-    public Bucket CreateBucket(InputMap<string> tags, string environment, string projectName)
+    public record DatabaseSetup
     {
-        var bucket = new Bucket($"{projectName}-{environment}", new BucketArgs()
-        {
-            Tags = tags,
-        });
-
-        return bucket;
+        public Output<string> DbPassword = default!;
+        public Output<string> DbHostName = default!;
+        public Output<string> DbSubnetGroupName = default!;
+        public Output<string> DbIdentifier = default!;
     }
 
-    public Output<string> UploadListsData(Bucket bucket, InputMap<string> tags, string objectName, string OutputVariable)
+    public record LambdaFunctionSetup
     {
-        var bucketObject = new BucketObject(objectName, new BucketObjectArgs
-        {
-            Bucket = bucket.BucketName,
-            Source = new FileAsset($"./Resources/{objectName}"),
-            Tags = tags,
-            ContentType = "application/json",
-            Acl = "public-read"
-        });
-
-        var output = Output.Format($"https://{bucket.BucketDomainName}/{objectName}");
-
-        var classProperty = this.GetType().GetProperty(OutputVariable);
-
-        if (classProperty is not null)
-        {
-            classProperty.SetValue(this, output, null);
-        }
-
-        return output;
+        public Output<string> ApplicationUrl = default!;
+        public Output<string> DefaultSecurityGroupId = default!;
+        public Output<string> LambdaFunctionArn = default!;
     }
 
     // Outputs for Pulumi service
     [Output] public Output<string> ApplicationUrl { get; set; }
-    [Output] public Output<ImmutableArray<string>> PrivateSubNetIds { get; set; }
+    [Output] public Output<IEnumerable<string>> PrivateSubNetIds { get; set; }
     [Output] public Output<string> VpcId { get; set; }
     [Output] public Output<string> DefaultSecurityGroupId { get; set; }
     [Output] public Output<string> DbPassword { get; set; } = null!;
