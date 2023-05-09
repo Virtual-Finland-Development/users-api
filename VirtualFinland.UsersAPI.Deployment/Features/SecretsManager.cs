@@ -1,5 +1,5 @@
 using Pulumi;
-using static VirtualFinland.UsersAPI.Deployment.UsersApiStack;
+using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 

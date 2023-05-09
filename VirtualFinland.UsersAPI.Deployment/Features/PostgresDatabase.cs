@@ -1,6 +1,7 @@
 using Pulumi;
 using Pulumi.Aws.Rds;
 using Pulumi.Random;
+using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using Instance = Pulumi.Aws.Rds.Instance;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -10,7 +11,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, UsersApiStack.StackSetup stackSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {

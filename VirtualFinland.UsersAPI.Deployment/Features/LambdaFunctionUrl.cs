@@ -7,7 +7,7 @@ using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
 using Pulumi.Command.Local;
-using static VirtualFinland.UsersAPI.Deployment.UsersApiStack;
+using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
@@ -19,8 +19,8 @@ class LambdaFunctionUrl
     public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretManager)
     {
         // External references
-        var codeSetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
-        var codesetsEndpointUrl = codeSetStackReference.GetOutput("url");
+        var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
+        var codesetsEndpointUrl = codesetStackReference.GetOutput("url");
 
         // Lambda function
         var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
