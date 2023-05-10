@@ -1,4 +1,5 @@
 using Pulumi;
+using Pulumi.Aws.SecretsManager;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -10,15 +11,15 @@ public class SecretsManager
 {
     public SecretsManager(Config config, StackSetup stackSetup, PostgresDatabase dbConfigs)
     {
-        var secretsManagerSecret = new Pulumi.Aws.SecretsManager.Secret($"{stackSetup.ProjectName}-dbConnectionStringSecret-{stackSetup.Environment}");
-        new Pulumi.Aws.SecretsManager.SecretVersion($"{stackSetup.ProjectName}-dbConnectionStringSecretVersion-{stackSetup.Environment}", new()
+        var secret = new Secret($"{stackSetup.ProjectName}-dbConnectionStringSecret-{stackSetup.Environment}");
+        new SecretVersion($"{stackSetup.ProjectName}-dbConnectionStringSecretVersion-{stackSetup.Environment}", new()
         {
-            SecretId = secretsManagerSecret.Id,
+            SecretId = secret.Id,
             SecretString = Output.All(dbConfigs.DbHostName, dbConfigs.DbPassword)
-                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={config.Require("dbName")};Username={config.Require("dbAdmin")};Password={pulumiOutputs[1]}"),
+                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={dbConfigs.DbName};Username={dbConfigs.DbUsername};Password={pulumiOutputs[1]}"),
         });
-        Name = secretsManagerSecret.Name;
-        Arn = secretsManagerSecret.Arn;
+        Name = secret.Name;
+        Arn = secret.Arn;
     }
     public Output<string> Name = default!;
     public Output<string> Arn = default!;

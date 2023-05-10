@@ -43,10 +43,15 @@ public class PostgresDatabase
         DbHostName = rdsPostGreInstance.Endpoint;
         DbIdentifier = rdsPostGreInstance.Identifier;
         DbPassword = password.Result;
+
+        DbName = config.Require("dbName");
+        DbUsername = config.Require("dbAdmin");
     }
 
     public Output<string> DbPassword = default!;
     public Output<string> DbHostName = default!;
     public Output<string> DbSubnetGroupName = default!;
     public Output<string> DbIdentifier = default!;
+    public string DbName = default!;
+    public string DbUsername = default!;
 }

@@ -50,7 +50,7 @@ public class UsersApiStack : Stack
 
         var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
-        LambdaId = lambdaFunctionConfigs.LambdaFunctionArn;
+        LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
     }
 
     // Outputs for Pulumi service

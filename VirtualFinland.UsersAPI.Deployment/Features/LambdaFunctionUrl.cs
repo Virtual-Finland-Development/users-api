@@ -16,7 +16,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class LambdaFunctionUrl
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretManager)
+    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -55,37 +55,31 @@ class LambdaFunctionUrl
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretManagerReadPolicy = new Pulumi.Aws.Iam.Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
+        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
         {
-            Path = "/",
             Description = "Users-API Secret Get Policy",
-            PolicyDocument = Pulumi.Output.JsonSerialize(Output.Create(new
-            {
-                Dictionary = new Dictionary<string, object?>
-                {
-                    ["Version"] = "2012-10-17",
-                    ["Statement"] = new[]
-                    {
-                        new Dictionary<string, object?>
-                        {
-                            ["Action"] = new[]
-                            {
-                                "secretsmanager:GetSecretValue",
-                            },
-                            ["Effect"] = "Allow",
-                            ["Resource"] = secretManager.Arn,
-                        },
-                    },
-                },
-            })),
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""secretsmanager:GetSecretValue"",
+                            ""secretsmanager:DescribeSecret""
+                        ],
+                        ""Resource"": [
+                            ""{secretsManager.Arn}""
+                        ]
+                    }}
+                ]
+            }}"),
             Tags = stackSetup.Tags,
         });
 
-
-        var rolePolicyAttachmentSecretManager = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
-            Role = Output.Format($"{execRole.Name}"),
-            PolicyArn = secretManagerReadPolicy.Arn
+            Role = execRole.Name,
+            PolicyArn = secretsManagerReadPolicy.Arn
         });
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
@@ -117,7 +111,7 @@ class LambdaFunctionUrl
                         "ASPNETCORE_ENVIRONMENT", stackSetup.Environment
                     },
                     {
-                        "DB_CONNECTION_SECRET_NAME", secretManager.Name
+                        "DB_CONNECTION_SECRET_NAME", secretsManager.Name
                     },
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
@@ -150,8 +144,10 @@ class LambdaFunctionUrl
 
         ApplicationUrl = functionUrl.FunctionUrlResult;
         LambdaFunctionArn = lambdaFunction.Arn;
+        LambdaFunctionId = lambdaFunction.Id;
     }
 
     public Output<string> ApplicationUrl = default!;
     public Output<string> LambdaFunctionArn = default!;
+    public Output<string> LambdaFunctionId = default!;
 }
