@@ -1,5 +1,6 @@
 using Pulumi;
 using Pulumi.Aws.Rds;
+using Pulumi.Aws.Rds.Inputs;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using Instance = Pulumi.Aws.Rds.Instance;
@@ -25,12 +26,26 @@ public class PostgresDatabase
             OverrideSpecial = "_%@",
         });
 
+        // Enable the pgaudit extension
+        var dbParameterGroup = new ParameterGroup($"{stackSetup.ProjectName}-postgres-param-group-{stackSetup.Environment}", new ParameterGroupArgs
+        {
+            Family = "postgres14",
+            Parameters =
+            {
+                new ParameterGroupParameterArgs
+                {
+                    Name = "shared_preload_libraries",
+                    Value = "pgaudit"
+                },
+            },
+        });
+
         var rdsPostGreInstance = new Instance($"{stackSetup.ProjectName}-postgres-db-{stackSetup.Environment}", new InstanceArgs()
         {
             Engine = "postgres",
             InstanceClass = "db.t3.micro",
             AllocatedStorage = 20,
-
+            ParameterGroupName = dbParameterGroup.Name,
             DbSubnetGroupName = dbSubNetGroup.Name,
             DbName = config.Require("dbName"),
             Username = config.Require("dbAdmin"),
@@ -39,6 +54,7 @@ public class PostgresDatabase
             PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
             SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
+
 
         DbHostName = rdsPostGreInstance.Endpoint;
         DbIdentifier = rdsPostGreInstance.Identifier;

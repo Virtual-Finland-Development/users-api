@@ -23,7 +23,11 @@ services:
       - "host.docker.internal:host-gateway"
 
   postgresdb:
-    image: postgres:14
+    image: vfd-postgres:14
+    build:
+      context: ./Tools/Docker
+      dockerfile: database.dockerfile
+    command: postgres -c shared_preload_libraries=pgaudit
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
