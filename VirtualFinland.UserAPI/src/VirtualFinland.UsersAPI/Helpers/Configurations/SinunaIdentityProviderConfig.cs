@@ -6,6 +6,9 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
 {
 
     private readonly IConfiguration _configuration;
+    private readonly AWSDynamoDBJsonObjectCacheManager _awsDynamoDBCache;
+    private readonly string _cacheName;
+
     private string? _issuer;
     private string? _jwksOptionsUrl;
     private const int _configUrlMaxRetryCount = 5;
@@ -24,27 +27,54 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
         get { return _issuer; }
     }
 
-    public SinunaIdentityProviderConfig(IConfiguration configuration)
+    public SinunaIdentityProviderConfig(IConfiguration configuration, AWSDynamoDBJsonObjectCacheManager awsDynamoDBCache)
     {
         _configuration = configuration;
+        _awsDynamoDBCache = awsDynamoDBCache;
+        _cacheName = "SinunaOpenIdConfig";
     }
 
-    public async void LoadOpenIdConfigUrl()
+    public async void LoadOpenIdConfig()
+    {
+        if (_jwksOptionsUrl != null && _issuer != null)
+        {
+            return;
+        }
+
+        var cachedConfig = await _awsDynamoDBCache.GetAsync<IIdentityProviderConfig>(_cacheName);
+        if (cachedConfig != null)
+        {
+            _issuer = cachedConfig.Issuer;
+            _jwksOptionsUrl = cachedConfig.JwksOptionsUrl;
+            return;
+        }
+
+        var (issuer, jwksOptionsUrl) = await RetrieveOpenIdConfig();
+        _issuer = issuer;
+        _jwksOptionsUrl = jwksOptionsUrl;
+
+        await _awsDynamoDBCache.SetAsync(_cacheName, this);
+    }
+
+    private async Task<(string, string)> RetrieveOpenIdConfig()
     {
         var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
         var httpResponse = await httpClient.GetAsync(configUrl);
 
+        var issuer = string.Empty;
+        var jwksOptionsUrl = string.Empty;
+
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {
             if (httpResponse.IsSuccessStatusCode)
             {
                 var jsonData = JsonNode.Parse(await httpResponse.Content.ReadAsStringAsync());
-                _issuer = jsonData?["issuer"]?.ToString();
-                _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
+                issuer = jsonData?["issuer"]?.ToString();
+                jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
 
-                if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
+                if (!string.IsNullOrEmpty(issuer) && !string.IsNullOrEmpty(jwksOptionsUrl))
                 {
                     break;
                 }
@@ -53,9 +83,11 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
         }
 
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
-        if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
+        if (string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(jwksOptionsUrl))
         {
             throw new Exception("Failed to retrieve TestBed OpenID configurations.");
         }
+
+        return (issuer, jwksOptionsUrl);
     }
 }

@@ -17,6 +17,7 @@ services:
       AWS_REGION: eu-north-1
       "CodesetApiBaseUrl": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
       "SuomiFi__AuthorizationJwksJsonUrl": ${SuomiFi__AuthorizationJwksJsonUrl:-http://host.docker.internal:4078/auth/saml2/suomifi/.well-known/jwks.json}
+      AWS_DYNAMODB__SERVICEURL: ${AWS_DYNAMODB__SERVICEURL:-http://dynamodb:8083}
     networks:
       - vfd-network
     extra_hosts:
@@ -46,6 +47,15 @@ services:
       - 8080:8080
     networks:
       - vfd-network
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - 8083:8000
+    networks:
+      - vfd-network
+    labels:
+      - "traefik.enable=false"
 
 volumes:
   postgresdb:

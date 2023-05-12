@@ -20,6 +20,7 @@ using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
+using Amazon.DynamoDBv2;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -100,15 +101,21 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
         op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
 });
 
-IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
-testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
+// Use local dynamodb if running locally
+var dynamoDbClient = EnvironmentExtensions.IsLocal(builder.Environment) ?
+    new AmazonDynamoDBClient(new AmazonDynamoDBConfig
+    {
+        ServiceURL = Environment.GetEnvironmentVariable("AWS_DYNAMODB__SERVICEURL")
+    })
+    : new AmazonDynamoDBClient();
+var identityProviderCache = new AWSDynamoDBJsonObjectCacheManager(builder.Configuration["AWS:DynamoDB:IdentityProviderCacheTableName"], TimeSpan.FromDays(7), dynamoDbClient);
 
-
-IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration);
-testBedConsentProviderConfig.LoadPublicKeys();
-
-IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
-sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
+IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration, identityProviderCache);
+testBedIdentityProviderConfig.LoadOpenIdConfig();
+IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration, identityProviderCache);
+testBedConsentProviderConfig.LoadOpenIdConfig();
+IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration, identityProviderCache);
+sinunaIdentityProviderConfig.LoadOpenIdConfig();
 
 builder.Services.AddAuthentication()
     .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
@@ -221,7 +228,7 @@ using (var scope = app.Services.CreateScope())
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
     await mediator?.Send(updateUserWarmUpCommand)!;
     await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    
+
     Log.Information("Completed bootstrapping application");
 }
 

@@ -7,6 +7,8 @@ namespace VirtualFinland.UserAPI.Helpers.Configurations;
 public class TestBedConsentProviderConfig : IConsentProviderConfig
 {
     private readonly string _jwksJsonUrl;
+    private readonly AWSDynamoDBJsonObjectCacheManager _awsDynamoDBCache;
+    private readonly string _cacheName;
 
     private List<JsonWebKey> _keys = new List<JsonWebKey>();
 
@@ -25,17 +27,41 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
 
     public string ConsentVerifyUrl { get; }
 
-    public TestBedConsentProviderConfig(IConfiguration configuration)
+    public string? JwksOptionsUrl => throw new NotImplementedException();
+
+    public TestBedConsentProviderConfig(IConfiguration configuration, AWSDynamoDBJsonObjectCacheManager awsDynamoDBCache)
     {
         _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"];
         Issuer = configuration["Testbed:ConsentIssuer"];
         ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"];
+        _awsDynamoDBCache = awsDynamoDBCache;
+        _cacheName = "TestbedConsentOpenIdConfig";
     }
 
-    public async void LoadPublicKeys()
+    public async void LoadOpenIdConfig()
+    {
+        if (_keys != null)
+        {
+            return;
+        }
+
+        var cachedConfig = await _awsDynamoDBCache.GetAsync<List<JsonWebKey>>(_cacheName);
+        if (cachedConfig != null)
+        {
+            _keys = cachedConfig;
+            return;
+        }
+
+        _keys = await RetrievePublicKeys();
+        await _awsDynamoDBCache.SetAsync(_cacheName, _keys);
+    }
+
+    private async Task<List<JsonWebKey>> RetrievePublicKeys()
     {
         var httpClient = new HttpClient();
         var httpResponse = await httpClient.GetAsync(_jwksJsonUrl);
+
+        var keys = null as List<JsonWebKey>;
 
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {
@@ -47,7 +73,7 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
                     throw new Exception("Failed to retrieve TestBed Consent public key configurations");
                 }
 
-                _keys = jsonData.Keys.Select(k => new JsonWebKey()
+                keys = jsonData.Keys.Select(k => new JsonWebKey()
                 {
                     Kty = k.Kty,
                     Use = k.Use,
@@ -55,11 +81,23 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
                     N = k.N,
                     E = k.E
                 }).ToList();
-                
+
                 break;
             }
             await Task.Delay(_configUrlRetryWaitTime);
         }
+
+        if (keys == null)
+        {
+            throw new Exception("Failed to retrieve TestBed Consent public key configurations");
+        }
+
+        return keys;
+    }
+
+    public void LoadPublicKeys()
+    {
+        throw new NotImplementedException();
     }
 
     private class JwksJsonResponse
