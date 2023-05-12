@@ -8,8 +8,6 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using Serilog;
-using VirtualFinland.UserAPI.Activities.Identity.Operations;
-using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
@@ -19,7 +17,6 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
-using VirtualFinland.UserAPI.Models.Shared;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -102,7 +99,6 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration);
 testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
-
 
 IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration);
 testBedConsentProviderConfig.LoadPublicKeys();
@@ -196,7 +192,6 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 }
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
-
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -204,25 +199,18 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-// Pre-Initializations and server start optimizations
-using (var scope = app.Services.CreateScope())
+if (!EnvironmentExtensions.IsProduction(app.Environment))
 {
-    Log.Information("Bootstrapping application");
+    using (var scope = app.Services.CreateScope())
+    {
+        Log.Information("Migrate database");
 
-    // Initialize automatically any database changes
-    var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    await dataContext.Database.MigrateAsync();
+        // Initialize automatically any database changes
+        var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        await dataContext.Database.MigrateAsync();
 
-    // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
-    var mediator = scope.ServiceProvider.GetService<IMediator>();
-    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
-    updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
-
-    await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
-    await mediator?.Send(updateUserWarmUpCommand)!;
-    await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-    
-    Log.Information("Completed bootstrapping application");
+        Log.Information("Database migration completed");
+    }
 }
 
 
