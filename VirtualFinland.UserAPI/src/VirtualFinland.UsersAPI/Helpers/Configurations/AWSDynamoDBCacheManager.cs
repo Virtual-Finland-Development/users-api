@@ -17,6 +17,47 @@ public class AWSDynamoDBCacheManager
         _dynamoDbClient = dynamoDbClient ?? new AmazonDynamoDBClient();
     }
 
+    public async Task Initialize()
+    {
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "local")
+        {
+            var request = new CreateTableRequest
+            {
+                TableName = _tableName,
+                AttributeDefinitions = new List<AttributeDefinition>
+                {
+                    new AttributeDefinition
+                    {
+                        AttributeName = "Key",
+                        AttributeType = "S"
+                    }
+                },
+                KeySchema = new List<KeySchemaElement>
+                {
+                    new KeySchemaElement
+                    {
+                        AttributeName = "Key",
+                        KeyType = "HASH"
+                    }
+                },
+                ProvisionedThroughput = new ProvisionedThroughput
+                {
+                    ReadCapacityUnits = 1,
+                    WriteCapacityUnits = 1
+                }
+            };
+
+            try
+            {
+                await _dynamoDbClient.CreateTableAsync(request);
+            }
+            catch (ResourceInUseException)
+            {
+                // Table already exists
+            }
+        }
+    }
+
     public async Task<string?> GetAsync(string key)
     {
         var request = new GetItemRequest
@@ -30,7 +71,7 @@ public class AWSDynamoDBCacheManager
 
         var response = await _dynamoDbClient.GetItemAsync(request);
 
-        if (response.Item == null)
+        if (response.Item == null || !response.Item.ContainsKey("Value"))
         {
             return null;
         }

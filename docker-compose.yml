@@ -11,13 +11,17 @@ services:
     depends_on:
       postgresdb:
         condition: service_healthy
+      dynamodb:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: local
       CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
       AWS_REGION: eu-north-1
+      AWS_ACCESS_KEY_ID: dummy.aws.accessKeyId
+      AWS_SECRET_ACCESS_KEY: dummy.aws.secretKeyId
       "CodesetApiBaseUrl": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
       "SuomiFi__AuthorizationJwksJsonUrl": ${SuomiFi__AuthorizationJwksJsonUrl:-http://host.docker.internal:4078/auth/saml2/suomifi/.well-known/jwks.json}
-      AWS_DYNAMODB__SERVICEURL: ${AWS_DYNAMODB__SERVICEURL:-http://dynamodb:8083}
+      AWS_DYNAMODB__SERVICEURL: ${AWS_DYNAMODB__SERVICEURL:-http://dynamodb:8000}
     networks:
       - vfd-network
     extra_hosts:
@@ -50,8 +54,11 @@ services:
 
   dynamodb:
     image: amazon/dynamodb-local
-    ports:
-      - 8083:8000
+    healthcheck:
+      test: "bash -c 'printf \"GET / HTTP/1.1\n\n\" > /dev/tcp/127.0.0.1/8000; exit $?;'"
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - vfd-network
     labels:

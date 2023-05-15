@@ -38,7 +38,7 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
         _cacheName = "TestbedConsentOpenIdConfig";
     }
 
-    public async void LoadOpenIdConfig()
+    public async Task LoadOpenIdConfig()
     {
         if (_keys != null)
         {
@@ -93,11 +93,6 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
         }
 
         return keys;
-    }
-
-    public void LoadPublicKeys()
-    {
-        throw new NotImplementedException();
     }
 
     private class JwksJsonResponse

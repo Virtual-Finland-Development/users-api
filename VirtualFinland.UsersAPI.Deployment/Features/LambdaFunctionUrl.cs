@@ -16,7 +16,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class LambdaFunctionUrl
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager, DynamoDB dynamoDBCache)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -49,39 +49,30 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
+        // Lambda role policy
         var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
-        {
-            Description = "Users-API Secret Get Policy",
-            PolicyDocument = Output.Format($@"{{
-                ""Version"": ""2012-10-17"",
-                ""Statement"": [
-                    {{
-                        ""Effect"": ""Allow"",
-                        ""Action"": [
-                            ""secretsmanager:GetSecretValue"",
-                            ""secretsmanager:DescribeSecret""
-                        ],
-                        ""Resource"": [
-                            ""{secretsManager.Arn}""
-                        ]
-                    }}
-                ]
-            }}"),
-            Tags = stackSetup.Tags,
-        });
-
+        // Secrets manager access policy
+        var secretsManagerReadPolicy = secretsManager.GetPolicy();
         new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
         });
 
+        // Dynamodb access policy
+        var dynamoDbAccessPolicy = dynamoDBCache.GetPolicy();
+        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-DynamoDB-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = dynamoDbAccessPolicy.Arn
+        });
+
+        // Lambda function vpc config
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = stackSetup.VpcSetup.VpcId,
@@ -93,6 +84,7 @@ class LambdaFunctionUrl
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
         };
 
+        // Lambda function
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
 
@@ -116,6 +108,9 @@ class LambdaFunctionUrl
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
+                    {
+                        "AWS__DynamoDB__IdentityProviderCacheTableName", dynamoDBCache.TableName
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),

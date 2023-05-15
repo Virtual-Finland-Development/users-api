@@ -47,8 +47,9 @@ public class UsersApiStack : Stack
 
         var dbConfigs = new PostgresDatabase(config, stackSetup);
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
+        var dynamoDbCache = new DynamoDB(config, stackSetup);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
+        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret, dynamoDbCache);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
     }

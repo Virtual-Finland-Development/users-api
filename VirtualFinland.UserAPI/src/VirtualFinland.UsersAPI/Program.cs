@@ -109,13 +109,14 @@ var dynamoDbClient = EnvironmentExtensions.IsLocal(builder.Environment) ?
     })
     : new AmazonDynamoDBClient();
 var identityProviderCache = new AWSDynamoDBJsonObjectCacheManager(builder.Configuration["AWS:DynamoDB:IdentityProviderCacheTableName"], TimeSpan.FromDays(7), dynamoDbClient);
+await identityProviderCache.Initialize();
 
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration, identityProviderCache);
-testBedIdentityProviderConfig.LoadOpenIdConfig();
+await testBedIdentityProviderConfig.LoadOpenIdConfig();
 IConsentProviderConfig testBedConsentProviderConfig = new TestBedConsentProviderConfig(builder.Configuration, identityProviderCache);
-testBedConsentProviderConfig.LoadOpenIdConfig();
+await testBedConsentProviderConfig.LoadOpenIdConfig();
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration, identityProviderCache);
-sinunaIdentityProviderConfig.LoadOpenIdConfig();
+await sinunaIdentityProviderConfig.LoadOpenIdConfig();
 
 builder.Services.AddAuthentication()
     .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>

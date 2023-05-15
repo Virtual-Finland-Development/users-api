@@ -34,7 +34,7 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
         _cacheName = "SinunaOpenIdConfig";
     }
 
-    public async void LoadOpenIdConfig()
+    public async Task LoadOpenIdConfig()
     {
         if (_jwksOptionsUrl != null && _issuer != null)
         {

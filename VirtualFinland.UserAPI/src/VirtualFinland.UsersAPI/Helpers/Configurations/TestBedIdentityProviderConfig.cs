@@ -34,7 +34,7 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
         _cacheName = "TestbedOpenIdConfig";
     }
 
-    public async void LoadOpenIdConfig()
+    public async Task LoadOpenIdConfig()
     {
         if (_jwksOptionsUrl != null && _issuer != null)
         {
