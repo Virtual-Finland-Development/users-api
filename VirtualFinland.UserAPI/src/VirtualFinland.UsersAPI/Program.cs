@@ -108,7 +108,7 @@ var dynamoDbClient = EnvironmentExtensions.IsLocal(builder.Environment) ?
         ServiceURL = Environment.GetEnvironmentVariable("AWS_DYNAMODB__SERVICEURL")
     })
     : new AmazonDynamoDBClient();
-var identityProviderCache = new AWSDynamoDBJsonObjectCacheManager(builder.Configuration["AWS:DynamoDB:IdentityProviderCacheTableName"], TimeSpan.FromDays(7), dynamoDbClient);
+var identityProviderCache = new AWSDynamoDBJsonObjectCacheManager(builder.Configuration["AWS:DynamoDB:IdentityProviderCacheTableName"], TimeSpan.FromDays(1), dynamoDbClient);
 await identityProviderCache.Initialize();
 
 IIdentityProviderConfig testBedIdentityProviderConfig = new TestBedIdentityProviderConfig(builder.Configuration, identityProviderCache);

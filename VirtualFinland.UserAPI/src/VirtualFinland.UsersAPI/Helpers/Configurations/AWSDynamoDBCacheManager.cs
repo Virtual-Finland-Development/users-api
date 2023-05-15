@@ -117,4 +117,56 @@ public class AWSDynamoDBCacheManager
 
         await _dynamoDbClient.DeleteItemAsync(request);
     }
+
+    public async Task FlushTableAsync()
+    {
+
+        var request = new ScanRequest
+        {
+            TableName = _tableName,
+            ProjectionExpression = "Key"
+        };
+
+        var response = await _dynamoDbClient.ScanAsync(request);
+
+        if (response.Items == null || response.Items.Count == 0)
+        {
+            return;
+        }
+
+        var batchWriteItemRequest = new BatchWriteItemRequest
+        {
+            RequestItems = new Dictionary<string, List<WriteRequest>>
+            {
+                {
+                    _tableName,
+                    response.Items.Select(item => new WriteRequest
+                    {
+                        DeleteRequest = new DeleteRequest
+                        {
+                            Key = new Dictionary<string, AttributeValue>
+                            {
+                                { "Key", item["Key"] }
+                            }
+                        }
+                    }).ToList()
+                }
+            }
+        };
+
+        do
+        {
+            await _dynamoDbClient.BatchWriteItemAsync(batchWriteItemRequest);
+
+            if (response.LastEvaluatedKey != null && response.LastEvaluatedKey.Count > 0)
+            {
+                request.ExclusiveStartKey = response.LastEvaluatedKey;
+                response = await _dynamoDbClient.ScanAsync(request);
+            }
+            else
+            {
+                break;
+            }
+        } while (true);
+    }
 }
