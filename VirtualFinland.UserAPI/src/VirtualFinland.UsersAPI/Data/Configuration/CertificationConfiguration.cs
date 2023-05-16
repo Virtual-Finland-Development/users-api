@@ -9,7 +9,7 @@ public class CertificationConfiguration : IEntityTypeConfiguration<Certification
     public void Configure(EntityTypeBuilder<Certification> entity)
     {
         entity.Property(c => c.EscoUri).HasConversion(
-            v => string.Join(',', v),
+            v => string.Join(',', v ?? new List<string>()),
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );
     }

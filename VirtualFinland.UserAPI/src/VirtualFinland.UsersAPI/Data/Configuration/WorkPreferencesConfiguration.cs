@@ -9,17 +9,17 @@ public class WorkPreferencesConfiguration : IEntityTypeConfiguration<WorkPrefere
     public void Configure(EntityTypeBuilder<WorkPreferences> entity)
     {
         entity.Property(wp => wp.PreferredMunicipalityCode).HasConversion(
-            v => string.Join(',', v),
+            v => string.Join(',', v ?? new List<string>()),
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );
 
         entity.Property(wp => wp.PreferredRegionCode).HasConversion(
-            v => string.Join(',', v),
+            v => string.Join(',', v ?? new List<string>()),
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );
 
         entity.Property(wp => wp.WorkingLanguageEnum).HasConversion(
-            v => string.Join(',', v),
+            v => string.Join(',', v ?? new List<string>()),
             v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
         );
     }
