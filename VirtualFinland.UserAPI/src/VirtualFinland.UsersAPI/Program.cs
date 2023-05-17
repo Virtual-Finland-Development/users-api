@@ -199,7 +199,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-if (!EnvironmentExtensions.IsProduction(app.Environment))
+if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
 {
     using (var scope = app.Services.CreateScope())
     {
