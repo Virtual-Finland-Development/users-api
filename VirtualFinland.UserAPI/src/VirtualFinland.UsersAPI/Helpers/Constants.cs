@@ -14,6 +14,7 @@ public static class Constants
         public static string SuomiFiBearerScheme => "SuomiFiBearerScheme";
         public static string SinunaScheme => "SinunaScheme";
         public static string AllPoliciesPolicy => "AllPolicies";
+        public static string ResolvePolicyFromTokenIssuer => "ResolvePolicyFromTokenIssuer";
     }
 
     public static class Headers
