@@ -36,9 +36,7 @@ jobs:
         run: dotnet lambda package
       - name: Generate EF migration script
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-        run: |
-          dotnet ef migrations bundle --configuration Bundle --output=efbundle.exe
-          chmod +x efbundle.exe
+        run: dotnet ef migrations bundle --configuration Bundle --output=efbundle.exe
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
       - name: Upload build artifact
@@ -93,7 +91,7 @@ jobs:
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: |
           pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
-          echo "DBIdentifier=$(pulumi stack output DBIdentifier)" >> $GITHUB_ENV
+          echo "DBIdentifier=$(pulumi stack output DBIdentifier)" >> $GITHUB_OUTPUT
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Create database backup snapshot on PRE-deployment
@@ -112,7 +110,9 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Apply EF migration script
-        run: ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
+        run: |
+          chmod +x ./efbundle.exe
+          ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
       - name: Create database backup snapshot on POST-deployment
         continue-on-error: false # Fail the deployment if the snapshot creation fails
         run: |
