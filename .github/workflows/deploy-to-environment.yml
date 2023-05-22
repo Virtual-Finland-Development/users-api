@@ -50,7 +50,7 @@ jobs:
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/efbundle.exe
           retention-days: 2
   deploy:
-    name: Deploy to AWS ${{ inputs.environment }}-environment
+    name: "Deploy to AWS ${{ inputs.environment }}-environment"
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     needs: build-and-test
