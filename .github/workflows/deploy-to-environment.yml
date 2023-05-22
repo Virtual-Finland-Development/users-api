@@ -1,17 +1,18 @@
-name: Manually deploy to selected environment
+name: Deploy to the selected environment
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Environment where to deploy the stack (dev, staging)
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       environment:
         description: Environment where to deploy the stack (dev, staging)
         type: environment
         required: true
-
-env:
-  PULUMI_STACK: dev
-  PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
-
 jobs:
   build-and-test:
     name: Build and test
@@ -36,13 +37,15 @@ jobs:
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
   deploy:
-    name: Deploy to AWS ${{ inputs.environment }} environment
+    name: Deploy to AWS ${{ inputs.environment }}-environment
     environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest
     needs: build-and-test
     permissions:
       id-token: write
       contents: read
+    env:
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     steps:
       - name: Install Pulumi CLI
         uses: pulumi/actions@v4
