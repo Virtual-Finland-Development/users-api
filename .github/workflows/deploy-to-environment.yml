@@ -44,6 +44,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     steps:
       - name: Install Pulumi CLI
         uses: pulumi/actions@v4
