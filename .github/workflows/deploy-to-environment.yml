@@ -61,7 +61,7 @@ jobs:
       contents: read
     env:
       PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.event.repository.updated_at}}
+      DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.sha }}-${{ github.run_number }}
     steps:
       - uses: actions/setup-dotnet@v3
         with:
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: DatabaseMigrationBundle_Artifact
-          path: ./
+          path: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
@@ -110,6 +110,7 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Apply EF migration script
+        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: |
           chmod +x ./efbundle.exe
           ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
