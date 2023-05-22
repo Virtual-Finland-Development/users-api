@@ -52,6 +52,7 @@ public class UsersApiStack : Stack
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
         DbConnectionString = dbConfigs.DbConnectionString;
+        DBIdentifier = dbConfigs.DBIdentifier;
     }
 
     private bool IsProductionEnvironment()
@@ -73,4 +74,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DbConnectionString { get; set; } // Output for CICD database migration tool
+    [Output] public Output<string>? DBIdentifier { get; set; }
 }

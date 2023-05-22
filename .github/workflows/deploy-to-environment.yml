@@ -59,6 +59,7 @@ jobs:
       contents: read
     env:
       PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.event.repository.updated_at}}
     steps:
       - uses: actions/setup-dotnet@v3
         with:
@@ -80,6 +81,20 @@ jobs:
           environment: ${{ inputs.environment }}
           aws-region: ${{ secrets.AWS_REGION }}
           pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - name: Resolve Database identifier with Pulumi
+        id: get-pulumi-db-identfier
+        continue-on-error: true # Continue if db does not yet exist
+        uses: pulumi/actions@v4
+        with:
+          work-dir: ./VirtualFinland.UsersAPI.Deployment
+          command: stack output DBIdentifier
+          stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - name: Create database backup snapshot on PRE-deployment
+        continue-on-error: true # TODO: needs a check if db exists but snapshot creation fails
+        run: |
+          aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-db-identfier.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Deploy with Pulumi
         id: pulumi-up
         uses: pulumi/actions@v4
@@ -93,6 +108,10 @@ jobs:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Apply EF migration script
         run: ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
+      - name: Create database backup snapshot on POST-deployment
+        continue-on-error: false # Fail the deployment if the snapshot creation fails
+        run: |
+          aws rds create-db-snapshot --db-instance-identifier ${{ steps.pulumi-up.outputs.DBIdentifier }} --db-snapshot-identifier POST-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
         if: ${{ inputs.environment == 'staging' }}
