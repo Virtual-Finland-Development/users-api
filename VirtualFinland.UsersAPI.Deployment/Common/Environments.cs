@@ -4,6 +4,6 @@ public enum Environments
 {
     Dev,
     Test,
-    QA,
-    Prod
+    Staging,
+    Production
 }

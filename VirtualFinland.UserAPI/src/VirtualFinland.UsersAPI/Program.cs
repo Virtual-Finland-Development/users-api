@@ -88,10 +88,10 @@ builder.Services.AddSwaggerGen(config =>
 
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
-var secret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
+var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
     : null;
-var dbConnectionString = secret ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
@@ -243,7 +243,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
+if (EnvironmentExtensions.IsLocal(app.Environment))
 {
     using (var scope = app.Services.CreateScope())
     {

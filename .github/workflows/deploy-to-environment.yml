@@ -23,6 +23,10 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
+      - name: Install EF Tool
+        run: |
+          dotnet new tool-manifest
+          dotnet tool install dotnet-ef
       - name: Pulumi Users API Integration Tests
         run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
       - name: Install AWS Dotnet CLI Lambda Tools
@@ -30,11 +34,20 @@ jobs:
       - name: Build UserAPI Lamda Package
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: dotnet lambda package
+      - name: Generate EF migration script
+        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
+        run: dotnet ef migrations bundle --configuration Bundle --output=efbundle.exe
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          retention-days: 2
+      - name: Upload database migration bundle artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: DatabaseMigrationBundle_Artifact
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/efbundle.exe
           retention-days: 2
   deploy:
     name: Deploy to AWS ${{ inputs.environment }}-environment
@@ -47,6 +60,9 @@ jobs:
     env:
       PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
     steps:
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
       - name: Install Pulumi CLI
         uses: pulumi/actions@v4
       - uses: actions/checkout@v3
@@ -54,21 +70,29 @@ jobs:
         with:
           name: Application_Artifact
           path: ./
-      - name: Select Pulumi Stack
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
-      - name: Set Pulumi Artifact Path
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
+      - uses: actions/download-artifact@v3
+        with:
+          name: DatabaseMigrationBundle_Artifact
+          path: ./
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
           environment: ${{ inputs.environment }}
           aws-region: ${{ secrets.AWS_REGION }}
           pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      - name: Pulumi Up
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi up -y
+      - name: Deploy with Pulumi
+        id: pulumi-up
+        uses: pulumi/actions@v4
+        with:
+          work-dir: ./VirtualFinland.UsersAPI.Deployment
+          command: up
+          stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
+          upsert: true
+          config-map: "{ appArtifactPath: ../VirtualFinland.UsersAPI.zip }"
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - name: Apply EF migration script
+        run: ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
         if: ${{ inputs.environment == 'staging' }}

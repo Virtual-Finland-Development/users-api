@@ -40,18 +40,13 @@ public class PostgresDatabase
             SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
         });
 
-        DbHostName = rdsPostGreInstance.Endpoint;
-        DbIdentifier = rdsPostGreInstance.Identifier;
-        DbPassword = password.Result;
-
-        DbName = config.Require("dbName");
-        DbUsername = config.Require("dbAdmin");
+        var DbName = config.Require("dbName");
+        var DbUsername = config.Require("dbAdmin");
+        var DbHostName = rdsPostGreInstance.Endpoint;
+        var DbIdentifier = rdsPostGreInstance.Identifier;
+        var DbPassword = password.Result;
+        DbConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
     }
 
-    public Output<string> DbPassword = default!;
-    public Output<string> DbHostName = default!;
-    public Output<string> DbSubnetGroupName = default!;
-    public Output<string> DbIdentifier = default!;
-    public string DbName = default!;
-    public string DbUsername = default!;
+    public Output<string> DbConnectionString = default!;
 }
