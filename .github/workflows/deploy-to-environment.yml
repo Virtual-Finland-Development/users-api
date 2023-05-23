@@ -37,6 +37,8 @@ jobs:
       - name: Generate EF migration script
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: dotnet ef migrations bundle --configuration Bundle --output=efbundle.exe
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:

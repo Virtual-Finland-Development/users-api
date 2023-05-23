@@ -92,7 +92,7 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"DEBUG: dbConnectionString: {dbConnectionString}");
+
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
