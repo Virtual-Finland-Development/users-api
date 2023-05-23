@@ -71,6 +71,22 @@ public class UserTests : APITestBase
     }
 
     [Fact]
+    public async Task Should_DeleteUserAsync()
+    {
+        // Arrange
+        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var command = new DeleteUser.Command();
+        command.SetAuth(dbEntities.user.Id);
+        var sut = new DeleteUser.Handler(_dbContext);
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Should().BeOfType(typeof(MediatR.Unit));
+    }
+
+    [Fact]
     public async Task Should_FailUpdateUserNationalityCheckAsync()
     {
         // Arrange

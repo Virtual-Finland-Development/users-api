@@ -73,7 +73,11 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        return Ok(await _mediator.Send(new GetPersonBasicInformation.Query(userId)));
+        var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
+
+        if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) return NotFound();
+
+        return Ok(result);
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
@@ -107,7 +111,11 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        return Ok(await _mediator.Send(new GetJobApplicantProfile.Query(userId)));
+        var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
+
+        if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) return NotFound();
+
+        return Ok(result);
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
+using Serilog;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
@@ -21,6 +22,11 @@ using VirtualFinlandDevelopment.Shared.Environments;
 using VirtualFinlandDevelopment.Shared.Middlewares;
 using VirtualFinlandDevelopment.Shared.Services;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
+using System.IdentityModel.Tokens.Jwt;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +38,15 @@ builder.Services.AddControllers();
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient("", _ => { });
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
+        .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+});
 
 // Validate server configurations
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
@@ -94,7 +109,13 @@ testBedIdentityProviderConfig.LoadOpenIdConfigUrl();
 IIdentityProviderConfig sinunaIdentityProviderConfig = new SinunaIdentityProviderConfig(builder.Configuration);
 sinunaIdentityProviderConfig.LoadOpenIdConfigUrl();
 
-builder.Services.AddAuthentication()
+
+// @see: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme?view=aspnetcore-6.0
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = Constants.Security.ResolvePolicyFromTokenIssuer;
+    options.DefaultChallengeScheme = Constants.Security.ResolvePolicyFromTokenIssuer;
+})
     .AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
     {
         JwksExtension.SetJwksOptions(c, new JwkOptions(testBedIdentityProviderConfig.JwksOptionsUrl));
@@ -135,19 +156,54 @@ builder.Services.AddAuthentication()
             ValidateIssuerSigningKey = true,
             ValidIssuer = sinunaIdentityProviderConfig.Issuer
         };
+    }).AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer, options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            string authorization = context.Request.Headers[HeaderNames.Authorization];
+            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+            {
+                var token = authorization.Substring("Bearer ".Length).Trim();
+                var jwtHandler = new JwtSecurityTokenHandler();
+
+                if (jwtHandler.CanReadToken(token))
+                {
+                    var issuer = jwtHandler.ReadJwtToken(token).Issuer;
+                    switch (issuer)
+                    {
+                        // Cheers: https://stackoverflow.com/a/65642709
+                        case var value when value == testBedIdentityProviderConfig.Issuer:
+                            return Constants.Security.TestBedBearerScheme;
+                        case var value when value == sinunaIdentityProviderConfig.Issuer:
+                            return Constants.Security.SinunaScheme;
+                        case var value when value == builder.Configuration["SuomiFi:Issuer"]:
+                            return Constants.Security.SuomiFiBearerScheme;
+                    }
+                }
+            }
+            return Constants.Security.TestBedBearerScheme; // Defaults to testbed
+        };
     });
 
 builder.Services.AddAuthorization(options =>
 {
-    var allAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
-        .AddAuthenticationSchemes(
-            Constants.Security.TestBedBearerScheme,
-            Constants.Security.SuomiFiBearerScheme,
-            Constants.Security.SinunaScheme
-        ).Build();
+    options.AddPolicy(Constants.Security.TestBedBearerScheme, policy =>
+    {
+        policy.AuthenticationSchemes.Add(Constants.Security.TestBedBearerScheme);
+        policy.RequireAuthenticatedUser();
+    });
 
-    options.AddPolicy(Constants.Security.AllPoliciesPolicy, allAuthorizationPolicyBuilder);
-    options.DefaultPolicy = allAuthorizationPolicyBuilder;
+    options.AddPolicy(Constants.Security.SuomiFiBearerScheme, policy =>
+    {
+        policy.AuthenticationSchemes.Add(Constants.Security.SuomiFiBearerScheme);
+        policy.RequireAuthenticatedUser();
+    });
+
+    options.AddPolicy(Constants.Security.SinunaScheme, policy =>
+    {
+        policy.AuthenticationSchemes.Add(Constants.Security.SinunaScheme);
+        policy.RequireAuthenticatedUser();
+    });
 });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHandlerMiddleware>();
 
@@ -184,6 +240,7 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 
 app.UseErrorHandlerMiddleware();
 
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -193,8 +250,7 @@ app.UseResponseCaching();
 // Pre-Initializations and server start optimizations
 using (var scope = app.Services.CreateScope())
 {
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Bootstrapping application");
+    Log.Information("Bootstrapping application");
 
     // Initialize automatically any database changes
     var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
@@ -206,9 +262,10 @@ using (var scope = app.Services.CreateScope())
     updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
 
     await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
-    await mediator.Send(updateUserWarmUpCommand);
-    await mediator.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty));
-    logger.LogInformation("Completed bootstrapping application");
+    await mediator?.Send(updateUserWarmUpCommand)!;
+    await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
+
+    Log.Information("Completed bootstrapping application");
 }
 
 

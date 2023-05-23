@@ -354,3 +354,6 @@ MigrationBackup/
 
 # MacOS folder attributes
 .DS_Store
+
+# VSCode
+.vscode/

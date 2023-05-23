@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN}}
-
 jobs:
   build-and-test:
     name: Build and test
@@ -38,9 +35,12 @@ jobs:
     name: Preview Pulumi
     runs-on: ubuntu-latest
     needs: build-and-test
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Install Pulumi CLI
-        uses: pulumi/setup-pulumi@v2
+        uses: pulumi/actions@v4
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
@@ -53,13 +53,11 @@ jobs:
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with: 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
+        with:
+          environment: dev
           aws-region: ${{ secrets.AWS_REGION }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Pulumi Preview
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: pulumi preview
-
-        
