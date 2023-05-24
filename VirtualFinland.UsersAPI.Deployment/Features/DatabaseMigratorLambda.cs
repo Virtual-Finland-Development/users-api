@@ -92,7 +92,7 @@ class DatabaseMigratorLambda
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
-            Handler = "VirtualFinland.DatabaseMigrationRunner",
+            Handler = "DatabaseMigrationRunner",
             Timeout = 30,
             MemorySize = 256,
             Environment = new FunctionEnvironmentArgs

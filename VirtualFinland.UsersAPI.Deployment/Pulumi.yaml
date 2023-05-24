@@ -2,6 +2,7 @@ name: users-api
 description: Users API Infrastructure Definitions
 runtime: dotnet
 config:
+  aws:region: eu-north-1
   users-api:dbAdmin: apiDbAdmin
   users-api:dbName: usersapidb
   users-api:name: users-api
