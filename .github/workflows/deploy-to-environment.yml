@@ -66,12 +66,11 @@ jobs:
       - name: Resolve if deployment has database migrations
         id: deployment-has-db-migrations
         run: |
-          if [ "${{ steps.get-pulumi-outputs.outputs.StackExists }}" != 'true' ]; then
-            echo "HasDatabaseMigrations=false" >> $GITHUB_OUTPUT
-          elif git diff --name-only HEAD^ HEAD | grep -q "VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Migrations"; then
-            echo "HasDatabaseMigrations=true" >> $GITHUB_OUTPUT
-          else
-            echo "HasDatabaseMigrations=false" >> $GITHUB_OUTPUT
+          echo "HasDatabaseMigrations=false" >> $GITHUB_OUTPUT
+          if git diff --name-only HEAD^ HEAD | grep -q "VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Migrations/"; then
+            if [ "${{ steps.get-pulumi-outputs.outputs.StackExists }}" == "true" ]; then
+              echo "HasDatabaseMigrations=true" >> $GITHUB_OUTPUT
+            fi
           fi
       - name: Create database backup snapshot on PRE-deployment
         if: ${{ steps.deployment-has-db-migrations.outputs.HasDatabaseMigrations == 'true' }}
