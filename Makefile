@@ -7,7 +7,7 @@ test:
 prep-deploy: test
 	dotnet tool install -g Amazon.Lambda.Tools || true
 	dotnet lambda package --project-location ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-	make -C ./VirtualFinland.UsersAPI.DatabaseMigrationRunner build
+	dotnet lambda package --project-location ./VirtualFinland.UsersAPI.DatabaseMigrationRunner
 
 deploy: prep-deploy
 	pulumi -C ./VirtualFinland.UsersAPI.Deployment up --yes

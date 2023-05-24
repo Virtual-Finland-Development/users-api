@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
@@ -84,14 +85,14 @@ class DatabaseMigratorLambda
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
         };
 
-        var appArtifactPath = "../VirtualFinland.UsersAPI.DatabaseMigrationRunner/release";
+        var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
         Pulumi.Log.Info($"DatabaseMigrationRunner artifact Path: {appArtifactPath}");
 
         var lambdaFunction = new Function($"{stackSetup.ProjectName}-DatabaseMigrationRunner-{stackSetup.Environment}", new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
-            Handler = "VirtualFinland.DatabaseMigrationRunner::DatabaseMigrationRunner.Function::FunctionHandler",
+            Handler = "VirtualFinland.DatabaseMigrationRunner",
             Timeout = 30,
             MemorySize = 256,
             Environment = new FunctionEnvironmentArgs
