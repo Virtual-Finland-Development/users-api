@@ -23,10 +23,6 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - name: Install EF Tool
-        run: |
-          dotnet new tool-manifest
-          dotnet tool install dotnet-ef
       - name: Pulumi Users API Integration Tests
         run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
       - name: Install AWS Dotnet CLI Lambda Tools
@@ -34,22 +30,19 @@ jobs:
       - name: Build UserAPI Lamda Package
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: dotnet lambda package
-      - name: Generate EF migration script
-        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-        run: dotnet ef migrations bundle --configuration Bundle --output=efbundle.exe
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Build Database migration runner app
+        run: make -C ./VirtualFinland.UsersAPI.DatabaseMigrationRunner build
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
-      - name: Upload database migration bundle artifact
+      - name: Upload database migrator artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: DatabaseMigrationBundle_Artifact
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/efbundle.exe
+          name: DatabaseMigrator_Artifacts
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UsersAPI.DatabaseMigrationRunner/release
           retention-days: 2
   deploy:
     name: "Deploy to AWS ${{ inputs.environment }}-environment"
@@ -75,8 +68,8 @@ jobs:
           path: ./
       - uses: actions/download-artifact@v3
         with:
-          name: DatabaseMigrationBundle_Artifact
-          path: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/
+          name: DatabaseMigrator_Artifacts
+          path: ./VirtualFinland.UsersAPI.DatabaseMigrationRunner/release
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
@@ -86,18 +79,19 @@ jobs:
       - name: Install Pulumi CLI
         uses: pulumi/actions@v4
       - name: Resolve Database identifier with Pulumi
-        id: get-pulumi-db-identfier
+        id: get-pulumi-outputs
         continue-on-error: true # Continue if db does not yet exist
         working-directory: ./VirtualFinland.UsersAPI.Deployment
         run: |
           pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           echo "DBIdentifier=$(pulumi stack output DBIdentifier)" >> $GITHUB_OUTPUT
+          echo "DatabaseMigratorLambdaArn=$(pulumi stack output DatabaseMigratorLambdaArn)" >> $GITHUB_OUTPUT
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Create database backup snapshot on PRE-deployment
         continue-on-error: true # TODO: needs a check if db exists but snapshot creation fails
         run: |
-          aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-db-identfier.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
+          aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-outputs.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Deploy with Pulumi
         id: pulumi-up
         uses: pulumi/actions@v4
@@ -109,15 +103,10 @@ jobs:
           config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false } }"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      - name: Apply EF migration script
-        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
+      - name: Invoke database migration runner lambda
         run: |
-          chmod +x ./efbundle.exe
-          ./efbundle.exe --connection "${{ steps.pulumi-up.outputs.DbConnectionString }}"
-      - name: Create database backup snapshot on POST-deployment
-        continue-on-error: false # Fail the deployment if the snapshot creation fails
-        run: |
-          aws rds create-db-snapshot --db-instance-identifier ${{ steps.pulumi-up.outputs.DBIdentifier }} --db-snapshot-identifier POST-${{ env.DEPLOYMENT_EVENT_IDENT }}
+          aws lambda invoke --function-name ${{ steps.get-pulumi-outputs.outputs.DatabaseMigratorLambdaArn }} output.json
+          cat output.json
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
         if: ${{ inputs.environment == 'staging' }}

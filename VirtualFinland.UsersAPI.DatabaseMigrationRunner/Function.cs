@@ -5,7 +5,7 @@ using Serilog;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
-namespace DatabaseMigrationRunner;
+namespace VirtualFinland.DatabaseMigrationRunner;
 
 public class Function
 {

@@ -51,8 +51,10 @@ public class UsersApiStack : Stack
         var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
-        DbConnectionString = dbConfigs.DbConnectionString;
         DBIdentifier = dbConfigs.DBIdentifier;
+
+        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretManagerSecret);
+        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
     private bool IsProductionEnvironment()
@@ -73,6 +75,6 @@ public class UsersApiStack : Stack
     // Outputs for Pulumi service
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
-    [Output] public Output<string>? DbConnectionString { get; set; } // Output for CICD database migration tool
     [Output] public Output<string>? DBIdentifier { get; set; }
+    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
 }
