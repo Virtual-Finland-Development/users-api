@@ -5,37 +5,14 @@ on:
     branches:
       - main
 
+env:
+  TEST_ENVIRONMENT: dev
 jobs:
   build-and-test:
-    name: Build and test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-      - name: Pulumi Users API Integration Tests
-        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
-      - name: Install AWS Dotnet CLI Lambda Tools
-        run: dotnet tool install -g Amazon.Lambda.Tools
-      - name: Build UserAPI Lamda Package
-        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-        run: dotnet lambda package
-      - name: Build DatabaseMigrationRunner Lamda Package
-        working-directory: ./VirtualFinland.UsersAPI.DatabaseMigrationRunner
-        run: dotnet lambda package
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: Application_Artifact
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
-          retention-days: 2
-      - name: Upload database migrator artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: DatabaseMigrator_Artifacts
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
-          retention-days: 2
+    uses: ./.github/workflows/build-and-test.yml
+    secrets: inherit
+    with:
+      environment: $TEST_ENVIRONMENT
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
@@ -43,8 +20,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    env:
-      TEST_ENVIRONMENT: dev
     steps:
       - name: Install Pulumi CLI
         uses: pulumi/actions@v4

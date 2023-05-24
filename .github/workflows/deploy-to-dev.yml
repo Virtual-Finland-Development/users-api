@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-test-and-deploy:
-    uses: Virtual-Finland-Development/users-api/.github/workflows/deploy-to-environment.yml@main
+    uses: ./.github/workflows/deploy-to-environment.yml
     secrets: inherit
     with:
       environment: dev
