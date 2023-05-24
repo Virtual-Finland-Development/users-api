@@ -14,22 +14,26 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - name: Restore NuGet Packages
-        run: dotnet restore ./VirtualFinland.UsersAPI.sln
-      - name: Build Solution
-        run: dotnet build ./VirtualFinland.UsersAPI.sln --no-restore --verbosity normal
       - name: Pulumi Users API Integration Tests
-        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore --verbosity normal
+        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
       - name: Install AWS Dotnet CLI Lambda Tools
         run: dotnet tool install -g Amazon.Lambda.Tools
       - name: Build UserAPI Lamda Package
         working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
         run: dotnet lambda package
+      - name: Build Database migration runner app
+        run: make -C ./VirtualFinland.UsersAPI.DatabaseMigrationRunner build
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
           path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          retention-days: 2
+      - name: Upload database migrator artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: DatabaseMigrator_Artifacts
+          path: /home/runner/work/users-api/users-api/VirtualFinland.UsersAPI.DatabaseMigrationRunner/release
           retention-days: 2
   preview-pulumi:
     name: Preview Pulumi
@@ -48,6 +52,10 @@ jobs:
         with:
           name: Application_Artifact
           path: ./
+      - uses: actions/download-artifact@v3
+        with:
+          name: DatabaseMigrator_Artifacts
+          path: ./VirtualFinland.UsersAPI.DatabaseMigrationRunner/release
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
