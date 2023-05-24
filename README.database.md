@@ -2,6 +2,8 @@
 
 ## Reverting to a specific RDS snapshot
 
+** UNTESTED **
+
 Manually reverting to a snapshot means creating a new database and updating the app references to that. For pulumi this means updating the stack with the new snapshot identifier.
 
 1. Go to AWS Console and select RDS
@@ -45,4 +47,4 @@ const rdsInstance = new aws.rds.Instance(instanceName, {
 });
 ```
 
-10. Run `pulumi up` to update the stack
+10. Run `pulumi up` to update the stack back to the original state
