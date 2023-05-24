@@ -17,8 +17,6 @@ jobs:
   build-and-test:
     uses: ./.github/workflows/build-and-test.yml
     secrets: inherit
-    with:
-      environment: ${{ inputs.environment }}
   deploy:
     name: "Deploy to AWS ${{ inputs.environment }}-environment"
     environment: ${{ inputs.environment }}

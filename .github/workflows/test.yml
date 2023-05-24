@@ -11,8 +11,6 @@ jobs:
   build-and-test:
     uses: ./.github/workflows/build-and-test.yml
     secrets: inherit
-    with:
-      environment: $TEST_ENVIRONMENT
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
