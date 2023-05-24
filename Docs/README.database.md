@@ -1,4 +1,4 @@
-# Datase instructions
+# Database instructions
 
 ## Reverting to a specific RDS snapshot
 
