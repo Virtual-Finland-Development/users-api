@@ -159,7 +159,8 @@ builder.Services.AddAuthentication(options =>
     {
         options.ForwardDefaultSelector = context =>
         {
-            string authorization = context.Request.Headers[HeaderNames.Authorization];
+            var authorizationValue = context.Request.Headers[HeaderNames.Authorization];
+            var authorization = authorizationValue.FirstOrDefault();
             if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
             {
                 var token = authorization.Substring("Bearer ".Length).Trim();

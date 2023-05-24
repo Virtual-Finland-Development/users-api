@@ -27,9 +27,9 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
 
     public TestBedConsentProviderConfig(IConfiguration configuration)
     {
-        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"] ?? throw new Exception("Failed to retrieve Testbed:ConsentJwksJsonUrl");
-        Issuer = configuration["Testbed:ConsentIssuer"] ?? throw new Exception("Failed to retrieve Testbed:ConsentIssuer");
-        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"] ?? throw new Exception("Failed to retrieve Testbed:ConsentVerifyUrl");
+        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"] ?? throw new ArgumentNullException("Testbed:ConsentJwksJsonUrl");
+        Issuer = configuration["Testbed:ConsentIssuer"] ?? throw new ArgumentNullException("ConsentDataTestbed:ConsentIssuer");
+        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"] ?? throw new ArgumentNullException("Testbed:ConsentVerifyUrl");
     }
 
     public async void LoadPublicKeys()

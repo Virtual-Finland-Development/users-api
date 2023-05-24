@@ -35,7 +35,7 @@ public class ProductizerController : ControllerBase
         _authenticationService = authenticationService;
         _consentSecurityService = consentSecurityService;
         _logger = logger;
-        _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"];
+        _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"] ?? throw new ArgumentNullException("ConsentDataSources:UserProfile");
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
