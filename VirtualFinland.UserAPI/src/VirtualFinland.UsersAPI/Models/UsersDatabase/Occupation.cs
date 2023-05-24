@@ -12,11 +12,11 @@ public class Occupation : Auditable, IEntity
     /// </summary>
     [MaxLength(16)]
     public string? EscoCode { get; set; }
-    
+
     [MaxLength(256)]
     public string? Employer { get; set; }
 
-    [Range(0, 600)]
+    [Range(0, 601)]
     public int? WorkMonths { get; set; }
 
     // Relationships
