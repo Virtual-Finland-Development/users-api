@@ -63,12 +63,22 @@ jobs:
           echo "StackExists=true" >> $GITHUB_OUTPUT
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - name: Resolve if deployment has database migrations
+        id: deployment-has-db-migrations
+        run: |
+          if [ "${{ steps.get-pulumi-outputs.outputs.StackExists }}" != 'true' ]; then
+            echo "HasDatabaseMigrations=false" >> $GITHUB_OUTPUT
+          elif git diff --name-only HEAD^ HEAD | grep -q "VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Migrations"; then
+            echo "HasDatabaseMigrations=true" >> $GITHUB_OUTPUT
+          else
+            echo "HasDatabaseMigrations=false" >> $GITHUB_OUTPUT
+          fi
       - name: Create database backup snapshot on PRE-deployment
-        if: ${{ steps.get-pulumi-outputs.outputs.StackExists == 'true' }}
+        if: ${{ steps.deployment-has-db-migrations.outputs.HasDatabaseMigrations == 'true' }}
         run: |
           aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-outputs.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Wait for the database snapshot to be ready
-        if: ${{ steps.get-pulumi-outputs.outputs.StackExists == 'true' }}
+        if: ${{ steps.deployment-has-db-migrations.outputs.HasDatabaseMigrations == 'true' }}
         run: |
           aws rds wait db-snapshot-available --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Deploy with Pulumi
@@ -83,6 +93,7 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Invoke database migration runner lambda
+        if: ${{ steps.deployment-has-db-migrations.outputs.HasDatabaseMigrations == 'true' }}
         run: |
           aws lambda invoke --function-name ${{ steps.get-pulumi-outputs.outputs.DatabaseMigratorLambdaArn }} output.json
           cat output.json
