@@ -1,4 +1,4 @@
-name: "Deploy automatically to development-environment"
+name: "Deploy automatically to live environment: dev"
 on:
   push:
     branches: ["main"]
