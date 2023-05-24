@@ -5,6 +5,7 @@ on:
 
 jobs:
   build-test-and-deploy:
+    name: Build, test and deploy
     uses: ./.github/workflows/deploy-to-environment.yml
     secrets: inherit
     with:

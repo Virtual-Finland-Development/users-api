@@ -9,6 +9,7 @@ env:
   TEST_ENVIRONMENT: dev
 jobs:
   build-and-test:
+    name: Build and test
     uses: ./.github/workflows/build-and-test.yml
     secrets: inherit
   preview-pulumi:
