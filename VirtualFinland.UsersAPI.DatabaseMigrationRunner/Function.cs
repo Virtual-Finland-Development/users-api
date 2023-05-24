@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
@@ -30,12 +29,8 @@ public class Function
         {
             using (var scope = app.Services.CreateScope())
             {
-                Log.Information("Migrate database");
-
                 var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
                 await dataContext.Database.MigrateAsync();
-
-                Log.Information("Database migration completed");
             }
         }
     }

@@ -12,16 +12,8 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - name: Pulumi Users API Integration Tests
-        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
-      - name: Install AWS Dotnet CLI Lambda Tools
-        run: dotnet tool install -g Amazon.Lambda.Tools
-      - name: Build UserAPI Lamda Package
-        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-        run: dotnet lambda package
-      - name: Build DatabaseMigrationRunner Lamda Package
-        working-directory: ./VirtualFinland.UsersAPI.DatabaseMigrationRunner
-        run: dotnet lambda package
+      - name: Test and build
+        run: make prep-deploy
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
