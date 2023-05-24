@@ -27,7 +27,6 @@ jobs:
       id-token: write
       contents: read
     env:
-      PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.sha }}-${{ github.run_number }}
     steps:
       - uses: actions/setup-dotnet@v3
