@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinlandDevelopment.Shared.Exceptions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
