@@ -36,3 +36,15 @@ var rdsPostGreInstance = new Instance(instanceName, new InstanceArgs()
 ```
 
 10. Ensure the database works as expected
+
+## Running migrations manually
+
+1. Resolve the pulumi stack output for the database migrator lambda function ARN: `DatabaseMigratorLambdaArn`
+2. Invoke the function:
+
+- with AWS CLI: `aws lambda invoke --function-name <DatabaseMigratorLambdaArn> output.json`
+- or by using the AWS Console:
+  - Go to AWS Console and select Lambda
+  - Select the function with name like `users-api-DatabaseMigrationRunner-<stage>-<random-hash>`
+  - Select the tab "Test"
+  - Click "Test" button and wait for the execution to finish
