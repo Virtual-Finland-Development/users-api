@@ -38,6 +38,7 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
             PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
             SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
+            //SnapshotIdentifier = "" // See README.database.md for more information
         });
 
         var DbName = config.Require("dbName");
