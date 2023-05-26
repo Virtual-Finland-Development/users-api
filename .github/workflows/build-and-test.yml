@@ -18,11 +18,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          path: VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
       - name: Upload database migrator artifact
         uses: actions/upload-artifact@v3
         with:
           name: DatabaseMigrator_Artifacts
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+          path: VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
           retention-days: 2
