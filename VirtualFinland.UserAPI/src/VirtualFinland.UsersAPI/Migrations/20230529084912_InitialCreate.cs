@@ -1,29 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using Amazon.SecretsManager.Model.Internal.MarshallTransformations;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace VirtualFinland.UserAPI.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Empty database for this new "initial" migration
-            migrationBuilder.Sql(@"DELETE FROM ""__EFMigrationsHistory""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Certifications""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Educations""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Languages""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Occupations""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Permits""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""SearchProfiles""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Skills""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""WorkPreferences""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""ExternalIdentities""", true);
-            migrationBuilder.Sql(@"DROP TABLE IF EXISTS ""Users""", true);
-
             migrationBuilder.CreateTable(
                 name: "ExternalIdentities",
                 columns: table => new
@@ -82,7 +68,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true),
-                    Type = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EscoUri = table.Column<string>(type: "text", nullable: true),
                     InstitutionName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -149,7 +135,6 @@ namespace VirtualFinland.UserAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    NaceCode = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: true),
                     EscoUri = table.Column<string>(type: "text", nullable: true),
                     EscoCode = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: true),
                     Employer = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -245,11 +230,12 @@ namespace VirtualFinland.UserAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PreferredRegionCode = table.Column<string>(type: "text", nullable: false),
-                    PreferredMunicipalityCode = table.Column<string>(type: "text", nullable: false),
+                    PreferredRegionCode = table.Column<string>(type: "text", nullable: true),
+                    PreferredMunicipalityCode = table.Column<string>(type: "text", nullable: true),
                     EmploymentTypeCode = table.Column<string>(type: "text", nullable: true),
                     WorkingTimeCode = table.Column<string>(type: "text", nullable: true),
-                    WorkingLanguageEnum = table.Column<string>(type: "character varying(2)", maxLength: 2, nullable: true),
+                    WorkingLanguageEnum = table.Column<string>(type: "text", nullable: true),
+                    NaceCode = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: true),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -263,16 +249,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.InsertData(
-                table: "ExternalIdentities",
-                columns: new[] { "Id", "Created", "IdentityId", "Issuer", "Modified", "UserId" },
-                values: new object[] { new Guid("55829074-cc71-4b7d-942d-62e12ec2a2d2"), new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380), "3429e94e-e55e-4a5c-b5d5-62a11d5b0401", "9714f04a-1184-4ed7-a53d-ef12e5a7bcd8", new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380), new Guid("5a8af4b4-8cb4-44ac-8291-010614601719") });
-
-            migrationBuilder.InsertData(
-                table: "Persons",
-                columns: new[] { "Id", "Created", "Email", "GivenName", "LastName", "Modified", "PhoneNumber", "ResidencyCode" },
-                values: new object[] { new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"), new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290), null, "WarmUpUserGivenName", "WarmUpUserLastName", new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290), null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Certifications_PersonId",

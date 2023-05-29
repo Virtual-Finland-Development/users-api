@@ -13,14 +13,14 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20230130172744_Initial")]
-    partial class Initial
+    [Migration("20230529084912_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.9")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -60,6 +60,9 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EscoUri")
+                        .HasColumnType("text");
+
                     b.Property<string>("InstitutionName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -73,10 +76,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<Guid?>("PersonId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("Type")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
@@ -152,17 +151,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExternalIdentities");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("55829074-cc71-4b7d-942d-62e12ec2a2d2"),
-                            Created = new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380),
-                            IdentityId = "3429e94e-e55e-4a5c-b5d5-62a11d5b0401",
-                            Issuer = "9714f04a-1184-4ed7-a53d-ef12e5a7bcd8",
-                            Modified = new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3380),
-                            UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
-                        });
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Language", b =>
@@ -219,10 +207,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NaceCode")
-                        .HasMaxLength(7)
-                        .HasColumnType("character varying(7)");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
@@ -296,16 +280,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Persons");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290),
-                            GivenName = "WarmUpUserGivenName",
-                            LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 1, 30, 17, 27, 44, 270, DateTimeKind.Utc).AddTicks(3290)
-                        });
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", b =>
@@ -422,17 +396,18 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("NaceCode")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)");
+
                     b.Property<string>("PreferredMunicipalityCode")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PreferredRegionCode")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("WorkingLanguageEnum")
-                        .HasMaxLength(2)
-                        .HasColumnType("character varying(2)");
+                        .HasColumnType("text");
 
                     b.Property<string>("WorkingTimeCode")
                         .HasColumnType("text");
