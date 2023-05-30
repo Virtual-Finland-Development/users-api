@@ -77,6 +77,7 @@ class DatabaseMigratorLambda
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = stackSetup.VpcSetup.VpcId,
+            Name = "default"
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
