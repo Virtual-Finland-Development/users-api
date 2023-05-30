@@ -25,7 +25,7 @@ jobs:
     needs: build-and-test
     permissions:
       id-token: write
-      contents: read
+      contents: write
     env:
       DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.sha }}-${{ github.run_number }}
     steps:
