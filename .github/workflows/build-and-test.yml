@@ -3,6 +3,9 @@ name: Build and test
 on:
   workflow_call:
 
+permissions: 
+  packages: read
+
 jobs:
   build-and-test:
     name: Build and test
