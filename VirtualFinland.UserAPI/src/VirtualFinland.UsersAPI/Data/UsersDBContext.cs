@@ -45,7 +45,5 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
-
-        modelBuilder.Seed();
     }
 }

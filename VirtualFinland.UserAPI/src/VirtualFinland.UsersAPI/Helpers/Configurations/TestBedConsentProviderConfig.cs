@@ -27,9 +27,9 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
 
     public TestBedConsentProviderConfig(IConfiguration configuration)
     {
-        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"];
-        Issuer = configuration["Testbed:ConsentIssuer"];
-        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"];
+        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"] ?? throw new ArgumentNullException("Testbed:ConsentJwksJsonUrl");
+        Issuer = configuration["Testbed:ConsentIssuer"] ?? throw new ArgumentNullException("ConsentDataTestbed:ConsentIssuer");
+        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"] ?? throw new ArgumentNullException("Testbed:ConsentVerifyUrl");
     }
 
     public async void LoadPublicKeys()
@@ -55,7 +55,7 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
                     N = k.N,
                     E = k.E
                 }).ToList();
-                
+
                 break;
             }
             await Task.Delay(_configUrlRetryWaitTime);

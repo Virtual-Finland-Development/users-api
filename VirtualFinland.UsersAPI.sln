@@ -1,10 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI", "VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj", "{CAB8E772-8F51-41BB-B5CE-360D417A26B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Deployment", "VirtualFinland.UsersAPI.Deployment\VirtualFinland.UsersAPI.Deployment.csproj", "{2A08FE93-05D6-4E88-91BE-629C5D0BDDC6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.UnitTests", "VirtualFinland.UsersAPI.UnitTests\VirtualFinland.UsersAPI.UnitTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseMigrationRunner", "VirtualFinland.UsersAPI.DatabaseMigrationRunner\DatabaseMigrationRunner.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +27,9 @@ Global
 		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDE86B2E-E179-411B-999D-27EB4E73C1A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

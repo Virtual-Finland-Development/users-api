@@ -8,8 +8,6 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using NetDevPack.Security.JwtExtensions;
 using Serilog;
-using VirtualFinland.UserAPI.Activities.Identity.Operations;
-using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
@@ -19,7 +17,6 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
-using VirtualFinland.UserAPI.Models.Shared;
 using System.IdentityModel.Tokens.Jwt;
 
 Log.Logger = new LoggerConfiguration()
@@ -91,10 +88,11 @@ builder.Services.AddSwaggerGen(config =>
 
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
-var secret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
+var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
     : null;
-var dbConnectionString = secret ?? builder.Configuration.GetConnectionString("DefaultConnection");
+var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
@@ -161,7 +159,8 @@ builder.Services.AddAuthentication(options =>
     {
         options.ForwardDefaultSelector = context =>
         {
-            string authorization = context.Request.Headers[HeaderNames.Authorization];
+            var authorizationValue = context.Request.Headers[HeaderNames.Authorization];
+            var authorization = authorizationValue.FirstOrDefault();
             if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
             {
                 var token = authorization.Substring("Bearer ".Length).Trim();
@@ -239,7 +238,6 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 }
 
 app.UseMiddleware<ErrorHandlerMiddleware>();
-
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -247,25 +245,18 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-// Pre-Initializations and server start optimizations
-using (var scope = app.Services.CreateScope())
+if (EnvironmentExtensions.IsLocal(app.Environment))
 {
-    Log.Information("Bootstrapping application");
+    using (var scope = app.Services.CreateScope())
+    {
+        Log.Information("Migrate database");
 
-    // Initialize automatically any database changes
-    var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    await dataContext.Database.MigrateAsync();
+        // Initialize automatically any database changes
+        var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        await dataContext.Database.MigrateAsync();
 
-    // Warmup Entity Framework ORM by calling the related features to desired HTTP requests
-    var mediator = scope.ServiceProvider.GetService<IMediator>();
-    var updateUserWarmUpCommand = new UpdateUser.Command(null, null, null, null, null, null, null, null, null, null, null, null, null);
-    updateUserWarmUpCommand.SetAuth(WarmUpUser.Id);
-
-    await mediator?.Send(new GetUser.Query(WarmUpUser.Id))!;
-    await mediator?.Send(updateUserWarmUpCommand)!;
-    await mediator?.Send(new VerifyIdentityUser.Query(string.Empty, string.Empty))!;
-
-    Log.Information("Completed bootstrapping application");
+        Log.Information("Database migration completed");
+    }
 }
 
 
