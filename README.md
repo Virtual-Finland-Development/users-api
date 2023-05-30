@@ -12,13 +12,13 @@ The project is created primarily on C# and .NET.
 Install Amazon.Lambda.Tools Global Tools if not already installed.
 
 ```
-    dotnet tool install -g Amazon.Lambda.Tools
+dotnet tool install -g Amazon.Lambda.Tools
 ```
 
 If already installed check if new version is available.
 
 ```
-    dotnet tool update -g Amazon.Lambda.Tools
+dotnet tool update -g Amazon.Lambda.Tools
 ```
 
 Install .NET SDK.  
@@ -62,13 +62,13 @@ Use premade scripts that build and start the API with a database using docker. Y
 To start the API in docker use the following script x86 CPUs, call in the repository root.
 
 ```
-    ./Tools/Scripts/startApiInDocker.sh
+./Tools/Scripts/startApiInDocker.sh
 ```
 
 Or the following script or arm64 CPUs, call in the repository root.
 
 ```
-    ./Tools/Scripts/startApiInDocker-arm64.sh
+./Tools/Scripts/startApiInDocker-arm64.sh
 ```
 
 The API should be available at the following address:  
@@ -77,7 +77,7 @@ http//localhost:5001/
 Notice: If you are running a Linux or MacOS operating system you might need to provide execution rights to the file, sample command:
 
 ```
-    chmod 755 ./Tools/Scripts/startApiInDocker.sh
+chmod 755 ./Tools/Scripts/startApiInDocker.sh
 ```
 
 ### What address does the application use in local development
@@ -92,7 +92,7 @@ Two addresses:
 Navigate to the VirtualFinland.UsersAPI project root folder (./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI) and run the lambda tools package command.
 
 ```
-  dotnet lambda package
+dotnet lambda package
 ```
 
 ### Which environments are supported
@@ -100,7 +100,7 @@ Navigate to the VirtualFinland.UsersAPI project root folder (./VirtualFinland.Us
 At the moment only a development/staging environment configurations are supported. You can set the following environment variable.
 
 ```
-  ASPNETCORE_ENVIRONMENT=dev
+ASPNETCORE_ENVIRONMENT=dev
 ```
 
 ### What functionalities and requests the API has

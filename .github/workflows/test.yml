@@ -5,32 +5,13 @@ on:
     branches:
       - main
 
+env:
+  TEST_ENVIRONMENT: dev
 jobs:
   build-and-test:
     name: Build and test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-      - name: Restore NuGet Packages
-        run: dotnet restore ./VirtualFinland.UsersAPI.sln
-      - name: Build Solution
-        run: dotnet build ./VirtualFinland.UsersAPI.sln --no-restore --verbosity normal
-      - name: Pulumi Users API Integration Tests
-        run: dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore --verbosity normal
-      - name: Install AWS Dotnet CLI Lambda Tools
-        run: dotnet tool install -g Amazon.Lambda.Tools
-      - name: Build UserAPI Lamda Package
-        working-directory: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
-        run: dotnet lambda package
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: Application_Artifact
-          path: /home/runner/work/users-api/users-api/VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
-          retention-days: 2
+    uses: ./.github/workflows/build-and-test.yml
+    secrets: inherit
   preview-pulumi:
     name: Preview Pulumi
     runs-on: ubuntu-latest
@@ -46,18 +27,22 @@ jobs:
         with:
           name: Application_Artifact
           path: ./
-      - name: Select Pulumi Stack
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/dev
-      - name: Set Pulumi Artifact Path
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi config set appArtifactPath ../VirtualFinland.UsersAPI.zip
+      - uses: actions/download-artifact@v3
+        with:
+          name: DatabaseMigrator_Artifacts
+          path: ./
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
-          environment: dev
+          environment: ${{ env.TEST_ENVIRONMENT }}
           aws-region: ${{ secrets.AWS_REGION }}
           pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      - name: Pulumi Preview
-        working-directory: ./VirtualFinland.UsersAPI.Deployment
-        run: pulumi preview
+      - name: Pulumi preview
+        uses: pulumi/actions@v4
+        with:
+          work-dir: ./VirtualFinland.UsersAPI.Deployment
+          command: preview
+          stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ env.TEST_ENVIRONMENT }}
+          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip, secret: false } }"
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

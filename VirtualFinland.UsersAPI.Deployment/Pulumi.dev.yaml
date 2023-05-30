@@ -1,6 +1,0 @@
-config:
-  users-api:dbAdmin: apiDbAdmin
-  users-api:dbName: usersapidb
-  users-api:name: users-api
-  users-api:infraStackReferenceName: infrastructure
-  users-api:appArtifactPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip

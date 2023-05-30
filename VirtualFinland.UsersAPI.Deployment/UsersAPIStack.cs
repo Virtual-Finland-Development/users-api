@@ -13,7 +13,7 @@ public class UsersApiStack : Stack
     public UsersApiStack()
     {
         var config = new Config();
-        bool isProductionEnvironment = Pulumi.Deployment.Instance.StackName == Environments.Prod.ToString().ToLowerInvariant();
+        bool isProductionEnvironment = IsProductionEnvironment();
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
 
@@ -51,9 +51,30 @@ public class UsersApiStack : Stack
         var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
+        DBIdentifier = dbConfigs.DBIdentifier;
+
+        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretManagerSecret);
+        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
+    }
+
+    private bool IsProductionEnvironment()
+    {
+        var stackName = Pulumi.Deployment.Instance.StackName;
+        switch (stackName)
+        {
+            // Cheers: https://stackoverflow.com/a/65642709
+            case var value when value == Environments.Production.ToString().ToLowerInvariant():
+                return true;
+            case var value when value == Environments.Staging.ToString().ToLowerInvariant():
+                return true;
+            default:
+                return false;
+        }
     }
 
     // Outputs for Pulumi service
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
+    [Output] public Output<string>? DBIdentifier { get; set; }
+    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
 }

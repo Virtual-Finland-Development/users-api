@@ -18,7 +18,7 @@ namespace VirtualFinland.UserAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.9")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -149,17 +149,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExternalIdentities");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("5346f52e-9927-436a-b515-f566c226b853"),
-                            Created = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5580),
-                            IdentityId = "31098ce8-537e-4da3-b18d-3a4e0a34e900",
-                            Issuer = "95b22fff-872b-4929-87e8-4db8509b61f3",
-                            Modified = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5580),
-                            UserId = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719")
-                        });
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Language", b =>
@@ -289,16 +278,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Persons");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("5a8af4b4-8cb4-44ac-8291-010614601719"),
-                            Created = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5470),
-                            GivenName = "WarmUpUserGivenName",
-                            LastName = "WarmUpUserLastName",
-                            Modified = new DateTime(2023, 4, 2, 6, 16, 13, 703, DateTimeKind.Utc).AddTicks(5470)
-                        });
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", b =>

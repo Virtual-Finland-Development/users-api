@@ -6,24 +6,16 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Command.Local;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
-/// <summary>
-/// Creates the users-api lambda function and related resources
-/// </summary>
-class LambdaFunctionUrl
+class DatabaseMigratorLambda
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, SecretsManager secretsManager)
     {
-        // External references
-        var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
-        var codesetsEndpointUrl = codesetStackReference.GetOutput("url");
-
         // Lambda function
-        var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
+        var execRole = new Role($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRole-{stackSetup.Environment}", new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -49,15 +41,15 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
+        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-DatabaseMigratorLambdaSecretManagerPolicy-{stackSetup.Environment}", new()
         {
-            Description = "Users-API Secret Get Policy",
+            Description = "Users-API Migration Runner Secrets Get Policy",
             PolicyDocument = Output.Format($@"{{
                 ""Version"": ""2012-10-17"",
                 ""Statement"": [
@@ -76,7 +68,7 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags,
         });
 
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
@@ -94,16 +86,16 @@ class LambdaFunctionUrl
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
         };
 
-        var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
-        Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
+        var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
+        Pulumi.Log.Info($"DatabaseMigrationRunner artifact Path: {appArtifactPath}");
 
-        var lambdaFunction = new Function($"{stackSetup.ProjectName}-{stackSetup.Environment}", new FunctionArgs
+        var lambdaFunction = new Function($"{stackSetup.ProjectName}-DatabaseMigrationRunner-{stackSetup.Environment}", new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
-            Handler = "VirtualFinland.UsersAPI",
+            Handler = "DatabaseMigrationRunner::VirtualFinland.DatabaseMigrationRunner.Function::FunctionHandler",
             Timeout = 30,
-            MemorySize = 2048,
+            MemorySize = 256,
             Environment = new FunctionEnvironmentArgs
             {
                 Variables =
@@ -114,9 +106,6 @@ class LambdaFunctionUrl
                     {
                         "DB_CONNECTION_SECRET_NAME", secretsManager.Name
                     },
-                    {
-                        "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
-                    },
                 }
             },
             Code = new FileArchive(appArtifactPath),
@@ -124,31 +113,10 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
-        var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs
-        {
-            FunctionName = lambdaFunction.Arn,
-            AuthorizationType = "NONE"
-        });
-
-        new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
-        {
-            Create = Output.Format(
-                $"aws lambda add-permission --function-name {lambdaFunction.Arn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")
-        }, new CustomResourceOptions
-        {
-            DeleteBeforeReplace = true,
-            DependsOn = new InputList<Resource>
-            {
-                lambdaFunction
-            }
-        });
-
-        ApplicationUrl = functionUrl.FunctionUrlResult;
         LambdaFunctionArn = lambdaFunction.Arn;
         LambdaFunctionId = lambdaFunction.Id;
     }
 
-    public Output<string> ApplicationUrl = default!;
     public Output<string> LambdaFunctionArn = default!;
     public Output<string> LambdaFunctionId = default!;
 }

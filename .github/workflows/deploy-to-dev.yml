@@ -1,11 +1,12 @@
-name: "Deploy automatically to development-environment"
+name: "Deploy automatically to live environment: dev"
 on:
   push:
     branches: ["main"]
 
 jobs:
   build-test-and-deploy:
-    uses: Virtual-Finland-Development/users-api/.github/workflows/deploy-to-environment.yml@main
+    name: Build, test and deploy
+    uses: ./.github/workflows/deploy-to-environment.yml
     secrets: inherit
     with:
       environment: dev

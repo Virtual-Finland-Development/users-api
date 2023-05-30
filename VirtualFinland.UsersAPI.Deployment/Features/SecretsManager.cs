@@ -15,8 +15,7 @@ public class SecretsManager
         new SecretVersion($"{stackSetup.ProjectName}-dbConnectionStringSecretVersion-{stackSetup.Environment}", new()
         {
             SecretId = secret.Id,
-            SecretString = Output.All(dbConfigs.DbHostName, dbConfigs.DbPassword)
-                .Apply(pulumiOutputs => $"Host={pulumiOutputs[0]};Database={dbConfigs.DbName};Username={dbConfigs.DbUsername};Password={pulumiOutputs[1]}"),
+            SecretString = dbConfigs.DbConnectionString,
         });
         Name = secret.Name;
         Arn = secret.Arn;
