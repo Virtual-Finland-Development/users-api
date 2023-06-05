@@ -10,6 +10,5 @@ echo "Starting LocalDev in Docker"
 cd ../../../
 echo "Work Directory:"
 pwd
-docker compose -f ./Tools/Docker/docker-compose-localdev.yml up
-docker compose -f ./Tools/Docker/docker-compose-localdev.yml down
-
+docker compose -f ./docker-compose.yml up
+docker compose -f ./docker-compose.yml down
