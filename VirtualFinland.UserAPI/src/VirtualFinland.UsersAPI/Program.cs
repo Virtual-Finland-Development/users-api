@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
@@ -15,13 +16,10 @@ using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
-using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinlandDevelopment.Shared.Environments;
 using VirtualFinlandDevelopment.Shared.Middlewares;
 using VirtualFinlandDevelopment.Shared.Services;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
-using VirtualFinland.UserAPI.Helpers.Extensions;
-using System.IdentityModel.Tokens.Jwt;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
