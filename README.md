@@ -79,6 +79,8 @@ https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-nuget-add-source
 Now, when you search for and install NuGet packages in Visual Studio, it will authenticate using the access token you provided, allowing
 you to access packages from your GitHub Packages repository.
 
+If running application in Docker container, create `nuget.config` file by creating a copy of `nuget.config.template` and renaming it. In the config file 
+set your username and PAT, so that `dotnet restore` command works inside container. 
 
 ## Project Structure
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+        <add key="Virtual-Finland-Development" value="https://nuget.pkg.github.com/Virtual-Finland-Development/index.json" />
+    </packageSources>
+    <activePackageSource>
+        <add key="All" value="(Aggregate source)" />
+    </activePackageSource>
+    <packageSourceCredentials>
+        <Virtual-Finland-Development>
+            <add key="Username" value="{GITHUB_USERNAME}" />
+            <add key="ClearTextPassword" value="{PAT}" />
+        </Virtual-Finland-Development>
+    </packageSourceCredentials>
+</configuration>

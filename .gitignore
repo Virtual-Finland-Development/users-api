@@ -357,3 +357,6 @@ MigrationBackup/
 
 # VSCode
 .vscode/
+
+# Ignore nuget.config so we don't commit tokens by accident
+nuget.config
