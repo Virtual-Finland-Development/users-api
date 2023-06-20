@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
@@ -11,13 +10,11 @@ public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
     private readonly ILogger<UserSecurityService> _logger;
-    private readonly IIdentityProviderConfig _sinunaIdentityProviderConfig;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IIdentityProviderConfig sinunaIdentityProviderConfig)
+    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
-        _sinunaIdentityProviderConfig = sinunaIdentityProviderConfig;
     }
 
     /// <summary>
