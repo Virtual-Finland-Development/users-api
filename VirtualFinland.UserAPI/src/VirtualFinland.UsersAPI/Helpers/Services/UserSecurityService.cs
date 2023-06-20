@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
@@ -10,11 +11,13 @@ public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
     private readonly ILogger<UserSecurityService> _logger;
+    private readonly IIdentityProviderConfig _sinunaIdentityProviderConfig;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger)
+    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IIdentityProviderConfig sinunaIdentityProviderConfig)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
+        _sinunaIdentityProviderConfig = sinunaIdentityProviderConfig;
     }
 
     /// <summary>
@@ -69,6 +72,13 @@ public class UserSecurityService
         }
 
         var jwtSecurityToken = tokenHandler.ReadJwtToken(token);
+
+        if (jwtSecurityToken.Issuer == "https://login.iam.qa.sinuna.fi") // @TODO: read from SinunaIdentityProviderConfig
+        {
+            var claim = jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "persistent_id");
+            return claim?.Value;
+        }
+
         return string.IsNullOrEmpty(jwtSecurityToken.Subject) ? jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "userId")?.Value : jwtSecurityToken.Subject;
     }
 
