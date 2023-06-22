@@ -21,6 +21,6 @@ public class AuthenticationService
     public JwtTokenResult ParseAuthenticationHeader(HttpRequest httpRequest)
     {
         var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-        return _userSecurityService.ParseJWTToken(token);
+        return _userSecurityService.ParseJwtToken(token);
     }
 }

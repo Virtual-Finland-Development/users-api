@@ -99,58 +99,36 @@ public class ApplicationSecurity : IApplicationSecurity
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    public JwtTokenResult ParseJWTToken(string token)
+    public JwtTokenResult ParseJwtToken(string token)
     {
         if (string.IsNullOrEmpty(token))
         {
             throw new NotAuthorizedException("No token provided");
         }
 
-        var issuer = GetTokenIssuer(token);
-        var userId = GetTokenUserId(token);
-
-        if (userId == null || issuer == null)
+        // Parse token
+        var tokenHandler = new JwtSecurityTokenHandler();
+        if (!tokenHandler.CanReadToken(token))
         {
             throw new NotAuthorizedException("The given token is not valid");
         }
-        return new JwtTokenResult() { UserId = userId, Issuer = issuer };
-    }
+        var parsedToken = tokenHandler.ReadJwtToken(token);
 
-    private string? GetTokenUserId(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        if (!tokenHandler.CanReadToken(token))
+        // Resolve the security feature by token issuer (must be enabled) // @TODO: ensure the security feature is loaded before this
+        var tokenIssuer = parsedToken.Issuer;
+        var securityFeature = _securityFeatures.Values.FirstOrDefault(o => o.Issuer == tokenIssuer);
+        if (securityFeature == null)
         {
-            return string.Empty;
+            throw new NotAuthorizedException("The given token issuer is not valid");
         }
 
-        var jwtSecurityToken = tokenHandler.ReadJwtToken(token);
-
-        if (jwtSecurityToken == null)
+        // Resolve user id
+        var userId = securityFeature.ResolveTokenUserId(parsedToken);
+        if (userId == null)
         {
-            return string.Empty;
+            throw new NotAuthorizedException("The given token claim is not valid");
         }
-
-        if (jwtSecurityToken.Issuer == "https://login.iam.qa.sinuna.fi") // @TODO: read from SinunaIdentityProviderConfig
-        {
-            var claim = jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "persistent_id");
-            return claim?.Value;
-        }
-
-        return string.IsNullOrEmpty(jwtSecurityToken.Subject) ? jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "userId")?.Value : jwtSecurityToken.Subject;
-    }
-
-    private string? GetTokenIssuer(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var canReadToken = tokenHandler.CanReadToken(token);
-        return canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
-    }
-
-    private string? GetTokenUserId(JwtSecurityToken jwtSecurityToken)
-    {
-        throw new NotImplementedException();
+        return new JwtTokenResult() { UserId = userId, Issuer = securityFeature.Issuer };
     }
 
     private bool IsEnabledSecurityFeature(string featureName)

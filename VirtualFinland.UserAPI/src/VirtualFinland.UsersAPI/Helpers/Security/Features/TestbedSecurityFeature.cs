@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +66,11 @@ public class TestbedSecurityFeature : ISecurityFeature
     public string GetSecurityPolicyScheme()
     {
         return Constants.Security.SuomiFiBearerScheme;
+    }
+
+    public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)
+    {
+        return jwtSecurityToken.Subject; // the "sub" claim
     }
 
     private async void LoadOpenIdConfigUrl()

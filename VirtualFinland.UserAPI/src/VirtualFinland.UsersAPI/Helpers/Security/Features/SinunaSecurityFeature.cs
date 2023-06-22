@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +66,15 @@ public class SinunaSecurityFeature : ISecurityFeature
     public string GetSecurityPolicyScheme()
     {
         return Constants.Security.SinunaScheme;
+    }
+
+    /// <summary>
+    /// Resolves the user id (persistentId) from the Sinuna JWT token
+    /// </summary>
+    public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)
+    {
+        var sinunaUserIdClaimType = "persistent_id";
+        return jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == sinunaUserIdClaimType)?.Value ?? null;
     }
 
     private async void LoadOpenIdConfigUrl()

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -48,5 +49,10 @@ public class SuomiFiSecurityFeature : ISecurityFeature
     public string GetSecurityPolicyScheme()
     {
         return Constants.Security.TestBedBearerScheme;
+    }
+
+    public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)
+    {
+        return jwtSecurityToken.Subject; // the "sub" claim
     }
 }
