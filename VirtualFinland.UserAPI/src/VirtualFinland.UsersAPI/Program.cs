@@ -23,15 +23,12 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
-
-// Add AWS Lambda support. When application is run in Lambda Kestrel is swapped out as the web server with Amazon.Lambda.AspNetCoreServer. This
-// package will act as the webserver translating request and responses between the Lambda event source and ASP.NET Core.
+//
+// App runtime configuration
+//
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 builder.Services.AddMediatR(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpClient("", _ => { });
-
 builder.Host.UseSerilog((context, services, configuration) =>
 {
     configuration
@@ -41,11 +38,11 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
 });
 
-// Validate server configurations
+// Validate server configuration
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
 
 //
-// Swagger
+// Swagger setup
 //
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(config =>
@@ -83,7 +80,7 @@ builder.Services.AddSwaggerGen(config =>
 });
 
 //
-// Database
+// Database connection
 //
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
@@ -111,22 +108,31 @@ builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 
 //
-// Data repositories, dependencies and route handlers
+// Route handlers
+//
+builder.Services.AddControllers();
+builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
+builder.Services.AddResponseCaching();
+
+//
+// Data repositories
 //
 builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
-builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
-builder.Services.Configure<CodesetConfig>(builder.Configuration);
-builder.Services.AddResponseCaching();
 
 //
-// App buildup
+// Other dependencies
+//
+builder.Services.Configure<CodesetConfig>(builder.Configuration);
+
+//
+// Application build
 //
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Use swagger only in non-production environments
 if (!EnvironmentExtensions.IsProduction(app.Environment))
 {
     app.UseSwagger();
