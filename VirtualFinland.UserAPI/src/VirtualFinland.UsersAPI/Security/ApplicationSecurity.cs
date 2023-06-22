@@ -40,7 +40,6 @@ public class ApplicationSecurity : IApplicationSecurity
 
     public void BuildSecurity(WebApplicationBuilder builder)
     {
-        // @see: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme?view=aspnetcore-6.0
         var authentication = builder.Services.AddAuthentication(options =>
         {
             options.DefaultScheme = Constants.Security.ResolvePolicyFromTokenIssuer;
@@ -69,6 +68,7 @@ public class ApplicationSecurity : IApplicationSecurity
         });
 
         // Configure application policy scheme to resolve the policy from the token issuer
+        // @see: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/limitingidentitybyscheme?view=aspnetcore-6.0
         authentication.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer, options =>
         {
             options.ForwardDefaultSelector = context =>

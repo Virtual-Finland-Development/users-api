@@ -153,6 +153,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
+// Only run database migrations in local environment
 if (EnvironmentExtensions.IsLocal(app.Environment))
 {
     using (var scope = app.Services.CreateScope())
