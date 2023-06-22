@@ -130,7 +130,7 @@ builder.Services.AddAuthentication(options =>
         };
     }).AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
     {
-        c.RequireHttpsMetadata = !EnvironmentExtensions.IsLocal(builder.Environment);
+        c.RequireHttpsMetadata = !builder.Environment.IsLocal();
         JwksExtension.SetJwksOptions(c, new JwkOptions(builder.Configuration["SuomiFi:AuthorizationJwksJsonUrl"]));
         c.TokenValidationParameters = new TokenValidationParameters
         {
@@ -245,7 +245,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-if (EnvironmentExtensions.IsLocal(app.Environment))
+if (app.Environment.IsLocal())
 {
     using (var scope = app.Services.CreateScope())
     {
