@@ -11,7 +11,7 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class SinunaSecurityFeature : ISecurityFeature
 {
-    private readonly IConfiguration _configuration;
+    private readonly string _openIDConfigurationURL;
     private string? _issuer;
     private string? _jwksOptionsUrl;
     private const int _configUrlMaxRetryCount = 5;
@@ -32,7 +32,7 @@ public class SinunaSecurityFeature : ISecurityFeature
 
     public SinunaSecurityFeature(IConfiguration configuration)
     {
-        _configuration = configuration;
+        _openIDConfigurationURL = configuration["Sinuna:OpenIDConfigurationURL"];
     }
 
     public void BuildAuthentication(AuthenticationBuilder authentication)
@@ -80,10 +80,9 @@ public class SinunaSecurityFeature : ISecurityFeature
 
     private async void LoadOpenIdConfigUrl()
     {
-        var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.Web.ServerUserAgent);
-        var httpResponse = await httpClient.GetAsync(configUrl);
+        var httpResponse = await httpClient.GetAsync(_openIDConfigurationURL);
 
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {

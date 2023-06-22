@@ -11,7 +11,7 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class TestbedSecurityFeature : ISecurityFeature
 {
-    private readonly IConfiguration _configuration;
+    private readonly string _openIDConfigurationURL;
     private string? _issuer;
     private string? _jwksOptionsUrl;
     private const int _configUrlMaxRetryCount = 5;
@@ -32,7 +32,7 @@ public class TestbedSecurityFeature : ISecurityFeature
 
     public TestbedSecurityFeature(IConfiguration configuration)
     {
-        _configuration = configuration;
+        _openIDConfigurationURL = configuration["Testbed:OpenIDConfigurationURL"];
     }
 
     public void BuildAuthentication(AuthenticationBuilder authentication)
@@ -76,9 +76,8 @@ public class TestbedSecurityFeature : ISecurityFeature
 
     private async void LoadOpenIdConfigUrl()
     {
-        var testBedConfigUrl = _configuration["Testbed:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
-        var httpResponse = await httpClient.GetAsync(testBedConfigUrl);
+        var httpResponse = await httpClient.GetAsync(_openIDConfigurationURL);
 
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
         {
