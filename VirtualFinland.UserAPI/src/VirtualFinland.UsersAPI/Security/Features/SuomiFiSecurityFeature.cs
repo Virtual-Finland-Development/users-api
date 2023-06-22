@@ -24,7 +24,7 @@ public class SuomiFiSecurityFeature : ISecurityFeature
     {
         authentication.AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
         {
-            c.RequireHttpsMetadata = true; // !EnvironmentExtensions.IsLocal(builder.Environment);
+            c.RequireHttpsMetadata = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "local"; // @TODO: Use EnvironmentExtensions
             JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
             c.TokenValidationParameters = new TokenValidationParameters
             {
