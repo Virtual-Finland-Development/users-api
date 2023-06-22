@@ -39,7 +39,7 @@ public class SinunaSecurityFeature : ISecurityFeature
     {
         LoadOpenIdConfigUrl();
 
-        authentication.AddJwtBearer(Constants.Security.SinunaScheme, c =>
+        authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
             JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
 
@@ -57,16 +57,16 @@ public class SinunaSecurityFeature : ISecurityFeature
 
     public void BuildAuthorization(AuthorizationOptions options)
     {
-        options.AddPolicy(Constants.Security.SinunaScheme, policy =>
+        options.AddPolicy(GetSecurityPolicySchemeName(), policy =>
         {
-            policy.AuthenticationSchemes.Add(Constants.Security.SinunaScheme);
+            policy.AuthenticationSchemes.Add(GetSecurityPolicySchemeName());
             policy.RequireAuthenticatedUser();
         });
     }
 
-    public string GetSecurityPolicyScheme()
+    public string GetSecurityPolicySchemeName()
     {
-        return Constants.Security.SinunaScheme;
+        return "SinunaScheme";
     }
 
     /// <summary>

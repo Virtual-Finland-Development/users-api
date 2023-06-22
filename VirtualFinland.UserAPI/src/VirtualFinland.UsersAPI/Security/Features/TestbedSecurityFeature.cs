@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
-using VirtualFinland.UserAPI.Helpers;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
@@ -39,7 +38,7 @@ public class TestbedSecurityFeature : ISecurityFeature
     {
         LoadOpenIdConfigUrl();
 
-        authentication.AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
+        authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
             JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
 
@@ -57,16 +56,16 @@ public class TestbedSecurityFeature : ISecurityFeature
 
     public void BuildAuthorization(AuthorizationOptions options)
     {
-        options.AddPolicy(Constants.Security.TestBedBearerScheme, policy =>
+        options.AddPolicy(GetSecurityPolicySchemeName(), policy =>
         {
-            policy.AuthenticationSchemes.Add(Constants.Security.TestBedBearerScheme);
+            policy.AuthenticationSchemes.Add(GetSecurityPolicySchemeName());
             policy.RequireAuthenticatedUser();
         });
     }
 
-    public string GetSecurityPolicyScheme()
+    public string GetSecurityPolicySchemeName()
     {
-        return Constants.Security.SuomiFiBearerScheme;
+        return "TestBedBearerScheme";
     }
 
     public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)
@@ -100,5 +99,10 @@ public class TestbedSecurityFeature : ISecurityFeature
         {
             throw new Exception("Failed to retrieve TestBed OpenID configurations.");
         }
+    }
+
+    public string GetSecurityPolicyScheme()
+    {
+        throw new NotImplementedException();
     }
 }

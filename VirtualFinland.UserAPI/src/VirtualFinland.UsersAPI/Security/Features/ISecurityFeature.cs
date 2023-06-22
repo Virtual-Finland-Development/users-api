@@ -8,7 +8,7 @@ public interface ISecurityFeature
 {
     void BuildAuthentication(AuthenticationBuilder authentication);
     void BuildAuthorization(AuthorizationOptions options);
-    string GetSecurityPolicyScheme();
+    string GetSecurityPolicySchemeName();
     string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken);
 
     public string? JwksOptionsUrl { get; }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
-using VirtualFinland.UserAPI.Helpers;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
@@ -22,7 +21,7 @@ public class SuomiFiSecurityFeature : ISecurityFeature
 
     public void BuildAuthentication(AuthenticationBuilder authentication)
     {
-        authentication.AddJwtBearer(Constants.Security.SuomiFiBearerScheme, c =>
+        authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
             c.RequireHttpsMetadata = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "local"; // @TODO: Use EnvironmentExtensions
             JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
@@ -40,16 +39,16 @@ public class SuomiFiSecurityFeature : ISecurityFeature
 
     public void BuildAuthorization(AuthorizationOptions options)
     {
-        options.AddPolicy(Constants.Security.SuomiFiBearerScheme, policy =>
+        options.AddPolicy(GetSecurityPolicySchemeName(), policy =>
         {
-            policy.AuthenticationSchemes.Add(Constants.Security.SuomiFiBearerScheme);
+            policy.AuthenticationSchemes.Add(GetSecurityPolicySchemeName());
             policy.RequireAuthenticatedUser();
         });
     }
 
-    public string GetSecurityPolicyScheme()
+    public string GetSecurityPolicySchemeName()
     {
-        return Constants.Security.TestBedBearerScheme;
+        return "SuomiFiBearerScheme";
     }
 
     public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)

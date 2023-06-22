@@ -88,7 +88,7 @@ public class ApplicationSecurity : IApplicationSecurity
                         {
                             if (securityFeature.Issuer == issuer)
                             {
-                                return securityFeature.GetSecurityPolicyScheme();
+                                return securityFeature.GetSecurityPolicySchemeName();
                             }
                         }
                     }
