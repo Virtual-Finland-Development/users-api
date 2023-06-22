@@ -5,7 +5,7 @@ using VirtualFinland.UserAPI.Helpers.Security.Features;
 
 namespace VirtualFinland.UserAPI.Helpers.Security;
 
-public class ApplicationSecuritySetup : IApplicationSecuritySetup
+public class ApplicationSecurity : IApplicationSecurity
 {
     private readonly IConfiguration _configuration;
 
@@ -14,14 +14,19 @@ public class ApplicationSecuritySetup : IApplicationSecuritySetup
     public readonly ISecurityFeature sinunaSecurityFeature;
     public readonly ISecurityFeature suomiFiSecurityFeature;
 
-    public ApplicationSecuritySetup(IConfiguration configuration)
+    public ApplicationSecurity(IConfiguration configuration)
     {
         _configuration = configuration;
 
         testbedSecurityFeature = new TestbedSecurityFeature(configuration);
         testBedConsentProviderConfig = new TestBedConsentProviderConfig(configuration);
+
         sinunaSecurityFeature = new SinunaSecurityFeature(configuration);
         suomiFiSecurityFeature = new SuomiFiSecurityFeature(configuration);
+    }
+
+    public ApplicationSecurity()
+    {
     }
 
     public void BuildSecurity(WebApplicationBuilder builder)
@@ -33,10 +38,19 @@ public class ApplicationSecuritySetup : IApplicationSecuritySetup
             options.DefaultChallengeScheme = Constants.Security.ResolvePolicyFromTokenIssuer;
         });
 
-        testbedSecurityFeature.BuildAuthentication(authentication);
-        testBedConsentProviderConfig.LoadPublicKeys();
-        sinunaSecurityFeature.BuildAuthentication(authentication);
-        suomiFiSecurityFeature.BuildAuthentication(authentication);
+        if (IsEnabledSecurityFeature("Testbed"))
+        {
+            testbedSecurityFeature.BuildAuthentication(authentication);
+            testBedConsentProviderConfig.LoadPublicKeys();
+        }
+        if (IsEnabledSecurityFeature("Sinuna"))
+        {
+            sinunaSecurityFeature.BuildAuthentication(authentication);
+        }
+        if (IsEnabledSecurityFeature("SuomiFi"))
+        {
+            suomiFiSecurityFeature.BuildAuthentication(authentication);
+        }
 
         authentication.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer, options =>
         {
@@ -56,24 +70,33 @@ public class ApplicationSecuritySetup : IApplicationSecuritySetup
                         switch (issuer)
                         {
                             // Cheers: https://stackoverflow.com/a/65642709
-                            case var value when value == testbedSecurityFeature.Issuer:
+                            case var value when value == testbedSecurityFeature.Issuer && IsEnabledSecurityFeature("Testbed"):
                                 return Constants.Security.TestBedBearerScheme;
-                            case var value when value == sinunaSecurityFeature.Issuer:
+                            case var value when value == sinunaSecurityFeature.Issuer && IsEnabledSecurityFeature("Sinuna"):
                                 return Constants.Security.SinunaScheme;
-                            case var value when value == suomiFiSecurityFeature.Issuer:
+                            case var value when value == suomiFiSecurityFeature.Issuer && IsEnabledSecurityFeature("SuomiFi"):
                                 return Constants.Security.SuomiFiBearerScheme;
                         }
                     }
                 }
-                return Constants.Security.TestBedBearerScheme; // Defaults to testbed
+                throw new NotAuthorizedException("Invalid token provided");
             };
         });
 
         builder.Services.AddAuthorization(options =>
         {
-            testbedSecurityFeature.BuildAuthorization(options);
-            sinunaSecurityFeature.BuildAuthorization(options);
-            suomiFiSecurityFeature.BuildAuthorization(options);
+            if (IsEnabledSecurityFeature("Testbed"))
+            {
+                testbedSecurityFeature.BuildAuthorization(options);
+            }
+            if (IsEnabledSecurityFeature("Sinuna"))
+            {
+                sinunaSecurityFeature.BuildAuthorization(options);
+            }
+            if (IsEnabledSecurityFeature("SuomiFi"))
+            {
+                suomiFiSecurityFeature.BuildAuthorization(options);
+            }
         });
     }
 
@@ -129,8 +152,13 @@ public class ApplicationSecuritySetup : IApplicationSecuritySetup
         return canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
     }
 
-    public string? GetTokenUserId(JwtSecurityToken jwtSecurityToken)
+    private string? GetTokenUserId(JwtSecurityToken jwtSecurityToken)
     {
         throw new NotImplementedException();
+    }
+
+    private bool IsEnabledSecurityFeature(string featureName)
+    {
+        return _configuration.GetValue<bool>($"{featureName}:IsEnabled");
     }
 }

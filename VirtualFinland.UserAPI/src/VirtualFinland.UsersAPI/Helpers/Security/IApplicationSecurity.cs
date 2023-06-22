@@ -1,6 +1,6 @@
 namespace VirtualFinland.UserAPI.Helpers.Security;
 
-public interface IApplicationSecuritySetup
+public interface IApplicationSecurity
 {
     void BuildSecurity(WebApplicationBuilder builder);
     JwtTokenResult ParseJWTToken(string token);

@@ -10,13 +10,13 @@ public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
     private readonly ILogger<UserSecurityService> _logger;
-    private readonly IApplicationSecuritySetup _applicationSecurityBuilder;
+    private readonly IApplicationSecurity _applicationSecurity;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IApplicationSecuritySetup applicationSecurityBuilder)
+    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
-        _applicationSecurityBuilder = applicationSecurityBuilder;
+        _applicationSecurity = applicationSecurity;
     }
 
     /// <summary>
@@ -46,6 +46,6 @@ public class UserSecurityService
     /// </summary>
     public JwtTokenResult ParseJWTToken(string token)
     {
-        return _applicationSecurityBuilder.ParseJWTToken(token);
+        return _applicationSecurity.ParseJWTToken(token);
     }
 }

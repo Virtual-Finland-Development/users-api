@@ -100,10 +100,10 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 //
 // App security
 //
-var securityBuilder = new ApplicationSecuritySetup(builder.Configuration);
+var securityBuilder = new ApplicationSecurity(builder.Configuration);
 securityBuilder.BuildSecurity(builder);
 
-builder.Services.AddSingleton<IApplicationSecuritySetup>(securityBuilder);
+builder.Services.AddSingleton<IApplicationSecurity>(securityBuilder);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 
 builder.Services.AddSingleton<IConsentProviderConfig>(securityBuilder.testBedConsentProviderConfig);
