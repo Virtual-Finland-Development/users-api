@@ -222,10 +222,28 @@ builder.Services.AddTransient<AuthenticationService>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.Configure<CodesetConfig>(builder.Configuration);
 
+
+// Get VF app URL for cors
+var virtualFinlandApplicationDomain = Environment.GetEnvironmentVariable("VF_APP_URL") ?? throw new InvalidOperationException("Missing VF_APP_URL");
+const string originRestrictedPolicy = "originRestrictedPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(originRestrictedPolicy,
+        policy =>
+        {
+            policy.AllowAnyHeader().AllowAnyMethod()
+                .WithOrigins(virtualFinlandApplicationDomain, "http://localhost:3200");
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!EnvironmentExtensions.IsProduction(app.Environment))
+if (EnvironmentExtensions.IsProduction(app.Environment))
+{
+    app.UseCors(originRestrictedPolicy);
+}
+else
 {
     app.UseSwagger();
     app.UseSwaggerUI();
