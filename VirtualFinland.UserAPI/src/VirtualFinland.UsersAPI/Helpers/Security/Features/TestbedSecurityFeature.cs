@@ -62,6 +62,11 @@ public class TestbedSecurityFeature : ISecurityFeature
         });
     }
 
+    public string GetSecurityPolicyScheme()
+    {
+        return Constants.Security.SuomiFiBearerScheme;
+    }
+
     private async void LoadOpenIdConfigUrl()
     {
         var testBedConfigUrl = _configuration["Testbed:OpenIDConfigurationURL"];

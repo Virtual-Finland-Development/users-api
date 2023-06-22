@@ -44,4 +44,9 @@ public class SuomiFiSecurityFeature : ISecurityFeature
             policy.RequireAuthenticatedUser();
         });
     }
+
+    public string GetSecurityPolicyScheme()
+    {
+        return Constants.Security.TestBedBearerScheme;
+    }
 }

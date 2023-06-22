@@ -9,24 +9,31 @@ public class ApplicationSecurity : IApplicationSecurity
 {
     private readonly IConfiguration _configuration;
 
-    public readonly ISecurityFeature testbedSecurityFeature;
-    public readonly IConsentProviderConfig testBedConsentProviderConfig;
-    public readonly ISecurityFeature sinunaSecurityFeature;
-    public readonly ISecurityFeature suomiFiSecurityFeature;
+    public readonly IConsentProviderConfig testBedConsentProviderConfig; // Custom case, @TODO: needs a refactor
+
+    private readonly Dictionary<string, ISecurityFeature> _securityFeatures;
 
     public ApplicationSecurity(IConfiguration configuration)
     {
         _configuration = configuration;
+        _securityFeatures = new Dictionary<string, ISecurityFeature>();
 
-        testbedSecurityFeature = new TestbedSecurityFeature(configuration);
+        // Initialize enabled security features
+        if (IsEnabledSecurityFeature("Testbed"))
+        {
+            _securityFeatures["Testbed"] = new TestbedSecurityFeature(configuration);
+        }
+        if (IsEnabledSecurityFeature("Sinuna"))
+        {
+            _securityFeatures["Sinuna"] = new SinunaSecurityFeature(configuration);
+        }
+        if (IsEnabledSecurityFeature("SuomiFi"))
+        {
+            _securityFeatures["SuomiFi"] = new SuomiFiSecurityFeature(configuration);
+        }
+
+        // Custom case, @TODO: needs a refactor
         testBedConsentProviderConfig = new TestBedConsentProviderConfig(configuration);
-
-        sinunaSecurityFeature = new SinunaSecurityFeature(configuration);
-        suomiFiSecurityFeature = new SuomiFiSecurityFeature(configuration);
-    }
-
-    public ApplicationSecurity()
-    {
     }
 
     public void BuildSecurity(WebApplicationBuilder builder)
@@ -38,20 +45,28 @@ public class ApplicationSecurity : IApplicationSecurity
             options.DefaultChallengeScheme = Constants.Security.ResolvePolicyFromTokenIssuer;
         });
 
-        if (IsEnabledSecurityFeature("Testbed"))
+        // Initialize the authentication configurations of all enabled security features
+        foreach (var securityFeature in _securityFeatures.Values)
         {
-            testbedSecurityFeature.BuildAuthentication(authentication);
-            testBedConsentProviderConfig.LoadPublicKeys();
-        }
-        if (IsEnabledSecurityFeature("Sinuna"))
-        {
-            sinunaSecurityFeature.BuildAuthentication(authentication);
-        }
-        if (IsEnabledSecurityFeature("SuomiFi"))
-        {
-            suomiFiSecurityFeature.BuildAuthentication(authentication);
+            securityFeature.BuildAuthentication(authentication);
         }
 
+        // Custom case, @TODO: needs a refactor
+        if (IsEnabledSecurityFeature("Testbed"))
+        {
+            testBedConsentProviderConfig.LoadPublicKeys();
+        }
+
+        // Initialize authorization policies for enabled security features
+        builder.Services.AddAuthorization(options =>
+        {
+            foreach (var securityFeature in _securityFeatures.Values)
+            {
+                securityFeature.BuildAuthorization(options);
+            }
+        });
+
+        // Configure application policy scheme to resolve the policy from the token issuer
         authentication.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer, options =>
         {
             options.ForwardDefaultSelector = context =>
@@ -67,36 +82,17 @@ public class ApplicationSecurity : IApplicationSecurity
                     if (jwtHandler.CanReadToken(token))
                     {
                         var issuer = jwtHandler.ReadJwtToken(token).Issuer;
-                        switch (issuer)
+                        foreach (var securityFeature in _securityFeatures.Values)
                         {
-                            // Cheers: https://stackoverflow.com/a/65642709
-                            case var value when value == testbedSecurityFeature.Issuer && IsEnabledSecurityFeature("Testbed"):
-                                return Constants.Security.TestBedBearerScheme;
-                            case var value when value == sinunaSecurityFeature.Issuer && IsEnabledSecurityFeature("Sinuna"):
-                                return Constants.Security.SinunaScheme;
-                            case var value when value == suomiFiSecurityFeature.Issuer && IsEnabledSecurityFeature("SuomiFi"):
-                                return Constants.Security.SuomiFiBearerScheme;
+                            if (securityFeature.Issuer == issuer)
+                            {
+                                return securityFeature.GetSecurityPolicyScheme();
+                            }
                         }
                     }
                 }
                 throw new NotAuthorizedException("Invalid token provided");
             };
-        });
-
-        builder.Services.AddAuthorization(options =>
-        {
-            if (IsEnabledSecurityFeature("Testbed"))
-            {
-                testbedSecurityFeature.BuildAuthorization(options);
-            }
-            if (IsEnabledSecurityFeature("Sinuna"))
-            {
-                sinunaSecurityFeature.BuildAuthorization(options);
-            }
-            if (IsEnabledSecurityFeature("SuomiFi"))
-            {
-                suomiFiSecurityFeature.BuildAuthorization(options);
-            }
         });
     }
 

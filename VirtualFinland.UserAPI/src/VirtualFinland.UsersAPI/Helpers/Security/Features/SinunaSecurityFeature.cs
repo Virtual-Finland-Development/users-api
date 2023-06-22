@@ -62,6 +62,11 @@ public class SinunaSecurityFeature : ISecurityFeature
         });
     }
 
+    public string GetSecurityPolicyScheme()
+    {
+        return Constants.Security.SinunaScheme;
+    }
+
     private async void LoadOpenIdConfigUrl()
     {
         var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
