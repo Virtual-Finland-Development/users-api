@@ -1,4 +1,4 @@
-using VirtualFinland.UserAPI.Helpers.Security;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 

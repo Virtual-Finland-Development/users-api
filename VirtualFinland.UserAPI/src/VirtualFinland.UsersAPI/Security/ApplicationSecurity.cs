@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Net.Http.Headers;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Security.Features;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Security.Features;
+using VirtualFinland.UserAPI.Security.Models;
 
-namespace VirtualFinland.UserAPI.Helpers.Security;
+namespace VirtualFinland.UserAPI.Security;
 
 public class ApplicationSecurity : IApplicationSecurity
 {

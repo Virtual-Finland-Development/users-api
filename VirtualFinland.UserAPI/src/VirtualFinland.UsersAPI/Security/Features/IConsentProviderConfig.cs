@@ -1,6 +1,6 @@
 using Microsoft.IdentityModel.Tokens;
 
-namespace VirtualFinland.UserAPI.Helpers.Security.Features;
+namespace VirtualFinland.UserAPI.Security.Features;
 
 public interface IConsentProviderConfig
 {

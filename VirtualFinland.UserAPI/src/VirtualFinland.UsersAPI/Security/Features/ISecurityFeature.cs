@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 
-namespace VirtualFinland.UserAPI.Helpers.Security.Features;
+namespace VirtualFinland.UserAPI.Security.Features;
 
 public interface ISecurityFeature
 {

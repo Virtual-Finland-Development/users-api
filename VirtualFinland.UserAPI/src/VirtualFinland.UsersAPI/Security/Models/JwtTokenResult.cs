@@ -1,4 +1,4 @@
-namespace VirtualFinland.UserAPI.Helpers.Security;
+namespace VirtualFinland.UserAPI.Security.Models;
 
 public class JwtTokenResult
 {

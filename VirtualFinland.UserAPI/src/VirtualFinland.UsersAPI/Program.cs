@@ -13,8 +13,9 @@ using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
-using VirtualFinland.UserAPI.Helpers.Security;
-using VirtualFinland.UserAPI.Helpers.Security.Features;
+using VirtualFinland.UserAPI.Security;
+using VirtualFinland.UserAPI.Security.Features;
+using VirtualFinland.UserAPI.Security.Models;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -102,10 +103,8 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 //
 var securityBuilder = new ApplicationSecurity(builder.Configuration);
 securityBuilder.BuildSecurity(builder);
-
 builder.Services.AddSingleton<IApplicationSecurity>(securityBuilder);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
-
 builder.Services.AddSingleton<IConsentProviderConfig>(securityBuilder.testBedConsentProviderConfig);
 builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
@@ -120,9 +119,7 @@ builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.Configure<CodesetConfig>(builder.Configuration);
-
 builder.Services.AddResponseCaching();
-
 
 //
 // App buildup
