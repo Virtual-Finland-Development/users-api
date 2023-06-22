@@ -1,8 +1,13 @@
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using NetDevPack.Security.JwtExtensions;
+using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
-namespace VirtualFinland.UserAPI.Helpers.Configurations;
+namespace VirtualFinland.UserAPI.Helpers.Security.Features;
 
-public class TestBedIdentityProviderConfig : IIdentityProviderConfig
+public class TestbedSecurityFeature : ISecurityFeature
 {
     private readonly IConfiguration _configuration;
     private string? _issuer;
@@ -23,12 +28,41 @@ public class TestBedIdentityProviderConfig : IIdentityProviderConfig
         get { return _issuer; }
     }
 
-    public TestBedIdentityProviderConfig(IConfiguration configuration)
+    public TestbedSecurityFeature(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public async void LoadOpenIdConfigUrl()
+    public void BuildAuthentication(AuthenticationBuilder authentication)
+    {
+        LoadOpenIdConfigUrl();
+
+        authentication.AddJwtBearer(Constants.Security.TestBedBearerScheme, c =>
+        {
+            JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
+
+            c.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateActor = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = Issuer
+            };
+        });
+    }
+
+    public void BuildAuthorization(AuthorizationOptions options)
+    {
+        options.AddPolicy(Constants.Security.TestBedBearerScheme, policy =>
+        {
+            policy.AuthenticationSchemes.Add(Constants.Security.TestBedBearerScheme);
+            policy.RequireAuthenticatedUser();
+        });
+    }
+
+    private async void LoadOpenIdConfigUrl()
     {
         var testBedConfigUrl = _configuration["Testbed:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();

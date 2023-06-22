@@ -1,3 +1,5 @@
+using VirtualFinland.UserAPI.Helpers.Security;
+
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AuthenticationService
@@ -16,7 +18,7 @@ public class AuthenticationService
         return person.Id;
     }
 
-    public UserSecurityService.JWTTokenResult ParseAuthenticationHeader(HttpRequest httpRequest)
+    public JwtTokenResult ParseAuthenticationHeader(HttpRequest httpRequest)
     {
         var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         return _userSecurityService.ParseJWTToken(token);

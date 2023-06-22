@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.Tokens;
 
-namespace VirtualFinland.UserAPI.Helpers.Configurations;
+namespace VirtualFinland.UserAPI.Helpers.Security.Features;
 
 public class TestBedConsentProviderConfig : IConsentProviderConfig
 {

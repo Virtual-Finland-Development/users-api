@@ -1,10 +1,14 @@
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using NetDevPack.Security.JwtExtensions;
+using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
-namespace VirtualFinland.UserAPI.Helpers.Configurations;
+namespace VirtualFinland.UserAPI.Helpers.Security.Features;
 
-public class SinunaIdentityProviderConfig : IIdentityProviderConfig
+public class SinunaSecurityFeature : ISecurityFeature
 {
-
     private readonly IConfiguration _configuration;
     private string? _issuer;
     private string? _jwksOptionsUrl;
@@ -24,12 +28,41 @@ public class SinunaIdentityProviderConfig : IIdentityProviderConfig
         get { return _issuer; }
     }
 
-    public SinunaIdentityProviderConfig(IConfiguration configuration)
+    public SinunaSecurityFeature(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public async void LoadOpenIdConfigUrl()
+    public void BuildAuthentication(AuthenticationBuilder authentication)
+    {
+        LoadOpenIdConfigUrl();
+
+        authentication.AddJwtBearer(Constants.Security.SinunaScheme, c =>
+        {
+            JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
+
+            c.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateActor = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = Issuer
+            };
+        });
+    }
+
+    public void BuildAuthorization(AuthorizationOptions options)
+    {
+        options.AddPolicy(Constants.Security.SinunaScheme, policy =>
+        {
+            policy.AuthenticationSchemes.Add(Constants.Security.SinunaScheme);
+            policy.RequireAuthenticatedUser();
+        });
+    }
+
+    private async void LoadOpenIdConfigUrl()
     {
         var configUrl = _configuration["Sinuna:OpenIDConfigurationURL"];
         var httpClient = new HttpClient();
