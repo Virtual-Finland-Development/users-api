@@ -232,7 +232,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.AllowAnyHeader().AllowAnyMethod()
-                .WithOrigins(virtualFinlandApplicationDomain, "http://localhost:3200");
+                .WithOrigins(virtualFinlandApplicationDomain, "http://localhost:3005");
         });
 });
 
