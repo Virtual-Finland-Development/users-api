@@ -10,7 +10,6 @@ public static class Constants
 
     public static class Security
     {
-        public static string AllPoliciesPolicy => "AllPolicies";
         public static string ResolvePolicyFromTokenIssuer => "ResolvePolicyFromTokenIssuer";
     }
 

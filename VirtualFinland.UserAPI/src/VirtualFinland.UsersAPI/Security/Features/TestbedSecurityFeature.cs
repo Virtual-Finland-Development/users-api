@@ -100,9 +100,4 @@ public class TestbedSecurityFeature : ISecurityFeature
             throw new Exception("Failed to retrieve TestBed OpenID configurations.");
         }
     }
-
-    public string GetSecurityPolicyScheme()
-    {
-        throw new NotImplementedException();
-    }
 }
