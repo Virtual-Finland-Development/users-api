@@ -11,11 +11,11 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, StackSetup stackSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
         {
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
+            SubnetIds = vpcSetup.PrivateSubnetIds,
         });
 
         var password = new RandomPassword("password", new()

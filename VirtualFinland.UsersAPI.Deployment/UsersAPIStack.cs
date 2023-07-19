@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Pulumi;
 using VirtualFinland.UsersAPI.Deployment.Common;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
@@ -16,11 +13,6 @@ public class UsersApiStack : Stack
         bool isProductionEnvironment = IsProductionEnvironment();
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
-
-        var infraStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{environment}");
-        var infraStackReferencePrivateSubnetIds = infraStackReference.RequireOutput("PrivateSubnetIds");
-        var infraStackReferencePrivateSubnetIdsAsList = infraStackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
-        var infraStackReferenceVpcId = infraStackReference.RequireOutput("VpcId");
 
         InputMap<string> tags = new InputMap<string>()
         {
@@ -38,22 +30,18 @@ public class UsersApiStack : Stack
             Environment = environment,
             IsProductionEnvironment = isProductionEnvironment,
             Tags = tags,
-            VpcSetup = new VpcSetup()
-            {
-                VpcId = Output.Format($"{infraStackReferenceVpcId}"),
-                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList as Output<IEnumerable<string>>
-            }
         };
 
-        var dbConfigs = new PostgresDatabase(config, stackSetup);
+        var vpcSetup = new VpcSetup(stackSetup);
+        var dbConfigs = new PostgresDatabase(config, stackSetup, vpcSetup);
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
+        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, vpcSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
         DBIdentifier = dbConfigs.DBIdentifier;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretManagerSecret);
+        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
         DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
