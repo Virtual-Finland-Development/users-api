@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Linq;
 using Pulumi;
 using Pulumi.Aws.Rds;
 using Pulumi.Random;
@@ -13,7 +15,15 @@ public class PostgresDatabase
 {
     public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
-        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
+        // @TODO: Remove oldDbSubNetGroup once the the new subnet group is deployed
+        var infraStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{stackSetup.Environment}");
+        var infraStackReferencePrivateSubnetIds = infraStackReference.RequireOutput("PrivateSubnetIds");
+        var oldDbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
+        {
+            SubnetIds = infraStackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString())),
+        });
+
+        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
         });
@@ -36,7 +46,7 @@ public class PostgresDatabase
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = stackSetup.Tags,
-            PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
+            PubliclyAccessible = false,
             SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
             //SnapshotIdentifier = "" // See README.database.md for more information
         });
