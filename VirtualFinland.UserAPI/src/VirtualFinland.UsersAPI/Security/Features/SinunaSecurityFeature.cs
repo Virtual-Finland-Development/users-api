@@ -4,10 +4,7 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class SinunaSecurityFeature : SecurityFeature
 {
-    public SinunaSecurityFeature(IConfiguration configuration)
-    {
-        _openIDConfigurationURL = configuration["Security:Configurations:Sinuna:OpenIDConfigurationURL"];
-    }
+    public SinunaSecurityFeature(SecurityFeatureOptions configuration) : base(configuration) { }
 
     /// <summary>
     /// Resolves the user id (persistentId) from the Sinuna JWT token

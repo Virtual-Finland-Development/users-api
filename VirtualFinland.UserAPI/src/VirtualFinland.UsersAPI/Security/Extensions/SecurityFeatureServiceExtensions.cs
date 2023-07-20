@@ -24,13 +24,13 @@ public static class SecurityFeatureServiceExtensions
             switch (securityFeature)
             {
                 case "Testbed":
-                    features.Add(new TestbedSecurityFeature(configuration));
+                    features.Add(new TestbedSecurityFeature(configuration.GetSection("Security:Configurations:Testbed").Get<SecurityFeatureOptions>()));
                     break;
                 case "Sinuna":
-                    features.Add(new SinunaSecurityFeature(configuration));
+                    features.Add(new SinunaSecurityFeature(configuration.GetSection("Security:Configurations:Sinuna").Get<SecurityFeatureOptions>()));
                     break;
                 case "SuomiFi":
-                    features.Add(new SuomiFiSecurityFeature(configuration));
+                    features.Add(new SuomiFiSecurityFeature(configuration.GetSection("Security:Configurations:SuomiFi").Get<SecurityFeatureOptions>()));
                     break;
                 default:
                     throw new NotImplementedException($"Security feature {securityFeature} is not implemented");

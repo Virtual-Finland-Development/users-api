@@ -7,18 +7,14 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class SuomiFiSecurityFeature : SecurityFeature
 {
-    public SuomiFiSecurityFeature(IConfiguration configuration)
-    {
-        _jwksOptionsUrl = configuration["Security:Configurations:SuomiFi:AuthorizationJwksJsonUrl"];
-        _issuer = configuration["Security:Configurations:SuomiFi:Issuer"];
-    }
+    public SuomiFiSecurityFeature(SecurityFeatureOptions configuration) : base(configuration) { }
 
     protected override void ConfigureOpenIdConnect(AuthenticationBuilder authentication)
     {
         authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
             c.RequireHttpsMetadata = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "local"; // @TODO: Use EnvironmentExtensions
-            JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
+            JwksExtension.SetJwksOptions(c, new JwkOptions(_jwksOptionsUrl));
             c.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,

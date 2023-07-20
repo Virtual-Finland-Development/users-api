@@ -10,15 +10,15 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public abstract class SecurityFeature : ISecurityFeature
 {
+    ///
+    /// The issuer of the JWT token
+    ///
+    public string? Issuer { get; set; }
+
     /// <summary>
     /// The URL to the OpenID configuration
     /// </summary>
     protected string? _openIDConfigurationURL;
-
-    /// <summary>
-    /// The issuer of the JWT token
-    /// </summary>
-    protected string? _issuer;
 
     /// <summary>
     /// The URL to the JWKS options (retrieved from the OpenID configuration)
@@ -35,20 +35,16 @@ public abstract class SecurityFeature : ISecurityFeature
     /// </summary>
     protected const int _configUrlRetryWaitTime = 3000;
 
-    /// <summary>
-    /// The URL to the OpenID configuration
-    /// </summary>
-    public string? JwksOptionsUrl
+    public SecurityFeature(SecurityFeatureOptions configuration)
     {
-        get { return _jwksOptionsUrl; }
-    }
+        Issuer = configuration.Issuer;
+        _openIDConfigurationURL = configuration.OpenIdConfigurationUrl;
+        _jwksOptionsUrl = configuration.AuthorizationJwksJsonUrl;
 
-    ///
-    /// The issuer of the JWT token
-    ///
-    public string? Issuer
-    {
-        get { return _issuer; }
+        if (string.IsNullOrEmpty(_openIDConfigurationURL) && string.IsNullOrEmpty(_jwksOptionsUrl))
+        {
+            throw new ArgumentNullException("Invalid security feature configuration");
+        }
     }
 
     /// <summary>
@@ -95,7 +91,7 @@ public abstract class SecurityFeature : ISecurityFeature
     {
         authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
-            JwksExtension.SetJwksOptions(c, new JwkOptions(JwksOptionsUrl));
+            JwksExtension.SetJwksOptions(c, new JwkOptions(_jwksOptionsUrl));
 
             c.TokenValidationParameters = new TokenValidationParameters
             {
@@ -122,10 +118,10 @@ public abstract class SecurityFeature : ISecurityFeature
             if (httpResponse.IsSuccessStatusCode)
             {
                 var jsonData = JsonNode.Parse(await httpResponse.Content.ReadAsStringAsync());
-                _issuer = jsonData?["issuer"]?.ToString();
+                Issuer = jsonData?["issuer"]?.ToString();
                 _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
 
-                if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
+                if (!string.IsNullOrEmpty(Issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                 {
                     break;
                 }
@@ -134,9 +130,9 @@ public abstract class SecurityFeature : ISecurityFeature
         }
 
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
-        if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
+        if (string.IsNullOrEmpty(Issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
         {
-            throw new Exception("Failed to retrieve OpenID configurations");
+            throw new ArgumentNullException("Failed to retrieve OpenID configurations");
         }
     }
 }

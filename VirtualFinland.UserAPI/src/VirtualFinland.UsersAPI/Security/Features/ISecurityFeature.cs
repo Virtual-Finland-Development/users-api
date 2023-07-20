@@ -11,6 +11,5 @@ public interface ISecurityFeature
     string GetSecurityPolicySchemeName();
     string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken);
 
-    public string? JwksOptionsUrl { get; }
     public string? Issuer { get; }
 }
