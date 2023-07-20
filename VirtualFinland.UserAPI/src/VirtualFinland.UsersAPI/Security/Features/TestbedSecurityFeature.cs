@@ -4,6 +4,6 @@ public class TestbedSecurityFeature : SecurityFeature
 {
     public TestbedSecurityFeature(IConfiguration configuration)
     {
-        _openIDConfigurationURL = configuration["Testbed:OpenIDConfigurationURL"];
+        _openIDConfigurationURL = configuration["Security:Configurations:Testbed:OpenIDConfigurationURL"];
     }
 }

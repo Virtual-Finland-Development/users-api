@@ -8,19 +8,9 @@ public static class ServerConfigurationValidation
     {
         var validationExceptions = new List<string>();
 
-        if (string.IsNullOrEmpty(configuration["Testbed:OpenIDConfigurationURL"]))
+        if (configuration.GetSection("Security:EnabledSecurityFeatures").Get<string[]>()?.Length == 0)
         {
-            validationExceptions.Add("Testbed:OpenIDConfigurationURL is missing");
-        }
-
-        if (string.IsNullOrEmpty(configuration["Sinuna:OpenIDConfigurationURL"]))
-        {
-            validationExceptions.Add("Sinuna:OpenIDConfigurationURL is missing");
-        }
-
-        if (string.IsNullOrEmpty(configuration["SuomiFi:AuthorizationJwksJsonUrl"]))
-        {
-            validationExceptions.Add("SuomiFi:AuthorizationJwksJsonUrl is missing");
+            validationExceptions.Add("Security:EnabledSecurityFeatures is missing");
         }
 
         if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))

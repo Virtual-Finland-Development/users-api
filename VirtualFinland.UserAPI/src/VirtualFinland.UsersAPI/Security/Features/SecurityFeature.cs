@@ -136,7 +136,7 @@ public abstract class SecurityFeature : ISecurityFeature
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
         if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
         {
-            throw new Exception("Failed to retrieve TestBed OpenID configurations.");
+            throw new Exception("Failed to retrieve OpenID configurations");
         }
     }
 }

@@ -9,8 +9,8 @@ public class SuomiFiSecurityFeature : SecurityFeature
 {
     public SuomiFiSecurityFeature(IConfiguration configuration)
     {
-        _jwksOptionsUrl = configuration["SuomiFi:AuthorizationJwksJsonUrl"];
-        _issuer = configuration["SuomiFi:Issuer"];
+        _jwksOptionsUrl = configuration["Security:Configurations:SuomiFi:AuthorizationJwksJsonUrl"];
+        _issuer = configuration["Security:Configurations:SuomiFi:Issuer"];
     }
 
     protected override void ConfigureOpenIdConnect(AuthenticationBuilder authentication)

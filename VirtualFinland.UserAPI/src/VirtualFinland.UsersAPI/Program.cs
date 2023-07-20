@@ -13,9 +13,7 @@ using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
-using VirtualFinland.UserAPI.Security;
-using VirtualFinland.UserAPI.Security.Features;
-using VirtualFinland.UserAPI.Security.Models;
+using VirtualFinland.UserAPI.Security.Extensions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -98,14 +96,12 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 //
 // App security
 //
-var securityBuilder = new ApplicationSecurity(builder.Configuration);
-securityBuilder.BuildSecurity(builder);
-builder.Services.AddSingleton<IApplicationSecurity>(securityBuilder);
+builder.Services.RegisterSecurityFeatures(builder.Configuration);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
-builder.Services.AddSingleton<IConsentProviderConfig>(securityBuilder.testBedConsentProviderConfig);
-builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
+builder.Services.RegisterConsentServiceProviders(builder.Configuration);
+builder.Services.AddTransient<TestbedConsentSecurityService>();
 
 //
 // Route handlers

@@ -27,9 +27,9 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
 
     public TestBedConsentProviderConfig(IConfiguration configuration)
     {
-        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"];
-        Issuer = configuration["Testbed:ConsentIssuer"];
-        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"];
+        _jwksJsonUrl = configuration["Security:Configurations:Testbed:ConsentJwksJsonUrl"];
+        Issuer = configuration["Security:Configurations:Testbed:ConsentIssuer"];
+        ConsentVerifyUrl = configuration["Security:Configurations:Testbed:ConsentVerifyUrl"];
     }
 
     public async void LoadPublicKeys()

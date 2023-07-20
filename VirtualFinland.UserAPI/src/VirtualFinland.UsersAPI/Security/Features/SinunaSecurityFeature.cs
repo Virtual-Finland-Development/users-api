@@ -6,7 +6,7 @@ public class SinunaSecurityFeature : SecurityFeature
 {
     public SinunaSecurityFeature(IConfiguration configuration)
     {
-        _openIDConfigurationURL = configuration["Sinuna:OpenIDConfigurationURL"];
+        _openIDConfigurationURL = configuration["Security:Configurations:Sinuna:OpenIDConfigurationURL"];
     }
 
     /// <summary>
