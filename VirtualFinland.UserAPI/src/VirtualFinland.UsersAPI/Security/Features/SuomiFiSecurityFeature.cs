@@ -1,25 +1,19 @@
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
 
-public class SuomiFiSecurityFeature : ISecurityFeature
+public class SuomiFiSecurityFeature : SecurityFeature
 {
-    public string? JwksOptionsUrl { get; }
-
-    public string? Issuer { get; }
-
     public SuomiFiSecurityFeature(IConfiguration configuration)
     {
-        JwksOptionsUrl = configuration["SuomiFi:AuthorizationJwksJsonUrl"];
-        Issuer = configuration["SuomiFi:Issuer"];
+        _jwksOptionsUrl = configuration["SuomiFi:AuthorizationJwksJsonUrl"];
+        _issuer = configuration["SuomiFi:Issuer"];
     }
 
-    public void BuildAuthentication(AuthenticationBuilder authentication)
+    protected override void ConfigureOpenIdConnect(AuthenticationBuilder authentication)
     {
         authentication.AddJwtBearer(GetSecurityPolicySchemeName(), c =>
         {
@@ -37,22 +31,8 @@ public class SuomiFiSecurityFeature : ISecurityFeature
         });
     }
 
-    public void BuildAuthorization(AuthorizationOptions options)
+    protected override void LoadOpenIdConfigUrl()
     {
-        options.AddPolicy(GetSecurityPolicySchemeName(), policy =>
-        {
-            policy.AuthenticationSchemes.Add(GetSecurityPolicySchemeName());
-            policy.RequireAuthenticatedUser();
-        });
-    }
-
-    public string GetSecurityPolicySchemeName()
-    {
-        return "SuomiFiBearerScheme";
-    }
-
-    public string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken)
-    {
-        return jwtSecurityToken.Subject; // the "sub" claim
+        // Skip loading the OpenID configuration URL as it's already resolved in the constructor
     }
 }
