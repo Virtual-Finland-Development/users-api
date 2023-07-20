@@ -8,6 +8,7 @@ using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
+using VirtualFinland.UserAPI.Security.Features;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
@@ -22,7 +23,8 @@ public class AuthenticationTests : APITestBase
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockConfiguration = new Mock<IConfiguration>();
-        var applicationSecurity = new ApplicationSecurity(mockConfiguration.Object);
+        var features = new List<ISecurityFeature>();
+        var applicationSecurity = new ApplicationSecurity(features);
         var userSecurityService = new UserSecurityService(_dbContext, mockUserSecurityLogger.Object, applicationSecurity);
 
         mockHeaders.Setup(o => o.Authorization).Returns("");
@@ -57,7 +59,8 @@ public class AuthenticationTests : APITestBase
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
         var mockConfiguration = new Mock<IConfiguration>();
-        var applicationSecurity = new ApplicationSecurity(mockConfiguration.Object);
+        var features = new List<ISecurityFeature>();
+        var applicationSecurity = new ApplicationSecurity(features);
         var userSecurityService = new UserSecurityService(_dbContext, mockLogger.Object, applicationSecurity);
         var authenticationService = new AuthenticationService(userSecurityService);
         // Act
