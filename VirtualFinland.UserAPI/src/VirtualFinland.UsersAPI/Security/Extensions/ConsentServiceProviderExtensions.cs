@@ -1,4 +1,4 @@
-using VirtualFinland.UserAPI.Security.Features;
+using VirtualFinland.UserAPI.Security.Configurations;
 
 namespace VirtualFinland.UserAPI.Security.Extensions;
 

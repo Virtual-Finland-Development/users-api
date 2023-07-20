@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.Tokens;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Security.Features;
+using VirtualFinland.UserAPI.Security.Configurations;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
