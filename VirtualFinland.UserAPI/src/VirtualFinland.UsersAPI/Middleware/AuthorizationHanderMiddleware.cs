@@ -14,8 +14,6 @@ public class AuthorizationHanderMiddleware : IAuthorizationMiddlewareResultHandl
     {
         if (!authorizeResult.Succeeded)
         {
-            Console.WriteLine("Authorization failed");
-            Console.WriteLine(authorizeResult);
             throw new NotAuthorizedException("Access denied"); // Pass to the error handler middleware
         }
 
