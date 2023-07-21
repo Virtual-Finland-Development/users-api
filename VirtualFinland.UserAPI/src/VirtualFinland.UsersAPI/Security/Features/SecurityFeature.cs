@@ -8,7 +8,7 @@ using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
 
-public abstract class SecurityFeature : ISecurityFeature
+public class SecurityFeature : ISecurityFeature
 {
     ///
     /// The issuer of the JWT token
