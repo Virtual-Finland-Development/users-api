@@ -12,11 +12,10 @@ public static class ConsentServiceProviderExtensions
     /// <returns></returns>
     public static IServiceCollection RegisterConsentServiceProviders(this IServiceCollection services, IConfiguration configuration)
     {
-        var enabledSecurityFeatures = configuration.GetSection("Security:EnabledSecurityFeatures").Get<string[]>();
         var testBedConsentProviderConfig = new TestBedConsentProviderConfig(configuration);
         services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
 
-        if (enabledSecurityFeatures.Contains("Testbed"))
+        if (configuration.GetValue<bool>("Security:Testbed:IsEnabled"))
         {
             testBedConsentProviderConfig.LoadPublicKeys();
         }

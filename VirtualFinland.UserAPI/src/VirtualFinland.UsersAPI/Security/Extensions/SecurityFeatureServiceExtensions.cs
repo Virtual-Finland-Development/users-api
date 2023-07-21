@@ -18,23 +18,21 @@ public static class SecurityFeatureServiceExtensions
     public static IServiceCollection RegisterSecurityFeatures(this IServiceCollection services, IConfiguration configuration)
     {
         var features = new List<ISecurityFeature>();
-        var enabledSecurityFeatures = configuration.GetSection("Security:EnabledSecurityFeatures").Get<string[]>();
-        foreach (var securityFeature in enabledSecurityFeatures)
+
+        var securityConfigurations = configuration.GetSection("Security").Get<Dictionary<string, SecurityFeatureOptions>>();
+        var enabledSecurityFeatureNames = securityConfigurations.Where(x => x.Value.IsEnabled).Select(x => x.Key).ToArray();
+        if (!enabledSecurityFeatureNames.Any()) throw new ArgumentException("No security features enabled");
+
+        // Map security feature name to correct class
+        foreach (var securityFeatureName in enabledSecurityFeatureNames)
         {
-            switch (securityFeature)
-            {
-                case "Testbed":
-                    features.Add(new TestbedSecurityFeature(configuration.GetSection("Security:Configurations:Testbed").Get<SecurityFeatureOptions>()));
-                    break;
-                case "Sinuna":
-                    features.Add(new SinunaSecurityFeature(configuration.GetSection("Security:Configurations:Sinuna").Get<SecurityFeatureOptions>()));
-                    break;
-                case "SuomiFi":
-                    features.Add(new SuomiFiSecurityFeature(configuration.GetSection("Security:Configurations:SuomiFi").Get<SecurityFeatureOptions>()));
-                    break;
-                default:
-                    throw new NotImplementedException($"Security feature {securityFeature} is not implemented");
-            }
+            var securityFeatureType = Type.GetType($"VirtualFinland.UserAPI.Security.Features.{securityFeatureName}SecurityFeature");
+            if (securityFeatureType is null) throw new ArgumentException($"Security feature {securityFeatureName} not found");
+
+            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName]) as ISecurityFeature;
+            if (securityFeature is null) throw new ArgumentException($"Security feature {securityFeatureName} not found");
+
+            features.Add(securityFeature);
         }
 
         services.AddSingleton<IApplicationSecurity>(new ApplicationSecurity(features));

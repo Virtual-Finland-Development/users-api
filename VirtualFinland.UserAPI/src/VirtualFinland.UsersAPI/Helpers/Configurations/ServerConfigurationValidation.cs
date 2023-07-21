@@ -8,11 +8,6 @@ public static class ServerConfigurationValidation
     {
         var validationExceptions = new List<string>();
 
-        if (configuration.GetSection("Security:EnabledSecurityFeatures").Get<string[]>()?.Length == 0)
-        {
-            validationExceptions.Add("Security:EnabledSecurityFeatures is missing");
-        }
-
         if (string.IsNullOrEmpty(configuration["CodesetApiBaseUrl"]))
         {
             validationExceptions.Add("CodesetApiBaseUrl is missing");
