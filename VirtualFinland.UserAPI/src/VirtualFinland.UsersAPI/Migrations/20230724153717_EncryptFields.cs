@@ -6,35 +6,53 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
-#nullable disable
-
+//
+// A slow migration ONLY for development environments, remove before deploying to production
+//
 namespace VirtualFinland.UserAPI.Migrations
 {
     public partial class EncryptFields : Migration
     {
+        private readonly Dictionary<string, string[]> _encryptFields = new()
+        {
+            {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
+            {"PersonAdditionalInformation", new[] {"DateOfBirth", "Gender", "CountryOfBirthCode", "NativeLanguageCode", "OccupationCode", "CitizenshipCode" }},
+            {"Address", new[] {"StreetAddress", "ZipCode", "City", "Country" }},
+        };
 
         protected override async void Up(MigrationBuilder migrationBuilder)
         {
+            // Skip if running in production environment (fail-safe)
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+            {
+                return;
+            }
+
             var access = await GetDbAccess();
             using (var connection = access.Item1)
             {
                 // Open the connection
                 connection.Open();
 
-
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT \"Id\", \"Email\" FROM \"Persons\"";
-
-                // Execute the SQL query and process the results
-                using var result = command.ExecuteReader();
-
-                while (result.Read())
+                foreach (var table in _encryptFields)
                 {
-                    // Get GUID Id and email from the result set
-                    var id = result.GetGuid(0);
-                    var email = Encoding.UTF8.GetBytes(result.GetString(1));
-                    var encryptedEmail = Convert.ToBase64String(access.Item2.Encrypt(email));
-                    migrationBuilder.Sql($"UPDATE \"Persons\" SET \"Email\" = '{encryptedEmail}' WHERE \"Id\" = '{id}'");
+                    foreach (var field in table.Value)
+                    {
+                        using var command = connection.CreateCommand();
+                        command.CommandText = $"SELECT \"Id\", \"{field}\" FROM \"{table.Key}\"";
+
+                        // Execute the SQL query and process the results
+                        using var result = command.ExecuteReader();
+
+                        while (result.Read())
+                        {
+                            // Get GUID Id and email from the result set
+                            var id = result.GetGuid(0);
+                            var email = Encoding.UTF8.GetBytes(result.GetString(1));
+                            var encryptedEmail = Convert.ToBase64String(access.Item2.Encrypt(email));
+                            migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{encryptedEmail}' WHERE \"Id\" = '{id}'");
+                        }
+                    }
                 }
             }
 
@@ -42,26 +60,37 @@ namespace VirtualFinland.UserAPI.Migrations
 
         protected override async void Down(MigrationBuilder migrationBuilder)
         {
+            // Skip if running in production environment (fail-safe)
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+            {
+                return;
+            }
+
             var access = await GetDbAccess();
             using (var connection = access.Item1)
             {
                 // Open the connection
                 connection.Open();
 
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT Id, Email FROM Persons";
-
-                // Execute the SQL query and process the results
-                using var result = command.ExecuteReader();
-
-                while (result.Read())
+                foreach (var table in _encryptFields)
                 {
-                    // Get GUID Id and email from the result set
-                    var id = result.GetGuid(0);
-                    var email = Encoding.UTF8.GetBytes(result.GetString(1));
+                    foreach (var field in table.Value)
+                    {
+                        using var command = connection.CreateCommand();
+                        command.CommandText = $"SELECT \"Id\", \"{field}\" FROM \"{table.Key}\"";
 
-                    var decryptedEmail = Encoding.UTF8.GetString(access.Item2.Decrypt(email)).Trim('\0');
-                    migrationBuilder.Sql($"UPDATE \"Persons\" SET \"Email\" = '{decryptedEmail}' WHERE \"Id\" = '{id}'");
+                        // Execute the SQL query and process the results
+                        using var result = command.ExecuteReader();
+
+                        while (result.Read())
+                        {
+                            // Get GUID Id and email from the result set
+                            var id = result.GetGuid(0);
+                            var email = Encoding.UTF8.GetBytes(result.GetString(1));
+                            var decryptedEmail = Encoding.UTF8.GetString(access.Item2.Decrypt(email)).Trim('\0');
+                            migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{decryptedEmail}' WHERE \"Id\" = '{id}'");
+                        }
+                    }
                 }
             }
         }
