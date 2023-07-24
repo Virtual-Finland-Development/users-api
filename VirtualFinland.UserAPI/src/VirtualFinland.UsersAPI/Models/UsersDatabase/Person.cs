@@ -5,11 +5,11 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class Person : Auditable, IEntity
 {
-    [MaxLength(255)]
+    //[MaxLength(255)]
     [Encrypted]
     public string? GivenName { get; set; }
 
-    [MaxLength(255)]
+    //[MaxLength(255)]
     [Encrypted]
     public string? LastName { get; set; }
 
@@ -21,7 +21,7 @@ public class Person : Auditable, IEntity
     [Encrypted]
     public string? PhoneNumber { get; set; }
 
-    [MaxLength(3)]
+    //[MaxLength(3)]
     [Encrypted]
     public string? ResidencyCode { get; set; }
 

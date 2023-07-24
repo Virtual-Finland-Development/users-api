@@ -258,12 +258,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("GivenName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -272,8 +270,7 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ResidencyCode")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

@@ -16,8 +16,7 @@ namespace VirtualFinland.UserAPI.Migrations
         private readonly Dictionary<string, string[]> _encryptFields = new()
         {
             {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
-            {"PersonAdditionalInformation", new[] {"DateOfBirth", "Gender", "CountryOfBirthCode", "NativeLanguageCode", "OccupationCode", "CitizenshipCode" }},
-            {"Address", new[] {"StreetAddress", "ZipCode", "City", "Country" }},
+            //{"PersonAdditionalInformation", new[] {"Gender", "CountryOfBirthCode", "NativeLanguageCode", "OccupationCode", "CitizenshipCode" }}, // DateOfBirth
         };
 
         protected override async void Up(MigrationBuilder migrationBuilder)
@@ -27,6 +26,38 @@ namespace VirtualFinland.UserAPI.Migrations
             {
                 return;
             }
+
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ResidencyCode",
+                table: "Persons",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(3)",
+                oldMaxLength: 3,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "LastName",
+                table: "Persons",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(255)",
+                oldMaxLength: 255,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "GivenName",
+                table: "Persons",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(255)",
+                oldMaxLength: 255,
+                oldNullable: true);
+
 
             var access = await GetDbAccess();
             using (var connection = access.Item1)
@@ -93,6 +124,36 @@ namespace VirtualFinland.UserAPI.Migrations
                     }
                 }
             }
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ResidencyCode",
+                table: "Persons",
+                type: "character varying(3)",
+                maxLength: 3,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "LastName",
+                table: "Persons",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "GivenName",
+                table: "Persons",
+                type: "character varying(255)",
+                maxLength: 255,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
         }
 
         private async Task<Tuple<DbConnection, AesProvider>> GetDbAccess()
