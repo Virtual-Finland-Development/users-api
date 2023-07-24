@@ -88,13 +88,13 @@ builder.Services.AddSwaggerGen(config =>
 
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
-var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
-    ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
-    : null;
+var databaseSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_CONNECTION_SECRET_NAME");
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-var encryptionKey = "12345678901234567890123456789012";
-var encryptionIV = "1234567890123456";
+var encryptionKeySecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_ENCRYPTION_KEY_SECRET_NAME");
+var encryptionKey = encryptionKeySecret ?? builder.Configuration.GetValue<string>("Database:EncryptionKey");
+var encryptionIVSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_ENCRYPTION_IV_SECRET_NAME");
+var encryptionIV = encryptionKeySecret ?? builder.Configuration.GetValue<string>("Database:EncryptionIV");
 builder.Services.AddSingleton<IDatabaseEncryptionSecrets>(new DatabaseEncryptionSecrets(encryptionKey, encryptionIV));
 
 builder.Services.AddDbContext<UsersDbContext>(options =>

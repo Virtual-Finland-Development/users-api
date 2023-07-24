@@ -18,4 +18,11 @@ public class AwsConfigurationManager
     {
         return await _secretsManagerCache.GetSecretString(secretName);
     }
+
+    public async Task<string?> GetSecretByEnvironmentValueName(string name)
+    {
+        return Environment.GetEnvironmentVariable(name) != null
+        ? await _secretsManagerCache.GetSecretString(Environment.GetEnvironmentVariable(name))
+        : null;
+    }
 }
