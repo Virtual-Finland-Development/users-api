@@ -93,8 +93,13 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
+var encryptionKey = "12345678901234567890123456789012";
+var encryptionIV = "1234567890123456";
+builder.Services.AddSingleton<IDatabaseEncryptionSecrets>(new DatabaseEncryptionSecrets(encryptionKey, encryptionIV));
+
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
+
     options.UseNpgsql(dbConnectionString,
         op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
 });

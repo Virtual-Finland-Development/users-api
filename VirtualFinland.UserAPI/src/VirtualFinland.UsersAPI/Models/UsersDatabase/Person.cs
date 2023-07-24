@@ -12,6 +12,7 @@ public class Person : Auditable, IEntity
     public string? LastName { get; set; }
 
     [EmailAddress]
+    [Encrypted]
     public string? Email { get; set; }
 
     [Phone]

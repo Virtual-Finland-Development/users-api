@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DataEncryption;
+using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -8,14 +10,17 @@ namespace VirtualFinland.UserAPI.Data;
 public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
+    private readonly IEncryptionProvider _provider;
 
-    public UsersDbContext(DbContextOptions options) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets) : base(options)
     {
+        _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
     }
 
-    public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, bool isTesting) : base(options)
     {
         _isTesting = isTesting;
+        _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
     }
 
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
@@ -38,12 +43,13 @@ public class UsersDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
         modelBuilder.ApplyConfiguration(new AddressConfiguration());
         modelBuilder.ApplyConfiguration(new PersonAdditionalInformationConfiguration());
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+
+        modelBuilder.UseEncryption(_provider);
     }
 }
