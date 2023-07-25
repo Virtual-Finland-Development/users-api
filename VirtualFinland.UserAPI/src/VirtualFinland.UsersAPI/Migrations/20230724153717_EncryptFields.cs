@@ -16,8 +16,18 @@ namespace VirtualFinland.UserAPI.Migrations
         private readonly Dictionary<string, string[]> _encryptFields = new()
         {
             {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
-            //{"PersonAdditionalInformation", new[] {"Gender", "CountryOfBirthCode", "NativeLanguageCode", "OccupationCode", "CitizenshipCode" }}, // DateOfBirth
-        };
+            {"PersonAdditionalInformation", new[] {
+                "StreetAddress",
+                "ZipCode",
+                "City",
+                "Country",
+                "Gender",
+                //"DateOfBirth",
+                "CountryOfBirthCode",
+                "NativeLanguageCode",
+                "OccupationCode",
+                "CitizenshipCode"
+        }}};
 
         protected override async void Up(MigrationBuilder migrationBuilder)
         {
@@ -58,6 +68,86 @@ namespace VirtualFinland.UserAPI.Migrations
                 oldMaxLength: 255,
                 oldNullable: true);
 
+            migrationBuilder.AlterColumn<string>(
+                name: "ZipCode",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(5)",
+                oldMaxLength: 5,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "StreetAddress",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(512)",
+                oldMaxLength: 512,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "OccupationCode",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(10)",
+                oldMaxLength: 10,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "NativeLanguageCode",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(10)",
+                oldMaxLength: 10,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "CountryOfBirthCode",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(10)",
+                oldMaxLength: 10,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Country",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(512)",
+                oldMaxLength: 512,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "City",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(512)",
+                oldMaxLength: 512,
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "CitizenshipCode",
+                table: "PersonAdditionalInformation",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(10)",
+                oldMaxLength: 10,
+                oldNullable: true);
+
 
             var access = await GetDbAccess();
             using (var connection = access.Item1)
@@ -78,10 +168,17 @@ namespace VirtualFinland.UserAPI.Migrations
                         while (result.Read())
                         {
                             // Get GUID Id and email from the result set
-                            var id = result.GetGuid(0);
-                            var email = Encoding.UTF8.GetBytes(result.GetString(1));
-                            var encryptedEmail = Convert.ToBase64String(access.Item2.Encrypt(email));
-                            migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{encryptedEmail}' WHERE \"Id\" = '{id}'");
+                            try
+                            {
+                                var id = result.GetGuid(0);
+                                var email = Encoding.UTF8.GetBytes(result.GetString(1));
+                                var encryptedEmail = Convert.ToBase64String(access.Item2.Encrypt(email));
+                                migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{encryptedEmail}' WHERE \"Id\" = '{id}'");
+                            }
+                            catch (Exception)
+                            {
+                                // Pass
+                            }
                         }
                     }
                 }
@@ -150,6 +247,86 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "Persons",
                 type: "character varying(255)",
                 maxLength: 255,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ZipCode",
+                table: "PersonAdditionalInformation",
+                type: "character varying(5)",
+                maxLength: 5,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "StreetAddress",
+                table: "PersonAdditionalInformation",
+                type: "character varying(512)",
+                maxLength: 512,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "OccupationCode",
+                table: "PersonAdditionalInformation",
+                type: "character varying(10)",
+                maxLength: 10,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "NativeLanguageCode",
+                table: "PersonAdditionalInformation",
+                type: "character varying(10)",
+                maxLength: 10,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "CountryOfBirthCode",
+                table: "PersonAdditionalInformation",
+                type: "character varying(10)",
+                maxLength: 10,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Country",
+                table: "PersonAdditionalInformation",
+                type: "character varying(512)",
+                maxLength: 512,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "City",
+                table: "PersonAdditionalInformation",
+                type: "character varying(512)",
+                maxLength: 512,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "CitizenshipCode",
+                table: "PersonAdditionalInformation",
+                type: "character varying(10)",
+                maxLength: 10,
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "text",

@@ -29,20 +29,16 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("City")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Country")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("StreetAddress")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ZipCode")
-                        .HasMaxLength(5)
-                        .HasColumnType("character varying(5)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -284,12 +280,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("CitizenshipCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<string>("CountryOfBirthCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
@@ -304,12 +298,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NativeLanguageCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<string>("OccupationCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
