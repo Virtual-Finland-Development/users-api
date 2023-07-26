@@ -86,6 +86,7 @@ builder.Services.AddSwaggerGen(config =>
     config.SchemaFilter<SwaggerSkipPropertyFilter>();
 });
 
+builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
 AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
 
 var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
