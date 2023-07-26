@@ -103,7 +103,7 @@ public static class GetUser
                 OccupationCode = dbUser.AdditionalInformation?.OccupationCode,
                 CitizenshipCode = dbUser.AdditionalInformation?.CitizenshipCode,
                 Gender = dbUser.AdditionalInformation?.Gender,
-                DateOfBirth = dbUser.AdditionalInformation?.DateOfBirth,
+                DateOfBirth = dbUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(dbUser.AdditionalInformation.DateOfBirth) : null,
                 Occupations = occupations,
                 WorkPreferences = workPreferences
             };

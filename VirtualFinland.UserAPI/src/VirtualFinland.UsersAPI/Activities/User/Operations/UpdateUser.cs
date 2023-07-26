@@ -189,7 +189,7 @@ public static class UpdateUser
                 dbUser.AdditionalInformation?.OccupationCode,
                 dbUser.AdditionalInformation?.CitizenshipCode,
                 dbUser.AdditionalInformation?.Gender,
-                dbUser.AdditionalInformation?.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                dbUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(dbUser.AdditionalInformation.DateOfBirth).ToDateTime(TimeOnly.MinValue) : null,
                 occupations,
                 dbUser.WorkPreferences is null
                     ? null
@@ -236,7 +236,9 @@ public static class UpdateUser
             dbUser.AdditionalInformation.OccupationCode = request.OccupationCode ?? dbUser.AdditionalInformation.OccupationCode;
             dbUser.AdditionalInformation.CountryOfBirthCode = request.CountryOfBirthCode ?? dbUser.AdditionalInformation.CountryOfBirthCode;
             dbUser.AdditionalInformation.Gender = request.Gender ?? dbUser.AdditionalInformation.Gender;
-            dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()) : dbUser.AdditionalInformation.DateOfBirth;
+            dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue
+                    ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault()).ToString("yyyy-MM-dd")
+                    : dbUser.AdditionalInformation.DateOfBirth;
             dbUser.Occupations = GetUpdatedOccupations(dbUser.Occupations, request.Occupations);
 
             if (request.WorkPreferences is not null)

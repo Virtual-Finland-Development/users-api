@@ -101,7 +101,7 @@ public static class GetUser
                 dbUser.AdditionalInformation?.OccupationCode,
                 dbUser.AdditionalInformation?.CitizenshipCode,
                 dbUser.AdditionalInformation?.Gender,
-                dbUser.AdditionalInformation?.DateOfBirth?.ToDateTime(TimeOnly.MinValue),
+                dbUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(dbUser.AdditionalInformation.DateOfBirth).ToDateTime(TimeOnly.MinValue) : null,
                 occupations,
                 workPreferences
             );
@@ -149,6 +149,4 @@ public static class GetUser
         string? EscoCode,
         int? WorkMonths
     );
-
-
 }

@@ -18,7 +18,7 @@ public class PersonAdditionalInformationBuilder
     private readonly string _citizenshipCode = "FR";
     private readonly string _countryOfBirthCode = "FR";
     private readonly DateTime _created = DateTime.UtcNow;
-    private readonly DateOnly _dateOfBirth = DateOnly.FromDateTime(DateTime.Now);
+    private readonly string _dateOfBirth = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd");
     private readonly string _gender = "Male";
     private readonly DateTime _modified = DateTime.UtcNow;
     private readonly string _nativeLanguageCode = "FR";

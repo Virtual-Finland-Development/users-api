@@ -13,8 +13,8 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20230724153717_EncryptFields")]
-    partial class EncryptFields
+    [Migration("20230726135649_ExecuteFieldsEncryption")]
+    partial class ExecuteFieldsEncryption
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -31,20 +31,16 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("City")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Country")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("StreetAddress")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ZipCode")
-                        .HasMaxLength(5)
-                        .HasColumnType("character varying(5)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -260,12 +256,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("GivenName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LastName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -274,8 +268,7 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("ResidencyCode")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -289,18 +282,16 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("CitizenshipCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<string>("CountryOfBirthCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("date");
+                    b.Property<string>("DateOfBirth")
+                        .HasColumnType("text");
 
                     b.Property<string>("Gender")
                         .HasColumnType("text");
@@ -309,12 +300,10 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NativeLanguageCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.Property<string>("OccupationCode")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

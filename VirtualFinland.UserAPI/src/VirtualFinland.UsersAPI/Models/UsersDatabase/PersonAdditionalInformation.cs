@@ -8,8 +8,8 @@ public class PersonAdditionalInformation : Auditable, IEntity
 {
     [Encrypted]
     public Address? Address { get; set; }
-    //[Encrypted]
-    public DateOnly? DateOfBirth { get; set; }
+    [Encrypted]
+    public string? DateOfBirth { get; set; }
     [Encrypted]
     public string? Gender { get; set; }
 
