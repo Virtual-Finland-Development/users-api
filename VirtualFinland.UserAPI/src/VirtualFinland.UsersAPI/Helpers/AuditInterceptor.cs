@@ -48,7 +48,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
                     }
                     break;
                 case EntityState.Deleted:
-                    if (entry.Entity is Auditable deletedEntity)
+                    if (entry.Entity is Auditable)
                     {
                         _logger.LogInformation(CreateDeletedMessage(entry));
                     }
