@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using Microsoft.EntityFrameworkCore.Migrations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
 #nullable disable
@@ -135,7 +136,10 @@ namespace VirtualFinland.UserAPI.Migrations
                 .UseNpgsql(dbConnectionString)
                 .Options;
 
-            return Tuple.Create(new UsersDbContext(contextOptions, secrets).Database.GetDbConnection(), provider);
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var auditInterceptor = new AuditInterceptor(loggerFactory.CreateLogger<IAuditInterceptor>());
+
+            return Tuple.Create(new UsersDbContext(contextOptions, secrets, auditInterceptor).Database.GetDbConnection(), provider);
         }
     }
 }

@@ -86,7 +86,8 @@ builder.Services.AddSwaggerGen(config =>
     config.SchemaFilter<SwaggerSkipPropertyFilter>();
 });
 
-AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
+AwsConfigurationManager awsConfigurationManager = new();
 
 var databaseSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_CONNECTION_SECRET_NAME");
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");

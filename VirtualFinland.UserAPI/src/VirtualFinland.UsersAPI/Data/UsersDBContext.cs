@@ -11,16 +11,19 @@ public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
     private readonly IEncryptionProvider _provider;
+    private readonly IAuditInterceptor _auditInterceptor;
 
-    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor) : base(options)
     {
         _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
+        _auditInterceptor = auditInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
     {
-        _isTesting = isTesting;
         _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
+        _auditInterceptor = auditInterceptor;
+        _isTesting = isTesting;
     }
 
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
@@ -37,7 +40,7 @@ public class UsersDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(new AuditInterceptor());
+        optionsBuilder.AddInterceptors(_auditInterceptor);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
