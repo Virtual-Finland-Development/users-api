@@ -44,6 +44,7 @@ public static class VerifyIdentityUser
             // Create a new system user if no one found based on given authentication information
             if (externalIdentity is null)
             {
+                // @TODO: Need to fix the situation for newly created users
                 _usersDbContext.Cryptor.PrepareQuery(externalIdentity.IdentityId); //@TODO Use identity access key instead
                 var newDbUSer = await _usersDbContext.Persons.AddAsync(
                     new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);

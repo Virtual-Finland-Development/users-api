@@ -26,6 +26,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 "OccupationCode",
                 "CitizenshipCode"
             }} */
+            {"ExternalIdentities", new[] {"IdentityId"}}
         };
 
         protected override async void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +49,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     {
                         "Persons" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         //"PersonAdditionalInformation" => $"SELECT \"Id\", \"PersonId\", \"{field}\" FROM \"{table.Key}\"",
+                        "ExternalIdentities" => $"SELECT \"Id\", \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         _ => throw new ArgumentOutOfRangeException()
                     };
 
@@ -66,9 +68,9 @@ namespace VirtualFinland.UserAPI.Migrations
 
                             results.Add(Tuple.Create(id, userId, fieldValue));
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            Console.WriteLine(e);
+                            // Pass
                         }
                     }
 
@@ -84,7 +86,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         try
                         {
                             var secretKeyResult = ResolveItemSecretKey(dbAccess, userId.ToString());
-                            Console.WriteLine($"Secret key for user {userId} is {secretKeyResult.Item1}, and identoty hash is {secretKeyResult.Item2}");
                             migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{secretKeyResult.Item2}' WHERE \"UserId\" = '{userId}'"); // @TODO: Use external access instead
 
                             var encryptedValue = dbAccess.Item2.Encrypt(fieldValue, secretKeyResult.Item1);
@@ -98,11 +99,11 @@ namespace VirtualFinland.UserAPI.Migrations
                 }
             }
 
-            /*  migrationBuilder.AlterColumn<string>(
-                 name: "IdentityHash",
-                 table: "ExternalIdentities",
-                 nullable: false,
-                 oldNullable: true); */
+            migrationBuilder.AlterColumn<string>(
+                name: "IdentityHash",
+                table: "ExternalIdentities",
+                nullable: false,
+                oldNullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

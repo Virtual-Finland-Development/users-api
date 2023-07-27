@@ -1,3 +1,5 @@
+using System.Text;
+using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -23,17 +25,34 @@ public class CryptoUtility : ICryptoUtility
 
     public string Encrypt(string value, string key)
     {
-        return value;
+        var encryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(key));
+        var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
+        return Convert.ToBase64String(encryptedBytes);
     }
 
     public string Decrypt(string value, string key)
     {
-        return value;
+        var decryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(key));
+        var decryptedBytes = Encoding.UTF8.GetBytes(value);
+        return Encoding.UTF8.GetString(decryptionProvider.Decrypt(decryptedBytes)).Trim('\0');
     }
 
+    // Lazy hash for test, @TODO
     public string Hash(string value)
     {
-        return value;
+        return Encrypt(value, Encoding.UTF8.GetString(_secrets.EncryptionIV));
+    }
+
+    private byte[] ResolveEncryptionIV(string key)
+    {
+        /* // Ensure key string is exactly 32 bytes
+        var iv = key.Substring(0, 16);
+        if (iv.Length != 16)
+        {
+            iv = iv.PadRight(16, '0');
+        }
+        return Encoding.UTF8.GetBytes(iv); */
+        return _secrets.EncryptionIV;
     }
 
     public void PrepareQuery(string secretKey)
