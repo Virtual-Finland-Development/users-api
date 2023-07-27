@@ -1,9 +1,4 @@
-﻿using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using Microsoft.EntityFrameworkCore.Migrations;
-using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Configurations;
 
 #nullable disable
 

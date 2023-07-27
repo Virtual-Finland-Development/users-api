@@ -100,7 +100,7 @@ class LambdaFunctionUrl
         var lambdaFunction = new Function($"{stackSetup.ProjectName}-{stackSetup.Environment}", new FunctionArgs
         {
             Role = execRole.Arn,
-            Runtime = "dotnet6",
+            Runtime = "dotnet7",
             Handler = "VirtualFinland.UsersAPI",
             Timeout = 30,
             MemorySize = 2048,

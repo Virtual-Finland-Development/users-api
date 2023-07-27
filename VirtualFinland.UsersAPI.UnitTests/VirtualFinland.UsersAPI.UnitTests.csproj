@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
@@ -29,11 +29,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
+        <ProjectReference
+            Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Tests\Helpers" />
+        <Folder Include="Tests\Helpers" />
     </ItemGroup>
 
 </Project>

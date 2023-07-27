@@ -3,26 +3,26 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Person : Auditable, IEntity
+public class Person : Auditable, IEntity, IEncrypted
 {
     //[MaxLength(255)]
-    [Encrypted]
+    //[Encrypted]
     public string? GivenName { get; set; }
 
     //[MaxLength(255)]
-    [Encrypted]
+    //[Encrypted]
     public string? LastName { get; set; }
 
     [EmailAddress]
-    [Encrypted]
+    //[Encrypted]
     public string? Email { get; set; }
 
     [Phone]
-    [Encrypted]
+    //[Encrypted]
     public string? PhoneNumber { get; set; }
 
     //[MaxLength(3)]
-    [Encrypted]
+    //[Encrypted]
     public string? ResidencyCode { get; set; }
 
     // Relationships

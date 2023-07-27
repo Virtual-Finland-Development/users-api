@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DataEncryption;
-using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -10,18 +8,18 @@ namespace VirtualFinland.UserAPI.Data;
 public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
-    private readonly IEncryptionProvider _provider;
+    private readonly ICryptoUtility _cryptor;
     private readonly IAuditInterceptor _auditInterceptor;
 
     public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor) : base(options)
     {
-        _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
+        _cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;
     }
 
     public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
     {
-        _provider = new AesProvider(secrets.EncryptionKey, secrets.EncryptionIV);
+        _cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;
         _isTesting = isTesting;
     }
@@ -40,7 +38,7 @@ public class UsersDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor);
+        optionsBuilder.AddInterceptors(_auditInterceptor, new EncryptionInterceptor(_cryptor), new DecryptionInterceptor(_cryptor));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,7 +50,5 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
-
-        modelBuilder.UseEncryption(_provider);
     }
 }

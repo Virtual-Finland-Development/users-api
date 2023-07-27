@@ -11,18 +11,18 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
       - name: Test and build
         run: make prep-deploy
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
-          path: VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
+          path: VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net7.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
       - name: Upload database migrator artifact
         uses: actions/upload-artifact@v3
         with:
           name: DatabaseMigrator_Artifacts
-          path: VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+          path: VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net7.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
           retention-days: 2
