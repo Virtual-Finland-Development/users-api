@@ -17,8 +17,12 @@ public class DatabaseEncryptionSecrets : IDatabaseEncryptionSecrets
         EncryptionIV = encryptionIV;
     }
 
-    public DatabaseEncryptionSecrets(string encryptionKey, string encryptionIV)
+    public DatabaseEncryptionSecrets(string? encryptionKey, string? encryptionIV)
     {
+        if (string.IsNullOrEmpty(encryptionKey))
+            throw new ArgumentNullException(nameof(encryptionKey), $"{nameof(encryptionKey)} is null or empty");
+        if (string.IsNullOrEmpty(encryptionIV))
+            throw new ArgumentNullException(nameof(encryptionIV), $"{nameof(encryptionIV)} is null or empty");
         EncryptionKey = Encoding.UTF8.GetBytes(encryptionKey);
         EncryptionIV = Encoding.UTF8.GetBytes(encryptionIV);
     }

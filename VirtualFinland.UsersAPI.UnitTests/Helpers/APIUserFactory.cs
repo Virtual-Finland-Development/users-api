@@ -18,12 +18,14 @@ public class APIUserFactory
         var dbUser = dbContext.Persons.Add(new PersonBuilder().Build());
 
         var faker = new Faker();
+        var identityId = faker.Random.Guid().ToString();
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Issuer = faker.Random.String(10),
-            IdentityId = faker.Random.Guid().ToString(),
+            IdentityId = identityId,
+            IdentityHash = dbContext.Cryptor.Hash(identityId),
             UserId = dbUser.Entity.Id
         });
 
@@ -44,12 +46,14 @@ public class APIUserFactory
         var dbUser = dbContext.Persons.Add(new PersonBuilder().WithId(userId).Build());
 
         var faker = new Faker();
+        var identityId = faker.Random.Guid().ToString();
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Issuer = faker.Random.String(10),
-            IdentityId = faker.Random.Guid().ToString(),
+            IdentityId = identityId,
+            IdentityHash = dbContext.Cryptor.Hash(identityId),
             UserId = dbUser.Entity.Id
         });
 

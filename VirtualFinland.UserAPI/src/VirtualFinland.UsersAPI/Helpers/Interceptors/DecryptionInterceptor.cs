@@ -20,8 +20,10 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
     // </summary>
     public object InitializedInstance(MaterializationInterceptionData materializationData, object instance)
     {
-        if (instance is IEncrypted)
+        if (instance is IEncrypted item)
         {
+            var secretKey = _cryptor.ResolveQuery();
+
             // Loop through the properties of the entity
             foreach (var property in instance.GetType().GetProperties())
             {
@@ -31,7 +33,7 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
                     var value = property.GetValue(instance)?.ToString();
                     if (!string.IsNullOrEmpty(value))
                     {
-                        property.SetValue(instance, _cryptor.Decrypt(value));
+                        property.SetValue(instance, _cryptor.Decrypt(value, secretKey));
                     }
                 }
             }

@@ -8,23 +8,24 @@ namespace VirtualFinland.UserAPI.Data;
 public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
-    private readonly ICryptoUtility _cryptor;
+    public readonly ICryptoUtility Cryptor;
     private readonly IAuditInterceptor _auditInterceptor;
 
     public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor) : base(options)
     {
-        _cryptor = new CryptoUtility(secrets);
+        Cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;
     }
 
     public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
     {
-        _cryptor = new CryptoUtility(secrets);
+        Cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;
         _isTesting = isTesting;
     }
 
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
+    //public DbSet<ExternalIdentityAccessKey> ExternalIdentityAccessKeys => Set<ExternalIdentityAccessKey>();
     public DbSet<SearchProfile> SearchProfiles => Set<SearchProfile>();
     public DbSet<Certification> Certifications => Set<Certification>();
     public DbSet<Education> Educations => Set<Education>();
@@ -38,7 +39,7 @@ public class UsersDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor, new EncryptionInterceptor(_cryptor), new DecryptionInterceptor(_cryptor));
+        optionsBuilder.AddInterceptors(_auditInterceptor, new EncryptionInterceptor(Cryptor), new DecryptionInterceptor(Cryptor));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

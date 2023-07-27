@@ -14,6 +14,17 @@ namespace VirtualFinland.UserAPI.Migrations
                 return;
             }
 
+            migrationBuilder.AddColumn<string>(
+                name: "IdentityHash",
+                table: "ExternalIdentities",
+                type: "text",
+                nullable: true);
+            /* migrationBuilder.AddColumn<string>(
+                name: "IdentityAccessKey",
+                table: "ExternalIdentity",
+                type: "text",
+                nullable: true); */
+
             migrationBuilder.AlterColumn<string>(
                 name: "ResidencyCode",
                 table: "Persons",
@@ -261,6 +272,13 @@ namespace VirtualFinland.UserAPI.Migrations
                 oldClrType: typeof(string),
                 oldType: "text",
                 oldNullable: true);
+
+            /* migrationBuilder.DropColumn(
+                name: "IdentityAccessKey",
+                table: "ExternalIdentities"); */
+            migrationBuilder.DropColumn(
+                name: "IdentityHash",
+                table: "ExternalIdentities");
         }
     }
 }

@@ -31,8 +31,13 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
 
         foreach (var entry in mutatingEntries)
         {
-            if (entry.Entity is IEncrypted)
+            if (entry.Entity is IEncrypted item)
             {
+                if (mutatingEntries.Count() > 1)
+                    throw new InvalidOperationException("Only one entity implementing IEncrypted can be added or modified at a time");
+
+                var secretKey = _cryptor.ResolveQuery();
+
                 // Encrypt property if the value is typed as string, and the property is not null or empty
                 foreach (var property in entry.Properties)
                 {
@@ -40,7 +45,7 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
                     {
                         var value = property.CurrentValue?.ToString();
                         if (!string.IsNullOrEmpty(value))
-                            property.CurrentValue = _cryptor.Encrypt(value);
+                            property.CurrentValue = _cryptor.Encrypt(value, secretKey);
                     }
                 }
             }

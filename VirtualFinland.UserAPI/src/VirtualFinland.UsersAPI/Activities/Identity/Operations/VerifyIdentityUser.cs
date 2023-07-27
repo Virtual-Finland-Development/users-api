@@ -34,26 +34,30 @@ public static class VerifyIdentityUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var claimsUserId = request.ClaimsUserId;
+            var claimsUserId = request.ClaimsUserId ?? throw new ArgumentNullException(nameof(request.ClaimsUserId));
+            var identityHash = _usersDbContext.Cryptor.Hash(claimsUserId);
 
+            _usersDbContext.Cryptor.PrepareQuery(identityHash);
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
-                o => o.IdentityId == claimsUserId && o.Issuer == request.ClaimsIssuer, cancellationToken);
+                o => o.IdentityHash == identityHash && o.Issuer == request.ClaimsIssuer, cancellationToken);
 
             // Create a new system user if no one found based on given authentication information
             if (externalIdentity is null)
             {
+                _usersDbContext.Cryptor.PrepareQuery(externalIdentity.IdentityId); //@TODO Use identity access key instead
                 var newDbUSer = await _usersDbContext.Persons.AddAsync(
                     new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
+                _usersDbContext.Cryptor.PrepareQuery(externalIdentity.IdentityId); //@TODO Use identity access key instead
                 await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
                 {
                     Issuer = request.ClaimsIssuer,
                     IdentityId = claimsUserId,
+                    IdentityHash = identityHash,
                     UserId = newDbUSer.Entity.Id,
                     Created = DateTime.UtcNow,
                     Modified = DateTime.UtcNow
                 }, cancellationToken);
-
 
                 await _usersDbContext.SaveChangesAsync(cancellationToken);
                 _logger.LogInformation(
@@ -62,6 +66,7 @@ public static class VerifyIdentityUser
                 return new User(newDbUSer.Entity.Id, newDbUSer.Entity.Created, newDbUSer.Entity.Modified);
             }
 
+            _usersDbContext.Cryptor.PrepareQuery(externalIdentity.IdentityId); //@TODO Use identity access key instead
             var dbUser =
                 await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 

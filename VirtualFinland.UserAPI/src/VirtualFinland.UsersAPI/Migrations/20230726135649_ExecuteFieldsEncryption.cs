@@ -14,7 +14,7 @@ namespace VirtualFinland.UserAPI.Migrations
         private readonly Dictionary<string, string[]> _encryptFields = new()
         {
             {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
-            {"PersonAdditionalInformation", new[] {
+            /* {"PersonAdditionalInformation", new[] {
                 "StreetAddress",
                 "ZipCode",
                 "City",
@@ -25,7 +25,8 @@ namespace VirtualFinland.UserAPI.Migrations
                 "NativeLanguageCode",
                 "OccupationCode",
                 "CitizenshipCode"
-        }}};
+            }} */
+        };
 
         protected override async void Up(MigrationBuilder migrationBuilder)
         {
@@ -35,42 +36,76 @@ namespace VirtualFinland.UserAPI.Migrations
                 return;
             }
 
-            var access = await GetDbAccess();
-            using var connection = access.Item1;
-
-            // Open the connection
-            connection.Open();
+            var dbAccess = await GetDbAccess();
+            using var connection = dbAccess.Item1;
 
             foreach (var table in _encryptFields)
             {
                 foreach (var field in table.Value)
                 {
                     using var command = connection.CreateCommand();
-                    command.CommandText = $"SELECT \"Id\", \"{field}\" FROM \"{table.Key}\"";
+                    command.CommandText = table.Key switch
+                    {
+                        "Persons" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
+                        //"PersonAdditionalInformation" => $"SELECT \"Id\", \"PersonId\", \"{field}\" FROM \"{table.Key}\"",
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
 
                     // Execute the SQL query and process the results
                     using var result = command.ExecuteReader();
 
+                    var results = new List<Tuple<string, string, string>>();
                     while (result.Read())
                     {
                         // Get GUID Id and field value from the result set
                         try
                         {
-                            var id = result.GetGuid(0);
-                            var fieldValue = result.GetString(1); // Encoding.UTF8.GetBytes(result.GetString(1));
-                            var encryptedValue = access.Item2.Encrypt(fieldValue); // Convert.ToBase64String(access.Item2.Encrypt(fieldValue));
+                            var id = result.GetGuid(0).ToString();
+                            var userId = result.GetGuid(1).ToString();
+                            var fieldValue = result.GetString(2);
+
+                            results.Add(Tuple.Create(id, userId, fieldValue));
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    }
+
+                    // Close the command
+                    result.Close();
+
+                    for (var i = 0; i < results.Count; i++)
+                    {
+                        var (id, userId, fieldValue) = results[i];
+                        var (secretKey, identityHash) = ResolveItemSecretKey(dbAccess, userId);
+
+                        // Get GUID Id and field value from the result set
+                        try
+                        {
+                            var secretKeyResult = ResolveItemSecretKey(dbAccess, userId.ToString());
+                            Console.WriteLine($"Secret key for user {userId} is {secretKeyResult.Item1}, and identoty hash is {secretKeyResult.Item2}");
+                            migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{secretKeyResult.Item2}' WHERE \"UserId\" = '{userId}'"); // @TODO: Use external access instead
+
+                            var encryptedValue = dbAccess.Item2.Encrypt(fieldValue, secretKeyResult.Item1);
                             migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{encryptedValue}' WHERE \"Id\" = '{id}'");
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
-                            // Pass
+                            Console.WriteLine(e);
                         }
                     }
                 }
             }
+
+            /*  migrationBuilder.AlterColumn<string>(
+                 name: "IdentityHash",
+                 table: "ExternalIdentities",
+                 nullable: false,
+                 oldNullable: true); */
         }
 
-        protected override async void Down(MigrationBuilder migrationBuilder)
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
             // Skip if running in production environment (fail-safe)
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
@@ -78,39 +113,13 @@ namespace VirtualFinland.UserAPI.Migrations
                 return;
             }
 
-            var access = await GetDbAccess();
-            using var connection = access.Item1;
+            migrationBuilder.AlterColumn<string>(
+                name: "IdentityHash",
+                table: "ExternalIdentities",
+                nullable: true,
+                oldNullable: false);
 
-            // Open the connection
-            connection.Open();
-
-            foreach (var table in _encryptFields)
-            {
-                foreach (var field in table.Value)
-                {
-                    using var command = connection.CreateCommand();
-                    command.CommandText = $"SELECT \"Id\", \"{field}\" FROM \"{table.Key}\"";
-
-                    // Execute the SQL query and process the results
-                    using var result = command.ExecuteReader();
-
-                    while (result.Read())
-                    {
-                        try
-                        {
-                            // Get GUID Id and field value from the result set
-                            var id = result.GetGuid(0);
-                            var fieldValue = result.GetString(1); //Encoding.UTF8.GetBytes(result.GetString(1));
-                            var decryptedValue = access.Item2.Decrypt(fieldValue); // Encoding.UTF8.GetString(access.Item2.Decrypt(fieldValue)).Trim('\0');
-                            migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{decryptedValue}' WHERE \"Id\" = '{id}'");
-                        }
-                        catch (Exception)
-                        {
-                            // Pass
-                        }
-                    }
-                }
-            }
+            Console.WriteLine("---> Reverting the encrypted fields is not possible without knowing the external identities, which this migration does not know.");
         }
 
         private static async Task<Tuple<DbConnection, CryptoUtility>> GetDbAccess()
@@ -136,7 +145,39 @@ namespace VirtualFinland.UserAPI.Migrations
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var auditInterceptor = new AuditInterceptor(loggerFactory.CreateLogger<IAuditInterceptor>());
 
-            return Tuple.Create(new UsersDbContext(contextOptions, secrets, auditInterceptor).Database.GetDbConnection(), cryptor);
+
+            // Open the connection
+            var connection = new UsersDbContext(contextOptions, secrets, auditInterceptor).Database.GetDbConnection();
+            connection.Open();
+
+            return Tuple.Create(connection, cryptor);
+        }
+
+
+        private static Tuple<string, string> ResolveItemSecretKey(Tuple<DbConnection, CryptoUtility> dbAccess, string userId)
+        {
+            using var command = dbAccess.Item1.CreateCommand();
+            command.CommandText = $"SELECT \"IdentityId\" FROM \"ExternalIdentities\" WHERE \"UserId\" = '{userId}'"; // @TODO: Use external access instead
+
+            // Execute the SQL query and process the results
+            using var result = command.ExecuteReader();
+
+            while (result.Read())
+            {
+                // Get GUID Id and field value from the result set
+                try
+                {
+                    var secretKey = result.GetString(0);
+                    var identityHash = dbAccess.Item2.Hash(secretKey);
+                    result.Close();
+                    return Tuple.Create(secretKey, identityHash);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            }
+            throw new ArgumentException($"Could not resolve secret key for userId {userId}");
         }
     }
 }
