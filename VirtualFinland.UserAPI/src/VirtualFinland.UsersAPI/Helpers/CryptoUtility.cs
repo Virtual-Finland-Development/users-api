@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
-using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -52,7 +51,7 @@ public class CryptoUtility : ICryptoUtility
         }
         catch (CryptographicException)
         {
-            throw new NotAuthorizedException("Decryption failure");
+            throw new ArgumentException("Decryption failure");
         }
     }
 
