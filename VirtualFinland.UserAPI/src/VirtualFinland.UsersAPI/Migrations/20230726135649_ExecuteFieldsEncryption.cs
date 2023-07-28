@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
+using VirtualFinland.UserAPI.Helpers.Security;
 
 #nullable disable
 

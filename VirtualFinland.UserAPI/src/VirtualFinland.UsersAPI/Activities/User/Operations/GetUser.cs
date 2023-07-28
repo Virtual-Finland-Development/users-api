@@ -45,7 +45,7 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.StartQuery("Person", request.EncryptionKey);
+            _usersDbContext.Cryptor.State.StartQuery("Person", request.EncryptionKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)

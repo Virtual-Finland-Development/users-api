@@ -50,7 +50,7 @@ public static class UpdatePersonBasicInformation
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
-            _context.Cryptor.StartQuery("Person", request.EncryptionKey);
+            _context.Cryptor.State.StartQuery("Person", request.EncryptionKey);
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             person.GivenName = request.GivenName ?? person.GivenName;

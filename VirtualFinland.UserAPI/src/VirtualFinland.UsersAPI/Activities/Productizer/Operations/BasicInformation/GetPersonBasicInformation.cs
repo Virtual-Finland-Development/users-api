@@ -33,7 +33,7 @@ public static class GetPersonBasicInformation
 
         public async Task<GetPersonBasicInformationResponse> Handle(Query request, CancellationToken cancellationToken)
         {
-            _context.Cryptor.StartQuery("Person", request.EncryptionKey);
+            _context.Cryptor.State.StartQuery("Person", request.EncryptionKey);
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             return new GetPersonBasicInformationResponse(

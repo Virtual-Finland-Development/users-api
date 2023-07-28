@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using VirtualFinland.UserAPI.Helpers.Security;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
@@ -49,7 +50,7 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
         {
             if (entry.Entity is IEncrypted item)
             {
-                var secretKey = _cryptor.GetQueryKey(entry.Entity.GetType().Name) ?? item.EncryptionKey;
+                var secretKey = _cryptor.State.GetQueryKey(entry.Entity.GetType().Name) ?? item.EncryptionKey;
                 if (string.IsNullOrEmpty(secretKey))
                     continue;
 

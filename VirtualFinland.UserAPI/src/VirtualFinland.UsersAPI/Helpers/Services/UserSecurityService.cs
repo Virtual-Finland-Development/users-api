@@ -30,9 +30,9 @@ public class UserSecurityService
         try
         {
             var identityHash = _usersDbContext.Cryptor.Hash(jwtTokenResult.UserId);
-            _usersDbContext.Cryptor.StartQuery("ExternalIdentity", identityHash);
+            _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityHash);
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityHash == identityHash && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
-            _usersDbContext.Cryptor.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
+            _usersDbContext.Cryptor.State.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
             return person;
         }

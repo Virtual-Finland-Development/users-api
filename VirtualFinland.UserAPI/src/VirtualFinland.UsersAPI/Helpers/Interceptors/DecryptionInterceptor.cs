@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using VirtualFinland.UserAPI.Helpers.Security;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
@@ -24,7 +25,7 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
     {
         if (instance is IEncrypted item)
         {
-            var secretKey = _cryptor.GetQueryKey(instance.GetType().Name) ?? item.EncryptionKey;
+            var secretKey = _cryptor.State.GetQueryKey(instance.GetType().Name) ?? item.EncryptionKey;
             if (string.IsNullOrEmpty(secretKey))
                 return instance;
 

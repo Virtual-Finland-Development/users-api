@@ -16,14 +16,14 @@ public class PersonsRepository : IPersonsRepository
     {
         var identityHash = _usersDbContext.Cryptor.Hash(identityId);
 
-        _usersDbContext.Cryptor.StartQuery("ExternalIdentity", identityHash);
+        _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityHash);
         var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
             o => o.IdentityHash == identityHash && o.Issuer == issuer, cancellationToken);
 
         // Create a new system user if no one found based on given authentication information
         if (externalIdentity is null)
         {
-            _usersDbContext.Cryptor.ClearQuery("Person");
+            _usersDbContext.Cryptor.State.ClearQuery("Person");
             var newDbUSer = await _usersDbContext.Persons.AddAsync(
                 new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
 
@@ -42,7 +42,7 @@ public class PersonsRepository : IPersonsRepository
             return newDbUSer.Entity;
         }
 
-        _usersDbContext.Cryptor.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
+        _usersDbContext.Cryptor.State.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
         var dbUser =
             await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 

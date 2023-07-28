@@ -1,5 +1,5 @@
 using FluentAssertions;
-using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Security;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 

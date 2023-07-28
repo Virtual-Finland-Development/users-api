@@ -2,27 +2,26 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 
-namespace VirtualFinland.UserAPI.Helpers;
+namespace VirtualFinland.UserAPI.Helpers.Security;
 
 public interface ICryptoUtility
 {
     string Encrypt(string value, string key);
     string Decrypt(string value, string key);
     string Hash(string value);
-    void StartQuery(string entityName, string? secretKey);
-    string? GetQueryKey(string entityName);
-    void ClearQuery(string entityName);
-
+    ICryptoUtilityState State { get; }
 }
 
 public class CryptoUtility : ICryptoUtility
 {
     private IDatabaseEncryptionSecrets _secrets;
     private Dictionary<string, string?> _secretQueryKeys = new Dictionary<string, string?>();
+    public ICryptoUtilityState State { get; }
 
     public CryptoUtility(IDatabaseEncryptionSecrets secrets)
     {
         _secrets = secrets;
+        State = new CryptoUtilityState();
     }
 
     public string Encrypt(string value, string secretKey)
@@ -81,22 +80,5 @@ public class CryptoUtility : ICryptoUtility
             // Return the hexadecimal string.
             return sBuilder.ToString();
         }
-    }
-
-    public void StartQuery(string entityName, string? secretKey)
-    {
-        if (string.IsNullOrEmpty(secretKey))
-            throw new ArgumentNullException(nameof(secretKey));
-        _secretQueryKeys[entityName] = secretKey;
-    }
-
-    public string? GetQueryKey(string entityName)
-    {
-        return _secretQueryKeys.ContainsKey(entityName) ? _secretQueryKeys[entityName] : null;
-    }
-
-    public void ClearQuery(string entityName)
-    {
-        _secretQueryKeys[entityName] = null;
     }
 }
