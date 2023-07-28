@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
@@ -58,6 +59,12 @@ public static class UpdatePersonBasicInformation
             person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
 
+            // Deep clone the user object to avoid EF tracking/encryption issues
+            var updatedPerson = person.Clone() as Person;
+            if (updatedPerson == null)
+            {
+                throw new ArgumentException("Failed to clone user object");
+            }
 
             try
             {
@@ -70,11 +77,11 @@ public static class UpdatePersonBasicInformation
 
             return new UpdatePersonBasicInformationResponse
             (
-                request.GivenName, // @TODO
-                request.LastName,
-                request.Email,
-                request.PhoneNumber,
-                request.Residency
+                updatedPerson.GivenName,
+                updatedPerson.LastName,
+                updatedPerson.Email ?? request.Email, // @TODO fix requirement
+                updatedPerson.PhoneNumber,
+                updatedPerson.ResidencyCode
             );
         }
     }

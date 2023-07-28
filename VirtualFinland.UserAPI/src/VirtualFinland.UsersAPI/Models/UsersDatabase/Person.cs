@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Person : Auditable, IEntity, IEncrypted
+public class Person : AuditableAndEncryptable, IEntity
 {
     //[MaxLength(255)]
     [Encrypted]
@@ -38,7 +38,4 @@ public class Person : Auditable, IEntity, IEncrypted
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-
-    [NotMapped]
-    public string? EncryptionKey { get; set; }
 }

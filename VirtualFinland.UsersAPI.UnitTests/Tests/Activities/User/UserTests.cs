@@ -179,7 +179,7 @@ public class UserTests : APITestBase
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(Guid.Empty, "");
+        command.SetAuth(Guid.Empty, "bazzinga");
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
             occupationRepository);
 

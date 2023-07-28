@@ -18,13 +18,27 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
         _cryptor = cryptor;
     }
 
-    // <summary>
-    // Encrypts the values of the properties of the entities that are being added or modified and implement IEncrypted
-    // </summary>
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
         CancellationToken cancellationToken = new())
+    {
+        EncryptChanges(eventData);
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+
+    public override InterceptionResult<int> SavingChanges(
+        DbContextEventData eventData,
+        InterceptionResult<int> result)
+    {
+        EncryptChanges(eventData);
+        return result;
+    }
+
+    // <summary>
+    // Encrypts the values of the properties of the entities that are being added or modified and implement IEncrypted
+    // </summary>
+    private void EncryptChanges(DbContextEventData eventData)
     {
         if (eventData.Context is null)
             throw new ArgumentNullException(nameof(eventData), $"{nameof(eventData)} is null");
@@ -52,10 +66,8 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
                         property.CurrentValue = _cryptor.Encrypt(value, secretKey);
                 }
 
-                item.EncryptionKey = secretKey;
+                item.EncryptionKey = secretKey; // Pass the [NotMapped] secret key to the entity for later processing
             }
         }
-
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 }

@@ -161,9 +161,16 @@ public static class UpdateUser
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
+            // Deep clone the user object to avoid EF tracking/encryption issues
+            var updatedPerson = dbUser.Clone() as Person;
+            if (updatedPerson == null)
+            {
+                throw new ArgumentException("Failed to clone user object");
+            }
+
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+            _logger.LogDebug("User data updated for user: {DbUserId}", updatedPerson.Id);
 
             List<UpdateUserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is { Count: > 0 })
@@ -174,39 +181,39 @@ public static class UpdateUser
             }
 
             return new User(
-                dbUser.Id,
-                request.FirstName, // @TODO
-                request.LastName, // @TODO
+                updatedPerson.Id,
+                updatedPerson.GivenName,
+                updatedPerson.LastName,
                 new Address(
-                    dbUser.AdditionalInformation?.Address?.StreetAddress,
-                    dbUser.AdditionalInformation?.Address?.ZipCode,
-                    dbUser.AdditionalInformation?.Address?.City,
-                    dbUser.AdditionalInformation?.Address?.Country
+                    updatedPerson.AdditionalInformation?.Address?.StreetAddress,
+                    updatedPerson.AdditionalInformation?.Address?.ZipCode,
+                    updatedPerson.AdditionalInformation?.Address?.City,
+                    updatedPerson.AdditionalInformation?.Address?.Country
                 ),
                 dbUserDefaultSearchProfile.JobTitles,
                 dbUserDefaultSearchProfile.Regions,
-                dbUser.Created,
-                dbUser.Modified,
-                dbUser.AdditionalInformation?.CountryOfBirthCode,
-                dbUser.AdditionalInformation?.NativeLanguageCode,
-                dbUser.AdditionalInformation?.OccupationCode,
-                dbUser.AdditionalInformation?.CitizenshipCode,
-                dbUser.AdditionalInformation?.Gender,
-                dbUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(dbUser.AdditionalInformation.DateOfBirth).ToDateTime(TimeOnly.MinValue) : null,
+                updatedPerson.Created,
+                updatedPerson.Modified,
+                updatedPerson.AdditionalInformation?.CountryOfBirthCode,
+                updatedPerson.AdditionalInformation?.NativeLanguageCode,
+                updatedPerson.AdditionalInformation?.OccupationCode,
+                updatedPerson.AdditionalInformation?.CitizenshipCode,
+                updatedPerson.AdditionalInformation?.Gender,
+                updatedPerson.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(updatedPerson.AdditionalInformation.DateOfBirth).ToDateTime(TimeOnly.MinValue) : null,
                 occupations,
-                dbUser.WorkPreferences is null
+                updatedPerson.WorkPreferences is null
                     ? null
                     : new UpdateUserResponseWorkPreferences
                     (
-                        dbUser.WorkPreferences?.Id,
-                        dbUser.WorkPreferences?.PreferredRegionCode,
-                        dbUser.WorkPreferences?.PreferredMunicipalityCode,
-                        dbUser.WorkPreferences?.EmploymentTypeCode,
-                        dbUser.WorkPreferences?.WorkingTimeCode,
-                        dbUser.WorkPreferences?.WorkingLanguageEnum,
-                        dbUser.WorkPreferences?.NaceCode,
-                        dbUser.WorkPreferences?.Created,
-                        dbUser.WorkPreferences?.Modified
+                        updatedPerson.WorkPreferences?.Id,
+                        updatedPerson.WorkPreferences?.PreferredRegionCode,
+                        updatedPerson.WorkPreferences?.PreferredMunicipalityCode,
+                        updatedPerson.WorkPreferences?.EmploymentTypeCode,
+                        updatedPerson.WorkPreferences?.WorkingTimeCode,
+                        updatedPerson.WorkPreferences?.WorkingLanguageEnum,
+                        updatedPerson.WorkPreferences?.NaceCode,
+                        updatedPerson.WorkPreferences?.Created,
+                        updatedPerson.WorkPreferences?.Modified
                     )
             );
         }

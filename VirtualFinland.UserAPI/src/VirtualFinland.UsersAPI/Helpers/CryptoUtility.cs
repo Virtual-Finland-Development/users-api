@@ -41,6 +41,7 @@ public class CryptoUtility : ICryptoUtility
     {
         if (string.IsNullOrEmpty(secretKey))
             throw new ArgumentNullException(nameof(secretKey));
+
         try
         {
             var resolvedKey = ResolveEncryptionKey(secretKey);

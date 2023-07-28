@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class ExternalIdentity : IEntity, IEncrypted
+public class ExternalIdentity : Encryptable, IEntity
 {
     [Required]
     public string? Issuer { get; set; }
@@ -27,7 +27,4 @@ public class ExternalIdentity : IEntity, IEncrypted
 
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
-
-    [NotMapped]
-    public string? EncryptionKey { get; set; }
 }

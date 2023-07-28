@@ -129,31 +129,38 @@ public static class UpdateUser
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
+            // Deep clone the user object to avoid EF tracking/encryption issues
+            var updatedUser = dbUser.Clone() as Person;
+            if (updatedUser == null)
+            {
+                throw new ArgumentException("Failed to clone user object");
+            }
+
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
 
             return new User
             {
-                Id = dbUser.Id,
-                FirstName = request.FirstName, // @TODO
-                LastName = request.LastName, // @TODO
+                Id = updatedUser.Id,
+                FirstName = updatedUser.GivenName,
+                LastName = updatedUser.LastName,
                 Address = new Address(
-                    dbUser.AdditionalInformation?.Address?.StreetAddress,
-                    dbUser.AdditionalInformation?.Address?.ZipCode,
-                    dbUser.AdditionalInformation?.Address?.City,
-                    dbUser.AdditionalInformation?.Address?.Country
+                    updatedUser.AdditionalInformation?.Address?.StreetAddress,
+                    updatedUser.AdditionalInformation?.Address?.ZipCode,
+                    updatedUser.AdditionalInformation?.Address?.City,
+                    updatedUser.AdditionalInformation?.Address?.Country
                 ),
                 JobTitles = dbUserDefaultSearchProfile.JobTitles ?? new List<string>(),
                 Regions = dbUserDefaultSearchProfile.Regions ?? new List<string>(),
-                Created = dbUser.Created,
-                Modified = dbUser.Modified,
-                CountryOfBirthCode = dbUser.AdditionalInformation?.CountryOfBirthCode,
-                NativeLanguageCode = dbUser.AdditionalInformation?.NativeLanguageCode,
-                OccupationCode = dbUser.AdditionalInformation?.OccupationCode,
-                CitizenshipCode = dbUser.AdditionalInformation?.CitizenshipCode,
-                Gender = dbUser.AdditionalInformation?.Gender,
-                DateOfBirth = dbUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(dbUser.AdditionalInformation.DateOfBirth) : null,
+                Created = updatedUser.Created,
+                Modified = updatedUser.Modified,
+                CountryOfBirthCode = updatedUser.AdditionalInformation?.CountryOfBirthCode,
+                NativeLanguageCode = updatedUser.AdditionalInformation?.NativeLanguageCode,
+                OccupationCode = updatedUser.AdditionalInformation?.OccupationCode,
+                CitizenshipCode = updatedUser.AdditionalInformation?.CitizenshipCode,
+                Gender = updatedUser.AdditionalInformation?.Gender,
+                DateOfBirth = updatedUser.AdditionalInformation?.DateOfBirth != null ? DateOnly.Parse(updatedUser.AdditionalInformation.DateOfBirth) : null,
             };
         }
 
