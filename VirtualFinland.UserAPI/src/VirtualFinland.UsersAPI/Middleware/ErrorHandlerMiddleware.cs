@@ -14,7 +14,7 @@ public class ErrorHandlerMiddleware
     /// </summary>
     private class ErrorResponseDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
     {
-        
+
     }
 
     public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
@@ -30,12 +30,11 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
-            _logger.LogError(error, "Request processing failure!");
             var response = context.Response;
             response.ContentType = "application/json";
             Dictionary<string, List<string>> validationErrorDetails = new Dictionary<string, List<string>>();
 
-            switch(error)
+            switch (error)
             {
                 case NotAuthorizedException:
                     // custom application error
@@ -49,11 +48,12 @@ public class ErrorHandlerMiddleware
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                    e.ValidationErrors?.ForEach( o => validationErrorDetails.Add(o.Field, new List<string>() { o.Message }));
+                    e.ValidationErrors?.ForEach(o => validationErrorDetails.Add(o.Field, new List<string>() { o.Message }));
                     break;
                 default:
                     // unhandled error
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    _logger.LogError(error, "Request processing failure!");
                     break;
             }
 
@@ -71,15 +71,15 @@ public class ErrorHandlerMiddleware
                 Detail = error.Message,
                 Status = response.StatusCode,
                 Instance = response.HttpContext.Request.Path,
-                Extensions = { new KeyValuePair<string, object?>( "errors", validationErrorDetails)  }
+                Extensions = { new KeyValuePair<string, object?>("errors", validationErrorDetails) }
             };
 
             var result = JsonSerializer.Serialize(errorResponseDetails,
                 new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            });
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                });
             await response.WriteAsync(result);
         }
     }

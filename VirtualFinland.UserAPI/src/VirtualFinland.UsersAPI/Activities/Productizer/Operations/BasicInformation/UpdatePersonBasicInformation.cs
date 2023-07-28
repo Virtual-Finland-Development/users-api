@@ -22,6 +22,7 @@ public static class UpdatePersonBasicInformation
 
         [SwaggerIgnore]
         public Guid? UserId { get; set; }
+        public string? EncryptionKey { get; set; }
 
         public string? GivenName { get; }
         public string? LastName { get; }
@@ -29,9 +30,10 @@ public static class UpdatePersonBasicInformation
         public string? PhoneNumber { get; }
         public string? Residency { get; }
 
-        public void SetAuth(Guid? userDatabaseId)
+        public void SetAuth(Guid? userDatabaseId, string? encryptionKey)
         {
             UserId = userDatabaseId;
+            EncryptionKey = encryptionKey;
         }
     }
 
@@ -47,6 +49,7 @@ public static class UpdatePersonBasicInformation
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
+            _context.Cryptor.StartQuery("Person", request.EncryptionKey);
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             person.GivenName = request.GivenName ?? person.GivenName;
@@ -54,6 +57,7 @@ public static class UpdatePersonBasicInformation
             person.Email = request.Email;
             person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
+
 
             try
             {
@@ -64,14 +68,13 @@ public static class UpdatePersonBasicInformation
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
-
             return new UpdatePersonBasicInformationResponse
             (
-                person.GivenName,
-                person.LastName,
-                person.Email,
-                person.PhoneNumber,
-                person.ResidencyCode
+                request.GivenName,
+                request.LastName,
+                request.Email,
+                request.PhoneNumber,
+                request.Residency
             );
         }
     }

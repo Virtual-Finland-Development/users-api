@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -22,21 +24,23 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
     {
         if (instance is IEncrypted item)
         {
-            var secretKey = _cryptor.ResolveQuery();
+            var secretKey = _cryptor.GetQueryKey(instance.GetType().Name) ?? item.EncryptionKey;
+            if (string.IsNullOrEmpty(secretKey))
+                return instance;
 
             // Loop through the properties of the entity
             foreach (var property in instance.GetType().GetProperties())
             {
-                // If the property is of type string, encrypt it
-                if (property.PropertyType == typeof(string))
-                {
-                    var value = property.GetValue(instance)?.ToString();
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        property.SetValue(instance, _cryptor.Decrypt(value, secretKey));
-                    }
-                }
+                var encryptedAttribute = property.GetCustomAttribute<EncryptedAttribute>();
+                if (encryptedAttribute == null)
+                    continue;
+
+                var value = property.GetValue(instance)?.ToString();
+                if (!string.IsNullOrEmpty(value))
+                    property.SetValue(item, _cryptor.Decrypt(value, secretKey));
             }
+
+            item.EncryptionKey = secretKey;
         }
 
         return instance;

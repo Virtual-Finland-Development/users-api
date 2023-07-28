@@ -8,33 +8,35 @@ public interface ICryptoUtility
     string Encrypt(string value, string key);
     string Decrypt(string value, string key);
     string Hash(string value);
-    void PrepareQuery(string secretKey);
-    string ResolveQuery();
+    void StartQuery(string entityName, string? secretKey);
+    string? GetQueryKey(string entityName);
+    void ClearQuery(string entityName);
 
 }
 
 public class CryptoUtility : ICryptoUtility
 {
     private IDatabaseEncryptionSecrets _secrets;
-    private string? _secretQueryKey = null;
+    private Dictionary<string, string?> _secretQueryKeys = new Dictionary<string, string?>();
 
     public CryptoUtility(IDatabaseEncryptionSecrets secrets)
     {
         _secrets = secrets;
     }
 
-    public string Encrypt(string value, string key)
+    public string Encrypt(string value, string secretKey)
     {
-        var encryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(key));
+        var encryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(secretKey));
         var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
         return Convert.ToBase64String(encryptedBytes);
     }
 
-    public string Decrypt(string value, string key)
+    public string Decrypt(string value, string secretKey)
     {
-        var decryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(key));
-        var decryptedBytes = Encoding.UTF8.GetBytes(value);
-        return Encoding.UTF8.GetString(decryptionProvider.Decrypt(decryptedBytes)).Trim('\0');
+        var decryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(secretKey));
+        var encryptedBytes = Convert.FromBase64String(value);
+        var decryptedBytes = decryptionProvider.Decrypt(encryptedBytes);
+        return Encoding.UTF8.GetString(decryptedBytes).Trim('\0');
     }
 
     // Lazy hash for test, @TODO
@@ -55,23 +57,20 @@ public class CryptoUtility : ICryptoUtility
         return _secrets.EncryptionIV;
     }
 
-    public void PrepareQuery(string secretKey)
+    public void StartQuery(string entityName, string? secretKey)
     {
-        if (_secretQueryKey != null)
-        {
-            throw new ArgumentException("Previous query key not resolved");
-        }
-        _secretQueryKey = secretKey;
+        if (secretKey == null)
+            throw new ArgumentNullException(nameof(secretKey));
+        _secretQueryKeys[entityName] = secretKey;
     }
 
-    public string ResolveQuery()
+    public string? GetQueryKey(string entityName)
     {
-        if (_secretQueryKey == null)
-        {
-            throw new ArgumentException("Secret key not set for the query");
-        }
-        var queryKey = _secretQueryKey;
-        _secretQueryKey = null;
-        return queryKey;
+        return _secretQueryKeys.ContainsKey(entityName) ? _secretQueryKeys[entityName] : null;
+    }
+
+    public void ClearQuery(string entityName)
+    {
+        _secretQueryKeys[entityName] = null;
     }
 }

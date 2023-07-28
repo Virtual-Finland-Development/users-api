@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -33,21 +35,24 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
         {
             if (entry.Entity is IEncrypted item)
             {
-                if (mutatingEntries.Count() > 1)
-                    throw new InvalidOperationException("Only one entity implementing IEncrypted can be added or modified at a time");
-
-                var secretKey = _cryptor.ResolveQuery();
+                var secretKey = _cryptor.GetQueryKey(entry.Entity.GetType().Name) ?? item.EncryptionKey;
+                if (string.IsNullOrEmpty(secretKey))
+                    continue;
 
                 // Encrypt property if the value is typed as string, and the property is not null or empty
                 foreach (var property in entry.Properties)
                 {
-                    if (property.Metadata.ClrType == typeof(string))
-                    {
-                        var value = property.CurrentValue?.ToString();
-                        if (!string.IsNullOrEmpty(value))
-                            property.CurrentValue = _cryptor.Encrypt(value, secretKey);
-                    }
+                    var memberInfo = property.Metadata.PropertyInfo;
+                    var encryptedAttribute = memberInfo?.GetCustomAttribute<EncryptedAttribute>();
+                    if (encryptedAttribute == null)
+                        continue;
+
+                    var value = property.CurrentValue?.ToString();
+                    if (!string.IsNullOrEmpty(value))
+                        property.CurrentValue = _cryptor.Encrypt(value, secretKey);
                 }
+
+                item.EncryptionKey = secretKey;
             }
         }
 

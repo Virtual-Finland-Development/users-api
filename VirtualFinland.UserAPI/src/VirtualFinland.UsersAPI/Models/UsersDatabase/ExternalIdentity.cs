@@ -12,7 +12,7 @@ public class ExternalIdentity : IEntity, IEncrypted
     public Guid UserId { get; set; }
 
     [Required]
-    //[Encrypted]
+    [Encrypted]
     public string? IdentityId { get; set; }
 
     [Required]
@@ -27,4 +27,7 @@ public class ExternalIdentity : IEntity, IEncrypted
 
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
+
+    [NotMapped]
+    public string? EncryptionKey { get; set; }
 }

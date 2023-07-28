@@ -18,6 +18,7 @@ using VirtualFinland.UserAPI.Middleware;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using System.IdentityModel.Tokens.Jwt;
+using VirtualFinland.UserAPI.Exceptions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -39,6 +40,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
     configuration
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
+        .Filter.ByExcluding(logEvent => logEvent.Exception is HandledException)
         .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
         .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
 });
@@ -221,6 +223,7 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<IPersonsRepository, PersonsRepository>();
 builder.Services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
 builder.Services.AddTransient<TestbedConsentSecurityService>();
 builder.Services.AddTransient<UserSecurityService>();

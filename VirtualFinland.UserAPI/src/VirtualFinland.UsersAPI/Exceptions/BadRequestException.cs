@@ -2,11 +2,11 @@ using System.Globalization;
 
 namespace VirtualFinland.UserAPI.Exceptions;
 
-public class BadRequestException : Exception
+public class BadRequestException : HandledException
 {
 
     public List<ValidationErrorDetail>? ValidationErrors { get; }
-    public BadRequestException() : base() {}
+    public BadRequestException() : base() { }
 
     public BadRequestException(string message) : base(message) { }
 
@@ -15,7 +15,7 @@ public class BadRequestException : Exception
         this.ValidationErrors = validationErrors;
     }
 
-    public BadRequestException(string message, params object[] args) 
+    public BadRequestException(string message, params object[] args)
         : base(String.Format(CultureInfo.CurrentCulture, message, args))
     {
     }

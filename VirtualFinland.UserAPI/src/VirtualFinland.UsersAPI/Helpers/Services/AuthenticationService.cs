@@ -1,3 +1,5 @@
+using VirtualFinland.UserAPI.Models.UsersDatabase;
+
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AuthenticationService
@@ -11,9 +13,15 @@ public class AuthenticationService
 
     public async Task<Guid?> GetCurrentUserId(HttpRequest httpRequest)
     {
+        var person = await GetCurrentUser(httpRequest);
+        return person?.Id;
+    }
+
+    public async Task<Person?> GetCurrentUser(HttpRequest httpRequest)
+    {
         var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         var person = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
-        return person.Id;
+        return person;
     }
 
     public UserSecurityService.JWTTokenResult ParseAuthenticationHeader(HttpRequest httpRequest)

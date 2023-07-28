@@ -11,13 +11,15 @@ public static class GetPersonBasicInformation
     [SwaggerSchema(Title = "GetPersonBasicInformationRequest")]
     public class Query : IRequest<GetPersonBasicInformationResponse>
     {
-        public Query(Guid? userId)
+        public Query(Guid? userId, string? encryptionKey)
         {
             UserId = userId;
+            EncryptionKey = encryptionKey;
         }
 
         [SwaggerIgnore]
         public Guid? UserId { get; }
+        public string? EncryptionKey { get; }
     }
 
     public class Handler : IRequestHandler<Query, GetPersonBasicInformationResponse>
@@ -31,6 +33,7 @@ public static class GetPersonBasicInformation
 
         public async Task<GetPersonBasicInformationResponse> Handle(Query request, CancellationToken cancellationToken)
         {
+            _context.Cryptor.StartQuery("Person", request.EncryptionKey);
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             return new GetPersonBasicInformationResponse(

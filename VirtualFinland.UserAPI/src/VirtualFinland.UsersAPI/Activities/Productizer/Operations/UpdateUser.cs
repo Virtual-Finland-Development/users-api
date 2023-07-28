@@ -33,6 +33,7 @@ public static class UpdateUser
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
+        public string? EnryptionKey { get; private set; }
 
         public Command(string? firstName,
             string? lastName,
@@ -59,9 +60,10 @@ public static class UpdateUser
             DateOfBirth = dateOfBirth;
         }
 
-        public void SetAuth(Guid? userDbId)
+        public void SetAuth(Guid? userDbId, string? encryptionKey)
         {
             this.UserId = userDbId;
+            this.EnryptionKey = encryptionKey;
         }
     }
 
@@ -81,6 +83,7 @@ public static class UpdateUser
         public CommandValidator()
         {
             RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.EnryptionKey).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
             RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
@@ -116,6 +119,7 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
+            _usersDbContext.Cryptor.StartQuery("Person", request.EnryptionKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);

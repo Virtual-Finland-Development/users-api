@@ -30,10 +30,11 @@ public class UserSecurityService
         try
         {
             var identityHash = _usersDbContext.Cryptor.Hash(jwtTokenResult.UserId);
-            _usersDbContext.Cryptor.PrepareQuery(identityHash);
+            _usersDbContext.Cryptor.StartQuery("ExternalIdentity", identityHash);
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityHash == identityHash && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
-            _usersDbContext.Cryptor.PrepareQuery(externalIdentity.IdentityId); //@TODO Use identity access key instead
-            return await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            _usersDbContext.Cryptor.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
+            var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            return person;
         }
         catch (InvalidOperationException e)
         {
@@ -84,7 +85,7 @@ public class UserSecurityService
 
     public class JWTTokenResult
     {
-        public string? UserId { get; set; }
-        public string? Issuer { get; set; }
+        public required string UserId { get; set; }
+        public required string Issuer { get; set; }
     }
 }

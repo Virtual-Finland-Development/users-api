@@ -2,12 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
@@ -23,19 +24,22 @@ public class ProductizerController : ControllerBase
 
     private readonly IMediator _mediator;
     private readonly string _userProfileDataSourceURI;
+    private readonly IPersonsRepository _personsRepository;
 
     public ProductizerController(
         IMediator mediator,
         AuthenticationService authenticationService,
         TestbedConsentSecurityService consentSecurityService,
         ILogger<ProductizerController> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IPersonsRepository personsRepository)
     {
         _mediator = mediator;
         _authenticationService = authenticationService;
         _consentSecurityService = consentSecurityService;
         _logger = logger;
         _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"] ?? throw new ArgumentNullException("ConsentDataSources:UserProfile");
+        _personsRepository = personsRepository;
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
@@ -47,7 +51,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
+        var user = await _authenticationService.GetCurrentUser(Request);
+        return Ok(await _mediator.Send(new GetUser.Query(user?.Id, user?.EncryptionKey)));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -58,7 +63,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
+        var user = await _authenticationService.GetCurrentUser(Request);
+        command.SetAuth(user?.Id, user?.EncryptionKey);
         return Ok(await _mediator.Send(command));
     }
 
@@ -69,10 +75,10 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        Guid? userId;
+        Person? user;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            user = await _authenticationService.GetCurrentUser(Request);
         }
         catch (NotAuthorizedException)
         {
@@ -81,7 +87,7 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
+        var result = await _mediator.Send(new GetPersonBasicInformation.Query(user?.Id, user?.EncryptionKey));
 
         if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) return NotFound();
 
@@ -96,7 +102,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        var user = await GetOrCreateNewPerson();
+        command.SetAuth(user?.Id, user?.EncryptionKey);
         return Ok(await _mediator.Send(command));
     }
 
@@ -133,7 +140,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        var user = await GetOrCreateNewPerson();
+        command.SetAuth(user?.Id);
         return Ok(await _mediator.Send(command));
     }
 
@@ -141,12 +149,12 @@ public class ProductizerController : ControllerBase
     ///     If user is not found in database, create new user and return users Id
     ///     - authentication header / token should be verified before calling this method
     /// </summary>
-    private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
+    private async Task<Person?> GetOrCreateNewPerson()
     {
-        Guid? userId;
+        Person? person;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            person = await _authenticationService.GetCurrentUser(Request);
         }
         catch (NotAuthorizedException e)
         {
@@ -155,10 +163,8 @@ public class ProductizerController : ControllerBase
             try
             {
                 var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
-                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
-                var createdUser = await _mediator.Send(query);
-                userId = createdUser.Id;
-                _logger.LogInformation("New user was created with Id: {UserId}", userId);
+                person = await _personsRepository.GetOrCreatePerson(jwkToken.Issuer, jwkToken.UserId, CancellationToken.None);
+                _logger.LogInformation("New user was created with Id: {UserId}", person.Id);
             }
             catch (Exception exception)
             {
@@ -167,6 +173,6 @@ public class ProductizerController : ControllerBase
             }
         }
 
-        return userId;
+        return person;
     }
 }
