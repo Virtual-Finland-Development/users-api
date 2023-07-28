@@ -70,7 +70,7 @@ public static class UpdatePersonBasicInformation
 
             return new UpdatePersonBasicInformationResponse
             (
-                request.GivenName,
+                request.GivenName, // @TODO
                 request.LastName,
                 request.Email,
                 request.PhoneNumber,

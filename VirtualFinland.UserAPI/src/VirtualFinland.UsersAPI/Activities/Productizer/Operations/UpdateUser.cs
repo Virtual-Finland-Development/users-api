@@ -136,8 +136,8 @@ public static class UpdateUser
             return new User
             {
                 Id = dbUser.Id,
-                FirstName = dbUser.GivenName,
-                LastName = dbUser.LastName,
+                FirstName = request.FirstName, // @TODO
+                LastName = request.LastName, // @TODO
                 Address = new Address(
                     dbUser.AdditionalInformation?.Address?.StreetAddress,
                     dbUser.AdditionalInformation?.Address?.ZipCode,

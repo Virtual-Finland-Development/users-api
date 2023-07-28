@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -14,8 +15,8 @@ public class ApiControllerBase : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    protected async Task<Guid?> GetCurrentUserId()
+    protected async Task<Person?> GetCurrentUser()
     {
-        return await _authenticationService.GetCurrentUserId(this.Request);
+        return await _authenticationService.GetCurrentUser(this.Request);
     }
 }

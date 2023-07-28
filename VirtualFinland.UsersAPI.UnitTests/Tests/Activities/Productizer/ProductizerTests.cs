@@ -18,7 +18,7 @@ public class ProductizerTests : APITestBase
         // Arrange
         var (user, externalIdentity) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var query = new GetUser.Query(user.Id);
+        var query = new GetUser.Query(user.Id, externalIdentity.IdentityId); // @TODO
         var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
 
         // Act
@@ -50,7 +50,7 @@ public class ProductizerTests : APITestBase
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(user.Id);
+        command.SetAuth(user.Id, externalIdentity.IdentityId); // @TODO
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
 
         // Act
@@ -89,7 +89,7 @@ public class ProductizerTests : APITestBase
             .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
-        command.SetAuth(dbEntities.user.Id);
+        command.SetAuth(dbEntities.user.Id, dbEntities.externalIdentity.IdentityId);  // @TODO
 
         // Assert
         var result = validator.TestValidate(command);

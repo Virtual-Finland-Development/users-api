@@ -12,7 +12,7 @@ public class PersonBasicInformation_UnitTests : APITestBase
     public async Task GetPersonBasicInformation_WithExistingUserId_ReturnsData()
     {
         var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var query = new GetPersonBasicInformation.Query(entities.user.Id);
+        var query = new GetPersonBasicInformation.Query(entities.user.Id, entities.externalIdentity.IdentityId); // @TODO
         var sut = new GetPersonBasicInformation.Handler(_dbContext);
 
         var actual = await sut.Handle(query, CancellationToken.None);
@@ -30,7 +30,7 @@ public class PersonBasicInformation_UnitTests : APITestBase
     {
         var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdatePersonBasicInformationCommandBuilder().Build();
-        command.SetAuth(entities.user.Id);
+        command.SetAuth(entities.user.Id, entities.externalIdentity.IdentityId); // @TODO
         var sut = new UpdatePersonBasicInformation.Handler(_dbContext);
 
         var actual = await sut.Handle(command, CancellationToken.None);

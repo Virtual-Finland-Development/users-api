@@ -15,10 +15,12 @@ public static class GetUser
     {
         [SwaggerIgnore]
         public Guid? UserId { get; }
+        public string? EncryptionKey { get; }
 
-        public Query(Guid? userId)
+        public Query(Guid? userId, string? encryptionKey)
         {
             this.UserId = userId;
+            this.EncryptionKey = encryptionKey;
         }
     }
 
@@ -43,6 +45,7 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
+            _usersDbContext.Cryptor.StartQuery("Person", request.EncryptionKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)

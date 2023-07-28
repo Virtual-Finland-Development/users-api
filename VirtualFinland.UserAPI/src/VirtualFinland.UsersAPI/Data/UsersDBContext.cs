@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -40,6 +41,7 @@ public class UsersDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(_auditInterceptor, new EncryptionInterceptor(Cryptor), new DecryptionInterceptor(Cryptor));
+        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)); // @TODO: Resolve
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

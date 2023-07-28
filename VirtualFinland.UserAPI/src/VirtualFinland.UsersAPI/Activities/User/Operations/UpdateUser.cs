@@ -34,6 +34,7 @@ public static class UpdateUser
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
+        public string? EncryptionKey { get; private set; }
 
         public Command(
             string? firstName,
@@ -66,9 +67,10 @@ public static class UpdateUser
             WorkPreferences = workPreferences;
         }
 
-        public void SetAuth(Guid? userDbId)
+        public void SetAuth(Guid? userDbId, string? encryptionKey)
         {
             UserId = userDbId;
+            EncryptionKey = encryptionKey;
         }
     }
 
@@ -147,6 +149,7 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
+            _usersDbContext.Cryptor.StartQuery("Person", request.EncryptionKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)
@@ -172,8 +175,8 @@ public static class UpdateUser
 
             return new User(
                 dbUser.Id,
-                dbUser.GivenName,
-                dbUser.LastName,
+                request.FirstName, // @TODO
+                request.LastName, // @TODO
                 new Address(
                     dbUser.AdditionalInformation?.Address?.StreetAddress,
                     dbUser.AdditionalInformation?.Address?.ZipCode,

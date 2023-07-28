@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
 
@@ -26,35 +27,29 @@ public class CryptoUtility : ICryptoUtility
 
     public string Encrypt(string value, string secretKey)
     {
-        var encryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(secretKey));
+        var encryptionProvider = new AesProvider(ResolveEncryptionKey(secretKey), _secrets.EncryptionIV);
         var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
         return Convert.ToBase64String(encryptedBytes);
     }
 
     public string Decrypt(string value, string secretKey)
     {
-        var decryptionProvider = new AesProvider(_secrets.EncryptionKey, ResolveEncryptionIV(secretKey));
+        var decryptionProvider = new AesProvider(ResolveEncryptionKey(secretKey), _secrets.EncryptionIV);
         var encryptedBytes = Convert.FromBase64String(value);
         var decryptedBytes = decryptionProvider.Decrypt(encryptedBytes);
         return Encoding.UTF8.GetString(decryptedBytes).Trim('\0');
     }
 
-    // Lazy hash for test, @TODO
+    // Very lazy hash for test, @TODO
     public string Hash(string value)
     {
         return Encrypt(value, Encoding.UTF8.GetString(_secrets.EncryptionIV));
     }
 
-    private byte[] ResolveEncryptionIV(string key)
+    private byte[] ResolveEncryptionKey(string secretKey)
     {
-        /* // Ensure key string is exactly 32 bytes
-        var iv = key.Substring(0, 16);
-        if (iv.Length != 16)
-        {
-            iv = iv.PadRight(16, '0');
-        }
-        return Encoding.UTF8.GetBytes(iv); */
-        return _secrets.EncryptionIV;
+        using (HashAlgorithm hash = MD5.Create())
+            return hash.ComputeHash(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(_secrets.EncryptionKey) + "::" + secretKey));
     }
 
     public void StartQuery(string entityName, string? secretKey)
