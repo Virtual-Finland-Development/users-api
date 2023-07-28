@@ -38,7 +38,7 @@ public class PersonsRepository : IPersonsRepository
             }, cancellationToken);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
-            newDbUSer.Entity.EncryptionKey = newExternalIdentity.Entity.IdentityId; //@TODO Use identity access key instead
+            newDbUSer.Entity.EncryptionKey = identityId; //@TODO Use identity access key instead
             return newDbUSer.Entity;
         }
 

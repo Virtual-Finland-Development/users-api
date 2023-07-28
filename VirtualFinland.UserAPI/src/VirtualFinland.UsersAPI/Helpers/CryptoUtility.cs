@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore.DataEncryption.Providers;
+using VirtualFinland.UserAPI.Exceptions;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -27,34 +28,64 @@ public class CryptoUtility : ICryptoUtility
 
     public string Encrypt(string value, string secretKey)
     {
-        var encryptionProvider = new AesProvider(ResolveEncryptionKey(secretKey), _secrets.EncryptionIV);
+        if (string.IsNullOrEmpty(secretKey))
+            throw new ArgumentNullException(nameof(secretKey));
+
+        var resolvedKey = ResolveEncryptionKey(secretKey);
+        var encryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
         var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
         return Convert.ToBase64String(encryptedBytes);
     }
 
     public string Decrypt(string value, string secretKey)
     {
-        var decryptionProvider = new AesProvider(ResolveEncryptionKey(secretKey), _secrets.EncryptionIV);
-        var encryptedBytes = Convert.FromBase64String(value);
-        var decryptedBytes = decryptionProvider.Decrypt(encryptedBytes);
-        return Encoding.UTF8.GetString(decryptedBytes).Trim('\0');
+        if (string.IsNullOrEmpty(secretKey))
+            throw new ArgumentNullException(nameof(secretKey));
+        try
+        {
+            var resolvedKey = ResolveEncryptionKey(secretKey);
+            var decryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
+            var encryptedBytes = Convert.FromBase64String(value);
+            var decryptedBytes = decryptionProvider.Decrypt(encryptedBytes);
+            return Encoding.UTF8.GetString(decryptedBytes).Trim('\0');
+        }
+        catch (CryptographicException)
+        {
+            throw new NotAuthorizedException("Decryption failure");
+        }
     }
 
-    // Very lazy hash for test, @TODO
-    public string Hash(string value)
+    private string ResolveEncryptionKey(string secretKey)
     {
-        return Encrypt(value, Encoding.UTF8.GetString(_secrets.EncryptionIV));
+        return Hash($"{_secrets.EncryptionKey}::{secretKey}");
     }
 
-    private byte[] ResolveEncryptionKey(string secretKey)
+    public string Hash(string input)
     {
-        using (HashAlgorithm hash = MD5.Create())
-            return hash.ComputeHash(Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(_secrets.EncryptionKey) + "::" + secretKey));
+        using (MD5 hashAlgorithm = MD5.Create())
+        {
+            // Convert the input string to a byte array and compute the hash.
+            byte[] data = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            // Create a new Stringbuilder to collect the bytes
+            // and create a string.
+            var sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data
+            // and format each one as a hexadecimal string.
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
+        }
     }
 
     public void StartQuery(string entityName, string? secretKey)
     {
-        if (secretKey == null)
+        if (string.IsNullOrEmpty(secretKey))
             throw new ArgumentNullException(nameof(secretKey));
         _secretQueryKeys[entityName] = secretKey;
     }

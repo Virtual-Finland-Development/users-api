@@ -1,4 +1,5 @@
 using FluentAssertions;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
@@ -20,6 +21,6 @@ public class CryptoTests
 
         // Assert
         decrypted.Should().Be(plaintext);
-        decryptedBadAct.Should().Throw<System.Security.Cryptography.CryptographicException>();
+        decryptedBadAct.Should().Throw<NotAuthorizedException>();
     }
 }
