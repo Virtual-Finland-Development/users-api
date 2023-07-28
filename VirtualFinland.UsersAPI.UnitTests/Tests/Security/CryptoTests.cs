@@ -16,8 +16,10 @@ public class CryptoTests
         var plaintext = "test";
         var encrypted = cryptoUtility.Encrypt(plaintext, "password");
         var decrypted = cryptoUtility.Decrypt(encrypted, "password");
+        var decryptedBadAct = () => cryptoUtility.Decrypt(encrypted, "password2");
 
         // Assert
         decrypted.Should().Be(plaintext);
+        decryptedBadAct.Should().Throw<System.Security.Cryptography.CryptographicException>();
     }
 }
