@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class PersonAdditionalInformation : Auditable, IEntity
+public class PersonAdditionalInformation : AuditableAndEncryptable, IEntity
 {
     [Encrypted]
     public Address? Address { get; set; }
@@ -37,7 +37,4 @@ public class PersonAdditionalInformation : Auditable, IEntity
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [ForeignKey(nameof(Person))]
     public Guid Id { get; set; }
-
-    [NotMapped]
-    public string? EncryptionKey { get; set; }
 }

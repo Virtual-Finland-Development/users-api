@@ -85,7 +85,7 @@ public class UserSecurityService
 
     public class JWTTokenResult
     {
-        public required string UserId { get; set; }
-        public required string Issuer { get; set; }
+        public string UserId { get; set; }
+        public string Issuer { get; set; }
     }
 }

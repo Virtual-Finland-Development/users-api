@@ -150,6 +150,7 @@ public static class UpdateUser
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
             _usersDbContext.Cryptor.State.StartQuery("Person", request.EncryptionKey);
+            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.EncryptionKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)

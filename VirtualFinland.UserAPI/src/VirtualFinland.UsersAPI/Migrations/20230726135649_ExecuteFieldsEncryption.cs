@@ -15,7 +15,7 @@ namespace VirtualFinland.UserAPI.Migrations
         private readonly Dictionary<string, string[]> _encryptFields = new()
         {
             {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
-            /* {"PersonAdditionalInformation", new[] {
+            {"PersonAdditionalInformation", new[] {
                 "StreetAddress",
                 "ZipCode",
                 "City",
@@ -26,7 +26,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 "NativeLanguageCode",
                 "OccupationCode",
                 "CitizenshipCode"
-            }} */
+            }},
             {"ExternalIdentities", new[] {"IdentityId"}}
         };
 
@@ -49,7 +49,7 @@ namespace VirtualFinland.UserAPI.Migrations
                     command.CommandText = table.Key switch
                     {
                         "Persons" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
-                        //"PersonAdditionalInformation" => $"SELECT \"Id\", \"PersonId\", \"{field}\" FROM \"{table.Key}\"",
+                        "PersonAdditionalInformation" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         "ExternalIdentities" => $"SELECT \"Id\", \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         _ => throw new ArgumentOutOfRangeException()
                     };
