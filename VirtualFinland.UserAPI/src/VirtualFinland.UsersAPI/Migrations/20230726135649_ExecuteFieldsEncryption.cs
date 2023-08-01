@@ -14,7 +14,13 @@ namespace VirtualFinland.UserAPI.Migrations
     {
         private readonly Dictionary<string, string[]> _encryptFields = new()
         {
-            {"Persons", new[] {"GivenName", "LastName", "Email", "PhoneNumber", "ResidencyCode" }},
+            {"Persons", new[] {
+                "GivenName",
+                "LastName",
+                "Email",
+                "PhoneNumber",
+                "ResidencyCode",
+            }},
             {"PersonAdditionalInformation", new[] {
                 "StreetAddress",
                 "ZipCode",
@@ -26,9 +32,10 @@ namespace VirtualFinland.UserAPI.Migrations
                 "NativeLanguageCode",
                 "OccupationCode",
                 "CitizenshipCode"
-            }},
-            {"ExternalIdentities", new[] {"IdentityId"}}
+            }}
         };
+
+        private readonly Dictionary<string, string> _resolvedSecretKeys = new();
 
         protected override async void Up(MigrationBuilder migrationBuilder)
         {
@@ -41,6 +48,9 @@ namespace VirtualFinland.UserAPI.Migrations
             var dbAccess = await GetDbAccess();
             using var connection = dbAccess.Item1;
 
+            CreatePersonDataAccessKeys(migrationBuilder, dbAccess);
+            CreateExternalIdentityPersonDataAccessKeys(migrationBuilder, dbAccess);
+
             foreach (var table in _encryptFields)
             {
                 foreach (var field in table.Value)
@@ -50,7 +60,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     {
                         "Persons" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         "PersonAdditionalInformation" => $"SELECT \"Id\", \"Id\" AS \"UserId\", \"{field}\" FROM \"{table.Key}\"",
-                        "ExternalIdentities" => $"SELECT \"Id\", \"UserId\", \"{field}\" FROM \"{table.Key}\"",
                         _ => throw new ArgumentOutOfRangeException()
                     };
 
@@ -81,15 +90,12 @@ namespace VirtualFinland.UserAPI.Migrations
                     for (var i = 0; i < results.Count; i++)
                     {
                         var (id, userId, fieldValue) = results[i];
-                        var (secretKey, identityHash) = ResolveItemSecretKey(dbAccess, userId);
+                        var secretKey = _resolvedSecretKeys[userId];
 
                         // Get GUID Id and field value from the result set
                         try
                         {
-                            var secretKeyResult = ResolveItemSecretKey(dbAccess, userId.ToString());
-                            migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{secretKeyResult.Item2}' WHERE \"UserId\" = '{userId}'"); // @TODO: Use external access instead
-
-                            var encryptedValue = dbAccess.Item2.Encrypt(fieldValue, secretKeyResult.Item1);
+                            var encryptedValue = dbAccess.Item2.Encrypt(fieldValue, secretKey);
                             migrationBuilder.Sql($"UPDATE \"{table.Key}\" SET \"{field}\" = '{encryptedValue}' WHERE \"Id\" = '{id}'");
                         }
                         catch (Exception e)
@@ -105,6 +111,14 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "ExternalIdentities",
                 nullable: false,
                 oldNullable: true);
+            migrationBuilder.AlterColumn<string>(
+                name: "PersonDataAccessKey",
+                table: "ExternalIdentities",
+                nullable: false,
+                oldNullable: true);
+            migrationBuilder.DropColumn(
+                name: "IdentityId",
+                table: "ExternalIdentities");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -115,6 +129,16 @@ namespace VirtualFinland.UserAPI.Migrations
                 return;
             }
 
+            migrationBuilder.AddColumn<string>(
+                name: "IdentityId",
+                table: "ExternalIdentities",
+                type: "text",
+                nullable: true);
+            migrationBuilder.AlterColumn<string>(
+                name: "PersonDataAccessKey",
+                table: "ExternalIdentities",
+                nullable: true,
+                oldNullable: false);
             migrationBuilder.AlterColumn<string>(
                 name: "IdentityHash",
                 table: "ExternalIdentities",
@@ -155,31 +179,49 @@ namespace VirtualFinland.UserAPI.Migrations
             return Tuple.Create(connection, cryptor);
         }
 
-
-        private static Tuple<string, string> ResolveItemSecretKey(Tuple<DbConnection, CryptoUtility> dbAccess, string userId)
+        private void CreatePersonDataAccessKeys(MigrationBuilder migrationBuilder, Tuple<DbConnection, CryptoUtility> dbAccess)
         {
             using var command = dbAccess.Item1.CreateCommand();
-            command.CommandText = $"SELECT \"IdentityId\" FROM \"ExternalIdentities\" WHERE \"UserId\" = '{userId}'"; // @TODO: Use external access instead
+            command.CommandText = $"SELECT \"Id\" FROM \"Persons\"";
 
             // Execute the SQL query and process the results
             using var result = command.ExecuteReader();
-
             while (result.Read())
             {
                 // Get GUID Id and field value from the result set
-                try
-                {
-                    var secretKey = result.GetString(0);
-                    var identityHash = dbAccess.Item2.Hash(secretKey);
-                    result.Close();
-                    return Tuple.Create(secretKey, identityHash);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                var userId = result.GetGuid(0).ToString();
+                var personDataAccessKey = dbAccess.Item2.Hash(Guid.NewGuid().ToString());
+                _resolvedSecretKeys[userId] = personDataAccessKey;
+
+                var secretKey = dbAccess.Item2.Encrypt(_resolvedSecretKeys[userId], personDataAccessKey);
+                migrationBuilder.Sql($"UPDATE \"Persons\" SET \"PersonDataAccessKey\" = '{secretKey}' WHERE \"Id\" = '{userId}'");
             }
-            throw new ArgumentException($"Could not resolve secret key for userId {userId}");
+            result.Close();
+        }
+
+        private void CreateExternalIdentityPersonDataAccessKeys(MigrationBuilder migrationBuilder, Tuple<DbConnection, CryptoUtility> dbAccess)
+        {
+            using var command = dbAccess.Item1.CreateCommand();
+            command.CommandText = $"SELECT \"Id\", \"UserId\", \"IdentityId\", \"Issuer\" FROM \"ExternalIdentities\"";
+
+            // Execute the SQL query and process the results
+            using var result = command.ExecuteReader();
+            while (result.Read())
+            {
+                // Get GUID Id and field value from the result set
+                var id = result.GetGuid(0).ToString();
+                var userId = result.GetGuid(1).ToString();
+                var identityId = result.GetString(2);
+                var issuer = result.GetString(3);
+
+                var personDataAccessKey = dbAccess.Item2.Hash(Guid.NewGuid().ToString());
+                var identityHash = dbAccess.Item2.SecretHash(identityId);
+                var encryptedAccessKey = dbAccess.Item2.Encrypt(_resolvedSecretKeys[userId], $"{userId}::{issuer}::{identityId}");
+                var secretKey = dbAccess.Item2.Encrypt(encryptedAccessKey, identityId);
+
+                migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{identityHash}', \"PersonDataAccessKey\" = '{secretKey}' WHERE \"Id\" = '{id}'");
+            }
+            result.Close();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 public abstract class AuditableAndEncryptable : Auditable, IEncrypted
 {
     [NotMapped]
-    public string? EncryptionKey { get; set; }
+    public string? DataAccessKey { get; set; }
 
     /// <summary>
     ///  Implement the IClonable by deep cloning with JSON serialization

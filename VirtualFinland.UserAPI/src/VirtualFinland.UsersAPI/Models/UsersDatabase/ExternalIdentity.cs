@@ -6,21 +6,17 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 public class ExternalIdentity : Encryptable, IEntity
 {
     [Required]
-    public string? Issuer { get; set; }
+    public string Issuer { get; set; } = null!;
 
     [Required]
     public Guid UserId { get; set; }
 
     [Required]
-    [Encrypted]
-    public string? IdentityId { get; set; }
+    public string IdentityHash { get; set; } = null!;
 
     [Required]
-    public string? IdentityHash { get; set; }
-
-    //[Required]
-    //[Encrypted]
-    //public ExternalIdentityAccessKey? IdentityAccessKey { get; set; }
+    [Encrypted]
+    public string PersonDataAccessKey { get; set; } = null!;
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }

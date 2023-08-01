@@ -29,7 +29,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         var user = await this.GetCurrentUser();
-        return Ok(await Mediator.Send(new GetUser.Query(user?.Id, user?.EncryptionKey)));
+        return Ok(await Mediator.Send(new GetUser.Query(user?.Id, user?.DataAccessKey)));
     }
 
     [HttpPatch("/user")]
@@ -39,7 +39,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
         var user = await this.GetCurrentUser();
-        command.SetAuth(user?.Id, user?.EncryptionKey);
+        command.SetAuth(user?.Id, user?.DataAccessKey);
         return Ok(await Mediator.Send(command));
     }
 

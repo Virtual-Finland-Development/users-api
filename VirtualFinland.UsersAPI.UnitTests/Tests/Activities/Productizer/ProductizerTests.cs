@@ -16,9 +16,11 @@ public class ProductizerTests : APITestBase
     public async Task Should_GetUserAsync()
     {
         // Arrange
-        var (user, externalIdentity) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var query = new GetUser.Query(user.Id, externalIdentity.IdentityId); // @TODO
+        var query = new GetUser.Query(user.Id, dataAccessKey);
         var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
 
         // Act
@@ -44,13 +46,14 @@ public class ProductizerTests : APITestBase
     public async Task Should_UpdateUserAsync()
     {
         // Arrange
-        var (user, externalIdentity) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(user.Id, externalIdentity.IdentityId); // @TODO
+        command.SetAuth(user.Id, dataAccessKey);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
 
         // Act
@@ -75,7 +78,9 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var validator = new UpdateUser.CommandValidator();
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+
         var command = new UpdateUserCommandBuilder()
             .WithFirstName(new string('*', 256))
             .WithLastName(new string('*', 256))
@@ -89,7 +94,7 @@ public class ProductizerTests : APITestBase
             .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
-        command.SetAuth(dbEntities.user.Id, dbEntities.externalIdentity.IdentityId);  // @TODO
+        command.SetAuth(user.Id, dataAccessKey);
 
         // Assert
         var result = validator.TestValidate(command);

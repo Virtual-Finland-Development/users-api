@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.EntityFrameworkCore;
-using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -8,12 +7,12 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class UserSecurityService
 {
-    private readonly UsersDbContext _usersDbContext;
+    private readonly IPersonsRepository _personsRepository;
     private readonly ILogger<UserSecurityService> _logger;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger)
+    public UserSecurityService(IPersonsRepository personsRepository, ILogger<UserSecurityService> logger)
     {
-        _usersDbContext = usersDbContext;
+        _personsRepository = personsRepository;
         _logger = logger;
     }
 
@@ -29,12 +28,7 @@ public class UserSecurityService
 
         try
         {
-            var identityHash = _usersDbContext.Cryptor.Hash(jwtTokenResult.UserId);
-            _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityHash);
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityHash == identityHash && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
-            _usersDbContext.Cryptor.State.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
-            var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
-            return person;
+            return await _personsRepository.GetPerson(jwtTokenResult.Issuer, jwtTokenResult.UserId, CancellationToken.None);
         }
         catch (InvalidOperationException e)
         {
@@ -85,7 +79,7 @@ public class UserSecurityService
 
     public class JWTTokenResult
     {
-        public string UserId { get; set; } = string.Empty;
-        public string Issuer { get; set; } = string.Empty;
+        public string UserId { get; set; } = null!;
+        public string Issuer { get; set; } = null!;
     }
 }

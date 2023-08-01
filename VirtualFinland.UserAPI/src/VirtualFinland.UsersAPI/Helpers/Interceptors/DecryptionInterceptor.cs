@@ -25,7 +25,7 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
     {
         if (instance is IEncrypted item)
         {
-            var secretKey = _cryptor.State.GetQueryKey(instance.GetType().Name) ?? item.EncryptionKey;
+            var secretKey = _cryptor.State.GetQueryKey(instance.GetType().Name) ?? item.DataAccessKey;
 
             // Loop through the properties of the entity
             foreach (var property in instance.GetType().GetProperties())
@@ -36,14 +36,10 @@ public class DecryptionInterceptor : IMaterializationInterceptor, IDecryptionInt
 
                 var value = property.GetValue(instance)?.ToString();
                 if (!string.IsNullOrEmpty(value))
-                {
-                    if (string.IsNullOrEmpty(secretKey))
-                        throw new ArgumentNullException(nameof(secretKey), $"{nameof(secretKey)} is null or empty");
                     property.SetValue(item, _cryptor.Decrypt(value, secretKey));
-                }
             }
 
-            item.EncryptionKey = secretKey;
+            item.DataAccessKey = secretKey;
         }
 
         return instance;

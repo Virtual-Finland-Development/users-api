@@ -34,7 +34,7 @@ public static class UpdateUser
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
-        public string? EncryptionKey { get; private set; }
+        public string? DataAccessKey { get; private set; }
 
         public Command(
             string? firstName,
@@ -67,10 +67,10 @@ public static class UpdateUser
             WorkPreferences = workPreferences;
         }
 
-        public void SetAuth(Guid? userDbId, string? encryptionKey)
+        public void SetAuth(Guid? userDbId, string? dataAccessKey)
         {
             UserId = userDbId;
-            EncryptionKey = encryptionKey;
+            DataAccessKey = dataAccessKey;
         }
     }
 
@@ -149,8 +149,9 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.State.StartQuery("Person", request.EncryptionKey);
-            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.EncryptionKey);
+            _usersDbContext.Cryptor.State.StartQuery("Person", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("Address", request.DataAccessKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)

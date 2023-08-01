@@ -12,37 +12,56 @@ public class PersonsRepository : IPersonsRepository
         _usersDbContext = context;
     }
 
+    public async Task<Person> GetPerson(string issuer, string identityId, CancellationToken cancellationToken)
+    {
+        var identityHash = _usersDbContext.Cryptor.SecretHash(identityId);
+        _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityId);
+        var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityHash == identityHash && o.Issuer == issuer, cancellationToken);
+
+        var accessKeyForPersonData = _usersDbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+        _usersDbContext.Cryptor.State.StartQuery("Person", accessKeyForPersonData);
+        return await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+    }
+
     public async Task<Person> GetOrCreatePerson(string issuer, string identityId, CancellationToken cancellationToken)
     {
-        var identityHash = _usersDbContext.Cryptor.Hash(identityId);
-
-        _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityHash);
+        var identityHash = _usersDbContext.Cryptor.SecretHash(identityId);
+        _usersDbContext.Cryptor.State.StartQuery("ExternalIdentity", identityId);
         var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
             o => o.IdentityHash == identityHash && o.Issuer == issuer, cancellationToken);
 
         // Create a new system user if no one found based on given authentication information
         if (externalIdentity is null)
         {
-            _usersDbContext.Cryptor.State.ClearQuery("Person");
+            var createdAt = DateTime.UtcNow;
+            var personDataAccessKey = _usersDbContext.Cryptor.IdentityHelpers.CreateNewPersonDataAccessKey();
+
+            _usersDbContext.Cryptor.State.StartQuery("Person", personDataAccessKey);
             var newDbUSer = await _usersDbContext.Persons.AddAsync(
-                new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
+                new Person
+                {
+                    Created = createdAt,
+                    PersonDataAccessKey = personDataAccessKey
+                }, cancellationToken);
+
+            var newAccessKeyForPersonData = _usersDbContext.Cryptor.IdentityHelpers.EncryptExternalIdentityAccessKeyForPersonData(newDbUSer.Entity.PersonDataAccessKey, newDbUSer.Entity.Id, issuer, identityId);
 
             var newExternalIdentity = await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
                 Issuer = issuer,
-                IdentityId = identityId,
+                PersonDataAccessKey = newAccessKeyForPersonData,
                 IdentityHash = identityHash,
                 UserId = newDbUSer.Entity.Id,
-                Created = DateTime.UtcNow,
-                Modified = DateTime.UtcNow
+                Created = createdAt,
             }, cancellationToken);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
-            newDbUSer.Entity.EncryptionKey = identityId; //@TODO Use identity access key instead
             return newDbUSer.Entity;
         }
 
-        _usersDbContext.Cryptor.State.StartQuery("Person", externalIdentity.IdentityId); //@TODO Use identity access key instead
+        // Decrypt person data access key
+        var accessKeyForPersonData = _usersDbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+        _usersDbContext.Cryptor.State.StartQuery("Person", accessKeyForPersonData);
         var dbUser =
             await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 

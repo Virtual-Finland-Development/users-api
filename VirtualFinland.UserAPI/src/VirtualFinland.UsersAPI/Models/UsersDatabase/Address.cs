@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Address
+public class Address : Encryptable
 {
     //[MaxLength(512)]
     [Encrypted]

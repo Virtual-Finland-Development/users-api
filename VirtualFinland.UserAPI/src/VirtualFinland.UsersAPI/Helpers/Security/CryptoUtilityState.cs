@@ -1,15 +1,8 @@
 namespace VirtualFinland.UserAPI.Helpers.Security;
 
-public interface ICryptoUtilityState
+public class CryptoUtilityState
 {
-    void StartQuery(string entityName, string? secretKey);
-    string? GetQueryKey(string entityName);
-    void ClearQuery(string entityName);
-}
-
-public class CryptoUtilityState : ICryptoUtilityState
-{
-    private Dictionary<string, string?> _secretQueryKeys = new Dictionary<string, string?>();
+    private readonly Dictionary<string, string?> _secretQueryKeys = new();
 
     public void StartQuery(string entityName, string? secretKey)
     {

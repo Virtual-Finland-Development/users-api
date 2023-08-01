@@ -14,9 +14,9 @@ public class IdentityTests : APITestBase
     public async void Should_VerifyExistingLoginUser()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
-        var query = new VerifyIdentityUser.Query(dbEntities.externalIdentity.IdentityId, dbEntities.externalIdentity.Issuer);
+        var query = new VerifyIdentityUser.Query(identityId, externalIdentity.Issuer);
         var personsRepository = new PersonsRepository(_dbContext);
         var handler = new VerifyIdentityUser.Handler(personsRepository, mockLogger.Object);
 
@@ -24,7 +24,7 @@ public class IdentityTests : APITestBase
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Should().Match<VerifyIdentityUser.User>(o => o.Id == dbEntities.user.Id && o.Created == dbEntities.user.Created && o.Modified == dbEntities.user.Modified);
+        result.Should().Match<VerifyIdentityUser.User>(o => o.Id == user.Id && o.Created == user.Created && o.Modified == user.Modified);
     }
 
     [Fact]

@@ -24,6 +24,7 @@ public class PersonBuilder
     private Guid _id = Guid.Empty;
     private List<Occupation> _occupations = new() { new OccupationsBuilder().Build() };
     private WorkPreferences _workPreferences = new WorkPreferencesBuilder().Build();
+    private string _personDataAccessKey = String.Empty;
 
     public PersonBuilder WithId(Guid value)
     {
@@ -40,6 +41,12 @@ public class PersonBuilder
     public PersonBuilder WithWorkPreferences(WorkPreferences value)
     {
         _workPreferences = value;
+        return this;
+    }
+
+    public PersonBuilder WithPersonDataAccessKey(string value)
+    {
+        _personDataAccessKey = value;
         return this;
     }
 
@@ -60,7 +67,8 @@ public class PersonBuilder
             Certifications = _certifications,
             Permits = _permits,
             Skills = _skills,
-            LanguageSkills = _languageSkills
+            LanguageSkills = _languageSkills,
+            PersonDataAccessKey = _personDataAccessKey
         };
     }
 }

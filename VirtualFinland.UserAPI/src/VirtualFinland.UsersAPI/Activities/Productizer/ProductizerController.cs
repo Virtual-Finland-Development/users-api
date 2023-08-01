@@ -52,7 +52,7 @@ public class ProductizerController : ControllerBase
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         var user = await _authenticationService.GetCurrentUser(Request);
-        return Ok(await _mediator.Send(new GetUser.Query(user?.Id, user?.EncryptionKey)));
+        return Ok(await _mediator.Send(new GetUser.Query(user?.Id, user?.DataAccessKey)));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -64,7 +64,7 @@ public class ProductizerController : ControllerBase
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         var user = await _authenticationService.GetCurrentUser(Request);
-        command.SetAuth(user?.Id, user?.EncryptionKey);
+        command.SetAuth(user?.Id, user?.DataAccessKey);
         return Ok(await _mediator.Send(command));
     }
 
@@ -87,7 +87,7 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        var result = await _mediator.Send(new GetPersonBasicInformation.Query(user?.Id, user?.EncryptionKey));
+        var result = await _mediator.Send(new GetPersonBasicInformation.Query(user?.Id, user?.DataAccessKey));
 
         if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) return NotFound();
 
@@ -103,7 +103,7 @@ public class ProductizerController : ControllerBase
         UpdatePersonBasicInformation.Command command)
     {
         var user = await GetOrCreateNewPerson();
-        command.SetAuth(user?.Id, user?.EncryptionKey);
+        command.SetAuth(user?.Id, user?.DataAccessKey);
         return Ok(await _mediator.Send(command));
     }
 
@@ -114,10 +114,10 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        Guid? userId;
+        Person? person;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            person = await _authenticationService.GetCurrentUser(Request);
         }
         catch (NotAuthorizedException)
         {
@@ -126,7 +126,7 @@ public class ProductizerController : ControllerBase
             throw new NotFoundException("Person not found");
         }
 
-        var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
+        var result = await _mediator.Send(new GetJobApplicantProfile.Query(person?.Id, person?.DataAccessKey));
 
         if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) return NotFound();
 
@@ -141,7 +141,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
         var user = await GetOrCreateNewPerson();
-        command.SetAuth(user?.Id);
+        command.SetAuth(user?.Id, user?.DataAccessKey);
         return Ok(await _mediator.Send(command));
     }
 

@@ -12,13 +12,15 @@ public static class GetJobApplicantProfile
 {
     public class Query : IRequest<PersonJobApplicantProfileResponse>
     {
-        public Query(Guid? personId)
+        public Query(Guid? personId, string? dataAccessKey)
         {
             PersonId = personId;
+            DataAccessKey = dataAccessKey;
         }
 
         [SwaggerIgnore]
         public Guid? PersonId { get; }
+        public string? DataAccessKey { get; }
     }
 
     public class Handler : IRequestHandler<Query, PersonJobApplicantProfileResponse>
@@ -32,6 +34,7 @@ public static class GetJobApplicantProfile
 
         public async Task<PersonJobApplicantProfileResponse> Handle(Query request, CancellationToken cancellationToken)
         {
+            _context.Cryptor.State.StartQuery("Person", request.DataAccessKey);
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)

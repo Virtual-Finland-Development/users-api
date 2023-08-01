@@ -12,26 +12,10 @@ public class APIUserFactory
     /// </summary>
     /// <param name="dbContext"></param>
     /// <returns></returns>
-    public static async Task<(Person user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
+    public static async Task<(Person user, ExternalIdentity externalIdentity, string identityId)> CreateAndGetLogInUser(
         UsersDbContext dbContext)
     {
-        var dbUser = dbContext.Persons.Add(new PersonBuilder().Build());
-
-        var faker = new Faker();
-        var identityId = faker.Random.Guid().ToString();
-        var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
-        {
-            Created = DateTime.UtcNow,
-            Modified = DateTime.UtcNow,
-            Issuer = faker.Random.String(10),
-            IdentityId = identityId,
-            IdentityHash = dbContext.Cryptor.Hash(identityId),
-            UserId = dbUser.Entity.Id
-        });
-
-        await dbContext.SaveChangesAsync();
-
-        return (dbUser.Entity, externalIdentity.Entity);
+        return await CreateAndGetLogInUser(dbContext, null);
     }
 
     /// <summary>
@@ -40,25 +24,39 @@ public class APIUserFactory
     /// <param name="dbContext"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public static async Task<(Person user, ExternalIdentity externalIdentity)> CreateAndGetLogInUser(
-        UsersDbContext dbContext, Guid userId)
+    public static async Task<(Person user, ExternalIdentity externalIdentity, string identityId)> CreateAndGetLogInUser(
+        UsersDbContext dbContext, Guid? userId)
     {
-        var dbUser = dbContext.Persons.Add(new PersonBuilder().WithId(userId).Build());
+        var personDataAccessKey = dbContext.Cryptor.IdentityHelpers.CreateNewPersonDataAccessKey();
+        dbContext.Cryptor.State.StartQuery("Person", personDataAccessKey);
+        dbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", personDataAccessKey);
+        dbContext.Cryptor.State.StartQuery("Address", personDataAccessKey);
+
+        var dbUser = userId == null
+            ? dbContext.Persons.Add(new PersonBuilder().WithPersonDataAccessKey(personDataAccessKey).Build())
+            : dbContext.Persons.Add(new PersonBuilder().WithPersonDataAccessKey(personDataAccessKey).WithId(userId.Value).Build());
 
         var faker = new Faker();
+        var issuer = faker.Random.String(10);
         var identityId = faker.Random.Guid().ToString();
+
+        var identityHash = dbContext.Cryptor.SecretHash(identityId);
+        var encryptedAccessKey = dbContext.Cryptor.Encrypt(personDataAccessKey, $"{dbUser.Entity.Id}::{issuer}::{identityId}");
+        var externalIdentityPersonDataAccessKey = dbContext.Cryptor.Encrypt(encryptedAccessKey, identityId);
+
+        dbContext.Cryptor.State.StartQuery("ExternalIdentity", identityId);
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
-            Issuer = faker.Random.String(10),
-            IdentityId = identityId,
-            IdentityHash = dbContext.Cryptor.Hash(identityId),
+            Issuer = issuer,
+            PersonDataAccessKey = externalIdentityPersonDataAccessKey,
+            IdentityHash = identityHash,
             UserId = dbUser.Entity.Id
         });
 
         await dbContext.SaveChangesAsync();
 
-        return (dbUser.Entity, externalIdentity.Entity);
+        return (dbUser.Entity, externalIdentity.Entity, identityId);
     }
 }

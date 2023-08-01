@@ -19,11 +19,17 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "ExternalIdentities",
                 type: "text",
                 nullable: true);
-            /* migrationBuilder.AddColumn<string>(
-                name: "IdentityAccessKey",
-                table: "ExternalIdentity",
+            migrationBuilder.AddColumn<string>(
+                name: "PersonDataAccessKey",
+                table: "ExternalIdentities",
                 type: "text",
-                nullable: true); */
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "PersonDataAccessKey",
+                table: "Persons",
+                type: "text",
+                nullable: true);
 
             migrationBuilder.AlterColumn<string>(
                 name: "ResidencyCode",
@@ -54,6 +60,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 oldType: "character varying(255)",
                 oldMaxLength: 255,
                 oldNullable: true);
+
 
             migrationBuilder.AlterColumn<string>(
                 name: "ZipCode",
@@ -273,9 +280,13 @@ namespace VirtualFinland.UserAPI.Migrations
                 oldType: "text",
                 oldNullable: true);
 
-            /* migrationBuilder.DropColumn(
-                name: "IdentityAccessKey",
-                table: "ExternalIdentities"); */
+            migrationBuilder.DropColumn(
+                name: "PersonDataAccessKey",
+                table: "Persons");
+
+            migrationBuilder.DropColumn(
+                name: "PersonDataAccessKey",
+                table: "ExternalIdentities");
             migrationBuilder.DropColumn(
                 name: "IdentityHash",
                 table: "ExternalIdentities");

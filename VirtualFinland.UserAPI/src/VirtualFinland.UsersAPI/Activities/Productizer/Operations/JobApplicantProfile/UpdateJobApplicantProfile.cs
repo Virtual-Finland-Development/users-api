@@ -43,10 +43,12 @@ public static class UpdateJobApplicantProfile
 
         [SwaggerIgnore]
         public Guid? UserId { get; set; }
+        public string? DataAccessKey { get; set; }
 
-        public void SetAuth(Guid? userDatabaseId)
+        public void SetAuth(Guid? userDatabaseId, string? dataAccessKey)
         {
             UserId = userDatabaseId;
+            DataAccessKey = dataAccessKey;
         }
     }
 
@@ -61,6 +63,7 @@ public static class UpdateJobApplicantProfile
 
         public async Task<Request> Handle(Command command, CancellationToken cancellationToken)
         {
+            _context.Cryptor.State.StartQuery("Person", command.DataAccessKey);
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)
@@ -226,7 +229,7 @@ public static class UpdateJobApplicantProfile
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
-            
+
             public string? InstitutionName { get; set; }
         }
 

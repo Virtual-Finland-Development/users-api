@@ -11,26 +11,28 @@ public class PersonBasicInformation_UnitTests : APITestBase
     [Fact]
     public async Task GetPersonBasicInformation_WithExistingUserId_ReturnsData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var query = new GetPersonBasicInformation.Query(entities.user.Id, entities.externalIdentity.IdentityId); // @TODO
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+        var query = new GetPersonBasicInformation.Query(user.Id, dataAccessKey);
         var sut = new GetPersonBasicInformation.Handler(_dbContext);
 
         var actual = await sut.Handle(query, CancellationToken.None);
 
         actual.Should().NotBeNull();
-        actual.GivenName.Should().Match(entities.user.GivenName);
-        actual.LastName.Should().Match(entities.user.LastName);
-        actual.Email.Should().Match(entities.user.Email);
-        actual.PhoneNumber.Should().Match(entities.user.PhoneNumber);
-        actual.Residency.Should().Contain(entities.user.ResidencyCode);
+        actual.GivenName.Should().Match(user.GivenName);
+        actual.LastName.Should().Match(user.LastName);
+        actual.Email.Should().Match(user.Email);
+        actual.PhoneNumber.Should().Match(user.PhoneNumber);
+        actual.Residency.Should().Contain(user.ResidencyCode);
     }
 
     [Fact]
     public async Task UpdateBasicInformation_WithValidData_ReturnsUpdatedData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
         var command = new UpdatePersonBasicInformationCommandBuilder().Build();
-        command.SetAuth(entities.user.Id, entities.externalIdentity.IdentityId); // @TODO
+        command.SetAuth(user.Id, dataAccessKey);
         var sut = new UpdatePersonBasicInformation.Handler(_dbContext);
 
         var actual = await sut.Handle(command, CancellationToken.None);

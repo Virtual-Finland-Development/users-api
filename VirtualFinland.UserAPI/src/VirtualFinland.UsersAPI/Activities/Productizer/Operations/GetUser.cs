@@ -17,12 +17,12 @@ public static class GetUser
     {
         [SwaggerIgnore]
         public Guid? UserId { get; }
-        public string? EncryptionKey { get; }
+        public string? DataAccessKey { get; }
 
-        public Query(Guid? userId, string? encryptionKey)
+        public Query(Guid? userId, string? dataAccessKey)
         {
             this.UserId = userId;
-            this.EncryptionKey = encryptionKey;
+            this.DataAccessKey = dataAccessKey;
         }
     }
 
@@ -31,7 +31,7 @@ public static class GetUser
         public QueryValidator()
         {
             RuleFor(query => query.UserId).NotNull().NotEmpty();
-            RuleFor(query => query.EncryptionKey).NotNull().NotEmpty();
+            RuleFor(query => query.DataAccessKey).NotNull().NotEmpty();
         }
     }
 
@@ -48,8 +48,9 @@ public static class GetUser
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.State.StartQuery("Person", request.EncryptionKey);
-            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.EncryptionKey);
+            _usersDbContext.Cryptor.State.StartQuery("Person", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("Address", request.DataAccessKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.WorkPreferences)

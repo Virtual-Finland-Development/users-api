@@ -33,7 +33,7 @@ public static class UpdateUser
 
         [SwaggerIgnore]
         public Guid? UserId { get; private set; }
-        public string? EncryptionKey { get; private set; }
+        public string? DataAccessKey { get; private set; }
 
         public Command(string? firstName,
             string? lastName,
@@ -60,10 +60,10 @@ public static class UpdateUser
             DateOfBirth = dateOfBirth;
         }
 
-        public void SetAuth(Guid? userDbId, string? encryptionKey)
+        public void SetAuth(Guid? userDbId, string? dataAccessKey)
         {
             this.UserId = userDbId;
-            this.EncryptionKey = encryptionKey;
+            this.DataAccessKey = dataAccessKey;
         }
     }
 
@@ -83,7 +83,7 @@ public static class UpdateUser
         public CommandValidator()
         {
             RuleFor(command => command.UserId).NotNull().NotEmpty();
-            RuleFor(command => command.EncryptionKey).NotNull().NotEmpty();
+            RuleFor(command => command.DataAccessKey).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
             RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
@@ -119,8 +119,9 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.State.StartQuery("Person", request.EncryptionKey);
-            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.EncryptionKey);
+            _usersDbContext.Cryptor.State.StartQuery("Person", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartQuery("Address", request.DataAccessKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);

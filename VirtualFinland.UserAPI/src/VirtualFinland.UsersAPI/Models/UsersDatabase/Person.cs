@@ -38,4 +38,8 @@ public class Person : AuditableAndEncryptable, IEntity
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
+
+    [Required]
+    [Encrypted]
+    public string PersonDataAccessKey { get; set; } = null!;
 }

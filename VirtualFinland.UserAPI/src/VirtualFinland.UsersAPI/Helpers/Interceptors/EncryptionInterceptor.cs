@@ -50,7 +50,7 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
         {
             if (entry.Entity is IEncrypted item)
             {
-                var secretKey = _cryptor.State.GetQueryKey(entry.Entity.GetType().Name) ?? item.EncryptionKey;
+                var secretKey = _cryptor.State.GetQueryKey(entry.Entity.GetType().Name) ?? item.DataAccessKey;
 
                 // Encrypt property if the value is typed as string, and the property is not null or empty
                 foreach (var property in entry.Properties)
@@ -62,15 +62,12 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
 
                     var value = property.CurrentValue?.ToString();
                     if (!string.IsNullOrEmpty(value))
-                    {
-                        if (string.IsNullOrEmpty(secretKey))
-                            throw new ArgumentNullException(nameof(secretKey), $"{nameof(secretKey)} is null or empty");
                         property.CurrentValue = _cryptor.Encrypt(value, secretKey);
-                    }
-
+                    else
+                        property.CurrentValue = value;
                 }
 
-                item.EncryptionKey = secretKey; // Pass the [NotMapped] secret key to the entity for later processing
+                item.DataAccessKey = secretKey; // Pass the [NotMapped] secret key to the entity for later processing
             }
         }
     }

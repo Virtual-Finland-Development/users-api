@@ -23,7 +23,7 @@ public static class UpdatePersonBasicInformation
 
         [SwaggerIgnore]
         public Guid? UserId { get; set; }
-        public string? EncryptionKey { get; set; }
+        public string? DataAccessKey { get; set; }
 
         public string? GivenName { get; }
         public string? LastName { get; }
@@ -31,10 +31,10 @@ public static class UpdatePersonBasicInformation
         public string? PhoneNumber { get; }
         public string? Residency { get; }
 
-        public void SetAuth(Guid? userDatabaseId, string? encryptionKey)
+        public void SetAuth(Guid? userDatabaseId, string? dataAccessKey)
         {
             UserId = userDatabaseId;
-            EncryptionKey = encryptionKey;
+            DataAccessKey = dataAccessKey;
         }
     }
 
@@ -50,7 +50,7 @@ public static class UpdatePersonBasicInformation
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
-            _context.Cryptor.State.StartQuery("Person", request.EncryptionKey);
+            _context.Cryptor.State.StartQuery("Person", request.DataAccessKey);
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             person.GivenName = request.GivenName ?? person.GivenName;
@@ -60,8 +60,7 @@ public static class UpdatePersonBasicInformation
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
 
             // Deep clone the user object to avoid EF tracking/encryption issues
-            var updatedPerson = person.Clone() as Person;
-            if (updatedPerson == null)
+            if (person.Clone() is not Person updatedPerson)
             {
                 throw new ArgumentException("Failed to clone user object");
             }
