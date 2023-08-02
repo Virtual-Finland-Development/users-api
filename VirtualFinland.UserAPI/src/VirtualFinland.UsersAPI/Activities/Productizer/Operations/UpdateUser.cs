@@ -119,9 +119,7 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.State.StartQuery("Person", request.DataAccessKey);
-            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.DataAccessKey);
-            _usersDbContext.Cryptor.State.StartQuery("Address", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartPersonDataQuery(request.DataAccessKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);

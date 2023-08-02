@@ -34,6 +34,8 @@ public static class DeleteUser
         public async Task<Unit> Handle(Command request,
             CancellationToken cancellationToken)
         {
+            _context.Cryptor.State.DisablePersonDataQueryKeys();
+            _context.Cryptor.State.DisableQueryKey("ExternalIdentity");
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)

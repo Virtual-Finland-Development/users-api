@@ -78,7 +78,7 @@ public class UserTests : APITestBase
         // Arrange
         var (user, _, _) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteUser.Command();
-        command.SetAuth(user.Id);
+        command.SetAuth(user.Id, user.DataAccessKey);
         var sut = new DeleteUser.Handler(_dbContext);
 
         // Act

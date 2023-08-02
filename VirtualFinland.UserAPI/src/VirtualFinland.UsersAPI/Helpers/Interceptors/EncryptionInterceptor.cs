@@ -48,9 +48,10 @@ public class EncryptionInterceptor : SaveChangesInterceptor, IEncryptionIntercep
 
         foreach (var entry in mutatingEntries)
         {
-            if (entry.Entity is IEncrypted item)
+            var entityName = entry.Entity.GetType().Name;
+            if (entry.Entity is IEncrypted item && !_cryptor.State.IsQueryKeyDisabled(entityName))
             {
-                var secretKey = _cryptor.State.GetQueryKey(entry.Entity.GetType().Name) ?? item.DataAccessKey;
+                var secretKey = _cryptor.State.GetQueryKey(entityName) ?? item.DataAccessKey;
 
                 // Encrypt property if the value is typed as string, and the property is not null or empty
                 foreach (var property in entry.Properties)

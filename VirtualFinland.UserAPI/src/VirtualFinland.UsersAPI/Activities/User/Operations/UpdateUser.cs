@@ -149,9 +149,7 @@ public static class UpdateUser
 
         public async Task<User> Handle(Command request, CancellationToken cancellationToken)
         {
-            _usersDbContext.Cryptor.State.StartQuery("Person", request.DataAccessKey);
-            _usersDbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", request.DataAccessKey);
-            _usersDbContext.Cryptor.State.StartQuery("Address", request.DataAccessKey);
+            _usersDbContext.Cryptor.State.StartPersonDataQuery(request.DataAccessKey);
             var dbUser = await _usersDbContext.Persons
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)
@@ -164,8 +162,7 @@ public static class UpdateUser
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
             // Deep clone the user object to avoid EF tracking/encryption issues
-            var updatedPerson = dbUser.Clone() as Person;
-            if (updatedPerson == null)
+            if (dbUser.Clone() is not Person updatedPerson)
             {
                 throw new ArgumentException("Failed to clone user object");
             }

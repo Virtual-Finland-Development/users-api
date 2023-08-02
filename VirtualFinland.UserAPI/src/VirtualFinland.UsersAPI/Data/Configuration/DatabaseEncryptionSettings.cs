@@ -15,7 +15,12 @@ public class DatabaseEncryptionSettings : IDatabaseEncryptionSettings
     {
         IsEnabled = isEnabled;
         if (!IsEnabled)
+        {
+            EncryptionKey = "";
+            EncryptionIV = "";
             return;
+        }
+
 
         if (string.IsNullOrEmpty(encryptionKey))
             throw new ArgumentNullException(nameof(encryptionKey), $"{nameof(encryptionKey)} is null or empty");

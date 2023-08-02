@@ -28,9 +28,7 @@ public class APIUserFactory
         UsersDbContext dbContext, Guid? userId)
     {
         var personDataAccessKey = dbContext.Cryptor.IdentityHelpers.CreateNewPersonDataAccessKey();
-        dbContext.Cryptor.State.StartQuery("Person", personDataAccessKey);
-        dbContext.Cryptor.State.StartQuery("PersonAdditionalInformation", personDataAccessKey);
-        dbContext.Cryptor.State.StartQuery("Address", personDataAccessKey);
+        dbContext.Cryptor.State.StartPersonDataQuery(personDataAccessKey);
 
         var dbUser = userId == null
             ? dbContext.Persons.Add(new PersonBuilder().WithPersonDataAccessKey(personDataAccessKey).Build())
