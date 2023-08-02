@@ -50,7 +50,7 @@ public class APIUserFactory
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Issuer = issuer,
-            PersonDataAccessKey = externalIdentityPersonDataAccessKey,
+            KeyToPersonDataAccessKey = externalIdentityPersonDataAccessKey,
             IdentityHash = identityHash,
             UserId = dbUser.Entity.Id
         });

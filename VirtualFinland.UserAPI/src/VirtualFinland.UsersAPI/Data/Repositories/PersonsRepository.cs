@@ -49,6 +49,7 @@ public class PersonsRepository : IPersonsRepository
                 new Person
                 {
                     Created = createdAt,
+                    Modified = createdAt,
                     PersonDataAccessKey = personDataAccessKey
                 }, cancellationToken);
 
@@ -57,10 +58,11 @@ public class PersonsRepository : IPersonsRepository
             var newExternalIdentity = await usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
                 Issuer = issuer,
-                PersonDataAccessKey = newAccessKeyForPersonData,
+                KeyToPersonDataAccessKey = newAccessKeyForPersonData,
                 IdentityHash = identityHash,
                 UserId = newDbUSer.Entity.Id,
                 Created = createdAt,
+                Modified = createdAt,
             }, cancellationToken);
 
             await usersDbContext.SaveChangesAsync(cancellationToken);

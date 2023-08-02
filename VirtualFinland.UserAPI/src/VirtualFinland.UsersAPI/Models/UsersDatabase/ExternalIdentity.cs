@@ -16,7 +16,7 @@ public class ExternalIdentity : Encryptable, IEntity
 
     [Required]
     [Encrypted]
-    public string PersonDataAccessKey { get; set; } = null!;
+    public string KeyToPersonDataAccessKey { get; set; } = null!;
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }

@@ -22,6 +22,6 @@ public class APITestBase
 
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var auditInterceptor = new AuditInterceptor(loggerFactory.CreateLogger<IAuditInterceptor>());
-        return new UsersDbContext(options, new DatabaseEncryptionSecrets("12345678901234567890123456789012", "1234567890123456"), auditInterceptor, true);
+        return new UsersDbContext(options, new DatabaseEncryptionSettings("12345678901234567890123456789012", "1234567890123456"), auditInterceptor, true);
     }
 }

@@ -26,7 +26,7 @@ public class CryptoIdentityHelpers
     }
     public string DecryptExternalIdentityAccessKeyForPersonData(ExternalIdentity externalIdentity, string identityId)
     {
-        return DecryptExternalIdentityAccessKeyForPersonData(externalIdentity.PersonDataAccessKey, externalIdentity.UserId, externalIdentity.Issuer, identityId);
+        return DecryptExternalIdentityAccessKeyForPersonData(externalIdentity.KeyToPersonDataAccessKey, externalIdentity.UserId, externalIdentity.Issuer, identityId);
     }
 
     public string FormExternalIdentityAccessKeyForPersonData(Guid userId, string issuer, string identityId)

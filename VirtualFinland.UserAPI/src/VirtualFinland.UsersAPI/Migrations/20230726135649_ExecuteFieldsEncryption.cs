@@ -49,7 +49,7 @@ namespace VirtualFinland.UserAPI.Migrations
             using var connection = dbAccess.Item1;
 
             CreatePersonDataAccessKeys(migrationBuilder, dbAccess);
-            CreateExternalIdentityPersonDataAccessKeys(migrationBuilder, dbAccess);
+            CreateExternalIdentityKeysToPersonDataAccessKeys(migrationBuilder, dbAccess);
 
             foreach (var table in _encryptFields)
             {
@@ -112,7 +112,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 nullable: false,
                 oldNullable: true);
             migrationBuilder.AlterColumn<string>(
-                name: "PersonDataAccessKey",
+                name: "KeyToPersonDataAccessKey",
                 table: "ExternalIdentities",
                 nullable: false,
                 oldNullable: true);
@@ -158,7 +158,7 @@ namespace VirtualFinland.UserAPI.Migrations
             var encryptionIVSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_ENCRYPTION_IV_SECRET_NAME");
             var encryptionIV = encryptionKeySecret ?? builder.Configuration.GetValue<string>("Database:EncryptionIV");
 
-            var secrets = new DatabaseEncryptionSecrets(encryptionKey, encryptionIV);
+            var secrets = new DatabaseEncryptionSettings(encryptionKey, encryptionIV);
             var cryptor = new CryptoUtility(secrets);
 
             var databaseSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_CONNECTION_SECRET_NAME");
@@ -199,7 +199,7 @@ namespace VirtualFinland.UserAPI.Migrations
             result.Close();
         }
 
-        private void CreateExternalIdentityPersonDataAccessKeys(MigrationBuilder migrationBuilder, Tuple<DbConnection, CryptoUtility> dbAccess)
+        private void CreateExternalIdentityKeysToPersonDataAccessKeys(MigrationBuilder migrationBuilder, Tuple<DbConnection, CryptoUtility> dbAccess)
         {
             using var command = dbAccess.Item1.CreateCommand();
             command.CommandText = $"SELECT \"Id\", \"UserId\", \"IdentityId\", \"Issuer\" FROM \"ExternalIdentities\"";
@@ -219,7 +219,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 var encryptedAccessKey = dbAccess.Item2.Encrypt(_resolvedSecretKeys[userId], $"{userId}::{issuer}::{identityId}");
                 var secretKey = dbAccess.Item2.Encrypt(encryptedAccessKey, identityId);
 
-                migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{identityHash}', \"PersonDataAccessKey\" = '{secretKey}' WHERE \"Id\" = '{id}'");
+                migrationBuilder.Sql($"UPDATE \"ExternalIdentities\" SET \"IdentityHash\" = '{identityHash}', \"KeyToPersonDataAccessKey\" = '{secretKey}' WHERE \"Id\" = '{id}'");
             }
             result.Close();
         }

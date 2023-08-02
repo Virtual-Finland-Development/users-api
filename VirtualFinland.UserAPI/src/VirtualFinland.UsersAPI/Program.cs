@@ -98,7 +98,8 @@ var encryptionKeySecret = await awsConfigurationManager.GetSecretByEnvironmentVa
 var encryptionKey = encryptionKeySecret ?? builder.Configuration.GetValue<string>("Database:EncryptionKey");
 var encryptionIVSecret = await awsConfigurationManager.GetSecretByEnvironmentValueName("DB_ENCRYPTION_IV_SECRET_NAME");
 var encryptionIV = encryptionKeySecret ?? builder.Configuration.GetValue<string>("Database:EncryptionIV");
-builder.Services.AddSingleton<IDatabaseEncryptionSecrets>(new DatabaseEncryptionSecrets(encryptionKey, encryptionIV));
+var encryptionEnalbed = builder.Configuration.GetValue<bool>("Database:EncryptionEnabled");
+builder.Services.AddSingleton<IDatabaseEncryptionSettings>(new DatabaseEncryptionSettings(encryptionKey, encryptionIV, encryptionEnalbed));
 
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {

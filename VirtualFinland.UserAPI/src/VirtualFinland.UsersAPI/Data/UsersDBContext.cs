@@ -13,13 +13,13 @@ public class UsersDbContext : DbContext
     public readonly ICryptoUtility Cryptor;
     private readonly IAuditInterceptor _auditInterceptor;
 
-    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSettings secrets, IAuditInterceptor auditInterceptor) : base(options)
     {
         Cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSecrets secrets, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, IDatabaseEncryptionSettings secrets, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
     {
         Cryptor = new CryptoUtility(secrets);
         _auditInterceptor = auditInterceptor;

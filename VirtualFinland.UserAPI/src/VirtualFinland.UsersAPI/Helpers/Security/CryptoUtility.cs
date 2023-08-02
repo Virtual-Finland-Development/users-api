@@ -16,20 +16,24 @@ public interface ICryptoUtility
 
 public class CryptoUtility : ICryptoUtility
 {
-    private IDatabaseEncryptionSecrets _secrets;
-    private readonly Dictionary<string, string?> _secretQueryKeys = new();
+    private readonly IDatabaseEncryptionSettings _settings;
     public CryptoUtilityState State { get; }
     public CryptoIdentityHelpers IdentityHelpers { get; }
 
-    public CryptoUtility(IDatabaseEncryptionSecrets secrets)
+    public CryptoUtility(IDatabaseEncryptionSettings settings)
     {
-        _secrets = secrets;
+        _settings = settings;
         State = new CryptoUtilityState();
         IdentityHelpers = new CryptoIdentityHelpers(this);
     }
 
     public string Encrypt(string? value, string? secretKey)
     {
+        if (!_settings.IsEnabled)
+        {
+            return value ?? string.Empty;
+        }
+
         if (string.IsNullOrEmpty(value))
             throw new ArgumentNullException("Encryption value cannot be null or empty");
         if (string.IsNullOrEmpty(secretKey))
@@ -38,7 +42,7 @@ public class CryptoUtility : ICryptoUtility
         try
         {
             var resolvedKey = ResolveEncryptionKey(secretKey);
-            var encryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
+            var encryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_settings.EncryptionIV));
             var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
             return Convert.ToBase64String(encryptedBytes);
         }
@@ -50,6 +54,11 @@ public class CryptoUtility : ICryptoUtility
 
     public string Decrypt(string? value, string? secretKey)
     {
+        if (!_settings.IsEnabled)
+        {
+            return value ?? string.Empty;
+        }
+
         if (string.IsNullOrEmpty(value))
             throw new ArgumentNullException("Decryption value cannot be null or empty");
         if (string.IsNullOrEmpty(secretKey))
@@ -58,7 +67,7 @@ public class CryptoUtility : ICryptoUtility
         try
         {
             var resolvedKey = ResolveEncryptionKey(secretKey);
-            var decryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
+            var decryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_settings.EncryptionIV));
             var encryptedBytes = Convert.FromBase64String(value);
             var decryptedBytes = decryptionProvider.Decrypt(encryptedBytes);
             return Encoding.UTF8.GetString(decryptedBytes).Trim('\0');
@@ -71,12 +80,12 @@ public class CryptoUtility : ICryptoUtility
 
     private string ResolveEncryptionKey(string secretKey)
     {
-        return Hash($"{_secrets.EncryptionKey}::{secretKey}");
+        return Hash($"{_settings.EncryptionKey}::{secretKey}");
     }
 
     public string SecretHash(string input)
     {
-        return Encrypt(input, _secrets.EncryptionKey);
+        return Encrypt(input, _settings.EncryptionKey);
     }
 
     public string Hash(string input)

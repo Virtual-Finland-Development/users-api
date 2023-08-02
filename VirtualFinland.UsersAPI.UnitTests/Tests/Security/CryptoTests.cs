@@ -9,7 +9,7 @@ public class CryptoTests
     public void Should_SucceedInEncryption()
     {
         // Arrange
-        var secrets = new DatabaseEncryptionSecrets("12345678901234567890123456789012", "1234567890123456");
+        var secrets = new DatabaseEncryptionSettings("12345678901234567890123456789012", "1234567890123456");
         var cryptoUtility = new CryptoUtility(secrets);
 
         // Act

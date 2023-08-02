@@ -20,7 +20,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 type: "text",
                 nullable: true);
             migrationBuilder.AddColumn<string>(
-                name: "PersonDataAccessKey",
+                name: "KeyToPersonDataAccessKey",
                 table: "ExternalIdentities",
                 type: "text",
                 nullable: true);
@@ -285,7 +285,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "Persons");
 
             migrationBuilder.DropColumn(
-                name: "PersonDataAccessKey",
+                name: "KeyToPersonDataAccessKey",
                 table: "ExternalIdentities");
             migrationBuilder.DropColumn(
                 name: "IdentityHash",
