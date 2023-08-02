@@ -31,22 +31,29 @@ public class CryptoUtility : ICryptoUtility
     public string Encrypt(string? value, string? secretKey)
     {
         if (string.IsNullOrEmpty(value))
-            throw new ArgumentNullException(nameof(value));
+            throw new ArgumentNullException("Encryption value cannot be null or empty");
         if (string.IsNullOrEmpty(secretKey))
-            throw new ArgumentNullException(nameof(secretKey));
+            throw new ArgumentNullException("Model not initialized for encryption");
 
-        var resolvedKey = ResolveEncryptionKey(secretKey);
-        var encryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
-        var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
-        return Convert.ToBase64String(encryptedBytes);
+        try
+        {
+            var resolvedKey = ResolveEncryptionKey(secretKey);
+            var encryptionProvider = new AesProvider(Encoding.UTF8.GetBytes(resolvedKey), Encoding.UTF8.GetBytes(_secrets.EncryptionIV));
+            var encryptedBytes = encryptionProvider.Encrypt(Encoding.UTF8.GetBytes(value));
+            return Convert.ToBase64String(encryptedBytes);
+        }
+        catch (CryptographicException)
+        {
+            throw new ArgumentException("Encryption failure");
+        }
     }
 
     public string Decrypt(string? value, string? secretKey)
     {
         if (string.IsNullOrEmpty(value))
-            throw new ArgumentNullException(nameof(value));
+            throw new ArgumentNullException("Decryption value cannot be null or empty");
         if (string.IsNullOrEmpty(secretKey))
-            throw new ArgumentNullException(nameof(secretKey));
+            throw new ArgumentNullException("Model not initialized for decryption");
 
         try
         {
