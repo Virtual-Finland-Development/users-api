@@ -43,6 +43,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
+                .AsSplitQuery() // fixes MultipleCollectionIncludeWarning
                 .SingleAsync(p => p.Id == request.PersonId, cancellationToken);
 
             return new PersonJobApplicantProfileResponse

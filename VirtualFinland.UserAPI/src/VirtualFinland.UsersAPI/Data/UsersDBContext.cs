@@ -42,7 +42,11 @@ public class UsersDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.AddInterceptors(_auditInterceptor, new EncryptionInterceptor(Cryptor), new DecryptionInterceptor(Cryptor));
-        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning)); // @TODO: Resolve
+        optionsBuilder.ConfigureWarnings(warnings =>
+        {
+            warnings.Ignore(CoreEventId.ManyServiceProvidersCreatedWarning); // @TODO: Resolve
+            //warnings.Throw(RelationalEventId.MultipleCollectionIncludeWarning);
+        });
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
