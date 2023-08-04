@@ -78,7 +78,8 @@ public class UserTests : APITestBase
         // Arrange
         var (user, _, _) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteUser.Command();
-        command.SetAuth(user.Id, user.DataAccessKey);
+
+        command.SetAuth(user.Id);
         var sut = new DeleteUser.Handler(_dbContext);
 
         // Act
@@ -203,6 +204,7 @@ public class UserTests : APITestBase
         var validator = new UpdateUser.CommandValidator();
         var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+
         var command = new UpdateUserCommandBuilder()
             .WithFirstName(new string('*', 256))
             .WithLastName(new string('*', 256))

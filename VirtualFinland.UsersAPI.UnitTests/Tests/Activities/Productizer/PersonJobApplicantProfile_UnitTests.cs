@@ -11,8 +11,9 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     [Fact]
     public async Task GetJobApplicantProfile_WithExistingUser_ReturnsData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var query = new GetJobApplicantProfile.Query(entities.user.Id);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
+        var query = new GetJobApplicantProfile.Query(user.Id, dataAccessKey);
         var sut = new GetJobApplicantProfile.Handler(_dbContext);
 
         var actual = await sut.Handle(query, CancellationToken.None);
@@ -23,9 +24,10 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     [Fact]
     public async Task UpdateJobApplicantProfile_WithValidData_ReturnsUpdatedData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var dataAccessKey = _dbContext.Cryptor.IdentityHelpers.DecryptExternalIdentityAccessKeyForPersonData(externalIdentity, identityId);
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
-        command.SetAuth(entities.user.Id);
+        command.SetAuth(user.Id, dataAccessKey);
         var sut = new UpdateJobApplicantProfile.Handler(_dbContext);
 
         var actual = await sut.Handle(command, CancellationToken.None);

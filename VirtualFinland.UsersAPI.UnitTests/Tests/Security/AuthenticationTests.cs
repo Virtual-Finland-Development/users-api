@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
+using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
@@ -17,7 +18,8 @@ public class AuthenticationTests : APITestBase
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var personsRepository = new PersonsRepository(_dbContext);
+        var serviceProvider = GetMockedServiceProvider();
+        var personsRepository = new PersonsRepository(serviceProvider.Object);
         var mockUserSecurityLogger = new Mock<ILogger<UserSecurityService>>();
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
@@ -54,7 +56,8 @@ public class AuthenticationTests : APITestBase
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
-        var personsRepository = new PersonsRepository(_dbContext);
+        var serviceProvider = GetMockedServiceProvider();
+        var personsRepository = new PersonsRepository(serviceProvider.Object);
         var userSecurityService = new UserSecurityService(personsRepository, mockLogger.Object);
         var authenticationService = new AuthenticationService(userSecurityService);
         // Act

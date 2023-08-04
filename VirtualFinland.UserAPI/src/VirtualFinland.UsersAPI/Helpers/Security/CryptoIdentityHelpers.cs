@@ -12,7 +12,7 @@ public class CryptoIdentityHelpers
 
     public string CreateNewPersonDataAccessKey()
     {
-        return _cryptor.Hash(Guid.NewGuid().ToString());
+        return Guid.NewGuid().ToString();
     }
 
     public string EncryptExternalIdentityAccessKeyForPersonData(string personDataAccessKey, Guid userId, string issuer, string identityId)
@@ -20,6 +20,12 @@ public class CryptoIdentityHelpers
         var key = FormExternalIdentityAccessKeyForPersonData(userId, issuer, identityId);
         return _cryptor.Encrypt(personDataAccessKey, key);
     }
+    public string EncryptExternalIdentityAccessKeyForPersonData(string personDataAccessKey, ExternalIdentity externalIdentity, string identityId)
+    {
+        var key = FormExternalIdentityAccessKeyForPersonData(externalIdentity.UserId, externalIdentity.Issuer, identityId);
+        return _cryptor.Encrypt(personDataAccessKey, key);
+    }
+
     public string DecryptExternalIdentityAccessKeyForPersonData(string externalIdentPersonKey, Guid userId, string issuer, string identityId)
     {
         return _cryptor.Decrypt(externalIdentPersonKey, FormExternalIdentityAccessKeyForPersonData(userId, issuer, identityId));

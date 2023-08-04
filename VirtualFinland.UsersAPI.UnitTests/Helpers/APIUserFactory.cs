@@ -1,4 +1,5 @@
 using Bogus;
+using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using Person = VirtualFinland.UserAPI.Models.UsersDatabase.Person;
@@ -36,25 +37,30 @@ public class APIUserFactory
 
         var faker = new Faker();
         var issuer = faker.Random.String(10);
-        var identityId = faker.Random.Guid().ToString();
+        var identityId = $"id_{faker.Random.Guid()}";
 
         var identityHash = dbContext.Cryptor.SecretHash(identityId);
-        var encryptedAccessKey = dbContext.Cryptor.Encrypt(personDataAccessKey, $"{dbUser.Entity.Id}::{issuer}::{identityId}");
-        var externalIdentityPersonDataAccessKey = dbContext.Cryptor.Encrypt(encryptedAccessKey, identityId);
 
+        var keyToPersonDataAccessKey = dbContext.Cryptor.IdentityHelpers.EncryptExternalIdentityAccessKeyForPersonData(personDataAccessKey, dbUser.Entity.Id, issuer, identityId);
         dbContext.Cryptor.State.StartQuery("ExternalIdentity", identityId);
         var externalIdentity = dbContext.ExternalIdentities.Add(new ExternalIdentity
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
             Issuer = issuer,
-            KeyToPersonDataAccessKey = externalIdentityPersonDataAccessKey,
+            KeyToPersonDataAccessKey = keyToPersonDataAccessKey,
             IdentityHash = identityHash,
             UserId = dbUser.Entity.Id
         });
 
         await dbContext.SaveChangesAsync();
 
-        return (dbUser.Entity, externalIdentity.Entity, identityId);
+        // Reload the models so the DecryptionInterceptor fires up
+        externalIdentity.State = EntityState.Detached;
+        var reloadedExternalIdentity = await dbContext.ExternalIdentities.FindAsync(externalIdentity.Entity.Id) ?? throw new Exception("External identity not found");
+        dbUser.State = EntityState.Detached;
+        var reloadedUser = await dbContext.Persons.FindAsync(dbUser.Entity.Id) ?? throw new Exception("User not found");
+
+        return (reloadedUser, reloadedExternalIdentity, identityId);
     }
 }

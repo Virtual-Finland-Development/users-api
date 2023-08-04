@@ -17,7 +17,9 @@ public class IdentityTests : APITestBase
         var (user, externalIdentity, identityId) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
         var query = new VerifyIdentityUser.Query(identityId, externalIdentity.Issuer);
-        var personsRepository = new PersonsRepository(_dbContext);
+
+        var serviceProvider = GetMockedServiceProvider();
+        var personsRepository = new PersonsRepository(serviceProvider.Object);
         var handler = new VerifyIdentityUser.Handler(personsRepository, mockLogger.Object);
 
         // Act
@@ -34,7 +36,8 @@ public class IdentityTests : APITestBase
         var faker = new Faker("en");
         var query = new VerifyIdentityUser.Query(faker.Random.Guid().ToString(), faker.Random.String(10));
         var mockLogger = new Mock<ILogger<VerifyIdentityUser.Handler>>();
-        var personsRepository = new PersonsRepository(_dbContext);
+        var serviceProvider = GetMockedServiceProvider();
+        var personsRepository = new PersonsRepository(serviceProvider.Object);
         var handler = new VerifyIdentityUser.Handler(personsRepository, mockLogger.Object);
 
         // Act
