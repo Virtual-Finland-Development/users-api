@@ -1,5 +1,7 @@
 using Pulumi;
+using Pulumi.Aws.Kms;
 using Pulumi.Aws.Rds;
+using Pulumi.Aws.Rds.Inputs;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using Instance = Pulumi.Aws.Rds.Instance;
@@ -13,7 +15,89 @@ public class PostgresDatabase
 {
     public PostgresDatabase(Config config, StackSetup stackSetup)
     {
-        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
+        if (stackSetup.IsProductionEnvironment)
+        {
+            SetupProductionPostgresDatabase(config, stackSetup);
+        }
+        else
+        {
+            SetupDevelopmentPostgresDatabase(config, stackSetup);
+        }
+    }
+
+    /// <summary>
+    ///  Setup AWS Aurora RDS Serverless V2 for postgresql
+    /// </summary>
+    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup)
+    {
+        var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
+        {
+            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
+        });
+
+        var password = new RandomPassword(stackSetup.CreateResourceName("database-password"), new()
+        {
+            Length = 16,
+            Special = false,
+            OverrideSpecial = "_%@",
+        });
+
+        // Encryption key (KMS)
+        var encryptionKey = new Key(stackSetup.CreateResourceName("database-encryption-key"), new()
+        {
+            Description = "Encryption key for the database",
+            Tags = stackSetup.Tags,
+            DeletionWindowInDays = 30, // On deletion, the key will be retained for 30 days before being deleted permanently
+        });
+
+        // AWS Aurora RDS Serverless V2 for postgresql
+        var auroraCluster = new Cluster(stackSetup.CreateResourceName("database-cluster"), new ClusterArgs()
+        {
+            Engine = "aurora-postgresql",
+            EngineVersion = "13.6",
+            EngineMode = "provisioned", // serverless v2
+            Serverlessv2ScalingConfiguration = new ClusterServerlessv2ScalingConfigurationArgs
+            {
+                MaxCapacity = 4,
+                MinCapacity = 0.5,
+            },
+
+            DatabaseName = config.Require("dbName"),
+            MasterUsername = config.Require("dbAdmin"),
+            MasterPassword = password.Result,
+
+            SkipFinalSnapshot = false,
+            DeletionProtection = true,
+            StorageEncrypted = true,
+            KmsKeyId = encryptionKey.Arn,
+
+            DbSubnetGroupName = dbSubNetGroup.Name,
+            Tags = stackSetup.Tags,
+        });
+
+        var auroraInstance = new ClusterInstance(stackSetup.CreateResourceName("database-instance"), new()
+        {
+            ClusterIdentifier = auroraCluster.ClusterIdentifier,
+            InstanceClass = "db.serverless",
+            Engine = "aurora-postgresql",
+            EngineVersion = auroraCluster.EngineVersion,
+            Tags = stackSetup.Tags,
+        });
+
+        var DbName = config.Require("dbName");
+        var DbUsername = config.Require("dbAdmin");
+        var DbHostName = auroraCluster.Endpoint;
+        DBIdentifier = auroraInstance.Identifier;
+        var DbPassword = password.Result;
+        DbConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
+    }
+
+    /// <summary>
+    /// Setup AWS RDS for postgresql
+    /// </summary>
+    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup)
+    {
+        var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
         {
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
         });
@@ -25,7 +109,7 @@ public class PostgresDatabase
             OverrideSpecial = "_%@",
         });
 
-        var rdsPostGreInstance = new Instance($"{stackSetup.ProjectName}-postgres-db-{stackSetup.Environment}", new InstanceArgs()
+        var rdsPostGreInstance = new Instance(stackSetup.CreateResourceName("postgres-db"), new InstanceArgs()
         {
             Engine = "postgres",
             InstanceClass = "db.t3.micro",
@@ -36,9 +120,8 @@ public class PostgresDatabase
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = stackSetup.Tags,
-            PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
-            SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
-            //SnapshotIdentifier = "" // See README.database.md for more information
+            PubliclyAccessible = false,
+            SkipFinalSnapshot = true,
         });
 
         var DbName = config.Require("dbName");

@@ -60,16 +60,14 @@ public class UsersApiStack : Stack
     private bool IsProductionEnvironment()
     {
         var stackName = Pulumi.Deployment.Instance.StackName;
-        switch (stackName)
+        return stackName switch
         {
             // Cheers: https://stackoverflow.com/a/65642709
-            case var value when value == Environments.Production.ToString().ToLowerInvariant():
-                return true;
-            case var value when value == Environments.Staging.ToString().ToLowerInvariant():
-                return true;
-            default:
-                return false;
-        }
+            var value when value == Environments.MvpProduction.ToString().ToLowerInvariant() => true,
+            var value when value == Environments.MvpStaging.ToString().ToLowerInvariant() => true,
+            var value when value == Environments.Staging.ToString().ToLowerInvariant() => false,
+            _ => false,
+        };
     }
 
     // Outputs for Pulumi service
