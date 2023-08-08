@@ -22,7 +22,7 @@ public class UsersApiStack : Stack
         var infraStackReferencePrivateSubnetIdsAsList = infraStackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
         var infraStackReferenceVpcId = infraStackReference.RequireOutput("VpcId");
 
-        InputMap<string> tags = new InputMap<string>()
+        InputMap<string> tags = new()
         {
             {
                 "vfd:stack", Pulumi.Deployment.Instance.StackName
