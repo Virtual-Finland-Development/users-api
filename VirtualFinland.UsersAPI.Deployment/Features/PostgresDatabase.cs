@@ -139,7 +139,6 @@ public class PostgresDatabase
         DBIdentifier = rdsPostGreInstance.Identifier;
     }
 
-    public SecretsManager SecretsManager = default!;
     public Output<string> DBIdentifier = default!;
     public Output<string> DatabaseConnectionString = default!;
 }
