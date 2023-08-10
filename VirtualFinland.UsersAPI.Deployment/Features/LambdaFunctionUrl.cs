@@ -49,48 +49,21 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
-        {
-            Description = "Users-API Secret Get Policy",
-            PolicyDocument = Output.Format($@"{{
-                ""Version"": ""2012-10-17"",
-                ""Statement"": [
-                    {{
-                        ""Effect"": ""Allow"",
-                        ""Action"": [
-                            ""secretsmanager:GetSecretValue"",
-                            ""secretsmanager:DescribeSecret""
-                        ],
-                        ""Resource"": [
-                            ""{secretsManager.Arn}""
-                        ]
-                    }}
-                ]
-            }}"),
-            Tags = stackSetup.Tags,
-        });
-
         new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
-            PolicyArn = secretsManagerReadPolicy.Arn
-        });
-
-        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
-        {
-            VpcId = stackSetup.VpcSetup.VpcId,
-            Name = "default"
+            PolicyArn = secretsManager.ReadPolicy.Arn
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
+            SecurityGroupIds = new[] { stackSetup.VpcSetup.SecurityGroupId },
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
         };
 

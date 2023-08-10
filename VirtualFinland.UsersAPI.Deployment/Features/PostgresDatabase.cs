@@ -23,6 +23,12 @@ public class PostgresDatabase
         {
             SetupDevelopmentPostgresDatabase(config, stackSetup);
         }
+
+        if (config.GetBoolean("useRdsProxy") == true)
+        {
+            var rdsProxy = new RDSProxy(config, stackSetup, this);
+            DatabaseConnectionString = rdsProxy.DatabaseConnectionString; // Override the connection string with one from the proxy
+        }
     }
 
     /// <summary>
@@ -75,7 +81,7 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
-        var auroraInstance = new ClusterInstance(stackSetup.CreateResourceName("database-instance"), new()
+        new ClusterInstance(stackSetup.CreateResourceName("database-instance"), new()
         {
             ClusterIdentifier = auroraCluster.ClusterIdentifier,
             InstanceClass = "db.serverless",
@@ -87,9 +93,10 @@ public class PostgresDatabase
         var DbName = config.Require("dbName");
         var DbUsername = config.Require("dbAdmin");
         var DbHostName = auroraCluster.Endpoint;
-        DBIdentifier = auroraInstance.Identifier;
         var DbPassword = password.Result;
-        DbConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
+
+        DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
+        DBIdentifier = auroraCluster.ClusterIdentifier;
     }
 
     /// <summary>
@@ -127,11 +134,12 @@ public class PostgresDatabase
         var DbName = config.Require("dbName");
         var DbUsername = config.Require("dbAdmin");
         var DbHostName = rdsPostGreInstance.Endpoint;
-        DBIdentifier = rdsPostGreInstance.Identifier;
         var DbPassword = password.Result;
-        DbConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
+        DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
+        DBIdentifier = rdsPostGreInstance.Identifier;
     }
 
-    public Output<string> DbConnectionString = default!;
+    public SecretsManager SecretsManager = default!;
     public Output<string> DBIdentifier = default!;
+    public Output<string> DatabaseConnectionString = default!;
 }

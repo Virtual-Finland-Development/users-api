@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Pulumi;
+using Pulumi.Aws.Ec2;
 using VirtualFinland.UsersAPI.Deployment.Common;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using VirtualFinland.UsersAPI.Deployment.Features;
@@ -32,6 +33,12 @@ public class UsersApiStack : Stack
             }
         };
 
+        var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
+        {
+            VpcId = Output.Format($"{infraStackReferenceVpcId}"),
+            Name = "default"
+        });
+
         var stackSetup = new StackSetup()
         {
             ProjectName = projectName,
@@ -41,19 +48,20 @@ public class UsersApiStack : Stack
             VpcSetup = new VpcSetup()
             {
                 VpcId = Output.Format($"{infraStackReferenceVpcId}"),
-                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList as Output<IEnumerable<string>>
+                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList as Output<IEnumerable<string>>,
+                SecurityGroupId = defaultSecurityGroup.Apply(o => o.Id)
             }
         };
 
-        var dbConfigs = new PostgresDatabase(config, stackSetup);
-        var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
+        var database = new PostgresDatabase(config, stackSetup);
+        var secretsManager = new SecretsManager(config, stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretManagerSecret);
+        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretsManager);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
-        DBIdentifier = dbConfigs.DBIdentifier;
+        DBIdentifier = database.DBIdentifier;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretManagerSecret);
+        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretsManager);
         DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
