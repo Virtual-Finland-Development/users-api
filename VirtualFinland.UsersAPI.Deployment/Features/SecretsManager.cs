@@ -16,7 +16,7 @@ public class SecretsManager
             SecretString = secretValue,
         });
 
-        ReadPolicy = new Policy($"{stackSetup.ProjectName}-${secretName}-SecretManagerPolicy-{stackSetup.Environment}", new()
+        ReadPolicy = new Policy($"{stackSetup.ProjectName}-{secretName}-SecretManagerPolicy-{stackSetup.Environment}", new()
         {
             Description = "Users-API Secret Get Policy",
             PolicyDocument = Output.Format($@"{{
