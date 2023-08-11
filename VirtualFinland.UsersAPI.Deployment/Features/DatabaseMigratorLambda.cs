@@ -74,15 +74,9 @@ class DatabaseMigratorLambda
             PolicyArn = secretsManagerReadPolicy.Arn
         });
 
-        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
-        {
-            VpcId = stackSetup.VpcSetup.VpcId,
-            Name = "default"
-        });
-
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
+            SecurityGroupIds = new[] { stackSetup.VpcSetup.SecurityGroupId },
             SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
         };
 
