@@ -53,8 +53,6 @@ public class UsersApiStack : Stack
             // Cheers: https://stackoverflow.com/a/65642709
             case var value when value == Environments.Production.ToString().ToLowerInvariant():
                 return true;
-            case var value when value == Environments.Staging.ToString().ToLowerInvariant():
-                return true;
             default:
                 return false;
         }
