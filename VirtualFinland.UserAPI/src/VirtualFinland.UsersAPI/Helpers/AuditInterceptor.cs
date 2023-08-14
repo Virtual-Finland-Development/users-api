@@ -51,7 +51,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
 
     private AuditLog _CreateAuditLog(EntityEntry entry)
     {
-        var (primaryKeys, nonPrimaryKeys) = _GetLogMessageColumns(entry.Properties);
+        var (primaryKeys, nonPrimaryKeys) = _GetLogMessageColumns(entry);
         return new AuditLog
         {
             TableName = entry.Metadata.DisplayName(),
@@ -66,7 +66,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
     {
         var primaryKeys = entry.Properties.Where(property => property.Metadata.IsPrimaryKey())
             .Select(property => $"{property.Metadata.Name} = {property.CurrentValue}");
-        var nonPrimaryKeys = entry.Properties.Where(property => !property.Metadata.IsPrimaryKey() && entry.State != EntityState.Modified || property.IsModified)
+        var nonPrimaryKeys = entry.Properties.Where(property => !property.Metadata.IsPrimaryKey() && (entry.State != EntityState.Modified || property.IsModified))
             .Select(property => property.Metadata.Name);
 
         return new Tuple<List<string>, List<string>>(primaryKeys.ToList(), nonPrimaryKeys.ToList());
