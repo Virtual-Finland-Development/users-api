@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Newtonsoft.Json;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
@@ -8,6 +9,7 @@ namespace VirtualFinland.UserAPI.Helpers;
 public interface IAuditInterceptor : IInterceptor
 {
 }
+
 
 /// <summary>
 ///     Interceptor used to automatically set created and modified property values on classes that inherit from
@@ -34,23 +36,11 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
             switch (entry.State)
             {
                 case EntityState.Added:
-                    if (entry.Entity is Auditable insertedEntity)
-                    {
-                        _logger.LogInformation(CreateAddedMessage(entry));
-                        insertedEntity.Created = DateTime.UtcNow;
-                    }
-                    break;
                 case EntityState.Modified:
-                    if (entry.Entity is Auditable modifiedEntity)
-                    {
-                        _logger.LogInformation(CreateModifiedMessage(entry));
-                        modifiedEntity.Modified = DateTime.UtcNow;
-                    }
-                    break;
                 case EntityState.Deleted:
                     if (entry.Entity is Auditable)
                     {
-                        _logger.LogInformation(CreateDeletedMessage(entry));
+                        _logger.LogInformation($"AuditLog: {JsonConvert.SerializeObject(_CreateAuditLog(entry))}");
                     }
                     break;
             }
@@ -59,29 +49,35 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    string CreateAddedMessage(EntityEntry entry)
-        => $"Inserting {entry.Metadata.DisplayName()} "
-        + CreateLogMessagePropertiesPart(entry.Properties);
-    string CreateModifiedMessage(EntityEntry entry)
-        => $"Updating {entry.Metadata.DisplayName()} "
-        + CreateLogMessagePropertiesPart(entry.Properties.Where(
-            property => property.IsModified || property.Metadata.IsPrimaryKey()
-        ));
-    string CreateDeletedMessage(EntityEntry entry)
-        => $"Deleting {entry.Metadata.DisplayName()} "
-        + CreateLogMessagePropertiesPart(entry.Properties.Where(
-            property => property.Metadata.IsPrimaryKey()
-        ));
-
-    string CreateLogMessagePropertiesPart(IEnumerable<PropertyEntry> properties)
+    private AuditLog _CreateAuditLog(EntityEntry entry)
     {
-        var primaryKeys = properties.Where(property => property.Metadata.IsPrimaryKey())
+        var (primaryKeys, nonPrimaryKeys) = _GetLogMessageColumns(entry.Properties);
+        return new AuditLog
+        {
+            TableName = entry.Metadata.DisplayName(),
+            Action = entry.State.ToString(),
+            KeyValues = primaryKeys,
+            ChangedColumns = nonPrimaryKeys,
+            EventDate = DateTime.UtcNow
+        };
+    }
+
+    private Tuple<List<string>, List<string>> _GetLogMessageColumns(EntityEntry entry)
+    {
+        var primaryKeys = entry.Properties.Where(property => property.Metadata.IsPrimaryKey())
             .Select(property => $"{property.Metadata.Name} = {property.CurrentValue}");
-        var nonPrimaryKeys = properties.Where(property => !property.Metadata.IsPrimaryKey())
+        var nonPrimaryKeys = entry.Properties.Where(property => !property.Metadata.IsPrimaryKey() && entry.State != EntityState.Modified || property.IsModified)
             .Select(property => property.Metadata.Name);
 
-        if (nonPrimaryKeys.Any())
-            return $"{string.Join(", ", primaryKeys)} with {string.Join(", ", nonPrimaryKeys)}";
-        return $"{string.Join(", ", primaryKeys)}";
+        return new Tuple<List<string>, List<string>>(primaryKeys.ToList(), nonPrimaryKeys.ToList());
+    }
+
+    public record AuditLog
+    {
+        public string TableName { get; init; } = default!;
+        public string Action { get; init; } = default!;
+        public List<string> KeyValues { get; init; } = default!;
+        public List<string> ChangedColumns { get; init; } = default!;
+        public DateTime EventDate { get; init; } = default!;
     }
 }
