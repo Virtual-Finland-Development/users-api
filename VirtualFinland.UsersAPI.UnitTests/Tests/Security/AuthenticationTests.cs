@@ -106,8 +106,10 @@ public class AuthenticationTests : APITestBase
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
 
         var mockConfiguration = new Mock<IConfiguration>();
-        var features = new List<ISecurityFeature>();
-        features.Add(new SecurityFeature(new SecurityFeatureOptions { Issuer = dbEntity.externalIdentity.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" }));
+        var features = new List<ISecurityFeature>
+        {
+            new SecurityFeature(new SecurityFeatureOptions { Issuer = dbEntity.externalIdentity.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" })
+        };
 
         var applicationSecurity = new ApplicationSecurity(features);
         var userSecurityService = new UserSecurityService(_dbContext, mockLogger.Object, applicationSecurity);
