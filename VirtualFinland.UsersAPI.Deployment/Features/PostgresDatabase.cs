@@ -15,14 +15,6 @@ public class PostgresDatabase
 {
     public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
-        // @TODO: Remove oldDbSubNetGroup once the the new subnet group is deployed
-        var infraStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{stackSetup.Environment}");
-        var infraStackReferencePrivateSubnetIds = infraStackReference.RequireOutput("PrivateSubnetIds");
-        var oldDbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
-        {
-            SubnetIds = infraStackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString())),
-        });
-
         var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
