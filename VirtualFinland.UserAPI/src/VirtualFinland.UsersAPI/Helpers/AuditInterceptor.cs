@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Newtonsoft.Json;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers;
@@ -40,7 +39,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
                 case EntityState.Deleted:
                     if (entry.Entity is Auditable)
                     {
-                        _logger.LogInformation($"AuditLog: {JsonConvert.SerializeObject(_CreateAuditLog(entry))}");
+                        _logger.LogInformation("@{AuditLog}", _CreateAuditLog(entry));
                     }
                     break;
             }
@@ -56,8 +55,8 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
         {
             TableName = entry.Metadata.DisplayName(),
             Action = entry.State.ToString(),
-            KeyValues = primaryKeys,
-            ChangedColumns = nonPrimaryKeys,
+            KeyValues = primaryKeys.Any() ? $"[{string.Join(", ", primaryKeys)}]" : "[]",
+            ChangedColumns = nonPrimaryKeys.Any() ? $"[{string.Join(", ", nonPrimaryKeys)}]" : "[]",
             EventDate = DateTime.UtcNow
         };
     }
@@ -76,8 +75,8 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
     {
         public string TableName { get; init; } = default!;
         public string Action { get; init; } = default!;
-        public List<string> KeyValues { get; init; } = default!;
-        public List<string> ChangedColumns { get; init; } = default!;
+        public string KeyValues { get; init; } = default!;
+        public string ChangedColumns { get; init; } = default!;
         public DateTime EventDate { get; init; } = default!;
     }
 }
