@@ -143,8 +143,9 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
+
 app.UseSerilogRequestLogging();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
