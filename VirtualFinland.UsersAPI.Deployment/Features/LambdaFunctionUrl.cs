@@ -16,7 +16,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class LambdaFunctionUrl
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public LambdaFunctionUrl(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -84,14 +84,14 @@ class LambdaFunctionUrl
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
-            VpcId = stackSetup.VpcSetup.VpcId,
+            VpcId = vpcSetup.VpcId,
             Name = "default"
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
+            SubnetIds = vpcSetup.PrivateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");

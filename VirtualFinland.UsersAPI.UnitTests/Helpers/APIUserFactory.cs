@@ -22,7 +22,7 @@ public class APIUserFactory
         {
             Created = DateTime.UtcNow,
             Modified = DateTime.UtcNow,
-            Issuer = faker.Random.String(10),
+            Issuer = faker.Random.AlphaNumeric(10),
             IdentityId = faker.Random.Guid().ToString(),
             UserId = dbUser.Entity.Id
         });

@@ -1,7 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
@@ -10,11 +10,13 @@ public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
     private readonly ILogger<UserSecurityService> _logger;
+    private readonly IApplicationSecurity _applicationSecurity;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger)
+    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;
+        _applicationSecurity = applicationSecurity;
     }
 
     /// <summary>
@@ -25,7 +27,7 @@ public class UserSecurityService
     /// <exception cref="NotAuthorizedException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
     public async Task<Person> VerifyAndGetAuthenticatedUser(string token)
     {
-        var jwtTokenResult = ParseJWTToken(token);
+        var jwtTokenResult = ParseJwtToken(token);
 
         try
         {
@@ -42,46 +44,8 @@ public class UserSecurityService
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    public JWTTokenResult ParseJWTToken(string token)
+    public JwtTokenResult ParseJwtToken(string token)
     {
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new NotAuthorizedException("No token provided");
-        }
-
-        var issuer = GetTokenIssuer(token);
-        var userId = GetTokenUserId(token);
-
-        if (userId == null || issuer == null)
-        {
-            throw new NotAuthorizedException("The given token is not valid");
-        }
-        return new JWTTokenResult() { UserId = userId, Issuer = issuer };
-    }
-
-    private static string? GetTokenUserId(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        if (!tokenHandler.CanReadToken(token))
-        {
-            return string.Empty;
-        }
-
-        var jwtSecurityToken = tokenHandler.ReadJwtToken(token);
-        return string.IsNullOrEmpty(jwtSecurityToken.Subject) ? jwtSecurityToken.Claims.FirstOrDefault(o => o.Type == "userId")?.Value : jwtSecurityToken.Subject;
-    }
-
-    private static string? GetTokenIssuer(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var canReadToken = tokenHandler.CanReadToken(token);
-        return canReadToken ? tokenHandler.ReadJwtToken(token).Issuer : string.Empty;
-    }
-
-    public class JWTTokenResult
-    {
-        public string? UserId { get; set; }
-        public string? Issuer { get; set; }
+        return _applicationSecurity.ParseJwtToken(token);
     }
 }

@@ -8,5 +8,4 @@ public record StackSetup
     public bool IsProductionEnvironment;
     public string Environment = default!;
     public string ProjectName = default!;
-    public VpcSetup VpcSetup = default!;
 }
