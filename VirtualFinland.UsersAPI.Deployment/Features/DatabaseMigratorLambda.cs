@@ -12,7 +12,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class DatabaseMigratorLambda
 {
-    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
     {
         // Lambda function
         var execRole = new Role($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRole-{stackSetup.Environment}", new RoleArgs
@@ -76,14 +76,14 @@ class DatabaseMigratorLambda
 
         var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
-            VpcId = stackSetup.VpcSetup.VpcId,
+            VpcId = vpcSetup.VpcId,
             Name = "default"
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = defaultSecurityGroup.Apply(o => $"{o.Id}"),
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
+            SubnetIds = vpcSetup.PrivateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");

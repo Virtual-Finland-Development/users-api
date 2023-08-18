@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Linq;
 using Pulumi;
 using Pulumi.Aws.Rds;
 using Pulumi.Random;
@@ -11,11 +13,11 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, StackSetup stackSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
-        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup("dbsubnets", new()
+        var dbSubNetGroup = new Pulumi.Aws.Rds.SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
+            SubnetIds = vpcSetup.PrivateSubnetIds,
         });
 
         var password = new RandomPassword("password", new()
@@ -36,7 +38,7 @@ public class PostgresDatabase
             Username = config.Require("dbAdmin"),
             Password = password.Result,
             Tags = stackSetup.Tags,
-            PubliclyAccessible = !stackSetup.IsProductionEnvironment, // DEV: For Production set to FALSE
+            PubliclyAccessible = false,
             SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
             //SnapshotIdentifier = "" // See README.database.md for more information
         });

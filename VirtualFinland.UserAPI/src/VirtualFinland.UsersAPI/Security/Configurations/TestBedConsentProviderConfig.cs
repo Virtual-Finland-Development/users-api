@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.IdentityModel.Tokens;
 
-namespace VirtualFinland.UserAPI.Helpers.Configurations;
+namespace VirtualFinland.UserAPI.Security.Configurations;
 
 public class TestBedConsentProviderConfig : IConsentProviderConfig
 {
@@ -27,9 +27,9 @@ public class TestBedConsentProviderConfig : IConsentProviderConfig
 
     public TestBedConsentProviderConfig(IConfiguration configuration)
     {
-        _jwksJsonUrl = configuration["Testbed:ConsentJwksJsonUrl"] ?? throw new ArgumentNullException("Testbed:ConsentJwksJsonUrl");
-        Issuer = configuration["Testbed:ConsentIssuer"] ?? throw new ArgumentNullException("ConsentDataTestbed:ConsentIssuer");
-        ConsentVerifyUrl = configuration["Testbed:ConsentVerifyUrl"] ?? throw new ArgumentNullException("Testbed:ConsentVerifyUrl");
+        _jwksJsonUrl = configuration["Security:Testbed:ConsentJwksJsonUrl"];
+        Issuer = configuration["Security:Testbed:ConsentIssuer"];
+        ConsentVerifyUrl = configuration["Security:Testbed:ConsentVerifyUrl"];
     }
 
     public async void LoadPublicKeys()

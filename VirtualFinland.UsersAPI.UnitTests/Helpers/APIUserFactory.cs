@@ -36,7 +36,7 @@ public class APIUserFactory
             : dbContext.Persons.Add(new PersonBuilder().WithPersonDataAccessKey(personDataAccessKey).WithId(userId.Value).Build());
 
         var faker = new Faker();
-        var issuer = faker.Random.String(10);
+        var issuer = faker.Random.AlphaNumeric(10);
         var identityId = $"id_{faker.Random.Guid()}";
 
         var identityHash = dbContext.Cryptor.SecretHash(identityId);
