@@ -14,6 +14,7 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
+using VirtualFinland.UserAPI.Helpers;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
