@@ -16,14 +16,14 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class LambdaFunctionUrl
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public LambdaFunctionUrl(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
         var codesetsEndpointUrl = codesetStackReference.GetOutput("url");
 
         // Lambda function
-        var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
+        var execRole = new Role(stackSetup.CreateResourceName("LambdaRole"), new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -49,13 +49,13 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment"), new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManager.ReadPolicy.Arn
@@ -63,14 +63,14 @@ class LambdaFunctionUrl
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = new[] { stackSetup.VpcSetup.SecurityGroupId },
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
+            SecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
+            SubnetIds = vpcSetup.PrivateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
         Pulumi.Log.Info($"Application Artifact Path: {appArtifactPath}");
 
-        var lambdaFunction = new Function($"{stackSetup.ProjectName}-{stackSetup.Environment}", new FunctionArgs
+        var lambdaFunction = new Function(stackSetup.CreateResourceName("LambdaFunction"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
@@ -97,13 +97,13 @@ class LambdaFunctionUrl
             Tags = stackSetup.Tags
         });
 
-        var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs
+        var functionUrl = new FunctionUrl(stackSetup.CreateResourceName("FunctionUrl"), new FunctionUrlArgs
         {
             FunctionName = lambdaFunction.Arn,
             AuthorizationType = "NONE"
         });
 
-        new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
+        new Command(stackSetup.CreateResourceName("AddPermissions"), new CommandArgs
         {
             Create = Output.Format(
                 $"aws lambda add-permission --function-name {lambdaFunction.Arn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
-using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
@@ -12,10 +11,10 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class DatabaseMigratorLambda
 {
-    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, SecretsManager secretsManager)
+    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
     {
         // Lambda function
-        var execRole = new Role($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRole-{stackSetup.Environment}", new RoleArgs
+        var execRole = new Role(stackSetup.CreateResourceName("DatabaseMigratorLambdaRole"), new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -41,49 +40,28 @@ class DatabaseMigratorLambda
             Tags = stackSetup.Tags
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("DatabaseMigratorLambdaRoleAttachment"), new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-DatabaseMigratorLambdaSecretManagerPolicy-{stackSetup.Environment}", new()
-        {
-            Description = "Users-API Migration Runner Secrets Get Policy",
-            PolicyDocument = Output.Format($@"{{
-                ""Version"": ""2012-10-17"",
-                ""Statement"": [
-                    {{
-                        ""Effect"": ""Allow"",
-                        ""Action"": [
-                            ""secretsmanager:GetSecretValue"",
-                            ""secretsmanager:DescribeSecret""
-                        ],
-                        ""Resource"": [
-                            ""{secretsManager.Arn}""
-                        ]
-                    }}
-                ]
-            }}"),
-            Tags = stackSetup.Tags,
-        });
-
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-DatabaseMigratorLambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("DatabaseMigratorLambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
-            PolicyArn = secretsManagerReadPolicy.Arn
+            PolicyArn = secretsManager.ReadPolicy.Arn
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
-            SecurityGroupIds = new[] { stackSetup.VpcSetup.SecurityGroupId },
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds
+            SecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
+            SubnetIds = vpcSetup.PrivateSubnetIds
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
         Pulumi.Log.Info($"DatabaseMigrationRunner artifact Path: {appArtifactPath}");
 
-        var lambdaFunction = new Function($"{stackSetup.ProjectName}-DatabaseMigrationRunner-{stackSetup.Environment}", new FunctionArgs
+        var lambdaFunction = new Function(stackSetup.CreateResourceName("DatabaseMigrationRunner"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",

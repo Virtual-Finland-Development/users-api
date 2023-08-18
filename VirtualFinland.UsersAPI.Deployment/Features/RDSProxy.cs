@@ -11,7 +11,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 public class RDSProxy
 {
-    public RDSProxy(Config config, StackSetup stackSetup, PostgresDatabase database)
+    public RDSProxy(Config config, StackSetup stackSetup, PostgresDatabase database, VpcSetup vpcSetup)
     {
         // RDS proxy access secret
         var username = new RandomPassword(stackSetup.CreateResourceName("rdsproxy-username"), new()
@@ -27,7 +27,7 @@ public class RDSProxy
             OverrideSpecial = "_%@",
         });
         var rdsProxySecretString = Output.Format($"{{\"username\":\"{username.Result}\",\"password\":\"{password.Result}\"}}");
-        var rdsProxySecret = new SecretsManager(config, stackSetup, "rdsProxySecret", rdsProxySecretString);
+        var rdsProxySecret = new SecretsManager(stackSetup, "rdsProxySecret", rdsProxySecretString);
 
         // Create role for rds proxy
         var rdsProxyRole = new Role(stackSetup.CreateResourceName("database-proxy-role"), new RoleArgs()
@@ -56,7 +56,7 @@ public class RDSProxy
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-RdsProxy-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("RdsProxy-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = rdsProxyRole.Name,
             PolicyArn = rdsProxySecret.Arn
@@ -69,8 +69,8 @@ public class RDSProxy
             EngineFamily = "POSTGRESQL",
             RequireTls = true,
             RoleArn = rdsProxyRole.Arn,
-            VpcSubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
-            VpcSecurityGroupIds = new[] { stackSetup.VpcSetup.SecurityGroupId },
+            VpcSubnetIds = vpcSetup.PrivateSubnetIds,
+            VpcSecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
             Auths = new[] {
                 new ProxyAuthArgs
                 {

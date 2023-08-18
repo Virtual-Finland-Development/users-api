@@ -7,16 +7,16 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 public class SecretsManager
 {
-    public SecretsManager(Config config, StackSetup stackSetup, string secretName, Output<string> secretValue)
+    public SecretsManager(StackSetup stackSetup, string secretName, Output<string> secretValue)
     {
-        var secret = new Secret($"{stackSetup.ProjectName}-{secretName}-{stackSetup.Environment}");
-        new SecretVersion($"{stackSetup.ProjectName}-{secretName}Version-{stackSetup.Environment}", new()
+        var secret = new Secret(stackSetup.CreateResourceName(secretName));
+        new SecretVersion(stackSetup.CreateResourceName($"{secretName}Version"), new()
         {
             SecretId = secret.Id,
             SecretString = secretValue,
         });
 
-        ReadPolicy = new Policy($"{stackSetup.ProjectName}-{secretName}-SecretManagerPolicy-{stackSetup.Environment}", new()
+        ReadPolicy = new Policy(stackSetup.CreateResourceName($"{secretName}-SecretManagerPolicy"), new()
         {
             Description = "Users-API Secret Get Policy",
             PolicyDocument = Output.Format($@"{{

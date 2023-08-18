@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Pulumi;
 using Pulumi.Aws.Ec2;
 using VirtualFinland.UsersAPI.Deployment.Common;
@@ -18,11 +15,6 @@ public class UsersApiStack : Stack
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
 
-        var infraStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/{config.Require("infraStackReferenceName")}/{environment}");
-        var infraStackReferencePrivateSubnetIds = infraStackReference.RequireOutput("PrivateSubnetIds");
-        var infraStackReferencePrivateSubnetIdsAsList = infraStackReferencePrivateSubnetIds.Apply(o => ((ImmutableArray<object>)(o ?? new ImmutableArray<object>())).Select(x => x.ToString()));
-        var infraStackReferenceVpcId = infraStackReference.RequireOutput("VpcId");
-
         InputMap<string> tags = new()
         {
             {
@@ -33,35 +25,24 @@ public class UsersApiStack : Stack
             }
         };
 
-        var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
-        {
-            VpcId = Output.Format($"{infraStackReferenceVpcId}"),
-            Name = "default"
-        });
-
         var stackSetup = new StackSetup()
         {
             ProjectName = projectName,
             Environment = environment,
             IsProductionEnvironment = isProductionEnvironment,
             Tags = tags,
-            VpcSetup = new VpcSetup()
-            {
-                VpcId = Output.Format($"{infraStackReferenceVpcId}"),
-                PrivateSubnetIds = infraStackReferencePrivateSubnetIdsAsList as Output<IEnumerable<string>>,
-                SecurityGroupId = defaultSecurityGroup.Apply(o => o.Id)
-            }
         };
 
-        var database = new PostgresDatabase(config, stackSetup);
-        var secretsManager = new SecretsManager(config, stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var vpcSetup = new VpcSetup(stackSetup);
+        var database = new PostgresDatabase(config, stackSetup, vpcSetup);
+        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, secretsManager);
+        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, vpcSetup, secretManagerSecret);
         ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
         LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, secretsManager);
+        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
         DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
@@ -73,7 +54,6 @@ public class UsersApiStack : Stack
             // Cheers: https://stackoverflow.com/a/65642709
             var value when value == Environments.MvpProduction.ToString().ToLowerInvariant() => true,
             var value when value == Environments.MvpStaging.ToString().ToLowerInvariant() => true,
-            var value when value == Environments.Staging.ToString().ToLowerInvariant() => false,
             _ => false,
         };
     }

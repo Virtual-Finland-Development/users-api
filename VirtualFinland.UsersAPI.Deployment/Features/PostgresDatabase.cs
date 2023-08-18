@@ -13,20 +13,20 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, StackSetup stackSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
         if (stackSetup.IsProductionEnvironment)
         {
-            SetupProductionPostgresDatabase(config, stackSetup);
+            SetupProductionPostgresDatabase(config, stackSetup, vpcSetup);
         }
         else
         {
-            SetupDevelopmentPostgresDatabase(config, stackSetup);
+            SetupDevelopmentPostgresDatabase(config, stackSetup, vpcSetup);
         }
 
         if (config.GetBoolean("useRdsProxy") == true)
         {
-            var rdsProxy = new RDSProxy(config, stackSetup, this);
+            var rdsProxy = new RDSProxy(config, stackSetup, this, vpcSetup);
             DatabaseConnectionString = rdsProxy.DatabaseConnectionString; // Override the connection string with one from the proxy
         }
     }
@@ -34,11 +34,11 @@ public class PostgresDatabase
     /// <summary>
     ///  Setup AWS Aurora RDS Serverless V2 for postgresql
     /// </summary>
-    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup)
+    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
         {
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
+            SubnetIds = vpcSetup.PrivateSubnetIds,
         });
 
         var password = new RandomPassword(stackSetup.CreateResourceName("database-password"), new()
@@ -53,7 +53,7 @@ public class PostgresDatabase
         {
             Description = "Encryption key for the database",
             Tags = stackSetup.Tags,
-            DeletionWindowInDays = 30, // On deletion, the key will be retained for 30 days before being deleted permanently
+            DeletionWindowInDays = 90, // On deletion, the key will be retained for 30 days before being deleted permanently
         });
 
         // AWS Aurora RDS Serverless V2 for postgresql
@@ -102,11 +102,11 @@ public class PostgresDatabase
     /// <summary>
     /// Setup AWS RDS for postgresql
     /// </summary>
-    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup)
+    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
     {
-        var dbSubNetGroup = new SubnetGroup("dbsubnets", new()
+        var dbSubNetGroup = new SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
-            SubnetIds = stackSetup.VpcSetup.PrivateSubnetIds,
+            SubnetIds = vpcSetup.PrivateSubnetIds,
         });
 
         var password = new RandomPassword("password", new()
@@ -128,7 +128,8 @@ public class PostgresDatabase
             Password = password.Result,
             Tags = stackSetup.Tags,
             PubliclyAccessible = false,
-            SkipFinalSnapshot = true,
+            SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
+            //SnapshotIdentifier = "" // See README.database.md for more information
         });
 
         var DbName = config.Require("dbName");
