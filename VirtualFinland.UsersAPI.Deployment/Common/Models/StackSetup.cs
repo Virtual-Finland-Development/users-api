@@ -8,4 +8,5 @@ public record StackSetup
     public bool IsProductionEnvironment;
     public string Environment = default!;
     public string ProjectName = default!;
+    public string GetInfrastructureStackName() => $"{ProjectName}-Infrastructure-{Environment}";
 }

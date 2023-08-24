@@ -36,9 +36,12 @@ public class UsersApiStack : Stack
         var dbConfigs = new PostgresDatabase(config, stackSetup, vpcSetup);
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, vpcSetup, secretManagerSecret);
-        ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
-        LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var apiGateway = new ApiGatewayForLambdaFunction(stackSetup, usersApiFunction);
+        new WebApplicationFirewall(stackSetup, apiGateway);
+
+        ApplicationUrl = apiGateway.ApplicationUrl;
+        LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = dbConfigs.DBIdentifier;
 
         var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
