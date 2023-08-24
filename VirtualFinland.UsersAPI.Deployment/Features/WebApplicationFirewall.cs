@@ -45,7 +45,7 @@ class WebApplicationFirewall
                 new WebAclCustomResponseBodyArgs
                 {
                     Key = "AccessDenied",
-                    ContentType = "application/json",
+                    ContentType = "APPLICATION_JSON",
                     Content = "{\"message\":\"Access denied\"}",
                 }
             },
@@ -102,7 +102,7 @@ class WebApplicationFirewall
                             {
                                 SingleHeader = new WebAclRuleStatementByteMatchStatementFieldToMatchSingleHeaderArgs
                                 {
-                                    Name = "User-Agent"
+                                    Name = "user-agent"
                                 }
                             },
                             TextTransformations = new InputList<WebAclRuleStatementByteMatchStatementTextTransformationArgs>
@@ -146,7 +146,7 @@ class WebApplicationFirewall
                                             {
                                                 SingleHeader = new WebAclRuleStatementAndStatementStatementByteMatchStatementFieldToMatchSingleHeaderArgs
                                                 {
-                                                    Name = "X-Api-Key"
+                                                    Name = "x-api-key"
                                                 }
                                             },
                                             TextTransformations = new InputList<WebAclRuleStatementAndStatementStatementByteMatchStatementTextTransformationArgs>
