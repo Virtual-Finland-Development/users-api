@@ -22,6 +22,13 @@ class WebApplicationFirewall
         {
             Description = "Web ACL for the api gateway",
             Scope = "REGIONAL",
+            Tags = stackSetup.Tags,
+            VisibilityConfig = new WebAclVisibilityConfigArgs
+            {
+                CloudwatchMetricsEnabled = true,
+                MetricName = "WebAcl",
+                SampledRequestsEnabled = true
+            },
             DefaultAction = new WebAclDefaultActionArgs
             {
                 Block = new WebAclDefaultActionBlockArgs()
@@ -37,6 +44,7 @@ class WebApplicationFirewall
             {
                 new WebAclCustomResponseBodyArgs
                 {
+                    Key = "AccessDenied",
                     ContentType = "application/json",
                     Content = "{\"message\":\"Access denied\"}",
                 }
@@ -71,6 +79,12 @@ class WebApplicationFirewall
                             SearchString = "/"
                         }
                     },
+                    VisibilityConfig = new WebAclRuleVisibilityConfigArgs
+                    {
+                        CloudwatchMetricsEnabled = false,
+                        MetricName = "GrantAccessToHealthCheckPath",
+                        SampledRequestsEnabled = false
+                    }
                 },
                 new WebAclRuleArgs
                 {
@@ -103,6 +117,12 @@ class WebApplicationFirewall
                             SearchString = aclConfig.Require("dataspaceAgent")
                         }
                     },
+                    VisibilityConfig = new WebAclRuleVisibilityConfigArgs
+                    {
+                        CloudwatchMetricsEnabled = true,
+                        MetricName = "GrantAccessToDataspaceRequests",
+                        SampledRequestsEnabled = true
+                    }
                 },
                 new WebAclRuleArgs
                 {
@@ -159,7 +179,6 @@ class WebApplicationFirewall
                     }
                 },
             },
-            Tags = stackSetup.Tags
         });
 
 
