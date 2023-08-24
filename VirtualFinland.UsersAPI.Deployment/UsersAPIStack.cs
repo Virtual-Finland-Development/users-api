@@ -11,6 +11,7 @@ public class UsersApiStack : Stack
     {
         var config = new Config();
         bool isProductionEnvironment = IsProductionEnvironment();
+        var organization = Pulumi.Deployment.Instance.OrganizationName;
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
 
@@ -26,6 +27,7 @@ public class UsersApiStack : Stack
 
         var stackSetup = new StackSetup()
         {
+            Organization = organization,
             ProjectName = projectName,
             Environment = environment,
             IsProductionEnvironment = isProductionEnvironment,
