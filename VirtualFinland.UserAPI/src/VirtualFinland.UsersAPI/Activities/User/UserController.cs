@@ -11,6 +11,7 @@ namespace VirtualFinland.UserAPI.Activities.User;
 
 [ApiController]
 [Authorize]
+[Authorize(Policy = "RequestFromAccessFinland")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class UserController : ApiControllerBase

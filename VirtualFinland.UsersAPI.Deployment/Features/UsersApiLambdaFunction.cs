@@ -22,6 +22,11 @@ class UsersApiLambdaFunction
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
         var codesetsEndpointUrl = codesetStackReference.GetOutput("url");
 
+        // Retrieve ACL configs
+        var stackReference = new StackReference(stackSetup.GetInfrastructureStackName());
+        var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
+        var dataspaceAgent = new Config("acl").Require("dataspaceAgent");
+
         // Lambda function
         var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
         {
@@ -115,6 +120,12 @@ class UsersApiLambdaFunction
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
+                    {
+                        "Security__Access__SharedAccessKey", Output.Format($"{sharedAccessKey}")
+                    },
+                    {
+                        "Security__Access__DataspaceAgent", dataspaceAgent
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),

@@ -39,10 +39,9 @@ public class UsersApiStack : Stack
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
 
         var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
-        var apiGateway = new ApiGatewayForLambdaFunction(stackSetup, usersApiFunction);
-        new WebApplicationFirewall(stackSetup, apiGateway);
+        var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
-        ApplicationUrl = apiGateway.ApplicationUrl;
+        ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = dbConfigs.DBIdentifier;
 

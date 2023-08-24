@@ -87,8 +87,6 @@ class DatabaseMigratorLambda
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
-        Pulumi.Log.Info($"DatabaseMigrationRunner artifact Path: {appArtifactPath}");
-
         var lambdaFunction = new Function($"{stackSetup.ProjectName}-DatabaseMigrationRunner-{stackSetup.Environment}", new FunctionArgs
         {
             Role = execRole.Arn,

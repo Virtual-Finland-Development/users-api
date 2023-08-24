@@ -15,7 +15,7 @@ public static class ConsentServiceProviderExtensions
         var testBedConsentProviderConfig = new TestBedConsentProviderConfig(configuration);
         services.AddSingleton<IConsentProviderConfig>(testBedConsentProviderConfig);
 
-        if (configuration.GetValue<bool>("Security:Testbed:IsEnabled"))
+        if (configuration.GetValue<bool>("Security:Authorization:Testbed:IsEnabled"))
         {
             testBedConsentProviderConfig.LoadPublicKeys();
         }

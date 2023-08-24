@@ -13,6 +13,7 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
 [Authorize]
+[Authorize(Policy = "RequestFromDataspace")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase

@@ -7,7 +7,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class LambdaFunctionUrl
 {
-    public LambdaFunctionUrl(Config config, StackSetup stackSetup, UsersApiLambdaFunction lambdaFunction)
+    public LambdaFunctionUrl(StackSetup stackSetup, UsersApiLambdaFunction lambdaFunction)
     {
 
         var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs
@@ -19,7 +19,7 @@ class LambdaFunctionUrl
         new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
         {
             Create = Output.Format(
-                $"aws lambda add-permission --function-name {lambdaFunction.LambdaFunctionArn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccess")
+                $"aws lambda add-permission --function-name {lambdaFunction.LambdaFunctionArn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccessForSure")
         }, new CustomResourceOptions
         {
             DeleteBeforeReplace = true,
