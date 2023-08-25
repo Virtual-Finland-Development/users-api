@@ -104,8 +104,6 @@ builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
 builder.Services.AddTransient<TestbedConsentSecurityService>();
-builder.Services.AddSingleton<IAuthorizationHandler, RequestFromAccessFinlandRequirement>();
-builder.Services.AddSingleton<IAuthorizationHandler, RequestFromDataspaceRequirement>();
 
 //
 // Route handlers

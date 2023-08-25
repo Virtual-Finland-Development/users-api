@@ -121,10 +121,10 @@ class UsersApiLambdaFunction
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                     {
-                        "Security__Access__SharedAccessKey", Output.Format($"{sharedAccessKey}")
+                        "Security__Access__AccessFinland__AccessKey", Output.Format($"{sharedAccessKey}")
                     },
                     {
-                        "Security__Access__DataspaceAgent", dataspaceAgent
+                        "Security__Access__Dataspace__AccessKey", dataspaceAgent
                     }
                 }
             },

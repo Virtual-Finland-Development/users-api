@@ -50,8 +50,10 @@ public static class SecurityFeatureServiceExtensions
             foreach (var securityFeature in features) securityFeature.BuildAuthorization(options);
 
             // Add special policies
-            options.AddPolicy(Constants.Security.RequestFromAccessFinland, policy => policy.Requirements.Add(new RequestFromAccessFinlandRequirement(configuration)));
-            options.AddPolicy(Constants.Security.RequestFromDataspace, policy => policy.Requirements.Add(new RequestFromDataspaceRequirement(configuration)));
+            options.AddPolicy(Constants.Security.RequestFromAccessFinland, policy =>
+                policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:AccessFinland").Get<RequestAccessConfig>())));
+            options.AddPolicy(Constants.Security.RequestFromDataspace, policy =>
+                policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:Dataspace").Get<RequestAccessConfig>())));
         });
 
         authenticationBuilder.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer,
@@ -69,7 +71,7 @@ public static class SecurityFeatureServiceExtensions
         var authorizationHeader = headers[HeaderNames.Authorization].FirstOrDefault();
 
         if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
-            throw new NotAuthorizedException("Invalid token provided");
+            throw new NotAuthorizedException("No token provided");
 
         var token = authorizationHeader["Bearer ".Length..].Trim();
 
@@ -79,11 +81,7 @@ public static class SecurityFeatureServiceExtensions
 
         var issuer = jwtHandler.ReadJwtToken(token).Issuer;
 
-        var feature = features.SingleOrDefault(securityFeature => securityFeature.Issuer == issuer);
-
-        if (feature is null)
-            throw new NotAuthorizedException("Invalid token provided");
-
+        var feature = features.SingleOrDefault(securityFeature => securityFeature.Issuer == issuer) ?? throw new NotAuthorizedException("Invalid token provider");
         return feature.GetSecurityPolicySchemeName();
     }
 }
