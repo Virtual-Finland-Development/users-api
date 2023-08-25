@@ -130,6 +130,9 @@ class LambdaFunctionUrl
             AuthorizationType = "NONE"
         });
 
+        /* 
+        // @TODO: Disabled as pulumi, for unknown reason, fails in recognizing the DeleteBeforeReplace setting..
+        // Causes permission trouble when deploying a fresh environment..
         new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
         {
             Create = Output.Format(
@@ -141,7 +144,7 @@ class LambdaFunctionUrl
             {
                 lambdaFunction
             }
-        });
+        }); */
 
         ApplicationUrl = functionUrl.FunctionUrlResult;
         LambdaFunctionArn = lambdaFunction.Arn;
