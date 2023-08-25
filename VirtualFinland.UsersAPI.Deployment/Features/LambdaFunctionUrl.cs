@@ -19,7 +19,7 @@ class LambdaFunctionUrl
         new Command($"{stackSetup.ProjectName}-AddPermissions-{stackSetup.Environment}", new CommandArgs
         {
             Create = Output.Format(
-                $"aws lambda add-permission --function-name {lambdaFunction.LambdaFunctionArn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlAllowAccessForSure")
+                $"aws lambda add-permission --function-name {lambdaFunction.LambdaFunctionArn} --action lambda:InvokeFunctionUrl --principal '*' --function-url-auth-type NONE --statement-id FunctionUrlGrantAccess")
         }, new CustomResourceOptions
         {
             DeleteBeforeReplace = true,
