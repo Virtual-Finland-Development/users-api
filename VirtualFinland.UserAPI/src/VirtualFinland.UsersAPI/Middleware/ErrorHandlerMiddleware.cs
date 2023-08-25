@@ -10,11 +10,12 @@ public class ErrorHandlerMiddleware
     private readonly ILogger<ErrorHandlerMiddleware> _logger;
 
     /// <summary>
-    /// RFC7807 Problem Details
+    /// Dataspace error response details
     /// </summary>
-    private class ErrorResponseDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
+    private class ErrorResponseDetails
     {
-        
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 
     public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
@@ -33,23 +34,29 @@ public class ErrorHandlerMiddleware
             _logger.LogError(error, "Request processing failure!");
             var response = context.Response;
             response.ContentType = "application/json";
-            Dictionary<string, List<string>> validationErrorDetails = new Dictionary<string, List<string>>();
 
-            switch(error)
+            ErrorResponseDetails errorResponseDetails = new()
+            {
+                Type = "InternalServerError",
+                Message = error.Message
+            };
+
+            switch (error)
             {
                 case NotAuthorizedException:
                     // custom application error
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    errorResponseDetails.Type = "Unauthorized";
                     break;
                 case NotFoundException:
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
+                    errorResponseDetails.Type = "NotFound";
                     break;
                 case BadRequestException e:
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-
-                    e.ValidationErrors?.ForEach( o => validationErrorDetails.Add(o.Field, new List<string>() { o.Message }));
+                    errorResponseDetails.Type = "BadRequest";
                     break;
                 default:
                     // unhandled error
@@ -57,29 +64,12 @@ public class ErrorHandlerMiddleware
                     break;
             }
 
-            ErrorResponseDetails errorResponseDetails = validationErrorDetails?.Count == 0 ? new ErrorResponseDetails()
-            {
-                Type = "https://tools.ietf.org/html/rfc7231",
-                Title = error.Message,
-                Detail = error.Message,
-                Status = response.StatusCode,
-                Instance = response.HttpContext.Request.Path
-            } : new ErrorResponseDetails()
-            {
-                Type = "https://tools.ietf.org/html/rfc7231",
-                Title = error.Message,
-                Detail = error.Message,
-                Status = response.StatusCode,
-                Instance = response.HttpContext.Request.Path,
-                Extensions = { new KeyValuePair<string, object?>( "errors", validationErrorDetails)  }
-            };
-
             var result = JsonSerializer.Serialize(errorResponseDetails,
                 new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            });
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                });
             await response.WriteAsync(result);
         }
     }
