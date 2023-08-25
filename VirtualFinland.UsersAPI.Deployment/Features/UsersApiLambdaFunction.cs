@@ -121,10 +121,13 @@ class UsersApiLambdaFunction
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                     {
-                        "Security__Access__AccessFinland__AccessKeys", Output.Format($"[{sharedAccessKey}]")
+                        "Security__Access__AccessFinland__AccessKeys__0", Output.Format($"{sharedAccessKey}") // Note: maybe override the appsettings list values some other way?
                     },
                     {
-                        "Security__Access__Dataspace__AccessKeys", $"[{dataspaceAgent}]"
+                        "Security__Access__Dataspace__AccessKeys__0", dataspaceAgent
+                    },
+                    {
+                        "Security__Access__Dataspace__AccessKeys__1", dataspaceAgent
                     }
                 }
             },
