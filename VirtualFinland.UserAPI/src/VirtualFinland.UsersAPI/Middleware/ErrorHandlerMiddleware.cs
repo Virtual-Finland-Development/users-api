@@ -37,8 +37,8 @@ public class ErrorHandlerMiddleware
 
             ErrorResponseDetails errorResponseDetails = new()
             {
-                Type = "InternalServerError",
-                Message = error.Message
+                Type = "",
+                Message = ""
             };
 
             switch (error)
@@ -47,20 +47,25 @@ public class ErrorHandlerMiddleware
                     // custom application error
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     errorResponseDetails.Type = "Unauthorized";
+                    errorResponseDetails.Message = error.Message ?? "Not authorized";
                     break;
                 case NotFoundException:
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     errorResponseDetails.Type = "NotFound";
+                    errorResponseDetails.Message = error.Message ?? "Not found";
                     break;
-                case BadRequestException e:
+                case BadRequestException:
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     errorResponseDetails.Type = "BadRequest";
+                    errorResponseDetails.Message = error.Message ?? "Bad request";
                     break;
                 default:
                     // unhandled error
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    errorResponseDetails.Type = "InternalServerError";
+                    errorResponseDetails.Message = error.Message ?? "Internal Server Error";
                     break;
             }
 
