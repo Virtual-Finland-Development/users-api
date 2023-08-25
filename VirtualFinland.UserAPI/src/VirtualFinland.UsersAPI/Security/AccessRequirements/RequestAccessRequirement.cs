@@ -5,18 +5,16 @@ namespace VirtualFinland.UserAPI.Security.AccessRequirements;
 
 public class RequestAccessRequirement : AuthorizationHandler<RequestAccessRequirement>, IAuthorizationRequirement
 {
-    private readonly string _headerName;
-    private readonly string _accessKey;
+    private readonly RequestAccessConfig _config;
     public RequestAccessRequirement(RequestAccessConfig config)
     {
-        _headerName = config.HeaderName;
-        _accessKey = config.AccessKey;
+        _config = config;
     }
 
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequestAccessRequirement requirement)
     {
         if (context.Resource is DefaultHttpContext httpContext &&
-            httpContext.Request.Headers.TryGetValue(_headerName, out var apiKeyHeader))
+            httpContext.Request.Headers.TryGetValue(_config.HeaderName, out var apiKeyHeader))
         {
             string apiKey = apiKeyHeader.ToString();
             if (IsValidApiKey(apiKey))
@@ -29,6 +27,9 @@ public class RequestAccessRequirement : AuthorizationHandler<RequestAccessRequir
 
     private bool IsValidApiKey(string apiKey)
     {
-        return apiKey == _accessKey;
+        foreach (var _accessKey in _config.AccessKeys)
+            if (apiKey == _accessKey)
+                return true;
+        return false;
     }
 }
