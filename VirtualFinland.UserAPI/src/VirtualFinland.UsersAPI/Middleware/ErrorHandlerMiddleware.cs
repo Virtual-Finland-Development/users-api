@@ -10,11 +10,12 @@ public class ErrorHandlerMiddleware
     private readonly ILogger<ErrorHandlerMiddleware> _logger;
 
     /// <summary>
-    /// RFC7807 Problem Details
+    /// Dataspace error response details
     /// </summary>
-    private class ErrorResponseDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
+    private class ErrorResponseDetails
     {
-
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
     }
 
     public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
@@ -37,46 +38,40 @@ public class ErrorHandlerMiddleware
 
             var response = context.Response;
             response.ContentType = "application/json";
-            Dictionary<string, List<string>> validationErrorDetails = new Dictionary<string, List<string>>();
 
+            ErrorResponseDetails errorResponseDetails = new()
+            {
+                Type = "",
+                Message = ""
+            };
+          
             switch (error)
             {
                 case NotAuthorizedException:
                     // custom application error
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    errorResponseDetails.Type = "Unauthorized";
+                    errorResponseDetails.Message = error.Message ?? "Not authorized";
                     break;
                 case NotFoundException:
                     // not found error
                     response.StatusCode = (int)HttpStatusCode.NotFound;
+                    errorResponseDetails.Type = "NotFound";
+                    errorResponseDetails.Message = error.Message ?? "Not found";
                     break;
-                case BadRequestException e:
+                case BadRequestException:
                     // bad request error
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-
-                    e.ValidationErrors?.ForEach(o => validationErrorDetails.Add(o.Field, new List<string>() { o.Message }));
+                    errorResponseDetails.Type = "BadRequest";
+                    errorResponseDetails.Message = error.Message ?? "Bad request";
                     break;
                 default:
                     // unhandled error
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    errorResponseDetails.Type = "InternalServerError";
+                    errorResponseDetails.Message = error.Message ?? "Internal Server Error";
                     break;
             }
-
-            ErrorResponseDetails errorResponseDetails = validationErrorDetails?.Count == 0 ? new ErrorResponseDetails()
-            {
-                Type = "https://tools.ietf.org/html/rfc7231",
-                Title = "An error occurred while processing your request",
-                Detail = error.Message,
-                Status = response.StatusCode,
-                Instance = response.HttpContext.Request.Path
-            } : new ErrorResponseDetails()
-            {
-                Type = "https://tools.ietf.org/html/rfc7231",
-                Title = "An error occurred while processing your request",
-                Detail = error.Message,
-                Status = response.StatusCode,
-                Instance = response.HttpContext.Request.Path,
-                Extensions = { new KeyValuePair<string, object?>("errors", validationErrorDetails) }
-            };
 
             var result = JsonSerializer.Serialize(errorResponseDetails,
                 new JsonSerializerOptions
