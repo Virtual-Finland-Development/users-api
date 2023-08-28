@@ -26,6 +26,7 @@ class UsersApiLambdaFunction
         var stackReference = new StackReference(stackSetup.GetInfrastructureStackName());
         var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
         var aclConfig = new Config("acl");
+        var authorizationConfig = new Config("auth");
 
         // Lambda function
         var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
@@ -121,19 +122,28 @@ class UsersApiLambdaFunction
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                     {
-                        "Security__Access__AccessFinland__AccessKeys__0", Output.Format($"{sharedAccessKey}") // Note: maybe override the appsettings list values some other way?
+                        "Security__Access__AccessFinland__IsEnabled", aclConfig.Require("accessfinland-isEnabled")
                     },
                     {
-                        "Security__Access__AccessFinland__IsEnabled", aclConfig.Require("accessfinlandIsEnabled")
+                        "Security__Access__AccessFinland__AccessKeys__0", Output.Format($"{sharedAccessKey}")
                     },
                     {
-                        "Security__Access__Dataspace__AccessKeys__0", aclConfig.Require("dataspaceAagent")
+                        "Security__Access__Dataspace__IsEnabled", aclConfig.Require("dataspace-isEnabled")
+                    },
+                    {
+                        "Security__Access__Dataspace__AccessKeys__0", aclConfig.Require("dataspace-agent") // Note: maybe override the appsettings list values some other way?
                     },
                     {
                         "Security__Access__Dataspace__AccessKeys__1", "" // Overwrite the default value
                     },
                     {
-                        "Security__Access__Dataspace__IsEnabled", aclConfig.Require("dataspaceIsEnabled")
+                        "Security__Authorization__Testbed__IsEnabled", authorizationConfig.Require("testbed-isEnabled")
+                    },
+                    {
+                        "Security__Authorization__Sinuna__IsEnabled", authorizationConfig.Require("sinuna-isEnabled")
+                    },
+                    {
+                        "Security__Authorization__SuomiFi__IsEnabled", authorizationConfig.Require("suomifi-isEnabled")
                     },
                 }
             },
