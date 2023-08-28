@@ -9,3 +9,6 @@ config:
   users-api:infraStackReferenceName: infrastructure
   users-api:appArtifactPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
   users-api:dbMigratorArtifactPath: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+  acl:accessfinlandIsEnabled: false
+  acl:dataspaceIsEnabled: false
+  acl:dataSpaceAagent: ""

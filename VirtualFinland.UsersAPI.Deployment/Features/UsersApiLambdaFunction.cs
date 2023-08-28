@@ -25,7 +25,7 @@ class UsersApiLambdaFunction
         // Retrieve ACL configs
         var stackReference = new StackReference(stackSetup.GetInfrastructureStackName());
         var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
-        var dataspaceAgent = new Config("acl").Require("dataspaceAgent");
+        var aclConfig = new Config("acl");
 
         // Lambda function
         var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
@@ -124,11 +124,17 @@ class UsersApiLambdaFunction
                         "Security__Access__AccessFinland__AccessKeys__0", Output.Format($"{sharedAccessKey}") // Note: maybe override the appsettings list values some other way?
                     },
                     {
-                        "Security__Access__Dataspace__AccessKeys__0", dataspaceAgent
+                        "Security__Access__AccessFinland__IsEnabled", aclConfig.Require("accessfinlandIsEnabled")
                     },
                     {
-                        "Security__Access__Dataspace__AccessKeys__1", dataspaceAgent
-                    }
+                        "Security__Access__Dataspace__AccessKeys__0", aclConfig.Require("dataspaceAagent")
+                    },
+                    {
+                        "Security__Access__Dataspace__AccessKeys__1", "" // Overwrite the default value
+                    },
+                    {
+                        "Security__Access__Dataspace__IsEnabled", aclConfig.Require("dataspaceIsEnabled")
+                    },
                 }
             },
             Code = new FileArchive(appArtifactPath),

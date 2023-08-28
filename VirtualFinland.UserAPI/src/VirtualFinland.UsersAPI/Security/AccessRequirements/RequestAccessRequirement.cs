@@ -13,6 +13,9 @@ public class RequestAccessRequirement : AuthorizationHandler<RequestAccessRequir
 
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequestAccessRequirement requirement)
     {
+        if (!_config.IsEnabled)
+            context.Succeed(requirement);
+
         if (context.Resource is DefaultHttpContext httpContext &&
             httpContext.Request.Headers.TryGetValue(_config.HeaderName, out var apiKeyHeader))
         {
@@ -27,9 +30,12 @@ public class RequestAccessRequirement : AuthorizationHandler<RequestAccessRequir
 
     private bool IsValidApiKey(string apiKey)
     {
-        foreach (var _accessKey in _config.AccessKeys)
-            if (apiKey == _accessKey)
+        foreach (var accessKey in _config.AccessKeys)
+        {
+            if (accessKey == "") continue;
+            if (apiKey == accessKey)
                 return true;
+        }
         return false;
     }
 }
