@@ -28,13 +28,10 @@ public class ApplicationSecurity : IApplicationSecurity
 
         // Resolve the security feature by token issuer (must be enabled) // @TODO: ensure the security feature is loaded before this
         var tokenIssuer = parsedToken.Issuer;
-        var securityFeature = _features.Find(o => o.Issuer == tokenIssuer);
-        if (securityFeature == null) throw new NotAuthorizedException("The given token issuer is not valid");
+        var securityFeature = _features.Find(o => o.Issuer == tokenIssuer) ?? throw new NotAuthorizedException("The given token issuer is not valid");
 
         // Resolve user id
-        var userId = securityFeature.ResolveTokenUserId(parsedToken);
-        if (userId == null) throw new NotAuthorizedException("The given token claim is not valid");
-
+        var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
         return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer };
     }
 }

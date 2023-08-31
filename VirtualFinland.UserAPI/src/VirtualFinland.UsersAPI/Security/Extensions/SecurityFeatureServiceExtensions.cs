@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Net.Http.Headers;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Security.AccessRequirements;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -19,19 +20,15 @@ public static class SecurityFeatureServiceExtensions
     {
         var features = new List<ISecurityFeature>();
 
-        var securityConfigurations = configuration.GetSection("Security").Get<Dictionary<string, SecurityFeatureOptions>>();
+        var securityConfigurations = configuration.GetSection("Security:Authorization").Get<Dictionary<string, SecurityFeatureOptions>>();
         var enabledSecurityFeatureNames = securityConfigurations.Where(x => x.Value.IsEnabled).Select(x => x.Key).ToArray();
         if (!enabledSecurityFeatureNames.Any()) throw new ArgumentException("No security features enabled");
 
-        // Map security feature name to correct class
+        // Dynamically map security feature name to correct class
         foreach (var securityFeatureName in enabledSecurityFeatureNames)
         {
-            var securityFeatureType = Type.GetType($"VirtualFinland.UserAPI.Security.Features.{securityFeatureName}SecurityFeature");
-            if (securityFeatureType is null) throw new ArgumentException($"Security feature {securityFeatureName} not found");
-
-            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName]) as ISecurityFeature;
-            if (securityFeature is null) throw new ArgumentException($"Security feature {securityFeatureName} not found");
-
+            var securityFeatureType = Type.GetType($"VirtualFinland.UserAPI.Security.Features.{securityFeatureName}SecurityFeature") ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
+            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName]) as ISecurityFeature ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
             features.Add(securityFeature);
         }
 
@@ -51,6 +48,12 @@ public static class SecurityFeatureServiceExtensions
         services.AddAuthorization(options =>
         {
             foreach (var securityFeature in features) securityFeature.BuildAuthorization(options);
+
+            // Add special policies
+            options.AddPolicy(Constants.Security.RequestFromAccessFinland, policy =>
+                policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:AccessFinland").Get<RequestAccessConfig>())));
+            options.AddPolicy(Constants.Security.RequestFromDataspace, policy =>
+                policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:Dataspace").Get<RequestAccessConfig>())));
         });
 
         authenticationBuilder.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer,
@@ -68,7 +71,7 @@ public static class SecurityFeatureServiceExtensions
         var authorizationHeader = headers[HeaderNames.Authorization].FirstOrDefault();
 
         if (string.IsNullOrEmpty(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
-            throw new NotAuthorizedException("Invalid token provided");
+            throw new NotAuthorizedException("No token provided");
 
         var token = authorizationHeader["Bearer ".Length..].Trim();
 
@@ -78,11 +81,7 @@ public static class SecurityFeatureServiceExtensions
 
         var issuer = jwtHandler.ReadJwtToken(token).Issuer;
 
-        var feature = features.SingleOrDefault(securityFeature => securityFeature.Issuer == issuer);
-
-        if (feature is null)
-            throw new NotAuthorizedException("Invalid token provided");
-
+        var feature = features.SingleOrDefault(securityFeature => securityFeature.Issuer == issuer) ?? throw new NotAuthorizedException("Invalid token provider");
         return feature.GetSecurityPolicySchemeName();
     }
 }

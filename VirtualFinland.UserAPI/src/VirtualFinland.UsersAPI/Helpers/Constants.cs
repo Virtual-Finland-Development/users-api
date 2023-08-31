@@ -11,6 +11,8 @@ public static class Constants
     public static class Security
     {
         public static string ResolvePolicyFromTokenIssuer => "ResolvePolicyFromTokenIssuer";
+        public static string RequestFromAccessFinland => "RequestFromAccessFinland";
+        public static string RequestFromDataspace => "RequestFromDataspace";
     }
 
     public static class Headers

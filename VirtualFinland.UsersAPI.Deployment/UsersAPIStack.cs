@@ -11,6 +11,7 @@ public class UsersApiStack : Stack
     {
         var config = new Config();
         bool isProductionEnvironment = IsProductionEnvironment();
+        var organization = Pulumi.Deployment.Instance.OrganizationName;
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
 
@@ -26,6 +27,7 @@ public class UsersApiStack : Stack
 
         var stackSetup = new StackSetup()
         {
+            Organization = organization,
             ProjectName = projectName,
             Environment = environment,
             IsProductionEnvironment = isProductionEnvironment,
@@ -36,9 +38,11 @@ public class UsersApiStack : Stack
         var dbConfigs = new PostgresDatabase(config, stackSetup, vpcSetup);
         var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
 
-        var lambdaFunctionConfigs = new LambdaFunctionUrl(config, stackSetup, vpcSetup, secretManagerSecret);
-        ApplicationUrl = lambdaFunctionConfigs.ApplicationUrl;
-        LambdaId = lambdaFunctionConfigs.LambdaFunctionId;
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+
+        ApplicationUrl = apiProvider.ApplicationUrl;
+        LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = dbConfigs.DBIdentifier;
 
         var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
