@@ -31,7 +31,11 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
-            _logger.LogError(error, "Request processing failure!");
+            if (error is not NotFoundException && error is not NotAuthorizedException)
+            {
+                _logger.LogError(error, "Request processing failure!");
+            }
+
             var response = context.Response;
             response.ContentType = "application/json";
 
@@ -40,7 +44,7 @@ public class ErrorHandlerMiddleware
                 Type = "",
                 Message = ""
             };
-
+          
             switch (error)
             {
                 case NotAuthorizedException:
