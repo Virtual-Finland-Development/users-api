@@ -56,6 +56,10 @@ public class PostgresDatabase
             DeletionWindowInDays = 30, // On deletion, the key will be retained for 30 days before being deleted permanently
         });
 
+        var DbName = config.Require("dbName");
+        var DbUsername = config.Require("dbAdmin");
+        var DbPassword = password.Result;
+
         // AWS Aurora RDS Serverless V2 for postgresql
         var clusterIdentifier = stackSetup.CreateResourceName("database-cluster");
         var auroraCluster = new Cluster(clusterIdentifier, new ClusterArgs()
@@ -70,9 +74,9 @@ public class PostgresDatabase
                 MinCapacity = 0.5,
             },
 
-            DatabaseName = config.Require("dbName"),
-            MasterUsername = config.Require("dbAdmin"),
-            MasterPassword = password.Result,
+            DatabaseName = DbName,
+            MasterUsername = DbUsername,
+            MasterPassword = DbPassword,
 
             SkipFinalSnapshot = false,
             DeletionProtection = true,
@@ -81,6 +85,7 @@ public class PostgresDatabase
 
             DbSubnetGroupName = dbSubNetGroup.Name,
             Tags = stackSetup.Tags,
+            BackupRetentionPeriod = 7, // @TODO: Define for production
         });
 
         var dbInstanceIdentifier = stackSetup.CreateResourceName("database-instance");
@@ -94,11 +99,7 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
-        var DbName = config.Require("dbName");
-        var DbUsername = config.Require("dbAdmin");
         var DbHostName = auroraCluster.Endpoint;
-        var DbPassword = password.Result;
-
         DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DBIdentifier = auroraCluster.ClusterIdentifier;
     }
