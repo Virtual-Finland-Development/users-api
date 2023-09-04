@@ -9,7 +9,7 @@ public class VpcSetup
 {
     public VpcSetup(StackSetup stackSetup)
     {
-        var vpc = new Vpc($"{stackSetup.ProjectName}-vf-vpc-{stackSetup.Environment}", new VpcArgs()
+        var vpc = new Vpc(stackSetup.CreateResourceName("vf-vpc"), new VpcArgs()
         {
             Tags = stackSetup.Tags,
             EnableDnsHostnames = true,
@@ -19,10 +19,18 @@ public class VpcSetup
             }
         });
 
-        this.VpcId = vpc.VpcId;
-        this.PrivateSubnetIds = vpc.PrivateSubnetIds;
+        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new Pulumi.Aws.Ec2.GetSecurityGroupInvokeArgs()
+        {
+            VpcId = vpc.VpcId,
+            Name = "default"
+        });
+
+        VpcId = vpc.VpcId;
+        PrivateSubnetIds = vpc.PrivateSubnetIds;
+        SecurityGroupId = defaultSecurityGroup.Apply(sg => sg.Id);
     }
 
-    public Input<string>? VpcId = default!;
+    public Input<string> VpcId = default!;
     public Output<ImmutableArray<string>> PrivateSubnetIds = default!;
+    public Input<string> SecurityGroupId = default!;
 }

@@ -5,5 +5,6 @@ public enum Environments
     Dev,
     Test,
     Staging,
-    Production
+    MvpStaging,
+    MvpProduction
 }

@@ -15,7 +15,7 @@ public class UsersApiStack : Stack
         var environment = Pulumi.Deployment.Instance.StackName;
         var projectName = Pulumi.Deployment.Instance.ProjectName;
 
-        InputMap<string> tags = new InputMap<string>()
+        InputMap<string> tags = new()
         {
             {
                 "vfd:stack", Pulumi.Deployment.Instance.StackName
@@ -35,15 +35,15 @@ public class UsersApiStack : Stack
         };
 
         var vpcSetup = new VpcSetup(stackSetup);
-        var dbConfigs = new PostgresDatabase(config, stackSetup, vpcSetup);
-        var secretManagerSecret = new SecretsManager(config, stackSetup, dbConfigs);
+        var database = new PostgresDatabase(config, stackSetup, vpcSetup);
+        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
 
         var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
-        DBIdentifier = dbConfigs.DBIdentifier;
+        DBIdentifier = database.DBIdentifier;
 
         var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
         DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
@@ -52,14 +52,13 @@ public class UsersApiStack : Stack
     private bool IsProductionEnvironment()
     {
         var stackName = Pulumi.Deployment.Instance.StackName;
-        switch (stackName)
+        return stackName switch
         {
             // Cheers: https://stackoverflow.com/a/65642709
-            case var value when value == Environments.Production.ToString().ToLowerInvariant():
-                return true;
-            default:
-                return false;
-        }
+            var value when value == Environments.MvpProduction.ToString().ToLowerInvariant() => true,
+            var value when value == Environments.MvpStaging.ToString().ToLowerInvariant() => true,
+            _ => false,
+        };
     }
 
     // Outputs for Pulumi service

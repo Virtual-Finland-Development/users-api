@@ -2,7 +2,7 @@ using Pulumi;
 
 namespace VirtualFinland.UsersAPI.Deployment.Common.Models;
 
-public record StackSetup
+public class StackSetup
 {
     public InputMap<string> Tags = default!;
     public bool IsProductionEnvironment;
@@ -10,5 +10,6 @@ public record StackSetup
     public string ProjectName = default!;
     public string Organization = default!;
     public string Region = default!;
+    public string CreateResourceName(string name) => $"{ProjectName}-{name}-{Environment}".ToLower();
     public string GetInfrastructureStackName() => $"{Organization}/infrastructure/{Environment}";
 }

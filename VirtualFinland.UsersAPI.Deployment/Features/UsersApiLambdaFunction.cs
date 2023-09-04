@@ -29,7 +29,7 @@ class UsersApiLambdaFunction
         var authorizationConfig = new Config("auth");
 
         // Lambda function
-        var execRole = new Role($"{stackSetup.ProjectName}-LambdaRole-{stackSetup.Environment}", new RoleArgs
+        var execRole = new Role(stackSetup.CreateResourceName("LambdaRole"), new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -55,13 +55,13 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags
         });
 
-        var rolePolicyAttachment = new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        var rolePolicyAttachment = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment"), new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        var secretsManagerReadPolicy = new Policy($"{stackSetup.ProjectName}-LambdaSecretManagerPolicy-{stackSetup.Environment}", new()
+        var secretsManagerReadPolicy = new Policy(stackSetup.CreateResourceName("LambdaSecretManagerPolicy"), new()
         {
             Description = "Users-API Secret Get Policy",
             PolicyDocument = Output.Format($@"{{
@@ -82,13 +82,13 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags,
         });
 
-        new RolePolicyAttachment($"{stackSetup.ProjectName}-LambdaRoleAttachment-SecretManager-{stackSetup.Environment}", new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
         });
 
-        var defaultSecurityGroup = Pulumi.Aws.Ec2.GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
+        var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = vpcSetup.VpcId,
             Name = "default"
@@ -101,7 +101,7 @@ class UsersApiLambdaFunction
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("APPLICATION_ARTIFACT_PATH") ?? config.Require("appArtifactPath");
-        LambdaFunctionResource = new Function($"{stackSetup.ProjectName}-{stackSetup.Environment}", new FunctionArgs
+        LambdaFunctionResource = new Function(stackSetup.CreateResourceName("LambdaFunction"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",

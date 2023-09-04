@@ -10,7 +10,7 @@ class LambdaFunctionUrl
     public LambdaFunctionUrl(StackSetup stackSetup, UsersApiLambdaFunction lambdaFunction)
     {
 
-        var functionUrl = new FunctionUrl($"{stackSetup.ProjectName}-FunctionUrl-{stackSetup.Environment}", new FunctionUrlArgs
+        var functionUrl = new FunctionUrl(stackSetup.CreateResourceName("FunctionUrl"), new FunctionUrlArgs
         {
             FunctionName = lambdaFunction.LambdaFunctionArn,
             AuthorizationType = "NONE"
