@@ -55,8 +55,8 @@ public class UsersApiStack : Stack
         return stackName switch
         {
             // Cheers: https://stackoverflow.com/a/65642709
-            var value when value == Environments.MvpProduction.ToString().ToLowerInvariant() => true,
-            var value when value == Environments.MvpStaging.ToString().ToLowerInvariant() => true,
+            var value when value == Environments.MvpProduction => true,
+            var value when value == Environments.MvpStaging => true,
             _ => false,
         };
     }

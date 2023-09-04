@@ -1,10 +1,9 @@
 namespace VirtualFinland.UsersAPI.Deployment.Common;
 
-public enum Environments
+public static class Environments
 {
-    Dev,
-    Test,
-    Staging,
-    MvpStaging,
-    MvpProduction
+    public static string Dev => "dev";
+    public static string Staging => "staging";
+    public static string MvpStaging => "mvp-staging";
+    public static string MvpProduction => "mvp-production";
 }
