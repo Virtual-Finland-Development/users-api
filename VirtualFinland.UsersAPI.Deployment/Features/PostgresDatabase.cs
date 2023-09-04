@@ -57,8 +57,10 @@ public class PostgresDatabase
         });
 
         // AWS Aurora RDS Serverless V2 for postgresql
-        var auroraCluster = new Cluster(stackSetup.CreateResourceName("database-cluster"), new ClusterArgs()
+        var clusterIdentifier = stackSetup.CreateResourceName("database-cluster");
+        var auroraCluster = new Cluster(clusterIdentifier, new ClusterArgs()
         {
+            ClusterIdentifier = clusterIdentifier,
             Engine = "aurora-postgresql",
             EngineVersion = "13.6",
             EngineMode = "provisioned", // serverless v2
