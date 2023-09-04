@@ -83,8 +83,10 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
-        new ClusterInstance(stackSetup.CreateResourceName("database-instance"), new()
+        var dbInstanceIdentifier = stackSetup.CreateResourceName("database-instance");
+        new ClusterInstance(dbInstanceIdentifier, new()
         {
+            Identifier = dbInstanceIdentifier,
             ClusterIdentifier = auroraCluster.ClusterIdentifier,
             InstanceClass = "db.serverless",
             Engine = "aurora-postgresql",
@@ -130,8 +132,7 @@ public class PostgresDatabase
             Password = password.Result,
             Tags = stackSetup.Tags,
             PubliclyAccessible = false,
-            SkipFinalSnapshot = !stackSetup.IsProductionEnvironment, // DEV: For production set to FALSE to avoid accidental deletion of the cluster, data safety measure and is the default for AWS.
-            //SnapshotIdentifier = "" // See README.database.md for more information
+            SkipFinalSnapshot = true
         });
 
         var DbName = config.Require("dbName");
