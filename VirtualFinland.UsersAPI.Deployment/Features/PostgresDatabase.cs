@@ -53,7 +53,7 @@ public class PostgresDatabase
         {
             Description = "Encryption key for the database",
             Tags = stackSetup.Tags,
-            DeletionWindowInDays = 90, // On deletion, the key will be retained for 30 days before being deleted permanently
+            DeletionWindowInDays = 30, // On deletion, the key will be retained for 30 days before being deleted permanently
         });
 
         // AWS Aurora RDS Serverless V2 for postgresql
