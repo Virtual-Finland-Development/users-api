@@ -14,6 +14,7 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
+using VirtualFinland.UserAPI.Helpers;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -87,6 +88,7 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
+builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
@@ -141,8 +143,9 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
         .AllowAnyHeader());
 }
 
-app.UseMiddleware<ErrorHandlerMiddleware>();
+
 app.UseSerilogRequestLogging();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

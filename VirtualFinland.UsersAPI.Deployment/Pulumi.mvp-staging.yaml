@@ -1,0 +1,8 @@
+config:
+  acl:accessfinland-isEnabled: true
+  acl:dataspace-agent:
+    secure: AAABAMWeYU4N0HFQu5eKKdr/AYYpfK//ip+VfV1wxkE0i/117unS9ZpHpmk0pFZWdVyJyhs33NUY9jvsKh+SKr5QGQ44skVe112LC57z/Q==
+  acl:dataspace-isEnabled: true
+  auth:sinuna-isEnabled: true
+  auth:suomifi-isEnabled: false
+  auth:testbed-isEnabled: false

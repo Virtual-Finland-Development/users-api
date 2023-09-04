@@ -9,7 +9,7 @@ public class VpcSetup
 {
     public VpcSetup(StackSetup stackSetup)
     {
-        var vpc = new Vpc($"{stackSetup.ProjectName}-vf-vpc-{stackSetup.Environment}", new VpcArgs()
+        var vpc = new Vpc(stackSetup.CreateResourceName("vf-vpc"), new VpcArgs()
         {
             Tags = stackSetup.Tags,
             EnableDnsHostnames = true,

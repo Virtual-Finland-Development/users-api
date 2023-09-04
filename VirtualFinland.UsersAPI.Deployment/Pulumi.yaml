@@ -10,3 +10,9 @@ config:
   users-api:appArtifactPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
   users-api:dbMigratorArtifactPath: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
   users-api:useRdsProxy: false
+  acl:accessfinland-isEnabled: false
+  acl:dataspace-isEnabled: false
+  acl:dataspace-agent: ""
+  auth:testbed-isEnabled: true
+  auth:sinuna-isEnabled: true
+  auth:suomifi-isEnabled: false

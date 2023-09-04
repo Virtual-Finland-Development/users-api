@@ -13,6 +13,7 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 
 [ApiController]
 [Authorize]
+[Authorize(Policy = "RequestFromDataspace")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
 public class ProductizerController : ControllerBase
@@ -83,7 +84,7 @@ public class ProductizerController : ControllerBase
 
         var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
 
-        if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) return NotFound();
+        if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) throw new NotFoundException("Person not found");
 
         return Ok(result);
     }
@@ -121,7 +122,7 @@ public class ProductizerController : ControllerBase
 
         var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
 
-        if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) return NotFound();
+        if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) throw new NotFoundException("Job applicant profile not found");
 
         return Ok(result);
     }
