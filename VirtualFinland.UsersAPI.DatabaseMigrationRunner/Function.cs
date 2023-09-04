@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
 namespace VirtualFinland.DatabaseMigrationRunner;
@@ -12,12 +13,14 @@ public class Function
     {
         var builder = Host.CreateDefaultBuilder();
 
-        AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+        AwsConfigurationManager awsConfigurationManager = new();
 
         var dbConnectionString = await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"));
+
         builder.ConfigureServices(
             services =>
             {
+                services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,
@@ -25,13 +28,9 @@ public class Function
                 });
             });
 
-        using (var app = builder.Build())
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-                await dataContext.Database.MigrateAsync();
-            }
-        }
+        using var app = builder.Build();
+        using var scope = app.Services.CreateScope();
+        var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+        await dataContext.Database.MigrateAsync();
     }
 }
