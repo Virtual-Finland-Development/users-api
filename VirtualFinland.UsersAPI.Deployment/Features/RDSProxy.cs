@@ -83,11 +83,24 @@ public class RDSProxy
             Tags = stackSetup.Tags,
         });
 
+        // Target group
+        var rdsProxyTargetGroup = new ProxyDefaultTargetGroup(stackSetup.CreateResourceName("database-proxy-target-group"), new()
+        {
+            DbProxyName = rdsProxy.Name,
+            ConnectionPoolConfig = new ProxyDefaultTargetGroupConnectionPoolConfigArgs
+            {
+                MaxConnectionsPercent = 100,
+                MaxIdleConnectionsPercent = 50,
+                ConnectionBorrowTimeout = 120,
+            },
+        });
+
         // RDS Proxy Target
         new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
         {
             DbProxyName = rdsProxy.Name,
             DbInstanceIdentifier = database.DBIdentifier,
+            TargetGroupName = rdsProxyTargetGroup.Name,
         });
 
         // Set outputs
