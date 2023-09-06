@@ -23,21 +23,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PersonTermsOfService", b =>
-                {
-                    b.Property<Guid>("PersonsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TermsOfServicesId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("PersonsId", "TermsOfServicesId");
-
-                    b.HasIndex("TermsOfServicesId");
-
-                    b.ToTable("PersonTermsOfService");
-                });
-
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Address", b =>
                 {
                     b.Property<Guid>("Id")
@@ -334,6 +319,30 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.ToTable("PersonAdditionalInformation", (string)null);
                 });
 
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonTermsOfServiceAgreement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TermsOfServiceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PersonId");
+
+                    b.HasIndex("TermsOfServiceId");
+
+                    b.ToTable("PersonTermsOfServiceAgreements");
+                });
+
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.SearchProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -462,21 +471,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.ToTable("WorkPreferences");
                 });
 
-            modelBuilder.Entity("PersonTermsOfService", b =>
-                {
-                    b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.Person", null)
-                        .WithMany()
-                        .HasForeignKey("PersonsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.TermsOfService", null)
-                        .WithMany()
-                        .HasForeignKey("TermsOfServicesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Address", b =>
                 {
                     b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", null)
@@ -534,6 +528,25 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonTermsOfServiceAgreement", b =>
+                {
+                    b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.Person", "Person")
+                        .WithMany("TermsOfServiceAgreements")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.TermsOfService", "TermsOfService")
+                        .WithMany("TermsOfServiceAgreements")
+                        .HasForeignKey("TermsOfServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Person");
+
+                    b.Navigation("TermsOfService");
+                });
+
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Skills", b =>
                 {
                     b.HasOne("VirtualFinland.UserAPI.Models.UsersDatabase.Person", "Person")
@@ -572,12 +585,19 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Navigation("Skills");
 
+                    b.Navigation("TermsOfServiceAgreements");
+
                     b.Navigation("WorkPreferences");
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", b =>
                 {
                     b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.TermsOfService", b =>
+                {
+                    b.Navigation("TermsOfServiceAgreements");
                 });
 #pragma warning restore 612, 618
         }

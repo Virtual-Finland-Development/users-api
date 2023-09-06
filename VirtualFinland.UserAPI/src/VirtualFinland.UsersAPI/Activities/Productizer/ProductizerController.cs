@@ -6,6 +6,7 @@ using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
+using VirtualFinland.UserAPI.Activities.Productizer.Operations.TermsOfServiceAgreement;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
 
@@ -135,6 +136,28 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
         command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        return Ok(await _mediator.Send(command));
+    }
+
+    [HttpPost("/productizer/test/lsipii/Service/Terms/Agreement")]
+    [SwaggerOperation(Summary = "Get the user terms agreement status (Testbed Productizer)",
+        Description = "Returns the current logged user terms agreement status.")]
+    [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> GetPersonTermsOfServiceAgreement()
+    {
+        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(await _authenticationService.GetCurrentUserId(Request))));
+    }
+
+    [HttpPost("/productizer/test/lsipii/Service/Terms/Agreement/Write")]
+    [SwaggerOperation(Summary = "Update the current logged user terms agreement status (Testbed Productizer)",
+        Description = "Updates the current logged user terms agreement status.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> UpdatePersonTermsOfServiceAgreement(UpdatePersonServiceTermsAgreement.Command command)
+    {
+        command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
         return Ok(await _mediator.Send(command));
     }
 

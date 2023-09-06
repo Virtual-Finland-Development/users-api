@@ -33,6 +33,7 @@ public class UsersDbContext : DbContext
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
     public DbSet<TermsOfService> TermsOfServices => Set<TermsOfService>();
+    public DbSet<PersonTermsOfServiceAgreement> PersonTermsOfServiceAgreements => Set<PersonTermsOfServiceAgreement>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

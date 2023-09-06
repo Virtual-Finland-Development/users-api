@@ -8,7 +8,7 @@ public class TermsOfService : Auditable, IEntity
     [Url]
     public string Url { get; set; } = default!;
     public string Description { get; set; } = default!;
-    public List<Person> Persons { get; } = new();
+    public List<PersonTermsOfServiceAgreement> TermsOfServiceAgreements { get; } = new();
 
     [Key]
     [Required]
