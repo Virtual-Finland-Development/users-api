@@ -31,6 +31,8 @@ public class Person : Auditable, IEntity
     public ICollection<Skills> Skills { get; set; } = null!;
     public ICollection<Language> LanguageSkills { get; set; } = null!;
 
+    public List<TermsOfService> TermsOfServices { get; } = new();
+
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 }
