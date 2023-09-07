@@ -49,12 +49,15 @@ public static class GetPersonServiceTermsAgreement
             // Fetch the current person tos agreement
             var currentTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == termsOfService.Id);
 
+            // Has accepted
+            var personHasAccepted = currentTosAgreement != null;
+
             // Handle the request
             return new GetPersonServiceTermsAgreementResponse(
                 termsOfService.Url,
                 termsOfService.Description,
                 termsOfService.Version,
-                true,
+                personHasAccepted,
                 currentTosAgreement?.AcceptedAt ?? null,
                 personHasAcceptedAnyVersions
             );
