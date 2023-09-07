@@ -59,15 +59,22 @@ public static class UpdatePersonServiceTermsAgreement
             // Fetch the current person tos agreement
             var currentTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == termsOfService.Id);
 
+            // Output variables
+            var accepted = request.Accepted;
+            DateTime? acceptedAt = null;
+
             // Handle the request
-            if (request.Accepted)
+            if (accepted)
             {
+                acceptedAt = currentTosAgreement?.AcceptedAt;
+
                 if (currentTosAgreement is null)
                 {
                     person.TermsOfServiceAgreements.Add(new PersonTermsOfServiceAgreement
                     {
                         TermsOfServiceId = termsOfService.Id,
                     });
+                    acceptedAt = DateTime.UtcNow;
                 }
             }
             else
@@ -93,8 +100,8 @@ public static class UpdatePersonServiceTermsAgreement
                 termsOfService.Url,
                 termsOfService.Description,
                 termsOfService.Version,
-                request.Accepted,
-                currentTosAgreement?.AcceptedAt ?? null,
+                accepted,
+                acceptedAt,
                 personHasAcceptedAnyVersions
             );
         }
