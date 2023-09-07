@@ -18,7 +18,7 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
         using var scope = _services.CreateScope();
         var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
 
-        return await usersDbContext.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(CancellationToken.None) ?? throw new ArgumentNullException("No terms of service found");
+        return await usersDbContext.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(CancellationToken.None) ?? throw new ArgumentException("No terms of service found");
     }
 
     public async Task<TermsOfService?> GetTermsOfServiceByVersion(string version)
@@ -31,11 +31,11 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
 
     public async Task<PersonTermsOfServiceAgreement?> GetNewestTermsOfServiceAgreementByPersonId(Guid personId)
     {
-        // Fetch the newest terms of service
-        var termsOfService = await GetNewestTermsOfService();
-
         using var scope = _services.CreateScope();
         var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        // Fetch the newest terms of service
+        var termsOfService = await usersDbContext.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(CancellationToken.None) ?? throw new ArgumentException("No terms of service found");
 
         // Fetch person terms of service agreement
         return await usersDbContext.PersonTermsOfServiceAgreements.SingleOrDefaultAsync(t => t.PersonId == personId && t.TermsOfServiceId == termsOfService.Id, CancellationToken.None);
