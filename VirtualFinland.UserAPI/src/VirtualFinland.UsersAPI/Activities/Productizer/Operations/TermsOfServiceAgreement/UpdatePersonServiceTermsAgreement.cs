@@ -44,8 +44,8 @@ public static class UpdatePersonServiceTermsAgreement
         {
             // Fetch person
             var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
-            // Fetch the newest terms of service
-            var termsOfService = await _context.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(cancellationToken) ?? throw new BadRequestException("Terms of service not found");
+            // Fetch the terms of service with the specified version
+            var termsOfService = await _context.TermsOfServices.SingleOrDefaultAsync(t => t.Version == request.Version, cancellationToken) ?? throw new BadRequestException("Terms of service not found");
 
             // Fetch persons existing agreements
             var existingAgreements = await _context.PersonTermsOfServiceAgreements

@@ -66,6 +66,22 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "TermsOfServices",
                 column: "Version",
                 unique: true);
+
+            // @TODO Manage terms of service by some control mechanism and not by migrations
+            migrationBuilder.InsertData(
+                table: "TermsOfServices",
+                columns: new[] { "Id", "Url", "Description", "Version", "Created", "Modified" },
+                values: new object[,]
+                {
+                    {
+                        Guid.NewGuid(),
+                        "https://staging.accessfinland.dev/terms-of-service",
+                        "VirtualFinland Terms of Service",
+                        "1.0.0",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow
+                    }
+                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
