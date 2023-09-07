@@ -1,8 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Net.Http.Headers;
+using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.AccessRequirements;
+using VirtualFinland.UserAPI.Security.Configurations;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -32,7 +35,11 @@ public static class SecurityFeatureServiceExtensions
             features.Add(securityFeature);
         }
 
-        services.AddSingleton<IApplicationSecurity>(new ApplicationSecurity(features));
+        // Register security setup
+        services.AddSingleton(new SecuritySetup { Features = features, Options = configuration.GetSection("Security:Options").Get<SecurityOptions>() });
+
+        // Register app security instance
+        services.AddSingleton<IApplicationSecurity, ApplicationSecurity>();
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {

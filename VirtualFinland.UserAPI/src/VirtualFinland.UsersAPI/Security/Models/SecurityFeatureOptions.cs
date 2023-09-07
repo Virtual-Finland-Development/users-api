@@ -1,3 +1,5 @@
+namespace VirtualFinland.UserAPI.Security.Models;
+
 public class SecurityFeatureOptions
 {
     public string? OpenIdConfigurationUrl { get; set; }

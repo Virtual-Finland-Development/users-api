@@ -9,13 +9,11 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class UserSecurityService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly ILogger<UserSecurityService> _logger;
     private readonly IApplicationSecurity _applicationSecurity;
 
-    public UserSecurityService(UsersDbContext usersDbContext, ILogger<UserSecurityService> logger, IApplicationSecurity applicationSecurity)
+    public UserSecurityService(UsersDbContext usersDbContext, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
-        _logger = logger;
         _applicationSecurity = applicationSecurity;
     }
 
@@ -36,9 +34,13 @@ public class UserSecurityService
         }
         catch (InvalidOperationException e)
         {
-            _logger.LogWarning("User could not be identified as a valid user: {RequestClaimsUserId} from issuer: {RequestClaimsIssuer}", jwtTokenResult.UserId, jwtTokenResult.Issuer);
-            throw new NotAuthorizedException("User could not be identified as a valid user. Use the verify path to make sure that the given access token is valid in the system: /identity/testbed/verify", e);
+            throw new NotAuthorizedException("User could not be identified as a valid user.", e);
         }
+    }
+
+    public async Task VerifyPersonTermsOfServiceAgreement(Guid personId)
+    {
+        await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(personId);
     }
 
     /// <summary>

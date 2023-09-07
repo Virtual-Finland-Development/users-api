@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Security.Models;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
