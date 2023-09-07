@@ -53,8 +53,7 @@ public static class UpdatePersonServiceTermsAgreement
                 .ToListAsync(cancellationToken);
 
             // Check if person has accepted any previous versions of the terms of service
-            var previousAgreements = existingAgreements.Where(t => t.TermsOfService.Version != termsOfService.Version);
-            var personHasAcceptedAnyVersions = previousAgreements.Any();
+            var personHasAcceptedAnyVersions = existingAgreements.Where(t => t.TermsOfServiceId != termsOfService.Id).Any();
 
             // Fetch the current person tos agreement
             var currentTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == termsOfService.Id);
