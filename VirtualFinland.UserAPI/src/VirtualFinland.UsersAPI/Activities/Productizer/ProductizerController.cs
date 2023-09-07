@@ -147,7 +147,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonTermsOfServiceAgreement()
     {
-        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(await _authenticationService.GetCurrentUserId(Request))));
+        var userId = await GetUserIdOrCreateNewUserWithId();
+        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(userId)));
     }
 
     [HttpPost("productizer/test/lsipii/Service/Terms/Agreement/Write")]
