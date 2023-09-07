@@ -22,7 +22,8 @@ public class UserSecurityService
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
-    /// <exception cref="NotAuthorizedException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
+    /// <exception cref="NotFoundException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
+    /// <exception cref="NotAuthorizedException">If the access was restricted by security constraints.</exception>
     public async Task<Person> VerifyAndGetAuthenticatedUser(string token)
     {
         var jwtTokenResult = ParseJwtToken(token);
@@ -32,9 +33,9 @@ public class UserSecurityService
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == jwtTokenResult.UserId && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
             return await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException)
         {
-            throw new NotAuthorizedException("User could not be identified as a valid user.", e);
+            throw new NotFoundException("Person not found");
         }
     }
 

@@ -1,8 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.TermsOfServiceAgreement;
@@ -12,35 +10,31 @@ public static class GetPersonServiceTermsAgreement
     [SwaggerSchema(Title = "GetPersonServiceTermsAgreement")]
     public class Query : IRequest<GetPersonServiceTermsAgreementResponse>
     {
-        public Query(Guid? userId)
+        public Query(Guid personId)
         {
-            UserId = userId;
+            PersonId = personId;
         }
 
         [SwaggerIgnore]
-        public Guid? UserId { get; }
+        public Guid PersonId { get; }
     }
 
     public class Handler : IRequestHandler<Query, GetPersonServiceTermsAgreementResponse>
     {
-        private readonly UsersDbContext _context;
+        private readonly ITermsOfServiceRepository _termsOfServiceRepository;
 
-        public Handler(UsersDbContext context)
+        public Handler(ITermsOfServiceRepository termsOfServiceRepository)
         {
-            _context = context;
+            _termsOfServiceRepository = termsOfServiceRepository;
         }
 
         public async Task<GetPersonServiceTermsAgreementResponse> Handle(Query request, CancellationToken cancellationToken)
         {
-            // Fetch person
-            var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
             // Fetch the newest terms of service
-            var termsOfService = await _context.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(cancellationToken) ?? throw new BadRequestException("Terms of service not found");
+            var termsOfService = await _termsOfServiceRepository.GetNewestTermsOfService();
 
             // Fetch persons existing agreements
-            var existingAgreements = await _context.PersonTermsOfServiceAgreements
-                .Where(t => t.PersonId == person.Id)
-                .ToListAsync(cancellationToken);
+            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId);
 
             // Check if person has accepted any previous versions of the terms of service
             var personHasAcceptedAnyVersions = existingAgreements.Where(t => t.TermsOfServiceId != termsOfService.Id).Any();
