@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Data;
@@ -24,5 +25,27 @@ public class APITestBase
         var auditInterceptor = new AuditInterceptor(new Mock<ILogger<IAuditInterceptor>>().Object);
 
         return new UsersDbContext(options, auditInterceptor, true);
+    }
+
+    protected Mock<IServiceProvider> GetMockedServiceProvider()
+    {
+        var serviceProvider = new Mock<IServiceProvider>();
+        serviceProvider
+            .Setup(x => x.GetService(typeof(UsersDbContext)))
+            .Returns(_dbContext);
+
+        var serviceScope = new Mock<IServiceScope>();
+        serviceScope.Setup(x => x.ServiceProvider).Returns(serviceProvider.Object);
+
+        var serviceScopeFactory = new Mock<IServiceScopeFactory>();
+        serviceScopeFactory
+            .Setup(x => x.CreateScope())
+            .Returns(serviceScope.Object);
+
+        serviceProvider
+            .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
+            .Returns(serviceScopeFactory.Object);
+
+        return serviceProvider;
     }
 }

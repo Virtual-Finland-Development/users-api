@@ -1,27 +1,32 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class TermsOfServiceRepository : ITermsOfServiceRepository
 {
-    private readonly UsersDbContext _usersDbContext;
+    private readonly IServiceProvider _services;
 
-    public TermsOfServiceRepository(UsersDbContext usersDbContext)
+
+    public TermsOfServiceRepository(IServiceProvider services)
     {
-        _usersDbContext = usersDbContext;
+        _services = services;
     }
 
     public async Task<TermsOfService> GetNewestTermsOfService()
     {
-        return await _usersDbContext.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(CancellationToken.None) ?? throw new ArgumentNullException("No terms of service found");
+        using var scope = _services.CreateScope();
+        var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        return await usersDbContext.TermsOfServices.OrderByDescending(t => t.Version).FirstOrDefaultAsync(CancellationToken.None) ?? throw new ArgumentNullException("No terms of service found");
     }
 
     public async Task<TermsOfService?> GetTermsOfServiceByVersion(string version)
     {
-        return await _usersDbContext.TermsOfServices.SingleOrDefaultAsync(t => t.Version == version, CancellationToken.None);
+        using var scope = _services.CreateScope();
+        var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        return await usersDbContext.TermsOfServices.SingleOrDefaultAsync(t => t.Version == version, CancellationToken.None);
     }
 
     public async Task<PersonTermsOfServiceAgreement?> GetNewestTermsOfServiceAgreementByPersonId(Guid personId)
@@ -29,7 +34,10 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
         // Fetch the newest terms of service
         var termsOfService = await GetNewestTermsOfService();
 
+        using var scope = _services.CreateScope();
+        var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
         // Fetch person terms of service agreement
-        return await _usersDbContext.PersonTermsOfServiceAgreements.SingleOrDefaultAsync(t => t.PersonId == personId && t.TermsOfServiceId == termsOfService.Id, CancellationToken.None);
+        return await usersDbContext.PersonTermsOfServiceAgreements.SingleOrDefaultAsync(t => t.PersonId == personId && t.TermsOfServiceId == termsOfService.Id, CancellationToken.None);
     }
 }

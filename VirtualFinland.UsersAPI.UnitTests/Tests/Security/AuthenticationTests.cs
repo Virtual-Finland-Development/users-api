@@ -27,7 +27,7 @@ public class AuthenticationTests : APITestBase
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>();
-        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(_dbContext), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
+        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
         var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
 
         mockHeaders.Setup(o => o.Authorization).Returns("");
@@ -62,7 +62,7 @@ public class AuthenticationTests : APITestBase
 
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>();
-        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(_dbContext), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
+        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
         var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
         var authenticationService = new AuthenticationService(userSecurityService);
         // Act
@@ -109,7 +109,7 @@ public class AuthenticationTests : APITestBase
             new SecurityFeature(new SecurityFeatureOptions { Issuer = dbEntity.externalIdentity.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" })
         };
 
-        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(_dbContext), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
+        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
         var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
         var authenticationService = new AuthenticationService(userSecurityService);
 
