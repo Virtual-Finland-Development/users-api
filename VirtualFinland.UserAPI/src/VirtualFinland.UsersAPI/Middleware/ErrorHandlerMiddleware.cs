@@ -9,35 +9,12 @@ public class ErrorHandlerMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ErrorHandlerMiddleware> _logger;
 
-    /// <summary>
-    /// Dataspace error response details
-    /// </summary>
-    private class ErrorResponse
-    {
-        public string Type { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// Dataspace validation error response details
-    /// </summary>
-    private class ValidationErrorResponse
-    {
-        public List<ValidationErrorDetail> Detail { get; set; } = new List<ValidationErrorDetail>();
-    }
-
-    private class ValidationErrorDetail
-    {
-        public List<object> Loc { get; set; } = default!;
-        public string Msg { get; set; } = default!;
-        public string Type { get; set; } = default!;
-    }
-
     public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
     {
         _next = next;
         _logger = logger;
     }
+
     public async Task Invoke(HttpContext context)
     {
         try
@@ -74,7 +51,6 @@ public class ErrorHandlerMiddleware
                     var validationError = error as ValidationException;
                     if (validationError?.Errors is not null)
                     {
-
                         var errorDetail = new List<ValidationErrorDetail>();
                         foreach (var validationErrorDetail in validationError.Errors)
                         {
@@ -112,14 +88,21 @@ public class ErrorHandlerMiddleware
         }
     }
 
-    private static async Task WriteErrorResponse(HttpContext context, object errorResponseDetails, HttpStatusCode statusCode)
+    /// <summary>
+    /// Write the error response    
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="errorResponse"></param>
+    /// <param name="statusCode"></param>
+    /// <returns></returns>
+    private static async Task WriteErrorResponse(HttpContext context, object errorResponse, HttpStatusCode statusCode)
     {
 
         var response = context.Response;
         response.ContentType = "application/json";
         response.StatusCode = (int)statusCode;
 
-        var result = JsonSerializer.Serialize(errorResponseDetails,
+        var result = JsonSerializer.Serialize(errorResponse,
             new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -127,5 +110,29 @@ public class ErrorHandlerMiddleware
             }
         );
         await response.WriteAsync(result);
+    }
+
+    /// <summary>
+    /// Dataspace error response details
+    /// </summary>
+    private class ErrorResponse
+    {
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Dataspace validation error response details
+    /// </summary>
+    private class ValidationErrorResponse
+    {
+        public List<ValidationErrorDetail> Detail { get; set; } = new List<ValidationErrorDetail>();
+    }
+
+    private class ValidationErrorDetail
+    {
+        public List<object> Loc { get; set; } = default!;
+        public string Msg { get; set; } = default!;
+        public string Type { get; set; } = default!;
     }
 }
