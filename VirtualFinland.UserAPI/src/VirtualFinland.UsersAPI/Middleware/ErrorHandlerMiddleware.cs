@@ -12,10 +12,25 @@ public class ErrorHandlerMiddleware
     /// <summary>
     /// Dataspace error response details
     /// </summary>
-    private class ErrorResponseDetails
+    private class ErrorResponse
     {
         public string Type { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Dataspace validation error response details
+    /// </summary>
+    private class ValidationErrorResponse
+    {
+        public List<ValidationErrorDetail> Detail { get; set; } = new List<ValidationErrorDetail>();
+    }
+
+    private class ValidationErrorDetail
+    {
+        public List<object> Loc { get; set; } = default!;
+        public string Msg { get; set; } = default!;
+        public string Type { get; set; } = default!;
     }
 
     public ErrorHandlerMiddleware(RequestDelegate next, ILogger<ErrorHandlerMiddleware> logger)
@@ -31,55 +46,86 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
-            if (error is not NotFoundException && error is not NotAuthorizedException)
-            {
-                _logger.LogError(error, "Request processing failure!");
-            }
-
-            var response = context.Response;
-            response.ContentType = "application/json";
-
-            ErrorResponseDetails errorResponseDetails = new()
-            {
-                Type = "",
-                Message = ""
-            };
-          
             switch (error)
             {
                 case NotAuthorizedException:
-                    // custom application error
-                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    errorResponseDetails.Type = "Unauthorized";
-                    errorResponseDetails.Message = error.Message ?? "Not authorized";
+                    await WriteErrorResponse(context, new ErrorResponse()
+                    {
+                        Type = "Unauthorized",
+                        Message = error.Message ?? "Not authorized"
+                    }, HttpStatusCode.Unauthorized);
                     break;
                 case NotFoundException:
-                    // not found error
-                    response.StatusCode = (int)HttpStatusCode.NotFound;
-                    errorResponseDetails.Type = "NotFound";
-                    errorResponseDetails.Message = error.Message ?? "Not found";
+                    await WriteErrorResponse(context, new ErrorResponse()
+                    {
+                        Type = "NotFound",
+                        Message = error.Message ?? "Not found"
+                    }, HttpStatusCode.NotFound);
                     break;
                 case BadRequestException:
-                    // bad request error
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    errorResponseDetails.Type = "BadRequest";
-                    errorResponseDetails.Message = error.Message ?? "Bad request";
+                    _logger.LogError(error, "Request processing failure!");
+                    await WriteErrorResponse(context, new ErrorResponse()
+                    {
+                        Type = "BadRequest",
+                        Message = error.Message ?? "Bad request"
+                    }, HttpStatusCode.BadRequest);
+                    break;
+                case ValidationException:
+                    var validationError = error as ValidationException;
+                    if (validationError?.Errors is not null)
+                    {
+
+                        var errorDetail = new List<ValidationErrorDetail>();
+                        foreach (var validationErrorDetail in validationError.Errors)
+                        {
+                            errorDetail.Add(new ValidationErrorDetail()
+                            {
+                                Loc = new List<object>() { validationErrorDetail.Key },
+                                Msg = string.Join(" ", validationErrorDetail.Value),
+                                Type = "ValidationError"
+                            });
+                        }
+
+                        await WriteErrorResponse(context, new ValidationErrorResponse()
+                        {
+                            Detail = errorDetail,
+                        }, HttpStatusCode.UnprocessableEntity);
+                    }
+                    else
+                    {
+                        await WriteErrorResponse(context, new ErrorResponse()
+                        {
+                            Type = "UnprocessableEntity",
+                            Message = error.Message ?? "Validation error"
+                        }, HttpStatusCode.UnprocessableEntity);
+                    }
                     break;
                 default:
-                    // unhandled error
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    errorResponseDetails.Type = "InternalServerError";
-                    errorResponseDetails.Message = error.Message ?? "Internal Server Error";
+                    _logger.LogError(error, "Request processing failure!");
+                    await WriteErrorResponse(context, new ErrorResponse()
+                    {
+                        Type = "InternalServerError",
+                        Message = error.Message ?? "Internal server error"
+                    }, HttpStatusCode.InternalServerError);
                     break;
             }
-
-            var result = JsonSerializer.Serialize(errorResponseDetails,
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    WriteIndented = true
-                });
-            await response.WriteAsync(result);
         }
+    }
+
+    private static async Task WriteErrorResponse(HttpContext context, object errorResponseDetails, HttpStatusCode statusCode)
+    {
+
+        var response = context.Response;
+        response.ContentType = "application/json";
+        response.StatusCode = (int)statusCode;
+
+        var result = JsonSerializer.Serialize(errorResponseDetails,
+            new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            }
+        );
+        await response.WriteAsync(result);
     }
 }
