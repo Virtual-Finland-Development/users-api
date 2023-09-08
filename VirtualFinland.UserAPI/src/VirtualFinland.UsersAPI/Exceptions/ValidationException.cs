@@ -19,5 +19,10 @@ public class ValidationException : Exception
         Errors = validationProblemDetails.Errors;
     }
 
+    public ValidationException(IDictionary<string, string[]> errors) : base()
+    {
+        Errors = errors;
+    }
+
     public IDictionary<string, string[]>? Errors { get; }
 }
