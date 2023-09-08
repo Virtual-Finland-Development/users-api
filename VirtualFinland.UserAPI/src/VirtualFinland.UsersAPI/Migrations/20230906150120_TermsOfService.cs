@@ -75,8 +75,8 @@ namespace VirtualFinland.UserAPI.Migrations
                 {
                     {
                         Guid.NewGuid(),
-                        "https://staging.accessfinland.dev/terms-of-service",
-                        "VirtualFinland Terms of Service",
+                        "http://access-finland.localhost/terms-of-use",
+                        "Terms of Service for Access Finland",
                         "1.0.0",
                         DateTime.UtcNow,
                         DateTime.UtcNow
