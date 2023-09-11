@@ -45,8 +45,8 @@ public class UsersApiStack : Stack
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
-        AdminFunctionArn = databaseMigratorLambda.LambdaFunctionArn;
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        AdminFunctionArn = adminFunction.LambdaFunctionArn;
     }
 
     private bool IsProductionEnvironment()
