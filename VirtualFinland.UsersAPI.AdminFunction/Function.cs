@@ -23,10 +23,10 @@ public class Function
         switch (payload.Action)
         {
             case Actions.Migrate:
-                await DatabaseMigrationAction.Execute(dataContext, payload.Data);
+                await new DatabaseMigrationAction().Execute(dataContext, payload.Data);
                 break;
             case Actions.UpdateTermsOfService:
-                await TermsOfServiceUpdateAction.Execute(dataContext, payload.Data);
+                await new TermsOfServiceUpdateAction().Execute(dataContext, payload.Data);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(payload.Action), payload.Action, null);

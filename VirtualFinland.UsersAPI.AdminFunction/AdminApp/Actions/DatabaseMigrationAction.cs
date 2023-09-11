@@ -8,7 +8,7 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class DatabaseMigrationAction : IAdminAppAction
 {
-    public static async Task Execute(UsersDbContext dataContext, string? _)
+    public async Task Execute(UsersDbContext dataContext, string? _)
     {
         await dataContext.Database.MigrateAsync();
     }

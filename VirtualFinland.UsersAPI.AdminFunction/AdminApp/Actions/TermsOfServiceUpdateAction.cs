@@ -11,7 +11,7 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class TermsOfServiceUpdateAction : IAdminAppAction
 {
-    public static async Task Execute(UsersDbContext dataContext, string? data)
+    public async Task Execute(UsersDbContext dataContext, string? data)
     {
         var inputString = data ?? throw new ArgumentNullException(nameof(data));
         var payload = JsonSerializer.Deserialize<TermsOfServicesUpdatePayload>(inputString) ?? throw new ArgumentException("Invalid JSON payload");
