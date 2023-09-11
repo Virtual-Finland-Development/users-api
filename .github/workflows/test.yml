@@ -29,7 +29,7 @@ jobs:
           path: ./
       - uses: actions/download-artifact@v3
         with:
-          name: DatabaseMigrator_Artifacts
+          name: AdminFunction_Artifacts
           path: ./
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
