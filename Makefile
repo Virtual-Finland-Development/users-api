@@ -18,7 +18,7 @@ update-terms-of-service: build
 
 packages: test
 	@echo "> Ensuring local dependencies are installed"
-	dotnet tool install -g Amazon.Lambda.Tools 2>&3 || true
+	dotnet tool install -g Amazon.Lambda.Tools || true
 	@echo "> Building and packaging deployment package for Users API"
 	dotnet lambda package --project-location ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI
 	@echo "> Building and packaging deployment package for database migration runner"
