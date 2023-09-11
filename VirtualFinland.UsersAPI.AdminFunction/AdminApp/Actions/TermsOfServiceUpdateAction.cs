@@ -13,16 +13,16 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
 {
     public async Task Execute(UsersDbContext dataContext, string? data)
     {
+        // Parse payload
         var inputString = data ?? throw new ArgumentNullException(nameof(data));
-        var payload = JsonSerializer.Deserialize<TermsOfServicesUpdatePayload>(inputString) ?? throw new ArgumentException("Invalid JSON payload");
+        var payload = JsonSerializer.Deserialize<TermsOfServicesUpdatePayload>(inputString, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        })
+            ?? throw new ArgumentException("Invalid JSON payload");
 
         // Existing tosses
         var existingTermsOfServices = await dataContext.TermsOfServices.ToListAsync();
-
-        // Sync input terms of services with database
-        var toBeAdded = new List<TermsOfServiceUpdateItem>();
-        var toBeDeleted = new List<TermsOfService>();
-        var toBeUpdated = new List<TermsOfServiceUpdateItem>();
 
         // Deletes
         foreach (var termsOfService in existingTermsOfServices)
@@ -34,7 +34,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
             }
         }
 
-        // Updates adn additions
+        // Updates and additions
         foreach (var payloadTosItem in payload.TermsOfServices)
         {
             var existingTosItem = existingTermsOfServices.FirstOrDefault(tos => tos.Version == payloadTosItem.Version);
@@ -44,7 +44,9 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
                 {
                     Url = payloadTosItem.Url,
                     Description = payloadTosItem.Description,
-                    Version = payloadTosItem.Version
+                    Version = payloadTosItem.Version,
+                    Created = DateTime.UtcNow,
+                    Modified = DateTime.UtcNow
                 };
                 dataContext.TermsOfServices.Add(termsOfService);
             }
@@ -52,6 +54,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
             {
                 existingTosItem.Url = payloadTosItem.Url;
                 existingTosItem.Description = payloadTosItem.Description;
+                existingTosItem.Modified = DateTime.UtcNow;
             }
         }
 

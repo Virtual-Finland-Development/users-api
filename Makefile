@@ -5,7 +5,18 @@ test:
 	@echo "> Running unit tests"
 	dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
 
-build: test
+build:
+	dotnet build
+
+migrate: build
+	@echo "> Running database migrations"
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+
+update-terms-of-service: build
+	@echo "> Updating terms of service in database"
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service
+
+packages: test
 	@echo "> Ensuring local dependencies are installed"
 	dotnet tool install -g Amazon.Lambda.Tools 2>&3 || true
 	@echo "> Building and packaging deployment package for Users API"
@@ -15,5 +26,5 @@ build: test
 	zip -d ./VirtualFinland.UsersAPI.AdminFunction/bin/Release/net6.0/VirtualFinland.UsersAPI.AdminFunction.zip "VirtualFinland.UsersAPI.deps.json" || true
 	zip -d ./VirtualFinland.UsersAPI.AdminFunction/bin/Release/net6.0/VirtualFinland.UsersAPI.AdminFunction.zip "VirtualFinland.UsersAPI.runtimeconfig.json" || true
 
-deploy: build
+deploy: packages
 	pulumi -C ./VirtualFinland.UsersAPI.Deployment up

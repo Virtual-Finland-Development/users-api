@@ -15,21 +15,12 @@ public class Function
         var payload = JsonSerializer.Deserialize<FunctionPayload>(lambdaEvent) ?? throw new ArgumentNullException(nameof(lambdaEvent));
 
         // Setup
-        using var app = await AdminAppBuilder.Build();
+        using var app = await App.Build();
         using var scope = app.Services.CreateScope();
         var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
 
         // Administrate the command
-        switch (payload.Action)
-        {
-            case Actions.Migrate:
-                await new DatabaseMigrationAction().Execute(dataContext, payload.Data);
-                break;
-            case Actions.UpdateTermsOfService:
-                await new TermsOfServiceUpdateAction().Execute(dataContext, payload.Data);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(payload.Action), payload.Action, null);
-        }
+        var action = App.ResolveAction(payload.Action);
+        await action.Execute(dataContext, payload.Data);
     }
 }
