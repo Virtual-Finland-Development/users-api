@@ -10,10 +10,4 @@
         <ProjectReference Include="..\VirtualFinland.UsersAPI.AdminFunction\AdminFunction.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="../Data/terms-of-services.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
 </Project>

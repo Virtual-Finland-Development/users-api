@@ -31,16 +31,9 @@ internal class Program
 
     private static async Task UpdateTermsOfServices()
     {
-        // Read terms of service from json file
-        var currentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? throw new InvalidOperationException();
-        string archiveFolder = Path.Combine(currentDirectory, "terms-of-services.json");
-
-        var termsOfServiceData = File.ReadAllText(archiveFolder);
-
         await Function.FunctionHandler(JsonSerializer.Serialize(new FunctionPayload
         {
             Action = Actions.UpdateTermsOfService,
-            Data = termsOfServiceData
         }));
     }
 }
