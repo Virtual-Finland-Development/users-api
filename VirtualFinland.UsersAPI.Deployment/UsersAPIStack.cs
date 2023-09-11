@@ -46,7 +46,7 @@ public class UsersApiStack : Stack
         DBIdentifier = database.DBIdentifier;
 
         var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
-        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
+        AdminFunctionArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
     private bool IsProductionEnvironment()
@@ -65,5 +65,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
-    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
+    [Output] public Output<string>? AdminFunctionArn { get; set; }
 }

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Dep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.UnitTests", "VirtualFinland.UsersAPI.UnitTests\VirtualFinland.UsersAPI.UnitTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseMigrationRunner", "VirtualFinland.UsersAPI.DatabaseMigrationRunner\DatabaseMigrationRunner.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminFunction", "VirtualFinland.UsersAPI.AdminFunction\AdminFunction.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

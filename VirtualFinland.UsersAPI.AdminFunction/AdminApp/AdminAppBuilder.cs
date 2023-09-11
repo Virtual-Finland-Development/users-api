@@ -5,11 +5,11 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
-namespace VirtualFinland.DatabaseMigrationRunner;
+namespace VirtualFinland.AdminFunction.AdminApp;
 
-public class Function
+public class AdminAppBuilder
 {
-    public async Task FunctionHandler()
+    public static async Task<IHost> Build()
     {
         var builder = Host.CreateDefaultBuilder();
 
@@ -28,9 +28,6 @@ public class Function
                 });
             });
 
-        using var app = builder.Build();
-        using var scope = app.Services.CreateScope();
-        var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-        await dataContext.Database.MigrateAsync();
+        return builder.Build();
     }
 }

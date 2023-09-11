@@ -59,11 +59,11 @@ class DatabaseMigratorLambda
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
-        var lambdaFunction = new Function(stackSetup.CreateResourceName("DatabaseMigrationRunner"), new FunctionArgs
+        var lambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
-            Handler = "DatabaseMigrationRunner::VirtualFinland.DatabaseMigrationRunner.Function::FunctionHandler",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
             Timeout = 30,
             MemorySize = 256,
             Environment = new FunctionEnvironmentArgs

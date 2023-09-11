@@ -60,7 +60,7 @@ jobs:
         run: |
           pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           echo "DBIdentifier=$(pulumi stack output DBIdentifier)" >> $GITHUB_OUTPUT
-          echo "DatabaseMigratorLambdaArn=$(pulumi stack output DatabaseMigratorLambdaArn)" >> $GITHUB_OUTPUT
+          echo "AdminFunctionArn=$(pulumi stack output AdminFunctionArn)" >> $GITHUB_OUTPUT
           echo "StackExists=true" >> $GITHUB_OUTPUT
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
@@ -89,13 +89,13 @@ jobs:
           command: up
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           upsert: true
-          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip, secret: false } }"
+          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.AdminFunction.zip, secret: false } }"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Invoke database migration runner lambda
         if: ${{ steps.deployment-has-db-migrations.outputs.HasDatabaseMigrations == 'true' }}
         run: |
-          aws lambda invoke --function-name ${{ steps.get-pulumi-outputs.outputs.DatabaseMigratorLambdaArn }} output.json
+          aws lambda invoke --payload '{"action": "migrate"}' --cli-binary-format raw-in-base64-out --function-name ${{ steps.get-pulumi-outputs.outputs.AdminFunctionArn }} output.json
           cat output.json
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
