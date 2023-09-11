@@ -9,12 +9,12 @@ using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
-class DatabaseMigratorLambda
+class AdminFunction
 {
-    public DatabaseMigratorLambda(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
     {
         // Lambda function
-        var execRole = new Role(stackSetup.CreateResourceName("DatabaseMigratorLambdaRole"), new RoleArgs
+        var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
         {
             AssumeRolePolicy = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
@@ -40,13 +40,13 @@ class DatabaseMigratorLambda
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("DatabaseMigratorLambdaRoleAttachment"), new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment"), new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("DatabaseMigratorLambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
+        new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManager.ReadPolicy.Arn
@@ -59,11 +59,11 @@ class DatabaseMigratorLambda
         };
 
         var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
-        var lambdaFunction = new Function(stackSetup.CreateResourceName("DatabaseMigrationRunner"), new FunctionArgs
+        var lambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
-            Handler = "DatabaseMigrationRunner::VirtualFinland.DatabaseMigrationRunner.Function::FunctionHandler",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
             Timeout = 30,
             MemorySize = 256,
             Environment = new FunctionEnvironmentArgs

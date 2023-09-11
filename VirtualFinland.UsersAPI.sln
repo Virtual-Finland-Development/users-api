@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Dep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.UnitTests", "VirtualFinland.UsersAPI.UnitTests\VirtualFinland.UsersAPI.UnitTests.csproj", "{EDE86B2E-E179-411B-999D-27EB4E73C1A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseMigrationRunner", "VirtualFinland.UsersAPI.DatabaseMigrationRunner\DatabaseMigrationRunner.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminFunction", "VirtualFinland.UsersAPI.AdminFunction\AdminFunction.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminFunction.CLI", "VirtualFinland.UsersAPI.AdminFunction.CLI\AdminFunction.CLI.csproj", "{187CAFFA-63F6-4647-8225-A5CBE560F7EC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,5 +33,9 @@ Global
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -13,16 +13,16 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Test and build
-        run: make prep-deploy
+        run: make packages
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: Application_Artifact
           path: VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
           retention-days: 2
-      - name: Upload database migrator artifact
+      - name: Upload admin function artifact
         uses: actions/upload-artifact@v3
         with:
-          name: DatabaseMigrator_Artifacts
-          path: VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+          name: AdminFunction_Artifacts
+          path: VirtualFinland.UsersAPI.AdminFunction/bin/Release/net6.0/VirtualFinland.UsersAPI.AdminFunction.zip
           retention-days: 2
