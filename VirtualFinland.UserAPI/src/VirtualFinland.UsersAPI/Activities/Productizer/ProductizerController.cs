@@ -64,6 +64,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation")]
+    [HttpPost("productizer/Person/BasicInformation_v0.1")]
     [SwaggerOperation(Summary = "Get person basic information",
         Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -90,6 +91,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/BasicInformation/Write")]
+    [HttpPost("productizer/Person/BasicInformation/Write_v0.1")]
     [SwaggerOperation(Summary = "Update person basic information",
         Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -102,6 +104,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile")]
+    [HttpPost("productizer/Person/JobApplicantProfile_v0.1")]
     [SwaggerOperation(Summary = "Get person job applicant profile",
         Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -128,6 +131,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
+    [HttpPost("productizer/Person/JobApplicantProfile/Write_v0.1")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
         Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
