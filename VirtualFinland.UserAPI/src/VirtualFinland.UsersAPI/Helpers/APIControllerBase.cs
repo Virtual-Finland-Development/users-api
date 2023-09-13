@@ -14,8 +14,8 @@ public class ApiControllerBase : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    protected async Task<Guid?> GetCurrentUserId()
+    protected async Task<Guid?> GetCurrentUserId(bool verifyTermsOfServiceAgreement = true)
     {
-        return await _authenticationService.GetCurrentUserId(this.Request);
+        return await _authenticationService.GetCurrentUserId(this.Request, verifyTermsOfServiceAgreement);
     }
 }
