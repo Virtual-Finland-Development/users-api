@@ -9,7 +9,6 @@ public interface IAuditInterceptor : IInterceptor
 {
 }
 
-
 /// <summary>
 ///     Interceptor used to automatically set created and modified property values on classes that inherit from
 ///     <see cref="Auditable" /> abstract class
@@ -69,14 +68,5 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
             .Select(property => property.Metadata.Name);
 
         return new Tuple<List<string>, List<string>>(primaryKeys.ToList(), nonPrimaryKeys.ToList());
-    }
-
-    public record AuditLog
-    {
-        public string TableName { get; init; } = default!;
-        public string Action { get; init; } = default!;
-        public string KeyValues { get; init; } = default!;
-        public string ChangedColumns { get; init; } = default!;
-        public DateTime EventDate { get; init; } = default!;
     }
 }

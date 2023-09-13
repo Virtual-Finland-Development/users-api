@@ -1,3 +1,4 @@
+using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Helpers;
@@ -32,6 +33,7 @@ public class UsersDbContext : DbContext
     public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -48,5 +50,48 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+
+        // Audit log configuration
+        modelBuilder.Entity<Person>()
+            .AfterInsert(trigger => trigger
+                .Action(action => action
+                    .Insert(e => new AuditLog
+                    {
+                        TableName = "Persons",
+                        Action = "Insert",
+                        KeyValues = "[Id]",
+                        ChangedColumns = $"[...]",
+                        EventDate = DateTime.UtcNow
+                    })
+                )
+            );
+
+        modelBuilder.Entity<Person>()
+            .AfterUpdate(trigger => trigger
+                .Action(action => action
+                    .Insert(e => new AuditLog
+                    {
+                        TableName = "Persons",
+                        Action = "Update",
+                        KeyValues = "[Id]",
+                        ChangedColumns = $"[...]",
+                        EventDate = DateTime.UtcNow
+                    })
+                )
+            );
+
+        modelBuilder.Entity<Person>()
+            .AfterDelete(trigger => trigger
+                .Action(action => action
+                    .Insert(e => new AuditLog
+                    {
+                        TableName = "Persons",
+                        Action = "Delete",
+                        KeyValues = "[Id]",
+                        ChangedColumns = $"[...]",
+                        EventDate = DateTime.UtcNow
+                    })
+                )
+            );
     }
 }
