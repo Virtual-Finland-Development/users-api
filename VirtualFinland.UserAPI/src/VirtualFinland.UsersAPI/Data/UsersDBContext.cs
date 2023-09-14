@@ -52,35 +52,32 @@ public class UsersDbContext : DbContext
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
 
         // Audit log configuration
-        modelBuilder.Entity<Person>()
-            .AfterInsert(trigger => trigger
-                .Action(action => action
-                    .Insert(e => new AuditLog
-                    {
-                        TableName = "Persons",
-                        Action = "Insert",
-                        KeyValues = "[Id]",
-                        ChangedColumns = $"[...]",
-                        EventDate = DateTime.UtcNow
-                    })
-                )
-            );
-
+        /*  modelBuilder.Entity<Person>()
+             .AfterInsert(trigger => trigger
+                 .Action(action => action
+                     .Insert(e => new AuditLog
+                     {
+                         TableName = "Persons",
+                         Action = "Insert",
+                         KeyValues = "[Id]",
+                         ChangedColumns = $"[...]",
+                         EventDate = DateTime.UtcNow
+                     })
+                 )
+             );
+  */
         modelBuilder.Entity<Person>()
             .AfterUpdate(trigger => trigger
-                .Action(action => action
-                    .Insert(e => new AuditLog
-                    {
-                        TableName = "Persons",
-                        Action = "Update",
-                        KeyValues = "[Id]",
-                        ChangedColumns = $"[...]",
-                        EventDate = DateTime.UtcNow
-                    })
-                )
+                .Action(action => action.Insert(e => new AuditLog
+                {
+                    TableName = "Persons",
+                    Action = "Update",
+                    KeyValues = "[Id]",
+                    ChangedColumns = "[...]",
+                }))
             );
 
-        modelBuilder.Entity<Person>()
+        /* modelBuilder.Entity<Person>()
             .AfterDelete(trigger => trigger
                 .Action(action => action
                     .Insert(e => new AuditLog
@@ -92,6 +89,6 @@ public class UsersDbContext : DbContext
                         EventDate = DateTime.UtcNow
                     })
                 )
-            );
+            ); */
     }
 }

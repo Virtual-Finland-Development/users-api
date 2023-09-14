@@ -11,7 +11,6 @@ public class AuditLog
     public string ChangedColumns { get; init; } = default!;
     public DateTime EventDate { get; init; } = default!;
 
-    [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 

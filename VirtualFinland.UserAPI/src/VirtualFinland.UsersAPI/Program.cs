@@ -15,6 +15,7 @@ using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
+using Laraue.EfCoreTriggers.PostgreSql.Extensions;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -93,6 +94,7 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
         op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
+    options.UsePostgreSqlTriggers();
 });
 
 //
