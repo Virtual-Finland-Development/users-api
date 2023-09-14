@@ -98,10 +98,13 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     /// <param name="audience"></param>
     /// <exception cref="NotAuthorizedException"></exception>
-    public virtual void ValidateSecurityTokenAudience(string audience)
+    public virtual Task ValidateSecurityTokenAudience(string audience)
     {
-        if (!_options.AudienceGuardEnabled) return;
-        if (!_options.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
+        if (_options.AudienceGuardEnabled)
+        {
+            if (!_options.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
+        }
+        return Task.CompletedTask;
     }
 
     /// <summary>
