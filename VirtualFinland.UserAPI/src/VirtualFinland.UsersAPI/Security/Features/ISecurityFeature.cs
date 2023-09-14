@@ -10,6 +10,7 @@ public interface ISecurityFeature
     void BuildAuthorization(AuthorizationOptions options);
     string GetSecurityPolicySchemeName();
     string? ResolveTokenUserId(JwtSecurityToken jwtSecurityToken);
+    void ValidateSecurityTokenAudience(string audience);
 
-    public string? Issuer { get; }
+    public string Issuer { get; }
 }

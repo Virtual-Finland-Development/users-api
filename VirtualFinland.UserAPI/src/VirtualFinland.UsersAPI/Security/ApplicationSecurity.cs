@@ -30,8 +30,12 @@ public class ApplicationSecurity : IApplicationSecurity
         var tokenIssuer = parsedToken.Issuer;
         var securityFeature = _features.Find(o => o.Issuer == tokenIssuer) ?? throw new NotAuthorizedException("The given token issuer is not valid");
 
+        // Resolve and validate the token audience
+        var tokenAudience = parsedToken.Audiences.FirstOrDefault() ?? throw new NotAuthorizedException("The given token audience is not valid");
+        securityFeature.ValidateSecurityTokenAudience(tokenAudience);
+
         // Resolve user id
         var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
-        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer };
+        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer, Audience = tokenAudience };
     }
 }
