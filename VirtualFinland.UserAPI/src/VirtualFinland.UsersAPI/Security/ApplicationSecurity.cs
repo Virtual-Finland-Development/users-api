@@ -1,8 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Security;
@@ -20,7 +18,7 @@ public class ApplicationSecurity : IApplicationSecurity
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    public async Task<JwtTokenResult> ParseJwtToken(string token)
+    public async Task<AuthenticatedUser> GetAuthenticatedUser(string token)
     {
         if (string.IsNullOrEmpty(token)) throw new NotAuthorizedException("No token provided");
 
@@ -39,16 +37,16 @@ public class ApplicationSecurity : IApplicationSecurity
 
         // Resolve user id
         var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
-        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer, Audience = tokenAudience };
+        return new AuthenticatedUser(userId, tokenIssuer, tokenAudience);
     }
 
     /// <summary>
     /// Verifies that the user has accepted the latest terms of service
     /// </summary>
-    public async Task VerifyPersonTermsOfServiceAgreement(Guid personId)
+    public async Task VerifyPersonTermsOfServiceAgreement(Guid personId, string audience)
     {
         if (!_setup.Options.TermsOfServiceAgreementRequired) return;
         // Fetch person terms of service agreement
-        _ = await _termsOfServiceRepository.GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
+        _ = await _termsOfServiceRepository.GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(personId, audience) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
     }
 }

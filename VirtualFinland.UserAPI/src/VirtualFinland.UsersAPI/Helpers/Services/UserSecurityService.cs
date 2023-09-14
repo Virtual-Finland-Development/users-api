@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
@@ -24,14 +23,15 @@ public class UserSecurityService
     /// <returns></returns>
     /// <exception cref="NotFoundException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
     /// <exception cref="NotAuthorizedException">If the access was restricted by security constraints.</exception>
-    public async Task<Person> VerifyAndGetAuthenticatedUser(string token)
+    public async Task<AuthenticatedUser> VerifyAndGetAuthenticatedUser(string token)
     {
-        var jwtTokenResult = await ParseJwtToken(token);
+        var authUser = await GetAuthenticatedUser(token);
 
         try
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == jwtTokenResult.UserId && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
-            return await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == authUser.PersonId.ToString() && o.Issuer == authUser.Issuer, CancellationToken.None);
+            var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            return authUser;
         }
         catch (InvalidOperationException)
         {
@@ -39,16 +39,23 @@ public class UserSecurityService
         }
     }
 
-    public async Task VerifyPersonTermsOfServiceAgreement(Guid personId)
+    /// <summary>
+    /// Verifies that the user has accepted the latest terms of service
+    /// </summary>
+    public async Task VerifyPersonTermsOfServiceAgreement(AuthenticatedUser authenticatedUser)
     {
-        await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(personId);
+        await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(authenticatedUser.PersonId, authenticatedUser.Audience);
+    }
+    public async Task VerifyPersonTermsOfServiceAgreement(Guid personId, string audience)
+    {
+        await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(personId, audience);
     }
 
     /// <summary>
-    /// Parses the JWT token and returns the issuer and the user id
+    /// Parses the JWT token and returns the issuer and the user id, and the audience
     /// </summary>
-    public Task<JwtTokenResult> ParseJwtToken(string token)
+    public Task<AuthenticatedUser> GetAuthenticatedUser(string token)
     {
-        return _applicationSecurity.ParseJwtToken(token);
+        return _applicationSecurity.GetAuthenticatedUser(token);
     }
 }

@@ -12,21 +12,30 @@ public class AuthenticationService
     }
 
     /// <summary>
+    /// Authenticates and authorizes and returns the current user
+    /// </summary>
+    public async Task<AuthenticatedUser> GetCurrentUser(HttpRequest httpRequest, bool verifyTermsOfServiceAgreement = true)
+    {
+        var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
+        var authenticatedUser = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
+
+        if (verifyTermsOfServiceAgreement) await _userSecurityService.VerifyPersonTermsOfServiceAgreement(authenticatedUser);
+
+        return authenticatedUser;
+    }
+
+    /// <summary>
     /// Authenticates and authorizes the current user and returns the user id
     /// </summary>
     public async Task<Guid> GetCurrentUserId(HttpRequest httpRequest, bool verifyTermsOfServiceAgreement = true)
     {
-        var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-        var person = await _userSecurityService.VerifyAndGetAuthenticatedUser(token);
-
-        if (verifyTermsOfServiceAgreement) await _userSecurityService.VerifyPersonTermsOfServiceAgreement(person.Id);
-
-        return person.Id;
+        var currentUser = await GetCurrentUser(httpRequest, verifyTermsOfServiceAgreement);
+        return currentUser.PersonId;
     }
 
-    public Task<JwtTokenResult> ParseAuthenticationHeader(HttpRequest httpRequest)
+    public Task<AuthenticatedUser> ParseAuthenticationHeader(HttpRequest httpRequest)
     {
         var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-        return _userSecurityService.ParseJwtToken(token);
+        return _userSecurityService.GetAuthenticatedUser(token);
     }
 }

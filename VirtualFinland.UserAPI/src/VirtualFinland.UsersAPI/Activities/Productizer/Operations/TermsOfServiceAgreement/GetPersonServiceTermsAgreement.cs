@@ -10,13 +10,16 @@ public static class GetPersonServiceTermsAgreement
     [SwaggerSchema(Title = "GetPersonServiceTermsAgreement")]
     public class Query : IRequest<GetPersonServiceTermsAgreementResponse>
     {
-        public Query(Guid personId)
+        public Query(Guid personId, string audience)
         {
             PersonId = personId;
+            Audience = audience;
         }
 
         [SwaggerIgnore]
         public Guid PersonId { get; }
+        [SwaggerIgnore]
+        public string Audience { get; set; } = default!;
     }
 
     public class Handler : IRequestHandler<Query, GetPersonServiceTermsAgreementResponse>
@@ -34,7 +37,7 @@ public static class GetPersonServiceTermsAgreement
             var termsOfService = await _termsOfServiceRepository.GetNewestTermsOfService();
 
             // Fetch the persons latest agreement
-            var latestExistingAgreement = await _termsOfServiceRepository.GetTheLatestTermsOfServiceAgreementByPersonId(request.PersonId);
+            var latestExistingAgreement = await _termsOfServiceRepository.GetTheLatestTermsOfServiceAgreementByPersonId(request.PersonId, request.Audience);
 
             // Has accepted
             var hasAcceptedLatest = latestExistingAgreement?.TermsOfServiceId == termsOfService.Id;

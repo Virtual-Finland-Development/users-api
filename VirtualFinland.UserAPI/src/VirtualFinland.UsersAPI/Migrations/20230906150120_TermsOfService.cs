@@ -33,7 +33,8 @@ namespace VirtualFinland.UserAPI.Migrations
                     AcceptedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     TermsOfServiceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Version = table.Column<string>(type: "text", nullable: false)
+                    Version = table.Column<string>(type: "text", nullable: false),
+                    Audience = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

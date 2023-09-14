@@ -9,6 +9,7 @@ using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfi
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.TermsOfServiceAgreement;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
@@ -127,8 +128,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonTermsOfServiceAgreement()
     {
-        var personId = await GetPersonIdOrCreateNewPersonWithId();
-        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(personId)));
+        var authUser = await GetOrCreateAuthenticatedUser();
+        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(authUser.PersonId, authUser.Audience)));
     }
 
     [HttpPost("productizer/Service/Terms/Agreement/Write_v0.1")]
@@ -138,21 +139,21 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdatePersonTermsOfServiceAgreement(UpdatePersonServiceTermsAgreement.Command command)
     {
-        var personId = await _authenticationService.GetCurrentUserId(Request, false);
-        command.SetAuth(personId);
+        var user = await _authenticationService.GetCurrentUser(Request, false);
+        command.SetAuth(user.PersonId, user.Audience);
         return Ok(await _mediator.Send(command));
     }
 
+
     /// <summary>
-    ///     If user is not found in database, create new user and return users Id
-    ///     - authentication header / token should be verified before calling this method
+    /// Retrieve authenticated user from database or create new user if not found
     /// </summary>
-    private async Task<Guid> GetPersonIdOrCreateNewPersonWithId()
+    /// <returns></returns>
+    private async Task<AuthenticatedUser> GetOrCreateAuthenticatedUser()
     {
-        Guid personId;
         try
         {
-            personId = await _authenticationService.GetCurrentUserId(Request);
+            return await _authenticationService.GetCurrentUser(Request);
         }
         catch (Exception e)
         {
@@ -165,11 +166,11 @@ public class ProductizerController : ControllerBase
                 e.Message);
             try
             {
-                var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
-                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
+                var authUser = await _authenticationService.ParseAuthenticationHeader(Request);
+                var query = new VerifyIdentityUser.Query(authUser.PersonId.ToString(), authUser.Issuer);
                 var createdUser = await _mediator.Send(query);
-                personId = createdUser.Id;
-                _logger.LogInformation("New user was created with Id: {UserId}", personId);
+                _logger.LogInformation("New user was created with Id: {UserId}", createdUser.Id);
+                return new AuthenticatedUser(createdUser.Id, authUser.Issuer, authUser.Audience);
             }
             catch (Exception exception)
             {
@@ -177,7 +178,15 @@ public class ProductizerController : ControllerBase
                 throw;
             }
         }
+    }
 
-        return personId;
+    /// <summary>
+    ///     If user is not found in database, create new user and return users Id
+    ///     - authentication header / token should be verified before calling this method
+    /// </summary>
+    private async Task<Guid> GetPersonIdOrCreateNewPersonWithId()
+    {
+        var authUser = await GetOrCreateAuthenticatedUser();
+        return authUser.PersonId;
     }
 }
