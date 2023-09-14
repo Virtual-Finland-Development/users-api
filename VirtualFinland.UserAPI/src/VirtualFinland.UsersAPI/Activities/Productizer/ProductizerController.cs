@@ -115,7 +115,7 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
-    [HttpPost("productizer/test/lsipii/Service/Terms/Agreement")]
+    [HttpPost("productizer/Service/Terms/Agreement_v0.1")]
     [SwaggerOperation(Summary = "Get the user terms agreement status (Testbed Productizer)",
         Description = "Returns the current logged user terms agreement status.")]
     [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
@@ -127,7 +127,7 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(personId)));
     }
 
-    [HttpPost("productizer/test/lsipii/Service/Terms/Agreement/Write")]
+    [HttpPost("productizer/Service/Terms/Agreement/Write_v0.1")]
     [SwaggerOperation(Summary = "Update the current logged user terms agreement status (Testbed Productizer)",
         Description = "Updates the current logged user terms agreement status.")]
     [ProducesResponseType(StatusCodes.Status200OK)]

@@ -39,7 +39,18 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
             .ToListAsync(CancellationToken.None);
     }
 
-    public async Task<PersonTermsOfServiceAgreement?> GetNewestTermsOfServiceAgreementByPersonId(Guid personId)
+    public async Task<PersonTermsOfServiceAgreement?> GetTheLatestTermsOfServiceAgreementByPersonId(Guid personId)
+    {
+        using var scope = _services.CreateScope();
+        var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
+
+        return await usersDbContext.PersonTermsOfServiceAgreements
+            .Where(t => t.PersonId == personId)
+            .OrderByDescending(t => t.Version)
+            .FirstOrDefaultAsync(CancellationToken.None);
+    }
+
+    public async Task<PersonTermsOfServiceAgreement?> GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(Guid personId)
     {
         using var scope = _services.CreateScope();
         var usersDbContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
@@ -60,6 +71,7 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
         {
             PersonId = personId,
             TermsOfServiceId = termsOfService.Id,
+            Version = termsOfService.Version
         });
 
         await usersDbContext.SaveChangesAsync(CancellationToken.None);

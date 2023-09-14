@@ -21,9 +21,14 @@ public interface ITermsOfServiceRepository
     Task<List<PersonTermsOfServiceAgreement>> GetAllTermsOfServiceAgreementsByPersonId(Guid personId);
 
     /// <summary>
-    /// Get newest terms of service agreement by person id
+    /// Get the latest terms of service agreement by person id
     /// </summary>
-    Task<PersonTermsOfServiceAgreement?> GetNewestTermsOfServiceAgreementByPersonId(Guid personId);
+    Task<PersonTermsOfServiceAgreement?> GetTheLatestTermsOfServiceAgreementByPersonId(Guid personId);
+
+    /// <summary>
+    /// Get the agreement of the latest terms of service by person id
+    /// </summary>
+    Task<PersonTermsOfServiceAgreement?> GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(Guid personId);
 
     /// <summary>
     /// Add new terms of service agreement
