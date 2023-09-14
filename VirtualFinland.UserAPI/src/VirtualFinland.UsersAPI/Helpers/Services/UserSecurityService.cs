@@ -27,7 +27,7 @@ public class UserSecurityService
     /// <exception cref="NotAuthorizedException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
     public async Task<Person> VerifyAndGetAuthenticatedUser(string token)
     {
-        var jwtTokenResult = ParseJwtToken(token);
+        var jwtTokenResult = await ParseJwtToken(token);
 
         try
         {
@@ -44,7 +44,7 @@ public class UserSecurityService
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    public JwtTokenResult ParseJwtToken(string token)
+    public Task<JwtTokenResult> ParseJwtToken(string token)
     {
         return _applicationSecurity.ParseJwtToken(token);
     }
