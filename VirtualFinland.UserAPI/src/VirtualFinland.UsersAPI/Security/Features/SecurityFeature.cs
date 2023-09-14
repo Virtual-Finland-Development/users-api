@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
@@ -14,7 +15,13 @@ public class SecurityFeature : ISecurityFeature
     ///
     /// The issuer of the JWT token
     ///
-    public string? Issuer { get; set; }
+    public string Issuer => _issuer ?? throw new ArgumentNullException("Issuer is not set");
+    protected string? _issuer;
+
+    /// <summary>
+    /// Security feature options
+    /// </summary>
+    protected SecurityFeatureOptions _options { get; set; }
 
     /// <summary>
     /// The URL to the OpenID configuration
@@ -36,15 +43,16 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     protected const int _configUrlRetryWaitTime = 3000;
 
-    public SecurityFeature(SecurityFeatureOptions configuration)
+    public SecurityFeature(SecurityFeatureOptions options)
     {
-        Issuer = configuration.Issuer;
-        _openIDConfigurationURL = configuration.OpenIdConfigurationUrl;
-        _jwksOptionsUrl = configuration.AuthorizationJwksJsonUrl;
+        _options = options;
+        _issuer = options.Issuer;
+        _openIDConfigurationURL = options.OpenIdConfigurationUrl;
+        _jwksOptionsUrl = options.AuthorizationJwksJsonUrl;
 
         if (string.IsNullOrEmpty(_openIDConfigurationURL) && string.IsNullOrEmpty(_jwksOptionsUrl))
         {
-            throw new ArgumentNullException("Invalid security feature configuration");
+            throw new ArgumentException("Invalid security feature configuration");
         }
     }
 
@@ -86,6 +94,20 @@ public class SecurityFeature : ISecurityFeature
     }
 
     /// <summary>
+    /// Validates the token audience
+    /// </summary>
+    /// <param name="audience"></param>
+    /// <exception cref="NotAuthorizedException"></exception>
+    public virtual Task ValidateSecurityTokenAudience(string audience)
+    {
+        if (_options.AudienceGuardEnabled)
+        {
+            if (!_options.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Configures the OpenID Connect authentication
     /// </summary>
     protected virtual void ConfigureOpenIdConnect(AuthenticationBuilder authentication)
@@ -119,10 +141,10 @@ public class SecurityFeature : ISecurityFeature
             if (httpResponse.IsSuccessStatusCode)
             {
                 var jsonData = JsonNode.Parse(await httpResponse.Content.ReadAsStringAsync());
-                Issuer = jsonData?["issuer"]?.ToString();
+                _issuer = jsonData?["issuer"]?.ToString();
                 _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
 
-                if (!string.IsNullOrEmpty(Issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
+                if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                 {
                     break;
                 }
@@ -131,7 +153,7 @@ public class SecurityFeature : ISecurityFeature
         }
 
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
-        if (string.IsNullOrEmpty(Issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
+        if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
         {
             throw new ArgumentNullException("Failed to retrieve OpenID configurations");
         }
