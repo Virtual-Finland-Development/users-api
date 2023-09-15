@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
@@ -82,7 +83,7 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags,
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
@@ -149,6 +150,13 @@ class UsersApiLambdaFunction
             },
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
+        });
+
+        // Configure log retention
+        _ = new LogGroup(stackSetup.CreateResourceName("LambdaLogGroup"), new LogGroupArgs
+        {
+            RetentionInDays = 30,
             Tags = stackSetup.Tags
         });
 
