@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace VirtualFinland.UserAPI.Migrations
 {
-    public partial class TermsOfService : Migration
+    public partial class AddTermsOfService : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -29,16 +29,15 @@ namespace VirtualFinland.UserAPI.Migrations
                 name: "PersonTermsOfServiceAgreements",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    AcceptedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Audience = table.Column<string>(type: "text", nullable: false),
                     PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     TermsOfServiceId = table.Column<Guid>(type: "uuid", nullable: false),
                     Version = table.Column<string>(type: "text", nullable: false),
-                    Audience = table.Column<string>(type: "text", nullable: false)
+                    AcceptedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PersonTermsOfServiceAgreements", x => x.Id);
+                    table.PrimaryKey("PK_PersonTermsOfServiceAgreements", x => new { x.Audience, x.TermsOfServiceId, x.PersonId });
                     table.ForeignKey(
                         name: "FK_PersonTermsOfServiceAgreements_Persons_PersonId",
                         column: x => x.PersonId,
@@ -69,7 +68,7 @@ namespace VirtualFinland.UserAPI.Migrations
                 column: "Version",
                 unique: true);
 
-            // @TODO Manage terms of service by some control mechanism and not by migrations
+            // Initial data insert
             migrationBuilder.InsertData(
                 table: "TermsOfServices",
                 columns: new[] { "Id", "Url", "Description", "Version", "Created", "Modified" },

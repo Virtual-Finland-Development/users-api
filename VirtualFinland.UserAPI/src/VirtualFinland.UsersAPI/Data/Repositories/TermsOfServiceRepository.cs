@@ -69,10 +69,10 @@ public class TermsOfServiceRepository : ITermsOfServiceRepository
 
         var dbInsert = usersDbContext.PersonTermsOfServiceAgreements.Add(new PersonTermsOfServiceAgreement
         {
+            Audience = audience,
             PersonId = personId,
             TermsOfServiceId = termsOfService.Id,
             Version = termsOfService.Version,
-            Audience = audience
         });
 
         await usersDbContext.SaveChangesAsync(CancellationToken.None);

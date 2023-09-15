@@ -139,8 +139,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdatePersonTermsOfServiceAgreement(UpdatePersonServiceTermsAgreement.Command command)
     {
-        var user = await _authenticationService.GetCurrentUser(Request, false);
-        command.SetAuth(user.PersonId, user.Audience);
+        var authUser = await _authenticationService.GetCurrentUser(Request, false);
+        command.SetAuth(authUser.PersonId, authUser.Audience);
         return Ok(await _mediator.Send(command));
     }
 

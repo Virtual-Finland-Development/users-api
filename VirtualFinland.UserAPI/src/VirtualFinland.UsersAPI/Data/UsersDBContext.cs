@@ -51,5 +51,8 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TermsOfServiceConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+
+        modelBuilder.Entity<PersonTermsOfServiceAgreement>()
+            .HasKey(c => new { c.Audience, c.TermsOfServiceId, c.PersonId });
     }
 }

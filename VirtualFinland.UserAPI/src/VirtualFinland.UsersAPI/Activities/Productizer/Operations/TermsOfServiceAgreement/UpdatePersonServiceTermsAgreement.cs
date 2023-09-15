@@ -19,7 +19,7 @@ public static class UpdatePersonServiceTermsAgreement
         [SwaggerIgnore]
         public Guid PersonId { get; set; }
         [SwaggerIgnore]
-        public string Audience { get; set; } = default!;
+        public string? Audience { get; set; }
 
         public string Version { get; }
         public bool Accepted { get; }
@@ -50,7 +50,7 @@ public static class UpdatePersonServiceTermsAgreement
             var requestedTermsOfService = request.Version == latestTermsOfService.Version ? latestTermsOfService : await _termsOfServiceRepository.GetTermsOfServiceByVersion(request.Version) ?? throw new BadRequestException("Terms of service not found");
 
             // Fetch persons existing agreements
-            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId, request.Audience);
+            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId, request.Audience ?? throw new BadRequestException("Audience not found"));
 
             // Resolve the requested person tos agreement
             var requestedTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == requestedTermsOfService.Id);

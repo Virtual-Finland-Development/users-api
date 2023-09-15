@@ -13,8 +13,8 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20230906150120_TermsOfService")]
-    partial class TermsOfService
+    [Migration("20230915070613_AddTermsOfService")]
+    partial class AddTermsOfService
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -323,20 +323,23 @@ namespace VirtualFinland.UserAPI.Migrations
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonTermsOfServiceAgreement", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("Audience")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TermsOfServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("AcceptedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("TermsOfServiceId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("Audience", "TermsOfServiceId", "PersonId");
 
                     b.HasIndex("PersonId");
 

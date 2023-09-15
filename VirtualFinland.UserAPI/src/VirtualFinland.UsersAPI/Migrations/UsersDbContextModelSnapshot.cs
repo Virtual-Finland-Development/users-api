@@ -321,20 +321,23 @@ namespace VirtualFinland.UserAPI.Migrations
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonTermsOfServiceAgreement", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<string>("Audience")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TermsOfServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("AcceptedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("PersonId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("TermsOfServiceId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("Audience", "TermsOfServiceId", "PersonId");
 
                     b.HasIndex("PersonId");
 
