@@ -21,8 +21,6 @@ public class APITestBase
         var options = new DbContextOptionsBuilder<UsersDbContext>()
             .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
             .Options;
-        var auditInterceptor = new AuditInterceptor(new Mock<ILogger<IAuditInterceptor>>().Object);
-
-        return new UsersDbContext(options, auditInterceptor, true);
+        return new UsersDbContext(options, true);
     }
 }
