@@ -14,6 +14,8 @@ using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
+using VirtualFinland.UserAPI.Helpers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -107,6 +109,7 @@ builder.Services.AddTransient<TestbedConsentSecurityService>();
 // Route handlers
 //
 builder.Services.AddControllers();
+builder.Services.AddTransient<ProblemDetailsFactory, ValidationProblemDetailsFactory>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.AddResponseCaching();
 
