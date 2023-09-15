@@ -156,6 +156,7 @@ class UsersApiLambdaFunction
         // Configure log retention
         _ = new LogGroup(stackSetup.CreateResourceName("LambdaLogGroup"), new LogGroupArgs
         {
+            Name = Output.Format($"/aws/lambda/{LambdaFunctionResource.Name}"),
             RetentionInDays = 30,
             Tags = stackSetup.Tags
         });
