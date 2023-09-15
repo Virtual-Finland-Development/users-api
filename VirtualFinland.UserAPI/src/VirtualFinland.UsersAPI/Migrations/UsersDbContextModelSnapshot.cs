@@ -49,38 +49,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.ToTable("PersonAdditionalInformation", (string)null);
                 });
 
-            modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.AuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ChangedColumns")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("EventDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("KeyValues")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TableName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AuditLogs");
-                });
-
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Certification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -309,12 +277,7 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Persons", t =>
-                        {
-                            t.HasTrigger("LC_TRIGGER_AFTER_UPDATE_PERSON");
-                        });
-
-                    b.HasAnnotation("LC_TRIGGER_AFTER_UPDATE_PERSON", "CREATE FUNCTION \"LC_TRIGGER_AFTER_UPDATE_PERSON\"() RETURNS trigger as $LC_TRIGGER_AFTER_UPDATE_PERSON$\r\nBEGIN\r\n  INSERT INTO \"AuditLogs\" (\"TableName\", \"Action\", \"KeyValues\", \"ChangedColumns\", \"EventDate\") SELECT 'Persons', \r\n  'Update', \r\n  '[Id]', \r\n  '[...]', \r\n  NEW.\"Modified\";\r\nRETURN NEW;\r\nEND;\r\n$LC_TRIGGER_AFTER_UPDATE_PERSON$ LANGUAGE plpgsql;\r\nCREATE TRIGGER LC_TRIGGER_AFTER_UPDATE_PERSON AFTER UPDATE\r\nON \"Persons\"\r\nFOR EACH ROW EXECUTE PROCEDURE \"LC_TRIGGER_AFTER_UPDATE_PERSON\"();");
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", b =>

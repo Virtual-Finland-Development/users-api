@@ -1,7 +1,5 @@
-using Laraue.EfCoreTriggers.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
@@ -9,17 +7,14 @@ namespace VirtualFinland.UserAPI.Data;
 public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
-    private readonly IAuditInterceptor _auditInterceptor;
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor) : base(options)
+    public UsersDbContext(DbContextOptions options) : base(options)
     {
-        _auditInterceptor = auditInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
         _isTesting = isTesting;
-        _auditInterceptor = auditInterceptor;
     }
 
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
@@ -33,11 +28,9 @@ public class UsersDbContext : DbContext
     public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
-    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -50,45 +43,5 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
-
-        // Audit log configuration
-        /*  modelBuilder.Entity<Person>()
-             .AfterInsert(trigger => trigger
-                 .Action(action => action
-                     .Insert(e => new AuditLog
-                     {
-                         TableName = "Persons",
-                         Action = "Insert",
-                         KeyValues = "[Id]",
-                         ChangedColumns = $"[...]",
-                         EventDate = DateTime.UtcNow
-                     })
-                 )
-             );
-  */
-        modelBuilder.Entity<Person>()
-            .AfterUpdate(trigger => trigger
-                .Action(action => action.Insert(e => new AuditLog
-                {
-                    TableName = "Persons",
-                    Action = "Update",
-                    KeyValues = "[Id]",
-                    ChangedColumns = "[...]",
-                }))
-            );
-
-        /* modelBuilder.Entity<Person>()
-            .AfterDelete(trigger => trigger
-                .Action(action => action
-                    .Insert(e => new AuditLog
-                    {
-                        TableName = "Persons",
-                        Action = "Delete",
-                        KeyValues = "[Id]",
-                        ChangedColumns = $"[...]",
-                        EventDate = DateTime.UtcNow
-                    })
-                )
-            ); */
     }
 }
