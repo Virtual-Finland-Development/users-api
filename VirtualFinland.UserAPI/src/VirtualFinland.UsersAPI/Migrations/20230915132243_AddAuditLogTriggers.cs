@@ -13,7 +13,6 @@ namespace VirtualFinland.UserAPI.Migrations
             "WorkPreferences",
             "Skills",
             "Permits",
-            "Permits",
             "Languages",
             "Educations",
         };
@@ -67,9 +66,9 @@ namespace VirtualFinland.UserAPI.Migrations
             foreach (var table in _loggingTables)
             {
                 migrationBuilder.Sql(@$"
-                    CREATE OR REPLACE TRIGGER ""{table}_audit_trigger""
+                    CREATE TRIGGER ""{table}_audit_trigger""
                         AFTER INSERT OR UPDATE OR DELETE ON ""{table}""
-                        FOR EACH ROW EXECUTE FUNCTION audit_trigger_func()
+                        FOR EACH ROW EXECUTE FUNCTION audit_trigger_func();
                 ");
             }
         }
