@@ -25,13 +25,19 @@ public class UserSecurityService
     /// <exception cref="NotAuthorizedException">If the access was restricted by security constraints.</exception>
     public async Task<AuthenticatedUser> VerifyAndGetAuthenticatedUser(string token)
     {
-        var authUser = await GetAuthenticatedUser(token);
+        var authableUser = await GetAuthenticationCandinate(token);
 
         try
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == authUser.PersonId.ToString() && o.Issuer == authUser.Issuer, CancellationToken.None);
+            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == authableUser.IdentityId && o.Issuer == authableUser.Issuer, CancellationToken.None);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
-            return authUser;
+            return new AuthenticatedUser()
+            {
+                IdentityId = authableUser.IdentityId,
+                Issuer = authableUser.Issuer,
+                Audience = authableUser.Audience,
+                PersonId = person.Id,
+            };
         }
         catch (InvalidOperationException)
         {
@@ -54,8 +60,8 @@ public class UserSecurityService
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id, and the audience
     /// </summary>
-    public Task<AuthenticatedUser> GetAuthenticatedUser(string token)
+    public Task<AuthenticationCandinate> GetAuthenticationCandinate(string token)
     {
-        return _applicationSecurity.GetAuthenticatedUser(token);
+        return _applicationSecurity.GetAuthenticationCandinate(token);
     }
 }

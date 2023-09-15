@@ -166,11 +166,17 @@ public class ProductizerController : ControllerBase
                 e.Message);
             try
             {
-                var authUser = await _authenticationService.ParseAuthenticationHeader(Request);
-                var query = new VerifyIdentityUser.Query(authUser.PersonId.ToString(), authUser.Issuer);
-                var createdUser = await _mediator.Send(query);
-                _logger.LogInformation("New user was created with Id: {UserId}", createdUser.Id);
-                return new AuthenticatedUser(createdUser.Id, authUser.Issuer, authUser.Audience);
+                var authableUser = await _authenticationService.ParseAuthenticationHeader(Request);
+                var query = new VerifyIdentityUser.Query(authableUser.IdentityId, authableUser.Issuer);
+                var person = await _mediator.Send(query);
+                _logger.LogInformation("New user was created with Id: {UserId}", person.Id);
+                return new AuthenticatedUser()
+                {
+                    IdentityId = authableUser.IdentityId,
+                    Issuer = authableUser.Issuer,
+                    Audience = authableUser.Audience,
+                    PersonId = person.Id
+                };
             }
             catch (Exception exception)
             {

@@ -33,9 +33,9 @@ public class AuthenticationService
         return currentUser.PersonId;
     }
 
-    public Task<AuthenticatedUser> ParseAuthenticationHeader(HttpRequest httpRequest)
+    public Task<AuthenticationCandinate> ParseAuthenticationHeader(HttpRequest httpRequest)
     {
         var token = httpRequest.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-        return _userSecurityService.GetAuthenticatedUser(token);
+        return _userSecurityService.GetAuthenticationCandinate(token);
     }
 }

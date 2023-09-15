@@ -16,9 +16,9 @@ public class ApplicationSecurity : IApplicationSecurity
     }
 
     /// <summary>
-    /// Parses the JWT token and returns the issuer and the user id
+    /// Parses the JWT token and returns the issuer and the user identity id, and the audience
     /// </summary>
-    public async Task<AuthenticatedUser> GetAuthenticatedUser(string token)
+    public async Task<AuthenticationCandinate> GetAuthenticationCandinate(string token)
     {
         if (string.IsNullOrEmpty(token)) throw new NotAuthorizedException("No token provided");
 
@@ -37,7 +37,12 @@ public class ApplicationSecurity : IApplicationSecurity
 
         // Resolve user id
         var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
-        return new AuthenticatedUser(userId, tokenIssuer, tokenAudience);
+        return new AuthenticationCandinate()
+        {
+            IdentityId = userId,
+            Issuer = tokenIssuer,
+            Audience = tokenAudience,
+        };
     }
 
     /// <summary>
