@@ -153,12 +153,30 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags
         });
 
-        // Configure log retention
-        _ = new LogGroup(stackSetup.CreateResourceName("LambdaLogGroup"), new LogGroupArgs
+        // Configure log retention for new installations
+        var logGroupName = Output.Format($"/aws/lambda/{LambdaFunctionResource.Name}");
+        logGroupName.Apply(lgName =>
         {
-            Name = Output.Format($"/aws/lambda/{LambdaFunctionResource.Name}"),
-            RetentionInDays = 30,
-            Tags = stackSetup.Tags
+            var existingLogGroup = Output.Create(GetLogGroup.InvokeAsync(new GetLogGroupArgs
+            {
+                Name = lgName,
+            }));
+
+            var logGroup = existingLogGroup.Apply(existing =>
+            {
+                // Create log group only if it doesn't exist
+                if (existing == null)
+                {
+                    return new LogGroup(stackSetup.CreateResourceName("LambdaLogGroup"), new LogGroupArgs
+                    {
+                        Name = lgName,
+                        RetentionInDays = 30,
+                        Tags = stackSetup.Tags
+                    });
+                }
+                return null;
+            });
+            return lgName;
         });
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
