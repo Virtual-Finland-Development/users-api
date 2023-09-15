@@ -1,4 +1,5 @@
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Kms;
 using Pulumi.Aws.Rds;
 using Pulumi.Aws.Rds.Inputs;
@@ -86,10 +87,11 @@ public class PostgresDatabase
             DbSubnetGroupName = dbSubNetGroup.Name,
             Tags = stackSetup.Tags,
             BackupRetentionPeriod = 7, // @TODO: Define for production
+            EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
         var dbInstanceIdentifier = stackSetup.CreateResourceName("database-instance");
-        new ClusterInstance(dbInstanceIdentifier, new()
+        _ = new ClusterInstance(dbInstanceIdentifier, new()
         {
             Identifier = dbInstanceIdentifier,
             ClusterIdentifier = auroraCluster.ClusterIdentifier,
@@ -133,7 +135,8 @@ public class PostgresDatabase
             Password = password.Result,
             Tags = stackSetup.Tags,
             PubliclyAccessible = false,
-            SkipFinalSnapshot = true
+            SkipFinalSnapshot = true,
+            EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
         var DbName = config.Require("dbName");
