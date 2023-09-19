@@ -1,5 +1,3 @@
-using System.Reflection;
-using System.Text.Json;
 using VirtualFinland.AdminFunction;
 using VirtualFinland.AdminFunction.AdminApp.Models;
 
@@ -23,17 +21,17 @@ internal class Program
 
     private static async Task Migrate()
     {
-        await Function.FunctionHandler(JsonSerializer.Serialize(new FunctionPayload
+        await Function.FunctionHandler(new FunctionPayload
         {
             Action = Actions.Migrate,
-        }));
+        });
     }
 
     private static async Task UpdateTermsOfServices()
     {
-        await Function.FunctionHandler(JsonSerializer.Serialize(new FunctionPayload
+        await Function.FunctionHandler(new FunctionPayload
         {
             Action = Actions.UpdateTermsOfService,
-        }));
+        });
     }
 }
