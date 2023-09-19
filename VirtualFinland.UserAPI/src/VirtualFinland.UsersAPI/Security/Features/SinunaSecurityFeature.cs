@@ -1,4 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
+using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Security.Features;
 
