@@ -16,7 +16,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -82,11 +82,20 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags,
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
+        // Grant access to the secret manager
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
         });
+
+        // Allow function to access elasticache
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-ElastiCache"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
+        });
+
 
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
@@ -117,6 +126,9 @@ class UsersApiLambdaFunction
                     },
                     {
                         "DB_CONNECTION_SECRET_NAME", secretsManager.Name
+                    },
+                    {
+                        "REDIS_ENDPOINT", Output.Format($"{redis.ClusterEndpoint}")
                     },
                     {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")

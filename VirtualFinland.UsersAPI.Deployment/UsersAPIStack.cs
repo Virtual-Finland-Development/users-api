@@ -37,8 +37,9 @@ public class UsersApiStack : Stack
         var vpcSetup = new VpcSetup(stackSetup);
         var database = new PostgresDatabase(config, stackSetup, vpcSetup);
         var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret, redisCache);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;

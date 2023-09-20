@@ -39,6 +39,7 @@ public class PostgresDatabase
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
+            Tags = stackSetup.Tags,
         });
 
         var password = new RandomPassword(stackSetup.CreateResourceName("database-password"), new()
@@ -112,6 +113,7 @@ public class PostgresDatabase
         var dbSubNetGroup = new SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
+            Tags = stackSetup.Tags,
         });
 
         var password = new RandomPassword("password", new()
