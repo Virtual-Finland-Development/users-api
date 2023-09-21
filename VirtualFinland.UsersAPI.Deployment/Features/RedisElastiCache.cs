@@ -22,7 +22,6 @@ public class RedisElastiCache
             NumCacheNodes = 1,
             ParameterGroupName = "default.redis6.x",
             Port = 6379,
-            ReplicationGroupId = stackSetup.CreateResourceName("RedisElastiCache"),
             SecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
             SubnetGroupName = elastiCacheSubnet.Name,
             Tags = stackSetup.Tags,
