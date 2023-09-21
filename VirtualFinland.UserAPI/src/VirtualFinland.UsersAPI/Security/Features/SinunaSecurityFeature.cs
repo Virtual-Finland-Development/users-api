@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
@@ -9,10 +10,9 @@ public class SinunaSecurityFeature : SecurityFeature
 {
     private DataspaceAudienceSecurityService _dataspaceAudienceSecurityService;
 
-    public SinunaSecurityFeature(SecurityFeatureOptions configuration) : base(configuration)
+    public SinunaSecurityFeature(SecurityFeatureOptions configuration, ICacheRepository cacheRepository) : base(configuration, cacheRepository)
     {
-        Console.WriteLine("SinunaSecurityFeature: " + configuration.AudienceGuard.IsEnabled);
-        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service!);
+        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service!, cacheRepository);
     }
 
     /// <summary>

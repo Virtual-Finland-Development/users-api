@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Models;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
@@ -8,7 +9,7 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class SuomiFiSecurityFeature : SecurityFeature
 {
-    public SuomiFiSecurityFeature(SecurityFeatureOptions configuration) : base(configuration) { }
+    public SuomiFiSecurityFeature(SecurityFeatureOptions configuration, ICacheRepository cacheRepository) : base(configuration, cacheRepository) { }
 
     protected override void ConfigureOpenIdConnect(AuthenticationBuilder authentication)
     {

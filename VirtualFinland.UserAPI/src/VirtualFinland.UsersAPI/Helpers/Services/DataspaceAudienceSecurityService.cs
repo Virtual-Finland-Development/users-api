@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Configurations;
 
@@ -8,16 +9,21 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class DataspaceAudienceSecurityService
 {
     private readonly AudienceGuardServiceConfig _config;
+    private readonly ICacheRepository _cacheRepository;
 
-    public DataspaceAudienceSecurityService(AudienceGuardServiceConfig config)
+    public DataspaceAudienceSecurityService(AudienceGuardServiceConfig config, ICacheRepository cacheRepository)
     {
         _config = config;
+        _cacheRepository = cacheRepository;
     }
 
 
     public async Task VerifyAudience(string audience)
     {
         if (!_config.IsEnabled) return;
+
+        // If audience is cached, return
+        if (await _cacheRepository.Exists(audience)) return;
 
         try
         {
@@ -32,7 +38,8 @@ public class DataspaceAudienceSecurityService
 
             if (!_config.AllowedGroups.Contains(responseData.Group)) throw new NotAuthorizedException("Audience group is not allowed");
 
-            Console.WriteLine("Cool beans audience");
+            // Cache audience for 24 hours
+            await _cacheRepository.Set(audience, responseData, TimeSpan.FromHours(24));
         }
         catch (HttpRequestException e)
         {

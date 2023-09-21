@@ -16,6 +16,9 @@ using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using NRedisStack;
+using NRedisStack.RedisStackCommands;
+using StackExchange.Redis;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -95,6 +98,13 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseNpgsql(dbConnectionString,
         op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
 });
+
+//
+// Redis connection
+//
+var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+builder.Services.AddSingleton<ICacheRepository>(new CacheRepository(redis.GetDatabase()));
 
 //
 // App security

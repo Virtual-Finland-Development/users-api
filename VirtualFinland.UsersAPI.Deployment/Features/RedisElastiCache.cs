@@ -29,9 +29,9 @@ public class RedisElastiCache
         });
 
         ClusterArn = cluster.Arn;
-        ClusterEndpoint = cluster.CacheNodes.Apply(nodes => nodes[0].Address);
+        ClusterEndpoint = cluster.CacheNodes.Apply(nodes => $"{nodes[0].Address}:{nodes[0].Port}");
     }
 
     public Output<string> ClusterArn = default!;
-    public Output<string?> ClusterEndpoint = default!;
+    public Output<string> ClusterEndpoint = default!;
 }

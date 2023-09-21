@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Net.Http.Headers;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.AccessRequirements;
@@ -24,11 +25,13 @@ public static class SecurityFeatureServiceExtensions
         var enabledSecurityFeatureNames = securityConfigurations.Where(x => x.Value.IsEnabled).Select(x => x.Key).ToArray();
         if (!enabledSecurityFeatureNames.Any()) throw new ArgumentException("No security features enabled");
 
+        var cacheService = services.BuildServiceProvider().GetRequiredService<ICacheRepository>();
+
         // Dynamically map security feature name to correct class
         foreach (var securityFeatureName in enabledSecurityFeatureNames)
         {
             var securityFeatureType = Type.GetType($"VirtualFinland.UserAPI.Security.Features.{securityFeatureName}SecurityFeature") ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
-            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName]) as ISecurityFeature ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
+            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName], cacheService) as ISecurityFeature ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
             features.Add(securityFeature);
         }
 
