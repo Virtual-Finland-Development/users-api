@@ -9,7 +9,7 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class SuomiFiSecurityFeature : SecurityFeature
 {
-    public SuomiFiSecurityFeature(SecurityFeatureOptions configuration, ICacheRepository cacheRepository) : base(configuration, cacheRepository) { }
+    public SuomiFiSecurityFeature(SecurityFeatureOptions configuration, SecurityClientProviders securityClientProviders) : base(configuration, securityClientProviders) { }
 
     protected override void ConfigureOpenIdConnect(AuthenticationBuilder authentication)
     {

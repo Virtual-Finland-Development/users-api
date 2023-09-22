@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
@@ -27,7 +26,7 @@ public class SecurityFeature : ISecurityFeature
     /// <summary>
     /// Cache repository
     /// </summary>
-    protected ICacheRepository _cacheRepository { get; set; }
+    protected SecurityClientProviders _securityClientProviders { get; set; }
 
     /// <summary>
     /// The URL to the OpenID configuration
@@ -49,7 +48,7 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     protected const int _configUrlRetryWaitTime = 3000;
 
-    public SecurityFeature(SecurityFeatureOptions options, ICacheRepository cacheRepository)
+    public SecurityFeature(SecurityFeatureOptions options, SecurityClientProviders securityClientProviders)
     {
         _options = options;
         _issuer = options.Issuer;
@@ -61,7 +60,7 @@ public class SecurityFeature : ISecurityFeature
             throw new ArgumentException("Invalid security feature configuration");
         }
 
-        _cacheRepository = cacheRepository;
+        _securityClientProviders = securityClientProviders;
     }
 
     /// <summary>
@@ -141,7 +140,7 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     protected virtual async void LoadOpenIdConfigUrl()
     {
-        var httpClient = new HttpClient();
+        var httpClient = _securityClientProviders.HttpClient;
         var httpResponse = await httpClient.GetAsync(_openIDConfigurationURL);
 
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)

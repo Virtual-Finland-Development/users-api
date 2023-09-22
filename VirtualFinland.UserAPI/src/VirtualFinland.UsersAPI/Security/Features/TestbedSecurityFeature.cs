@@ -5,5 +5,5 @@ namespace VirtualFinland.UserAPI.Security.Features;
 
 public class TestbedSecurityFeature : SecurityFeature
 {
-    public TestbedSecurityFeature(SecurityFeatureOptions configuration, ICacheRepository cacheRepository) : base(configuration, cacheRepository) { }
+    public TestbedSecurityFeature(SecurityFeatureOptions configuration, SecurityClientProviders securityClientProviders) : base(configuration, securityClientProviders) { }
 }

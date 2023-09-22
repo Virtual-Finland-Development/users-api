@@ -6,35 +6,42 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 public class CacheRepository : ICacheRepository
 {
     private readonly IDatabase _database;
+    private readonly string _keyPrefix;
 
-    public CacheRepository(IDatabase database)
+    public CacheRepository(IDatabase database, string keyPrefix = "")
     {
         _database = database;
+        _keyPrefix = keyPrefix;
+        if (!string.IsNullOrEmpty(_keyPrefix))
+        {
+            _keyPrefix += ":";
+        }
     }
 
     public async Task<T> Get<T>(string key)
     {
-        var value = await _database.StringGetAsync(key);
+        var keyActual = ResolveKey(key);
+        var value = await _database.StringGetAsync(keyActual);
         if (value.HasValue)
         {
-            return JsonSerializer.Deserialize<T>(value.ToString()) ?? throw new Exception($"Key {key} does not exist");
+            return JsonSerializer.Deserialize<T>(value.ToString()) ?? throw new Exception($"Key {keyActual} has invalid value");
         }
-        throw new Exception($"Key {key} does not exist");
+        throw new Exception($"Key {keyActual} does not exist");
     }
 
     public async Task Set<T>(string key, T value, TimeSpan? expiry = null)
     {
-        await _database.StringSetAsync(key, JsonSerializer.Serialize(value), expiry);
+        await _database.StringSetAsync(ResolveKey(key), JsonSerializer.Serialize(value), expiry);
     }
 
     public async Task Remove(string key)
     {
-        await _database.KeyDeleteAsync(key);
+        await _database.KeyDeleteAsync(ResolveKey(key));
     }
 
     public async Task<bool> Exists(string key)
     {
-        return await _database.KeyExistsAsync(key);
+        return await _database.KeyExistsAsync(ResolveKey(key));
     }
 
     public async Task Clear()
@@ -45,5 +52,10 @@ public class CacheRepository : ICacheRepository
             var server = _database.Multiplexer.GetServer(endpoint);
             await server.FlushDatabaseAsync();
         }
+    }
+
+    private string ResolveKey(string key)
+    {
+        return $"{_keyPrefix}{key}";
     }
 }

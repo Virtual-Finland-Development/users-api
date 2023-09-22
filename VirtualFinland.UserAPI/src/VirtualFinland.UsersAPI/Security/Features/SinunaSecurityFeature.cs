@@ -10,9 +10,9 @@ public class SinunaSecurityFeature : SecurityFeature
 {
     private DataspaceAudienceSecurityService _dataspaceAudienceSecurityService;
 
-    public SinunaSecurityFeature(SecurityFeatureOptions configuration, ICacheRepository cacheRepository) : base(configuration, cacheRepository)
+    public SinunaSecurityFeature(SecurityFeatureOptions configuration, SecurityClientProviders securityClientProviders) : base(configuration, securityClientProviders)
     {
-        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service!, cacheRepository);
+        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service!, securityClientProviders);
     }
 
     /// <summary>

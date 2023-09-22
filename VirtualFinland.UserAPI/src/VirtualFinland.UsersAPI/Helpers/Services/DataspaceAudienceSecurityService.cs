@@ -3,6 +3,7 @@ using System.Text.Json;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Configurations;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
@@ -10,11 +11,12 @@ public class DataspaceAudienceSecurityService
 {
     private readonly AudienceGuardServiceConfig _config;
     private readonly ICacheRepository _cacheRepository;
-
-    public DataspaceAudienceSecurityService(AudienceGuardServiceConfig config, ICacheRepository cacheRepository)
+    private readonly HttpClient _httpClient;
+    public DataspaceAudienceSecurityService(AudienceGuardServiceConfig config, SecurityClientProviders securityClientProviders)
     {
         _config = config;
-        _cacheRepository = cacheRepository;
+        _cacheRepository = securityClientProviders.CacheRepositoryFactory.Create("dataspace-audience");
+        _httpClient = securityClientProviders.HttpClient;
     }
 
 
@@ -29,8 +31,7 @@ public class DataspaceAudienceSecurityService
         {
             var verifyUrl = $"{_config.ApiEndpoint}/external-apps/{audience}/public";
 
-            var httpClient = new HttpClient();
-            using var response = await httpClient.GetAsync(verifyUrl);
+            using var response = await _httpClient.GetAsync(verifyUrl);
             response.EnsureSuccessStatusCode();
 
             var responseData = await JsonSerializer.DeserializeAsync<AudienceVerifyResponse>(await response.Content.ReadAsStreamAsync()) ??
