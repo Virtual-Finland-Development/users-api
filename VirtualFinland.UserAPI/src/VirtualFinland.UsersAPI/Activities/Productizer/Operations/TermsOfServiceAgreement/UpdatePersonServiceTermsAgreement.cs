@@ -43,60 +43,76 @@ public static class UpdatePersonServiceTermsAgreement
         public async Task<UpdatePersonServiceTermsAgreementResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
+            // Fetch the latest terms of service
+            var latestTermsOfService = await _termsOfServiceRepository.GetNewestTermsOfService();
+
             // Fetch the terms of service with the specified version
-            var termsOfService = await _termsOfServiceRepository.GetTermsOfServiceByVersion(request.Version) ?? throw new BadRequestException("Terms of service not found");
+            var requestedTermsOfService = request.Version == latestTermsOfService.Version ? latestTermsOfService : await _termsOfServiceRepository.GetTermsOfServiceByVersion(request.Version) ?? throw new BadRequestException("Terms of service not found");
 
             // Fetch persons existing agreements
             var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId);
 
-            // Check if person has accepted any previous versions of the terms of service
-            var personHasAcceptedAnyVersions = existingAgreements.Where(t => t.TermsOfServiceId != termsOfService.Id).Any();
-
-            // Fetch the current person tos agreement
-            var currentTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == termsOfService.Id);
+            // Resolve the requested person tos agreement
+            var requestedTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == requestedTermsOfService.Id);
 
             // Output variables
             var accepted = request.Accepted;
+            string? version = null;
             DateTime? acceptedAt = null;
+            var hasAcceptedLatest = false;
 
             // Handle the request
             if (accepted)
             {
-                acceptedAt = currentTosAgreement?.AcceptedAt;
+                acceptedAt = requestedTosAgreement?.AcceptedAt;
+                version = requestedTermsOfService.Version;
+                hasAcceptedLatest = request.Version == latestTermsOfService.Version || existingAgreements.Any(t => t.TermsOfServiceId == latestTermsOfService.Id);
 
-                if (currentTosAgreement is null)
+                if (requestedTosAgreement is null)
                 {
-                    await _termsOfServiceRepository.AddNewTermsOfServiceAgreement(termsOfService, request.PersonId);
+                    await _termsOfServiceRepository.AddNewTermsOfServiceAgreement(requestedTermsOfService, request.PersonId);
                     acceptedAt = DateTime.UtcNow;
                 }
             }
             else
             {
-                if (currentTosAgreement is not null)
+                if (request.Version != latestTermsOfService.Version)
                 {
-                    await _termsOfServiceRepository.RemoveTermsOfServiceAgreement(currentTosAgreement);
+                    hasAcceptedLatest = existingAgreements.Any(t => t.TermsOfServiceId == latestTermsOfService.Id);
+                }
+
+                if (requestedTosAgreement is not null)
+                {
+                    await _termsOfServiceRepository.RemoveTermsOfServiceAgreement(requestedTosAgreement);
                 }
             }
 
             return new UpdatePersonServiceTermsAgreementResponse
             (
-                termsOfService.Url,
-                termsOfService.Description,
-                termsOfService.Version,
-                accepted,
+                new CurrentTerms(
+                    latestTermsOfService.Url,
+                    latestTermsOfService.Description,
+                    latestTermsOfService.Version
+                ),
+                version,
                 acceptedAt,
-                personHasAcceptedAnyVersions
+                hasAcceptedLatest
             );
         }
     }
 
+    [SwaggerSchema(Title = "CurrentTerms")]
+    public record CurrentTerms(
+        string Url,
+        string Description,
+        string Version
+    );
+
     [SwaggerSchema(Title = "UpdatePersonServiceTermsAgreementResponse")]
     public record UpdatePersonServiceTermsAgreementResponse(
-        string TermsOfServiceUrl,
-        string Description,
-        string Version,
-        bool Accepted,
+        CurrentTerms CurrentTerms,
+        string? AcceptedVersion,
         DateTime? AcceptedAt,
-        bool AcceptedPreviousVersion
+        bool HasAcceptedLatest
     );
 }

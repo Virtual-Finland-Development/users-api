@@ -45,6 +45,6 @@ public class ApplicationSecurity : IApplicationSecurity
     {
         if (!_setup.Options.TermsOfServiceAgreementRequired) return;
         // Fetch person terms of service agreement
-        _ = await _termsOfServiceRepository.GetNewestTermsOfServiceAgreementByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
+        _ = await _termsOfServiceRepository.GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
     }
 }
