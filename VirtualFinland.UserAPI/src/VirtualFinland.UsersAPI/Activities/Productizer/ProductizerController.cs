@@ -159,7 +159,7 @@ public class ProductizerController : ControllerBase
                 e.Message);
             try
             {
-                var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
+                var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
                 var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
                 var createdUser = await _mediator.Send(query);
                 userId = createdUser.Id;
