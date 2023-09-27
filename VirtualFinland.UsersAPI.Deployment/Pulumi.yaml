@@ -7,9 +7,9 @@ config:
   users-api:dbName: usersapidb
   users-api:name: users-api
   users-api:infraStackReferenceName: infrastructure
-  users-api:appArtifactPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
-  users-api:dbMigratorArtifactPath: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
-  users-api:auditlogSubscriptionArtifactPath: ../VirtualFinland.UsersAPI.AuditLogSubscription/bin/Release/net6.0/VirtualFinland.UsersAPI.AuditLogSubscription.zip
+  users-api:appArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.zip
+  users-api:dbMigratorArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+  users-api:auditlogSubscriptionArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.AuditLogSubscription.zip
   users-api:useRdsProxy: false
   acl:accessfinland-isEnabled: false
   acl:dataspace-isEnabled: false

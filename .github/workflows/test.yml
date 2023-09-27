@@ -26,7 +26,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: Application_Artifacts
-          path: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/
+          path: ./build-artifacts
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
