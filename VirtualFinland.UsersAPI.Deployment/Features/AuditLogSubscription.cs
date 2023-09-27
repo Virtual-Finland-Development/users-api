@@ -69,36 +69,22 @@ class AuditLogSubscription
             Tags = stackSetup.Tags
         });
 
-        postgresDatabase.LogGroupName.Apply(logGroupName =>
+        // Permissions for the log group to invoke the auditlog parsing lambda function
+        var logGroupInvokePermission = new Permission(stackSetup.CreateResourceName("AuditLogSubscriptionInvokePermission"), new PermissionArgs
         {
-            var logGroup = GetLogGroup.Invoke(new GetLogGroupInvokeArgs
-            {
-                Name = logGroupName,
-            });
+            Action = "lambda:InvokeFunction",
+            Function = lambdaFunction.Name,
+            Principal = "logs.amazonaws.com",
+            SourceArn = Output.Format($"{postgresDatabase.LogGroup.Arn}:*"),
+        }, new() { DependsOn = { lambdaFunction } });
 
-            logGroup.Apply((lg) =>
-            {
-                // Permissions for the log group to invoke the auditlog parsing lambda function
-                var logGroupInvokePermission = new Permission(stackSetup.CreateResourceName("AuditLogSubscriptionInvokePermission"), new PermissionArgs
-                {
-                    Action = "lambda:InvokeFunction",
-                    Function = lambdaFunction.Name,
-                    Principal = "logs.amazonaws.com",
-                    SourceArn = $"{lg.Arn}:*",
-                }, new() { DependsOn = { lambdaFunction } });
-
-                // Subsrcibe to the log group
-                var logGroupSubscription = new LogSubscriptionFilter(stackSetup.CreateResourceName("AuditLogSubscriptionFilter"), new LogSubscriptionFilterArgs
-                {
-                    LogGroup = lg.Name,
-                    FilterPattern = "%AuditLog%",
-                    DestinationArn = lambdaFunction.Arn,
-                }, new() { DependsOn = { logGroupInvokePermission } });
-                return lg;
-            });
-
-            return logGroupName;
-        });
+        // Subsrcibe to the log group
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("AuditLogSubscriptionFilter"), new LogSubscriptionFilterArgs
+        {
+            LogGroup = postgresDatabase.LogGroup.Name,
+            FilterPattern = "%AuditLog%",
+            DestinationArn = lambdaFunction.Arn,
+        }, new() { DependsOn = { logGroupInvokePermission } });
 
         LambdaFunctionArn = lambdaFunction.Arn;
         LambdaFunctionId = lambdaFunction.Id;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
@@ -152,7 +153,7 @@ class UsersApiLambdaFunction
         });
 
         // Configure log group
-        LogGroupName = cloudwatch.EnsureLambdaFunctionLogGroup(LambdaFunctionResource);
+        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "users-api", LambdaFunctionResource);
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
@@ -161,5 +162,5 @@ class UsersApiLambdaFunction
     public Function LambdaFunctionResource = default!;
     public Output<string> LambdaFunctionArn = default!;
     public Output<string> LambdaFunctionId = default!;
-    public Output<string> LogGroupName = default!;
+    public LogGroup LogGroup = default!;
 }

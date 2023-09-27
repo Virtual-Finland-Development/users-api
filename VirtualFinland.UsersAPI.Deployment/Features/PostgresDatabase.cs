@@ -1,4 +1,5 @@
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Kms;
 using Pulumi.Aws.Rds;
 using Pulumi.Aws.Rds.Inputs;
@@ -100,7 +101,7 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
-        LogGroupName = cloudwatch.EnsureLogGroup(Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"));
+        LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"));
 
         var DbHostName = auroraCluster.Endpoint;
         DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
@@ -140,7 +141,7 @@ public class PostgresDatabase
             EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
-        LogGroupName = cloudwatch.EnsureLogGroup(Output.Format($"/aws/rds/instance/{rdsPostGreInstance.Identifier}/postgresql"));
+        LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostGreInstance.Identifier}/postgresql"));
 
         var DbName = config.Require("dbName");
         var DbUsername = config.Require("dbAdmin");
@@ -152,5 +153,5 @@ public class PostgresDatabase
 
     public Output<string> DBIdentifier = default!;
     public Output<string> DatabaseConnectionString = default!;
-    public Output<string> LogGroupName = default!;
+    public LogGroup LogGroup = default!;
 }

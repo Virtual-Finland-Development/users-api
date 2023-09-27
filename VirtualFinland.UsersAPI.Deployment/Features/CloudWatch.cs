@@ -1,4 +1,5 @@
 
+using System;
 using Pulumi;
 using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Lambda;
@@ -12,43 +13,20 @@ public class CloudWatch
     private readonly StackSetup _stackSetup;
     public CloudWatch(StackSetup stackSetup) => _stackSetup = stackSetup;
 
-    public Output<string> EnsureLambdaFunctionLogGroup(Function lambdaFunction)
+    public LogGroup CreateLambdaFunctionLogGroup(StackSetup stackSetup, string name, Function lambdaFunction)
     {
         // Configure log retention for new installations
-        var lgName = Output.Format($"/aws/lambda/{lambdaFunction.Name}");
-        return EnsureLogGroup(lgName);
+        return CreateLogGroup(stackSetup, name, Output.Format($"/aws/lambda/{lambdaFunction.Name}"));
     }
 
-    public Output<string> EnsureLogGroup(Output<string> logGroupName)
+    public LogGroup CreateLogGroup(StackSetup stackSetup, string name, Output<string> logGroupIdentifier)
     {
         // Configure log retention for new installations
-        logGroupName.Apply(lgName =>
+        return new LogGroup(stackSetup.CreateResourceName(name), new LogGroupArgs
         {
-            var existingLogGroup = GetLogGroup.Invoke(new GetLogGroupInvokeArgs
-            {
-                Name = logGroupName,
-            });
-
-            existingLogGroup.Apply(existing =>
-            {
-                // Create log group only if it doesn't exist
-                if (existing == null)
-                {
-                    var lg = new LogGroup(lgName, new LogGroupArgs
-                    {
-                        Name = lgName,
-                        RetentionInDays = 30,
-                        Tags = _stackSetup.Tags
-                    });
-
-                    return lg;
-                }
-                return null;
-            });
-
-            return lgName;
+            Name = logGroupIdentifier,
+            RetentionInDays = 30,
+            Tags = _stackSetup.Tags,
         });
-
-        return logGroupName;
     }
 }
