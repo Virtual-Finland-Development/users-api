@@ -39,12 +39,8 @@ jobs:
           fetch-depth: 2
       - uses: actions/download-artifact@v3
         with:
-          name: Application_Artifact
-          path: ./
-      - uses: actions/download-artifact@v3
-        with:
-          name: DatabaseMigrator_Artifacts
-          path: ./
+          name: Application_Artifacts
+          path: ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
@@ -89,7 +85,6 @@ jobs:
           command: up
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           upsert: true
-          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip, secret: false } }"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Invoke database migration runner lambda
