@@ -153,7 +153,7 @@ class UsersApiLambdaFunction
         });
 
         // Configure log group
-        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "users-api", LambdaFunctionResource);
+        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource);
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
