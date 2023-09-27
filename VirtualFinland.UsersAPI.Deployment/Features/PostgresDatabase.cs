@@ -1,5 +1,4 @@
 using Pulumi;
-using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Kms;
 using Pulumi.Aws.Rds;
 using Pulumi.Aws.Rds.Inputs;
@@ -14,15 +13,15 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         if (stackSetup.IsProductionEnvironment)
         {
-            SetupProductionPostgresDatabase(config, stackSetup, vpcSetup);
+            SetupProductionPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
         else
         {
-            SetupDevelopmentPostgresDatabase(config, stackSetup, vpcSetup);
+            SetupDevelopmentPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
 
         if (config.GetBoolean("useRdsProxy") == true)
@@ -35,7 +34,7 @@ public class PostgresDatabase
     /// <summary>
     ///  Setup AWS Aurora RDS Serverless V2 for postgresql
     /// </summary>
-    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
         {
@@ -101,6 +100,8 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
+        LogGroupName = cloudwatch.EnsureLogGroup(Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"));
+
         var DbHostName = auroraCluster.Endpoint;
         DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DBIdentifier = auroraCluster.ClusterIdentifier;
@@ -109,7 +110,7 @@ public class PostgresDatabase
     /// <summary>
     /// Setup AWS RDS for postgresql
     /// </summary>
-    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         var dbSubNetGroup = new SubnetGroup($"{stackSetup.ProjectName}-dbsubnets-{stackSetup.Environment}", new()
         {
@@ -139,6 +140,8 @@ public class PostgresDatabase
             EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
+        LogGroupName = cloudwatch.EnsureLogGroup(Output.Format($"/aws/rds/instance/{rdsPostGreInstance.Identifier}/postgresql"));
+
         var DbName = config.Require("dbName");
         var DbUsername = config.Require("dbAdmin");
         var DbHostName = rdsPostGreInstance.Endpoint;
@@ -149,4 +152,5 @@ public class PostgresDatabase
 
     public Output<string> DBIdentifier = default!;
     public Output<string> DatabaseConnectionString = default!;
+    public Output<string> LogGroupName = default!;
 }

@@ -2,12 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
-using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Command.Local;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -17,7 +15,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, CloudWatch cloudwatch)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -153,31 +151,8 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags
         });
 
-        // Configure log retention for new installations
-        var logGroupName = Output.Format($"/aws/lambda/{LambdaFunctionResource.Name}");
-        logGroupName.Apply(lgName =>
-        {
-            var existingLogGroup = Output.Create(GetLogGroup.InvokeAsync(new GetLogGroupArgs
-            {
-                Name = lgName,
-            }));
-
-            var logGroup = existingLogGroup.Apply(existing =>
-            {
-                // Create log group only if it doesn't exist
-                if (existing == null)
-                {
-                    return new LogGroup(stackSetup.CreateResourceName("LambdaLogGroup"), new LogGroupArgs
-                    {
-                        Name = lgName,
-                        RetentionInDays = 30,
-                        Tags = stackSetup.Tags
-                    });
-                }
-                return null;
-            });
-            return lgName;
-        });
+        // Configure log group
+        LogGroupName = cloudwatch.EnsureLambdaFunctionLogGroup(LambdaFunctionResource);
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
@@ -186,4 +161,5 @@ class UsersApiLambdaFunction
     public Function LambdaFunctionResource = default!;
     public Output<string> LambdaFunctionArn = default!;
     public Output<string> LambdaFunctionId = default!;
+    public Output<string> LogGroupName = default!;
 }

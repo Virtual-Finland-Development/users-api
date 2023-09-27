@@ -14,6 +14,8 @@ prep-deploy: test
 	dotnet lambda package --project-location ./VirtualFinland.UsersAPI.DatabaseMigrationRunner
 	zip -d ./VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip "VirtualFinland.UsersAPI.deps.json" || true
 	zip -d ./VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip "VirtualFinland.UsersAPI.runtimeconfig.json" || true
+	@echo "> Building and packaging deployment package for the audit log subscription function"
+	dotnet lambda package --project-location ./VirtualFinland.UsersAPI.AuditLogSubscription
 
 deploy: prep-deploy
 	pulumi -C ./VirtualFinland.UsersAPI.Deployment up

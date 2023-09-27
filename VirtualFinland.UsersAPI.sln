@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI.Uni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseMigrationRunner", "VirtualFinland.UsersAPI.DatabaseMigrationRunner\DatabaseMigrationRunner.csproj", "{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuditLogSubscription", "VirtualFinland.UsersAPI.AuditLogSubscription\AuditLogSubscription.csproj", "{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,5 +33,9 @@ Global
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAFD5C84-5C58-4AC8-83C1-829381D5EEA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

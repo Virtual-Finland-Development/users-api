@@ -34,22 +34,25 @@ public class UsersApiStack : Stack
             Tags = tags,
         };
 
+        var cloudwatch = new CloudWatch(stackSetup);
         var vpcSetup = new VpcSetup(stackSetup);
-        var database = new PostgresDatabase(config, stackSetup, vpcSetup);
+        var database = new PostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
-        var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret, cloudwatch);
+        var usersApiFunctionUrl = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+        var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
 
-        ApplicationUrl = apiProvider.ApplicationUrl;
+        ApplicationUrl = usersApiFunctionUrl.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
+        AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
         var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
         DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
     }
 
-    private bool IsProductionEnvironment()
+    private static bool IsProductionEnvironment()
     {
         var stackName = Pulumi.Deployment.Instance.StackName;
         return stackName switch
@@ -66,4 +69,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
     [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
+    [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
 }
