@@ -5,7 +5,9 @@ using Pulumi.Aws.Rds.Inputs;
 using Pulumi.Random;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using Instance = Pulumi.Aws.Rds.Instance;
-using Provider = Pulumi.PostgreSql.Provider;
+using System.Text.Json;
+using Pulumi.Aws.Lambda;
+
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 /// <summary>
@@ -58,8 +60,8 @@ public class PostgresDatabase
             OverrideSpecial = "_%@",
         }).Result;
 
-        var DbUsername = config.Require("dbUser");
-        var DbPassword = new RandomPassword(stackSetup.CreateResourceName("database-user-password"), new()
+        DbUsername = config.Require("dbUser");
+        DbPassword = new RandomPassword(stackSetup.CreateResourceName("database-user-password"), new()
         {
             Length = 16,
             Special = false,
@@ -105,12 +107,9 @@ public class PostgresDatabase
             Tags = stackSetup.Tags,
         });
 
-        var DbHostName = auroraCluster.Endpoint;
-
-        SetupDatabaseUser(stackSetup, DbHostName, DbName, DbAdminUsername, DbAdminPassword, DbUsername, DbPassword);
-
-        DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
-        DatabaseAdminConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
+        var DbEndpoint = auroraCluster.Endpoint;
+        DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
+        DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = auroraCluster.ClusterIdentifier;
     }
 
@@ -133,8 +132,8 @@ public class PostgresDatabase
             OverrideSpecial = "_%@",
         }).Result;
 
-        var DbUsername = config.Require("dbUser");
-        var DbPassword = new RandomPassword(stackSetup.CreateResourceName("database-user-password"), new()
+        DbUsername = config.Require("dbUser");
+        DbPassword = new RandomPassword(stackSetup.CreateResourceName("database-user-password"), new()
         {
             Length = 16,
             Special = false,
@@ -155,54 +154,47 @@ public class PostgresDatabase
             SkipFinalSnapshot = true
         });
 
-        var DbHostName = rdsPostgreSqlInstance.Endpoint;
-
-        SetupDatabaseUser(stackSetup, DbHostName, DbName, DbAdminUsername, DbAdminPassword, DbUsername, DbPassword);
-
-        DatabaseConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbUsername};Password={DbPassword}");
-        DatabaseAdminConnectionString = Output.Format($"Host={DbHostName};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
+        var DbEndpoint = rdsPostgreSqlInstance.Endpoint;
+        DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
+        DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = rdsPostgreSqlInstance.Identifier;
     }
 
     /// <summary>
     /// Setup the database user
     /// </summary>
-    private static void SetupDatabaseUser(StackSetup stackSetup, Output<string> DbHostName, string DbName, string DbAdminUsername, Output<string> DbAdminPassword, string DbUsername, Output<string> DbPassword)
+    public void InvokeInitialDatabaseUserSetupFunction(StackSetup stackSetup, Function adminFunction)
     {
-        var postgresProvider = new Provider(stackSetup.CreateResourceName("postgres-provider"), new()
-        {
-            Host = DbHostName,
-            Username = DbAdminUsername,
-            Password = DbAdminPassword,
-        });
-        var database = new Pulumi.PostgreSql.Database(stackSetup.CreateResourceName("postgres-database"), new()
-        {
-            Name = DbName,
-        }, new()
-        {
-            Provider = postgresProvider,
-        });
-        var user = new Pulumi.PostgreSql.Role(stackSetup.CreateResourceName("database-user"), new()
-        {
-            Name = DbUsername,
-            Password = DbPassword,
-        }, new()
-        {
-            Provider = postgresProvider,
-        });
-        _ = new Pulumi.PostgreSql.Grant(stackSetup.CreateResourceName("database-user-grant"), new()
-        {
-            Database = database.Name,
-            Role = user.Name,
-            Privileges = new[] { "SELECT", "INSERT", "UPDATE", "DELETE" },
-            ObjectType = "ALL IN SCHEMA public",
-        }, new()
-        {
-            Provider = postgresProvider,
-        });
+        DbPassword.Apply(
+            password =>
+            {
+                var invokePayload = JsonSerializer.Serialize(new
+                {
+                    action = "initialize-database-user",
+                    data = JsonSerializer.Serialize(new
+                    {
+                        Username = DbUsername,
+                        Password = password,
+                    }),
+                });
+
+                _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitialDatabaseUserSetup"), new()
+                {
+                    Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
+                    Triggers = new InputList<string>
+                    {
+                        DbPassword,
+                        Output.Create(DbUsername),
+                    }
+                });
+                return password;
+            }
+        );
     }
 
     public Output<string> DBIdentifier = default!;
+    public string DbUsername = default!;
+    public Output<string> DbPassword = default!;
     public Output<string> DatabaseConnectionString = default!;
     public Output<string> DatabaseAdminConnectionString = default!;
 }

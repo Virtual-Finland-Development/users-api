@@ -47,7 +47,10 @@ public class UsersApiStack : Stack
         DBIdentifier = database.DBIdentifier;
 
         var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
-        AdminFunctionArn = adminFunction.LambdaFunctionArn;
+        AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Ensure database user 
+        database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     private bool IsProductionEnvironment()
