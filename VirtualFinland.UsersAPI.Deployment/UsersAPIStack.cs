@@ -36,16 +36,17 @@ public class UsersApiStack : Stack
 
         var vpcSetup = new VpcSetup(stackSetup);
         var database = new PostgresDatabase(config, stackSetup, vpcSetup);
-        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
 
-        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
         AdminFunctionArn = adminFunction.LambdaFunctionArn;
     }
 
