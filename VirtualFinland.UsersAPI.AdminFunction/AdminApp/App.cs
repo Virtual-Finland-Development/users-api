@@ -21,6 +21,7 @@ public class App
             : null;
         var dbConnectionString = databaseSecret ?? new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
             .Build().GetConnectionString("DefaultConnection");
 
         builder.ConfigureServices(
@@ -43,6 +44,8 @@ public class App
         {
             case Models.Actions.Migrate:
                 return new DatabaseMigrationAction();
+            case Models.Actions.InitializeDatabaseUser:
+                return new DatabaseUserInitializationAction();
             default:
                 throw new ArgumentOutOfRangeException(nameof(action), action, null);
         }

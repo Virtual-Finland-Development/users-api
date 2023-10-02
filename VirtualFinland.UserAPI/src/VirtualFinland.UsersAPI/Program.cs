@@ -154,20 +154,6 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-// Only run database migrations in local environment
-if (EnvironmentExtensions.IsLocal(app.Environment))
-{
-    using var scope = app.Services.CreateScope();
-    Log.Information("Migrate database");
-
-    // Initialize automatically any database changes
-    var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    await dataContext.Database.MigrateAsync();
-
-    Log.Information("Database migration completed");
-}
-
-
 app.MapGet("/", () => "App is up!");
 
 app.Run();

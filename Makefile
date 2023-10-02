@@ -5,7 +5,6 @@ test:
 	@echo "> Running unit tests"
 	dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
 
-
 migrate: build
 	@echo "> Running database migrations"
 	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
