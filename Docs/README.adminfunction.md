@@ -14,8 +14,9 @@ aws lambda invoke --payload '{"action": "migrate"}' --cli-binary-format raw-in-b
 - where the `--function-name` is the name of the function that is deployed to AWS, this can be found from the pulumi stack outputs: `AdminFunctionArn`
 
 The payload of the function is a json object that contains the following properties:
-    - `action` - the action that is performed by the function, for example `migrate`
-    - `data` - an optional stringified data set or a value that is passed to the action implementation
+
+- `action` - the action that is performed by the function, for example `migrate`
+- `data` - an optional stringified data set or a value that is passed to the action implementation
 
 ## How to run the admin function locally against a local database:
 
