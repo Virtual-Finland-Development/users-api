@@ -42,10 +42,12 @@ docker network create vfd-network
 
 ## Project Structure
 
-1. **VirtualFinland.UsersAPI**: The API functionalities
+1. **VirtualFinland.UserAPI**: The API functionalities
 2. **VirtualFinland.UsersAPI.Deployment**: The Pulumi IaC definitions for AWS resources provisioning
-3. **VirtualFinland.UsersAPI.IntegrationTests**: Tests for the API functionalities
-4. **Tools**: Contains scripts and definitions that help with the development process
+3. **VirtualFinland.UsersAPI.UnitTests**: Tests for the API functionalities
+4. **VirtualFinland.UsersAPI.AdminFunction**: The AWS Lambda function that is used to run migrations and other administrative tasks
+5. **VirtualFinland.UsersAPI.AdminFunction.CLI**: Command-line tool for running the AWS Lambda function locally
+6. **Tools**: Contains scripts and definitions that help with the development process
 
 ## Q&A
 
@@ -93,14 +95,6 @@ Navigate to the VirtualFinland.UsersAPI project root folder (./VirtualFinland.Us
 
 ```
 dotnet lambda package
-```
-
-### Which environments are supported
-
-At the moment only a development/staging environment configurations are supported. You can set the following environment variable.
-
-```
-ASPNETCORE_ENVIRONMENT=dev
 ```
 
 ### What functionalities and requests the API has
