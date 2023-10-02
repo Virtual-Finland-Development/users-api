@@ -104,6 +104,39 @@ https://localhost:5001/swagger/
 
 Or you can use premade Postman Collection with ready made environments to testing, these can be found in the **/Tools/Postman** folder.
 
+### Database tools
+
+#### Adminer
+
+Adminer is a database management tool that can be used to manage the database. It is available in the docker-compose file and can be started with the following command:
+
+```
+docker-compose up -d adminer
+
+```
+
+The Adminer UI is available at the following address: `http://localhost:8080/` with login credentials `system: postgresql, server: postgresdb, user: postgres, password: example, database: postgres`.
+
+
+#### How to run migrations
+
+Migrations are run automatically when the application is started using the docker-compose. To run the migrations manually you can use the following command with make (if you have make installed) and the database is running:
+
+```
+make migrate
+```
+
+Or you can use the following command with dotnet:
+
+```
+dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+```
+
+* More infromation about the adminfunction tool can be found from the [Docs/README.adminfunction.md](./Docs/README.adminfunction.md) file.
+
+* More database related information can be found from the [Docs/README.database.md](./Docs/README.database.md) file.
+
+
 ### How to deploy the infrastructure into AWS
 
 You need to have the Pulumi tools installed in your system and do some of the following things:
@@ -116,6 +149,8 @@ https://www.pulumi.com/docs/intro/concepts/stack/
 https://www.pulumi.com/docs/intro/concepts/secrets/  
 https://www.pulumi.com/docs/intro/concepts/config/  
 https://www.pulumi.com/docs/intro/concepts/inputs-outputs/
+
+Read more about the deployment steps from the [Docs/README.deployment.md](./Docs/README.deployment.md) file.
 
 #### Pulumi basic commands
 
