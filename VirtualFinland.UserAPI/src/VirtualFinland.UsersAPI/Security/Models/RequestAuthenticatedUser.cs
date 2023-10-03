@@ -2,14 +2,14 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Security.Models;
 
-public class RequestAuthenticatedUser : JwtTokenResult
+public class RequestAuthenticatedUser : RequestAuthenticationCandinate
 {
-    public RequestAuthenticatedUser(Person person, JwtTokenResult jwtTokenResult)
+    public RequestAuthenticatedUser(Person person, RequestAuthenticationCandinate RequestAuthenticationCandinate)
     {
         PersonId = person.Id;
-        IdentityId = jwtTokenResult.IdentityId;
-        Issuer = jwtTokenResult.Issuer;
-        Audience = jwtTokenResult.Audience;
+        IdentityId = RequestAuthenticationCandinate.IdentityId;
+        Issuer = RequestAuthenticationCandinate.Issuer;
+        Audience = RequestAuthenticationCandinate.Audience;
     }
 
     public Guid PersonId { get; set; } = default!;

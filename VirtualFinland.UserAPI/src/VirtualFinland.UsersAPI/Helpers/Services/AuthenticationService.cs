@@ -21,14 +21,14 @@ public class AuthenticationService
 
     public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context)
     {
-        var jwtTokenResult = await ParseJwtToken(context);
+        var requestAuthenticationCandinate = await ParseJwtToken(context);
 
         try
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == jwtTokenResult.IdentityId && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
+            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
 
-            var RequestAuthenticatedUser = new RequestAuthenticatedUser(person, jwtTokenResult);
+            var RequestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
             context.Items.Add("User", RequestAuthenticatedUser);
             return RequestAuthenticatedUser;
         }
@@ -40,10 +40,10 @@ public class AuthenticationService
 
     public async Task<Person> AuthenticateAndGetOrRegisterAndGetPerson(HttpContext context)
     {
-        var jwtTokenResult = await ParseJwtToken(context);
+        var requestAuthenticationCandinate = await ParseJwtToken(context);
 
         var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
-            o => o.IdentityId == jwtTokenResult.IdentityId && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
+            o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
 
         // Create a new system user if no one found based on given authentication information
         if (externalIdentity is null)
@@ -53,8 +53,8 @@ public class AuthenticationService
 
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
-                Issuer = jwtTokenResult.Issuer,
-                IdentityId = jwtTokenResult.IdentityId,
+                Issuer = requestAuthenticationCandinate.Issuer,
+                IdentityId = requestAuthenticationCandinate.IdentityId,
                 UserId = newDbPerson.Entity.Id,
                 Created = DateTime.UtcNow,
                 Modified = DateTime.UtcNow
@@ -63,14 +63,14 @@ public class AuthenticationService
 
             await _usersDbContext.SaveChangesAsync(CancellationToken.None);
 
-            context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, jwtTokenResult));
+            context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate));
 
             return newDbPerson.Entity;
         }
 
         var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
 
-        context.Items.Add("User", new RequestAuthenticatedUser(person, jwtTokenResult));
+        context.Items.Add("User", new RequestAuthenticatedUser(person, requestAuthenticationCandinate));
 
         return person;
     }
@@ -78,7 +78,7 @@ public class AuthenticationService
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    private Task<JwtTokenResult> ParseJwtToken(HttpContext context)
+    private Task<RequestAuthenticationCandinate> ParseJwtToken(HttpContext context)
     {
         var token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         return _applicationSecurity.ParseJwtToken(token);
