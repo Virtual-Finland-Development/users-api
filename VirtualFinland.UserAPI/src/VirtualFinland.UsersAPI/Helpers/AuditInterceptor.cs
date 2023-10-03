@@ -71,7 +71,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
         return new Tuple<List<string>, List<string>>(primaryKeys.ToList(), nonPrimaryKeys.ToList());
     }
 
-    public record AuditLog
+    private record AuditLog
     {
         public string TableName { get; init; } = default!;
         public string Action { get; init; } = default!;

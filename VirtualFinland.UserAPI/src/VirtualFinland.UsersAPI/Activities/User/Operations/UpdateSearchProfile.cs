@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -10,16 +11,13 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 public static class UpdateSearchProfile
 {
     [SwaggerSchema(Title = "UpdateSearchProfileRequest")]
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
         public Guid Id { get; }
         public List<string>? JobTitles { get; }
         public List<string>? Regions { get; }
-        
+
         public string? Name { get; }
-        
-        [SwaggerIgnore]
-        public Guid? UserId { get; private set; }
 
         public Command(Guid id, List<string> jobTitles, List<string> regions, string name)
         {
@@ -28,18 +26,13 @@ public static class UpdateSearchProfile
             this.Regions = regions;
             this.Name = name;
         }
-        
-        public void SetAuth(Guid? userDbId)
-        {
-            this.UserId = userDbId;
-        }
     }
-    
+
     public class CommandValidator : AbstractValidator<Command>
     {
         public CommandValidator()
         {
-            RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.AuthenticatedUser.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -62,9 +55,9 @@ public static class UpdateSearchProfile
             dbSearchProfile.Modified = DateTime.UtcNow;
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
-            
+
             _logger.LogDebug("Search Profile updated: {RequestId}", request.Id);
-            
+
             return Unit.Value;
         }
     }

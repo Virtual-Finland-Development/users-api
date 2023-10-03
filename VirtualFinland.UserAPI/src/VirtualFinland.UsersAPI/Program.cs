@@ -101,7 +101,6 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 //
 builder.Services.RegisterSecurityFeatures(builder.Configuration);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
-builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
 builder.Services.AddTransient<TestbedConsentSecurityService>();

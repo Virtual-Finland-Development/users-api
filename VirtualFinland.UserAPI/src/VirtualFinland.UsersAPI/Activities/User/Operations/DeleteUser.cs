@@ -2,24 +2,15 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class DeleteUser
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
-        public Command()
-        { }
 
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
-        public void SetAuth(Guid? userDatabaseId)
-        {
-            UserId = userDatabaseId;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
@@ -42,8 +33,8 @@ public static class DeleteUser
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.UserId, cancellationToken);
-            var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.UserId);
+                .SingleAsync(p => p.Id == request.AuthenticatedUser.PersonId, cancellationToken);
+            var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.AuthenticatedUser.PersonId);
 
             try
             {

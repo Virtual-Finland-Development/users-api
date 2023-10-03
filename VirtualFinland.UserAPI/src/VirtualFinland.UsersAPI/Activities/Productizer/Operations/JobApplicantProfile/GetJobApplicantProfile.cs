@@ -4,21 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
 public static class GetJobApplicantProfile
 {
-    public class Query : IRequest<PersonJobApplicantProfileResponse>
+    public class Query : AuthenticatedRequest<PersonJobApplicantProfileResponse>
     {
-        public Query(Guid? personId)
+        public Query(AuthenticatedUser authenticatedUser) : base(authenticatedUser)
         {
-            PersonId = personId;
         }
-
-        [SwaggerIgnore]
-        public Guid? PersonId { get; }
     }
 
     public class Handler : IRequestHandler<Query, PersonJobApplicantProfileResponse>
@@ -40,7 +36,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.PersonId, cancellationToken);
+                .SingleAsync(p => p.Id == request.AuthenticatedUser.PersonId, cancellationToken);
 
             return new PersonJobApplicantProfileResponse
             {

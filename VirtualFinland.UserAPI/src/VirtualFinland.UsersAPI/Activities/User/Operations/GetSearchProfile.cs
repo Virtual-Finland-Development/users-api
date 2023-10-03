@@ -4,33 +4,30 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class GetSearchProfile
 {
     [SwaggerSchema(Title = "SearchProfileRequest")]
-    public class Query : IRequest<SearchProfile>
+    public class Query : AuthenticatedRequest<SearchProfile>
     {
-        [SwaggerIgnore]
-        public Guid? UserId { get; }
-
-        
         public Guid ProfileId { get; }
 
-        public Query(Guid? userId, Guid profileId)
+        public Query(AuthenticatedUser authenticatedUser, Guid profileId)
         {
-            this.UserId = userId;
-            this.ProfileId = profileId;
+            AuthenticatedUser = authenticatedUser;
+            ProfileId = profileId;
         }
     }
-    
+
     public class QueryValidator : AbstractValidator<Query>
     {
         public QueryValidator()
         {
-            RuleFor(query => query.UserId).NotNull().NotEmpty();
+            RuleFor(query => query.AuthenticatedUser.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -47,7 +44,7 @@ public static class GetSearchProfile
 
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.AuthenticatedUser.PersonId, cancellationToken: cancellationToken);
 
             var userSearchProfile = await _usersDbContext.SearchProfiles.SingleOrDefaultAsync(o => o.PersonId == dbUser.Id && o.Id == request.ProfileId, cancellationToken);
 
@@ -56,13 +53,13 @@ public static class GetSearchProfile
                 _logger.LogInformation("Failed to retrieve search profile: {RequestProfileId}", request.ProfileId);
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
-            
+
             _logger.LogDebug("Search Profile Retrieved: {SearchProfileId}", userSearchProfile.Id);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }
     }
-    
+
     [SwaggerSchema(Title = "SearchProfileResponse")]
     public record SearchProfile(Guid Id, List<string>? JobTitles, string? Name, List<string>? Regions, DateTime Created, DateTime Modified);
 }

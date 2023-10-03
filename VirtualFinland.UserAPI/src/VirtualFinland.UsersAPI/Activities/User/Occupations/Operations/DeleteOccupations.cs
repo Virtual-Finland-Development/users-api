@@ -1,12 +1,12 @@
 using MediatR;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class DeleteOccupations
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
         public Command()
         {
@@ -17,14 +17,7 @@ public static class DeleteOccupations
             Ids = ids;
         }
 
-        [SwaggerIgnore] public Guid? UserId { get; private set; }
-
         public List<Guid> Ids { get; init; } = null!;
-
-        public void SetAuth(Guid? userDatabaseIdentifier)
-        {
-            UserId = userDatabaseIdentifier;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
@@ -39,7 +32,7 @@ public static class DeleteOccupations
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupations = _usersDbContext.Occupations
-                .Where(o => o.PersonId == request.UserId)
+                .Where(o => o.PersonId == request.AuthenticatedUser.PersonId)
                 .ToList();
 
             var occupationsToRemove = request.Ids switch

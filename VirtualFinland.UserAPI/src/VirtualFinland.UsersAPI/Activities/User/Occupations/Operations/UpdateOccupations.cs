@@ -3,26 +3,20 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class UpdateOccupations
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
         public Command(List<Occupation> occupations)
         {
             Occupations = occupations;
         }
 
-        [SwaggerIgnore] public Guid? UserId { get; private set; }
         public List<Occupation> Occupations { get; init; }
-
-        public void SetAuth(Guid? userDatabaseIdentifier)
-        {
-            UserId = userDatabaseIdentifier;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
@@ -37,7 +31,7 @@ public static class UpdateOccupations
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupationsToUpdate = await _usersDbContext.Occupations
-                .Where(o => o.PersonId == request.UserId)
+                .Where(o => o.PersonId == request.AuthenticatedUser.PersonId)
                 .Where(o => request.Occupations.Select(e => e.Id).Contains(o.Id))
                 .ToListAsync(cancellationToken);
 

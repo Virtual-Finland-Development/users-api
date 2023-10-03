@@ -8,6 +8,7 @@ using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
@@ -48,7 +49,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        return Ok(await _mediator.Send(new GetUser.Query(await _authenticationService.GetCurrentUserId(Request))));
+        var authenticatedUser = await _authenticationService.Authenticate(HttpContext);
+        return Ok(await _mediator.Send(new GetUser.Query(authenticatedUser)));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -59,7 +61,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        command.SetAuth(await _authenticationService.GetCurrentUserId(Request));
+        var authenticatedUser = await _authenticationService.Authenticate(HttpContext);
+        command.SetAuth(authenticatedUser);
         return Ok(await _mediator.Send(command));
     }
 
@@ -71,23 +74,20 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        Guid? userId;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            var authenticatedUser = await _authenticationService.Authenticate(HttpContext);
+
+            var result = await _mediator.Send(new GetPersonBasicInformation.Query(authenticatedUser));
+
+            if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) throw new NotFoundException("Person not found");
+
+            return Ok(result);
         }
         catch (NotAuthorizedException)
         {
-            _logger.LogInformation(
-                "Person was not found in database while trying to retrieve person basic information");
             throw new NotFoundException("Person not found");
         }
-
-        var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
-
-        if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) throw new NotFoundException("Person not found");
-
-        return Ok(result);
     }
 
     [HttpPost("productizer/Person/BasicInformation/Write_v0.1")]
@@ -99,7 +99,8 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        var authenticatedUser = await AuthenticateOrRegisterPerson();
+        command.SetAuth(authenticatedUser);
         return Ok(await _mediator.Send(command));
     }
 
@@ -111,23 +112,20 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        Guid? userId;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            var authenticatedUser = await _authenticationService.Authenticate(HttpContext);
+
+            var result = await _mediator.Send(new GetJobApplicantProfile.Query(authenticatedUser));
+
+            if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) throw new NotFoundException("Job applicant profile not found");
+
+            return Ok(result);
         }
         catch (NotAuthorizedException)
         {
-            _logger.LogInformation(
-                "Person was not found in database while trying to retrieve person job applicant profile");
-            throw new NotFoundException("Person not found");
+            throw new NotFoundException("Job applicant profile not found");
         }
-
-        var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
-
-        if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) throw new NotFoundException("Job applicant profile not found");
-
-        return Ok(result);
     }
 
     [HttpPost("productizer/Person/JobApplicantProfile/Write_v0.1")]
@@ -138,7 +136,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        var authenticatedUser = await AuthenticateOrRegisterPerson();
+        command.SetAuth(authenticatedUser);
         return Ok(await _mediator.Send(command));
     }
 
@@ -146,12 +145,11 @@ public class ProductizerController : ControllerBase
     ///     If user is not found in database, create new user and return users Id
     ///     - authentication header / token should be verified before calling this method
     /// </summary>
-    private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
+    private async Task<AuthenticatedUser> AuthenticateOrRegisterPerson()
     {
-        Guid? userId;
         try
         {
-            userId = await _authenticationService.GetCurrentUserId(Request);
+            return await _authenticationService.Authenticate(HttpContext);
         }
         catch (NotAuthorizedException e)
         {
@@ -159,11 +157,10 @@ public class ProductizerController : ControllerBase
                 e.Message);
             try
             {
-                var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
-                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
+                var query = new VerifyIdentityPerson.Query(HttpContext);
                 var createdUser = await _mediator.Send(query);
-                userId = createdUser.Id;
-                _logger.LogInformation("New user was created with Id: {UserId}", userId);
+                _logger.LogInformation("New user was created with Id: {UserId}", createdUser.Id);
+                return HttpContext.Items["AuthenticatedUser"] as AuthenticatedUser ?? throw new Exception("Unknown error occurred on registering");
             }
             catch (Exception exception)
             {
@@ -171,7 +168,5 @@ public class ProductizerController : ControllerBase
                 throw;
             }
         }
-
-        return userId;
     }
 }

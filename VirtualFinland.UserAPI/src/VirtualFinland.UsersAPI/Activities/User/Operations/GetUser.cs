@@ -3,22 +3,20 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Shared;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class GetUser
 {
     [SwaggerSchema(Title = "UserRequest")]
-    public class Query : IRequest<User>
+    public class Query : AuthenticatedRequest<User>
     {
-        [SwaggerIgnore]
-        public Guid? UserId { get; }
-
-        public Query(Guid? userId)
+        public Query(AuthenticatedUser authenticatedUser) : base(authenticatedUser)
         {
-            this.UserId = userId;
         }
     }
 
@@ -26,7 +24,7 @@ public static class GetUser
     {
         public QueryValidator()
         {
-            RuleFor(query => query.UserId).NotNull().NotEmpty();
+            RuleFor(query => query.AuthenticatedUser.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -47,7 +45,7 @@ public static class GetUser
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(o => o.Id == request.UserId, cancellationToken);
+                .SingleAsync(o => o.Id == request.AuthenticatedUser.PersonId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);

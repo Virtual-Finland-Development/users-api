@@ -37,7 +37,7 @@ public class AuthenticationTests : APITestBase
         var authenticationService = new AuthenticationService(userSecurityService);
 
         // Act
-        var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var act = () => authenticationService.Authenticate(mockHttpRequest.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
@@ -68,7 +68,7 @@ public class AuthenticationTests : APITestBase
         var userSecurityService = new UserSecurityService(_dbContext, mockLogger.Object, applicationSecurity);
         var authenticationService = new AuthenticationService(userSecurityService);
         // Act
-        var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var act = () => authenticationService.Authenticate(mockHttpRequest.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
@@ -117,7 +117,7 @@ public class AuthenticationTests : APITestBase
         var authenticationService = new AuthenticationService(userSecurityService);
 
         // Act
-        var result = await authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var result = await authenticationService.Authenticate(mockHttpRequest.Object);
 
         // Assert
         result.Should().Be(dbEntity.user.Id);

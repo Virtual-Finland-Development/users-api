@@ -29,7 +29,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId())));
+        return Ok(await Mediator.Send(new GetUser.Query(await Authenticate())));
     }
 
     [HttpPatch("/user")]
@@ -38,7 +38,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        command.SetAuth(await this.GetCurrentUserId());
+        command.SetAuth(await Authenticate());
         return Ok(await Mediator.Send(command));
     }
 
@@ -49,7 +49,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> DeleteUser()
     {
         var command = new DeleteUser.Command();
-        command.SetAuth(await this.GetCurrentUserId());
+        command.SetAuth(await Authenticate());
         return Ok(await Mediator.Send(command));
     }
 
@@ -58,7 +58,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
-        return await Mediator.Send(new GetSearchProfiles.Query(await this.GetCurrentUserId()));
+        return await Mediator.Send(new GetSearchProfiles.Query(await Authenticate()));
     }
 
     [HttpGet("/user/search-profiles/{profileId}")]
@@ -67,7 +67,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
     {
-        var searchProfile = await Mediator.Send(new GetSearchProfile.Query(await this.GetCurrentUserId(), profileId));
+        var searchProfile = await Mediator.Send(new GetSearchProfile.Query(await Authenticate(), profileId));
 
         return Ok(searchProfile);
     }
@@ -75,9 +75,9 @@ public class UserController : ApiControllerBase
     [HttpPatch("/user/search-profiles/{profileId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command, Guid profileId)
+    public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command)
     {
-        command.SetAuth(await this.GetCurrentUserId());
+        command.SetAuth(await Authenticate());
         await Mediator.Send(command);
         return NoContent();
     }
@@ -87,7 +87,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.Command command)
     {
-        command.SetAuth(await this.GetCurrentUserId());
+        command.SetAuth(await Authenticate());
         var searchProfile = await Mediator.Send(command);
 
         return CreatedAtAction(nameof(GetUserSearchProfile), new
@@ -102,7 +102,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> AddOccupation(List<AddOccupations.AddOccupationsRequest> occupations)
     {
         var command = new AddOccupations.Command(occupations);
-        command.SetAuth(await GetCurrentUserId());
+        command.SetAuth(await Authenticate());
 
         var result = await Mediator.Send(command);
 
@@ -118,7 +118,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> UpdateOccupations(List<UpdateOccupations.Occupation> occupations)
     {
         var command = new UpdateOccupations.Command(occupations);
-        command.SetAuth(await GetCurrentUserId());
+        command.SetAuth(await Authenticate());
 
         await Mediator.Send(command);
 
@@ -131,7 +131,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> DeleteSelectedOccupations(List<Guid> ids)
     {
         var command = new DeleteOccupations.Command(ids);
-        command.SetAuth(await GetCurrentUserId());
+        command.SetAuth(await Authenticate());
 
         await Mediator.Send(command);
 
@@ -144,7 +144,7 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> DeleteAllOccupations()
     {
         var command = new DeleteOccupations.Command();
-        command.SetAuth(await GetCurrentUserId());
+        command.SetAuth(await Authenticate());
 
         await Mediator.Send(command);
 

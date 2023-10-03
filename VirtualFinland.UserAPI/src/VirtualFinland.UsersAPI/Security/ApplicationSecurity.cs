@@ -34,8 +34,8 @@ public class ApplicationSecurity : IApplicationSecurity
         var tokenAudience = parsedToken.Audiences.FirstOrDefault() ?? throw new NotAuthorizedException("The given token audience is not valid");
         await securityFeature.ValidateSecurityTokenAudience(tokenAudience);
 
-        // Resolve user id
+        // Resolve identity id
         var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
-        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer, Audience = tokenAudience };
+        return new JwtTokenResult { IdentityId = userId, Issuer = securityFeature.Issuer, Audience = tokenAudience };
     }
 }

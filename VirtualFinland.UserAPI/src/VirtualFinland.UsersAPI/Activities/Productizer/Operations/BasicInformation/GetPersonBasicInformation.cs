@@ -2,22 +2,19 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
 public static class GetPersonBasicInformation
 {
     [SwaggerSchema(Title = "GetPersonBasicInformationRequest")]
-    public class Query : IRequest<GetPersonBasicInformationResponse>
+    public class Query : AuthenticatedRequest<GetPersonBasicInformationResponse>
     {
-        public Query(Guid? userId)
+        public Query(AuthenticatedUser authenticatedUser) : base(authenticatedUser)
         {
-            UserId = userId;
         }
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; }
     }
 
     public class Handler : IRequestHandler<Query, GetPersonBasicInformationResponse>
@@ -31,7 +28,7 @@ public static class GetPersonBasicInformation
 
         public async Task<GetPersonBasicInformationResponse> Handle(Query request, CancellationToken cancellationToken)
         {
-            var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
+            var person = await _context.Persons.SingleAsync(p => p.Id == request.AuthenticatedUser.PersonId, cancellationToken);
 
             return new GetPersonBasicInformationResponse(
                 person.GivenName,

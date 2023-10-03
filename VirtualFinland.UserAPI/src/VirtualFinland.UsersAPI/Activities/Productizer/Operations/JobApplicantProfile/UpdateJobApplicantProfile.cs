@@ -5,14 +5,13 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
 public static class UpdateJobApplicantProfile
 {
-    public class Command : IRequest<Request>
+    public class Command : AuthenticatedRequest<Request>
     {
         public Command(
             List<Request.Occupation> occupations,
@@ -39,15 +38,6 @@ public static class UpdateJobApplicantProfile
         public List<Request.Certification> Certifications { get; }
         public List<string> Permits { get; }
         public Request.WorkPreferenceValues WorkPreferences { get; }
-
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
-        public void SetAuth(Guid? userDatabaseId)
-        {
-            UserId = userDatabaseId;
-        }
     }
 
     public class Handler : IRequestHandler<Command, Request>
@@ -69,7 +59,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .FirstOrDefaultAsync(p => p.Id == command.UserId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == command.AuthenticatedUser.PersonId, cancellationToken);
 
             if (person is null) throw new NotFoundException();
 
@@ -226,7 +216,7 @@ public static class UpdateJobApplicantProfile
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
-            
+
             public string? InstitutionName { get; set; }
         }
 
