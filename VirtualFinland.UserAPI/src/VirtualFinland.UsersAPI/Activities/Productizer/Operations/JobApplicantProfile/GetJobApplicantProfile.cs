@@ -12,7 +12,7 @@ public static class GetJobApplicantProfile
 {
     public class Query : AuthenticatedRequest<PersonJobApplicantProfileResponse>
     {
-        public Query(AuthenticatedUser authenticatedUser) : base(authenticatedUser)
+        public Query(RequestAuthenticatedUser RequestAuthenticatedUser) : base(RequestAuthenticatedUser)
         {
         }
     }
@@ -36,7 +36,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.AuthenticatedUser.PersonId, cancellationToken);
+                .SingleAsync(p => p.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
 
             return new PersonJobApplicantProfileResponse
             {

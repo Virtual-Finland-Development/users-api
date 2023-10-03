@@ -31,7 +31,7 @@ public static class UpdateOccupations
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupationsToUpdate = await _usersDbContext.Occupations
-                .Where(o => o.PersonId == request.AuthenticatedUser.PersonId)
+                .Where(o => o.PersonId == request.RequestAuthenticatedUser.PersonId)
                 .Where(o => request.Occupations.Select(e => e.Id).Contains(o.Id))
                 .ToListAsync(cancellationToken);
 

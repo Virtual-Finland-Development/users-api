@@ -15,7 +15,7 @@ public class ApiControllerBase : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    protected async Task<AuthenticatedUser> Authenticate()
+    protected async Task<RequestAuthenticatedUser> Authenticate()
     {
         return await _authenticationService.Authenticate(HttpContext);
     }

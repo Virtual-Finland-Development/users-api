@@ -39,7 +39,7 @@ public static class UpdatePersonBasicInformation
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
-            var person = await _context.Persons.SingleAsync(p => p.Id == request.AuthenticatedUser.PersonId, cancellationToken);
+            var person = await _context.Persons.SingleAsync(p => p.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
 
             person.GivenName = request.GivenName ?? person.GivenName;
             person.LastName = request.LastName ?? person.LastName;

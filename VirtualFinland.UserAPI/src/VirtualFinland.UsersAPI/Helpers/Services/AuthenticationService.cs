@@ -19,7 +19,7 @@ public class AuthenticationService
         _applicationSecurity = applicationSecurity;
     }
 
-    public async Task<AuthenticatedUser> Authenticate(HttpContext context)
+    public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context)
     {
         var jwtTokenResult = await ParseJwtToken(context);
 
@@ -28,9 +28,9 @@ public class AuthenticationService
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == jwtTokenResult.IdentityId && o.Issuer == jwtTokenResult.Issuer, CancellationToken.None);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
 
-            var authenticatedUser = new AuthenticatedUser(person, jwtTokenResult);
-            context.Items.Add("AuthenticatedUser", authenticatedUser);
-            return authenticatedUser;
+            var RequestAuthenticatedUser = new RequestAuthenticatedUser(person, jwtTokenResult);
+            context.Items.Add("User", RequestAuthenticatedUser);
+            return RequestAuthenticatedUser;
         }
         catch (InvalidOperationException e)
         {
@@ -63,14 +63,14 @@ public class AuthenticationService
 
             await _usersDbContext.SaveChangesAsync(CancellationToken.None);
 
-            context.Items.Add("AuthenticatedUser", new AuthenticatedUser(newDbPerson.Entity, jwtTokenResult));
+            context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, jwtTokenResult));
 
             return newDbPerson.Entity;
         }
 
         var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
 
-        context.Items.Add("AuthenticatedUser", new AuthenticatedUser(person, jwtTokenResult));
+        context.Items.Add("User", new RequestAuthenticatedUser(person, jwtTokenResult));
 
         return person;
     }

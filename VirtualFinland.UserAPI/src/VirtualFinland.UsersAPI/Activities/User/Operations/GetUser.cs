@@ -15,7 +15,7 @@ public static class GetUser
     [SwaggerSchema(Title = "UserRequest")]
     public class Query : AuthenticatedRequest<User>
     {
-        public Query(AuthenticatedUser authenticatedUser) : base(authenticatedUser)
+        public Query(RequestAuthenticatedUser RequestAuthenticatedUser) : base(RequestAuthenticatedUser)
         {
         }
     }
@@ -24,7 +24,7 @@ public static class GetUser
     {
         public QueryValidator()
         {
-            RuleFor(query => query.AuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(query => query.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -45,7 +45,7 @@ public static class GetUser
                 .Include(u => u.Occupations)
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(o => o.Id == request.AuthenticatedUser.PersonId, cancellationToken);
+                .SingleAsync(o => o.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);

@@ -16,9 +16,9 @@ public static class GetSearchProfile
     {
         public Guid ProfileId { get; }
 
-        public Query(AuthenticatedUser authenticatedUser, Guid profileId)
+        public Query(RequestAuthenticatedUser RequestAuthenticatedUser, Guid profileId)
         {
-            AuthenticatedUser = authenticatedUser;
+            RequestAuthenticatedUser = RequestAuthenticatedUser;
             ProfileId = profileId;
         }
     }
@@ -27,7 +27,7 @@ public static class GetSearchProfile
     {
         public QueryValidator()
         {
-            RuleFor(query => query.AuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(query => query.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -44,7 +44,7 @@ public static class GetSearchProfile
 
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.AuthenticatedUser.PersonId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken: cancellationToken);
 
             var userSearchProfile = await _usersDbContext.SearchProfiles.SingleOrDefaultAsync(o => o.PersonId == dbUser.Id && o.Id == request.ProfileId, cancellationToken);
 

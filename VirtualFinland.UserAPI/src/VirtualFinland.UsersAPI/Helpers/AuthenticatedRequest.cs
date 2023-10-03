@@ -8,39 +8,39 @@ namespace VirtualFinland.UserAPI.Helpers;
 public abstract class AuthenticatedRequest<T> : IRequest<T>
 {
     [SwaggerIgnore]
-    public AuthenticatedUser AuthenticatedUser { get; set; } = default!;
+    public RequestAuthenticatedUser RequestAuthenticatedUser { get; set; } = default!;
 
     public AuthenticatedRequest()
     {
     }
 
-    public AuthenticatedRequest(AuthenticatedUser authenticatedUser)
+    public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        AuthenticatedUser = authenticatedUser;
+        RequestAuthenticatedUser = RequestAuthenticatedUser;
     }
 
-    public void SetAuth(AuthenticatedUser authenticatedUser)
+    public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        AuthenticatedUser = authenticatedUser;
+        RequestAuthenticatedUser = RequestAuthenticatedUser;
     }
 }
 
 public abstract class AuthenticatedRequest : IRequest
 {
     [SwaggerIgnore]
-    public AuthenticatedUser AuthenticatedUser { get; set; } = default!;
+    public RequestAuthenticatedUser RequestAuthenticatedUser { get; set; } = default!;
 
     public AuthenticatedRequest()
     {
     }
 
-    public AuthenticatedRequest(AuthenticatedUser authenticatedUser)
+    public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        AuthenticatedUser = authenticatedUser;
+        RequestAuthenticatedUser = RequestAuthenticatedUser;
     }
 
-    public void SetAuth(AuthenticatedUser authenticatedUser)
+    public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        AuthenticatedUser = authenticatedUser;
+        RequestAuthenticatedUser = RequestAuthenticatedUser;
     }
 }

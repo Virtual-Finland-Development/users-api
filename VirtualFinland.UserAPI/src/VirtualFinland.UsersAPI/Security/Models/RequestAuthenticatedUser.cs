@@ -2,9 +2,9 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Security.Models;
 
-public class AuthenticatedUser : JwtTokenResult
+public class RequestAuthenticatedUser : JwtTokenResult
 {
-    public AuthenticatedUser(Person person, JwtTokenResult jwtTokenResult)
+    public RequestAuthenticatedUser(Person person, JwtTokenResult jwtTokenResult)
     {
         PersonId = person.Id;
         IdentityId = jwtTokenResult.IdentityId;
