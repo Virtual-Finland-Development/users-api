@@ -28,7 +28,7 @@ public static class GetPersonBasicInformation
 
         public async Task<GetPersonBasicInformationResponse> Handle(Query request, CancellationToken cancellationToken)
         {
-            var person = await _context.Persons.SingleAsync(p => p.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
+            var person = await _context.Persons.SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
             return new GetPersonBasicInformationResponse(
                 person.GivenName,

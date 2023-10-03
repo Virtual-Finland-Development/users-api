@@ -71,7 +71,7 @@ public static class UpdateUser
     {
         public CommandValidator()
         {
-            RuleFor(command => command.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
             RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
@@ -109,7 +109,7 @@ public static class UpdateUser
         {
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(o => o.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
+                .SingleAsync(o => o.Id == request.User.PersonId, cancellationToken);
 
             await VerifyUserUpdate(dbUser, request);
 

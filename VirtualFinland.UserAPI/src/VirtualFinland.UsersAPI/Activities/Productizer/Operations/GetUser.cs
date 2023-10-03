@@ -24,7 +24,7 @@ public static class GetUser
     {
         public QueryValidator()
         {
-            RuleFor(query => query.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(query => query.User.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -46,7 +46,7 @@ public static class GetUser
                 .Include(p => p.Occupations)
                 .Include(p => p.WorkPreferences)
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(p => p.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
+                .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);

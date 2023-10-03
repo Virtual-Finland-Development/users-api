@@ -59,7 +59,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .FirstOrDefaultAsync(p => p.Id == command.RequestAuthenticatedUser.PersonId, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == command.User.PersonId, cancellationToken);
 
             if (person is null) throw new NotFoundException();
 

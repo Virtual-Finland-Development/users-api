@@ -36,7 +36,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken);
+                .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
             return new PersonJobApplicantProfileResponse
             {

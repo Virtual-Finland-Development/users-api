@@ -8,7 +8,7 @@ namespace VirtualFinland.UserAPI.Helpers;
 public abstract class AuthenticatedRequest<T> : IRequest<T>
 {
     [SwaggerIgnore]
-    public RequestAuthenticatedUser RequestAuthenticatedUser { get; set; } = default!;
+    public RequestAuthenticatedUser User { get; set; } = default!;
 
     public AuthenticatedRequest()
     {
@@ -16,19 +16,19 @@ public abstract class AuthenticatedRequest<T> : IRequest<T>
 
     public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        RequestAuthenticatedUser = RequestAuthenticatedUser;
+        User = RequestAuthenticatedUser;
     }
 
     public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        RequestAuthenticatedUser = RequestAuthenticatedUser;
+        User = RequestAuthenticatedUser;
     }
 }
 
 public abstract class AuthenticatedRequest : IRequest
 {
     [SwaggerIgnore]
-    public RequestAuthenticatedUser RequestAuthenticatedUser { get; set; } = default!;
+    public RequestAuthenticatedUser User { get; set; } = default!;
 
     public AuthenticatedRequest()
     {
@@ -36,11 +36,11 @@ public abstract class AuthenticatedRequest : IRequest
 
     public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        RequestAuthenticatedUser = RequestAuthenticatedUser;
+        User = RequestAuthenticatedUser;
     }
 
     public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
     {
-        RequestAuthenticatedUser = RequestAuthenticatedUser;
+        User = RequestAuthenticatedUser;
     }
 }

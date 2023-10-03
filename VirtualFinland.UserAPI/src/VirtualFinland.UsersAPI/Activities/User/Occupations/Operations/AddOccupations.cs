@@ -33,7 +33,7 @@ public static class AddOccupations
         {
             var user = _usersDbContext.Persons
                 .Include(u => u.Occupations)
-                .FirstOrDefault(u => u.Id == request.RequestAuthenticatedUser.PersonId);
+                .FirstOrDefault(u => u.Id == request.User.PersonId);
 
             foreach (var occupation in request.Occupations)
             {

@@ -29,7 +29,7 @@ public static class CreateSearchProfile
     {
         public CommandValidator()
         {
-            RuleFor(command => command.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -46,7 +46,7 @@ public static class CreateSearchProfile
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.User.PersonId, cancellationToken: cancellationToken);
 
             var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
             {

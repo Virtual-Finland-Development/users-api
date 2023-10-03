@@ -32,7 +32,7 @@ public static class UpdateSearchProfile
     {
         public CommandValidator()
         {
-            RuleFor(command => command.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
         }
     }
 

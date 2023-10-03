@@ -22,7 +22,7 @@ public static class GetSearchProfiles
     {
         public QueryValidator()
         {
-            RuleFor(query => query.RequestAuthenticatedUser.PersonId).NotNull().NotEmpty();
+            RuleFor(query => query.User.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -39,7 +39,7 @@ public static class GetSearchProfiles
 
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.RequestAuthenticatedUser.PersonId, cancellationToken: cancellationToken);
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.User.PersonId, cancellationToken: cancellationToken);
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.PersonId == dbUser.Id);
 
