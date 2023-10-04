@@ -28,9 +28,11 @@ public class AuthenticationService
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
 
-            var RequestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
-            context.Items.Add("User", RequestAuthenticatedUser);
-            return RequestAuthenticatedUser;
+            var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
+
+            context.Items.Add("User", requestAuthenticatedUser);
+
+            return requestAuthenticatedUser;
         }
         catch (InvalidOperationException e)
         {
@@ -49,7 +51,8 @@ public class AuthenticationService
         if (externalIdentity is null)
         {
             var newDbPerson = await _usersDbContext.Persons.AddAsync(
-                new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, CancellationToken.None);
+                new Person().MakeAuditAddition(requestAuthenticationCandinate)
+            );
 
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
@@ -59,7 +62,6 @@ public class AuthenticationService
                 Created = DateTime.UtcNow,
                 Modified = DateTime.UtcNow
             }, CancellationToken.None);
-
 
             await _usersDbContext.SaveChangesAsync(CancellationToken.None);
 

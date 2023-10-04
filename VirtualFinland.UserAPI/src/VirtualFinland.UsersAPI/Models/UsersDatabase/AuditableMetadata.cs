@@ -8,7 +8,7 @@ public class AuditableMetadata
     {
     }
 
-    public AuditableMetadata(RequestAuthenticatedUser user)
+    public AuditableMetadata(IRequestAuthenticationCandinate user)
     {
         IdentityId = user.IdentityId;
         Issuer = user.Issuer;

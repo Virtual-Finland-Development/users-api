@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Person : Auditable, IEntity
+public class Person : Auditable<Person>, IEntity
 {
     [MaxLength(255)]
     public string? GivenName { get; set; }
