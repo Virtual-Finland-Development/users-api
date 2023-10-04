@@ -170,7 +170,7 @@ public class PostgresDatabase
             {
                 var invokePayload = JsonSerializer.Serialize(new
                 {
-                    action = "initialize-database-user",
+                    action = "InitializeDatabaseUser",
                     data = JsonSerializer.Serialize(new
                     {
                         Username = DbUsername,
