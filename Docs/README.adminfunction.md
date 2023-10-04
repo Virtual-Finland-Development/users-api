@@ -1,6 +1,6 @@
 # Admin function
 
-The administration tool [../VirtualFinland.UsersAPI.AdminFunction](../VirtualFinland.UsersAPI.AdminFunction) is a AWS Lambda function that can be used to perform administrative tasks on the database. The function is deployed using the [../VirtualFinland.UsersAPI.Deployment](../VirtualFinland.UsersAPI.Deployment) project.
+The administration tool [../VirtualFinland.UsersAPI.AdminFunction](../VirtualFinland.UsersAPI.AdminFunction) is a AWS Lambda function that can be used to perform administrative tasks such as executing database migrations in the protected VPC (Virtual Private Cloud) network. The function is deployed using the [../VirtualFinland.UsersAPI.Deployment](../VirtualFinland.UsersAPI.Deployment) project.
 
 ## How to run the admin function locally against a live system:
 
@@ -27,3 +27,12 @@ For example the admin functions migrate-command can be run locally against a loc
 ```
 dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
 ```
+
+## Available actions
+
+- `migrate` - runs the database migrations
+  - lambda function payload: `{"action": "migrate"}`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate`
+- `initialize-database-user` - setup the application-level user credentials to the database
+  - lambda function payload: `{"action": "initialize-database-user", "data": "{\"username\": \"appuser\", \"password\": \"pass\"}"}`
+  - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user`
