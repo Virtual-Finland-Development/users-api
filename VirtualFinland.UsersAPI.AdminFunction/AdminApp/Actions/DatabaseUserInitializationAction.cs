@@ -57,13 +57,13 @@ public class DatabaseUserInitializationAction : IAdminAppAction
                     )
                 ) 
                 LOOP 
-                    EXECUTE 'DROP USER ' || username;
+                    EXECUTE 'DROP USER ""' || username || '""';
                 END LOOP; 
             END $$;
             -- Create user
-            CREATE USER {credentials.Username} WITH PASSWORD '{credentials.Password}';
+            CREATE USER ""{credentials.Username}"" WITH PASSWORD '{credentials.Password}';
             -- Add user to the role
-            GRANT appusers TO {credentials.Username};
+            GRANT appusers TO ""{credentials.Username}"";
         ");
     }
 
