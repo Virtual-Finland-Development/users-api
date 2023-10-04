@@ -42,9 +42,10 @@ var rdsPostGreInstance = new Instance(instanceName, new InstanceArgs()
 1. Resolve the pulumi stack output for the database migrator lambda function ARN: `AdminFunctionArn`
 2. Invoke the function:
 
-- with AWS CLI: `aws lambda invoke --payload '{"action": "migrate"}' --cli-binary-format raw-in-base64-out --function-name <AdminFunctionArn> output.json`
+- with AWS CLI: `aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name <AdminFunctionArn> output.json`
 - or by using the AWS Console:
   - Go to AWS Console and select Lambda
   - Select the function with name like `users-api-AdminFunction-<stage>-<random-hash>`
   - Select the tab "Test"
+  - Add a new test event with the following content: `{"Action": "Migrate"}`
   - Click "Test" button and wait for the execution to finish

@@ -1,5 +1,4 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualFinland.UsersAPI", "VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj", "{CAB8E772-8F51-41BB-B5CE-360D417A26B2}"
 EndProject

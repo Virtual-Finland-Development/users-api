@@ -39,12 +39,8 @@ jobs:
           fetch-depth: 2
       - uses: actions/download-artifact@v3
         with:
-          name: Application_Artifact
-          path: ./
-      - uses: actions/download-artifact@v3
-        with:
-          name: AdminFunction_Artifacts
-          path: ./
+          name: Application_Artifacts
+          path: ./build-artifacts
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
@@ -95,19 +91,17 @@ jobs:
           command: up
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           upsert: true
-          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.AdminFunction.zip, secret: false } }"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-      - name: Invoke database migration runner lambda
+      - name: Invoke database migration runner lambda call
         if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' }}
         run: |
           aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name ${{ steps.get-pulumi-outputs.outputs.AdminFunctionArn }} output.json
           cat output.json
-      - name: Invoke database migration runner lambda
+      - name: Invoke terms of service updater lambda call
         if: ${{ steps.deployment-database-events.outputs.TermsOfService == 'true' }}
         run: |
           aws lambda invoke --payload '{"Action": "UpdateTermsOfService"}' --cli-binary-format raw-in-base64-out --function-name ${{ steps.get-pulumi-outputs.outputs.AdminFunctionArn }} output.json
-          cat output.json
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
         if: ${{ inputs.environment == 'staging' }}

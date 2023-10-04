@@ -64,8 +64,8 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
-    [HttpPost("productizer/draft/Person/BasicInformation")]
     [HttpPost("productizer/Person/BasicInformation_v0.1")]
+    [HttpPost("productizer/Person/BasicInformation_v1.0")]
     [SwaggerOperation(Summary = "Get person basic information",
         Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -79,8 +79,8 @@ public class ProductizerController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("productizer/draft/Person/BasicInformation/Write")]
     [HttpPost("productizer/Person/BasicInformation/Write_v0.1")]
+    [HttpPost("productizer/Person/BasicInformation/Write_v1.0")]
     [SwaggerOperation(Summary = "Update person basic information",
         Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -92,8 +92,8 @@ public class ProductizerController : ControllerBase
         return Ok(await _mediator.Send(command));
     }
 
-    [HttpPost("productizer/draft/Person/JobApplicantProfile")]
     [HttpPost("productizer/Person/JobApplicantProfile_v0.1")]
+    [HttpPost("productizer/Person/JobApplicantProfile_v1.0")]
     [SwaggerOperation(Summary = "Get person job applicant profile",
         Description = "Gets data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -107,8 +107,8 @@ public class ProductizerController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("productizer/draft/Person/JobApplicantProfile/Write")]
     [HttpPost("productizer/Person/JobApplicantProfile/Write_v0.1")]
+    [HttpPost("productizer/Person/JobApplicantProfile/Write_v1.0")]
     [SwaggerOperation(Summary = "Update person job applicant profile",
         Description = "Updates data product matching endpoint path from Testbed")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -165,7 +165,7 @@ public class ProductizerController : ControllerBase
                 e.Message);
             try
             {
-                var jwkToken = _authenticationService.ParseAuthenticationHeader(Request);
+                var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
                 var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
                 var createdUser = await _mediator.Send(query);
                 personId = createdUser.Id;
