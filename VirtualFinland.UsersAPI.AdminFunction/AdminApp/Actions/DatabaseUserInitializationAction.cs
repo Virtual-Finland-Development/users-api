@@ -5,7 +5,9 @@ using VirtualFinland.UserAPI.Data;
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
 /// <summary>
-/// Run database migrations
+/// Sets up the database user for the application. 
+/// The intented use is to allow the pulumi deployment process to create and manage the application level database user.
+/// In live environments the script is called during a deployment (finishing phases) from a cloud function residing in the same virtual private cloud (VPC) as the database.
 /// </summary>
 public class DatabaseUserInitializationAction : IAdminAppAction
 {
@@ -20,6 +22,8 @@ public class DatabaseUserInitializationAction : IAdminAppAction
             PropertyNameCaseInsensitive = true
         }) ?? throw new ArgumentException("Invalid credentials payload", nameof(credentialsPayload));
 
+        // Manages the appusers role, permissions and the user that belong to it with a sync-strategy: 
+        // - clearing the previous users and then creating the new one
         await dataContext.Database.ExecuteSqlRawAsync(@$"
             -- Create role if not exists
             DO $$ 
@@ -34,7 +38,7 @@ public class DatabaseUserInitializationAction : IAdminAppAction
             BEGIN 
                 GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER ON ALL TABLES IN SCHEMA public TO appusers;
             END $$;
-            -- Remove all users from user role
+            -- Remove all previous users from user role / drop users before creating a new one
             DO $$ 
             DECLARE
                 username text;
@@ -58,7 +62,7 @@ public class DatabaseUserInitializationAction : IAdminAppAction
             END $$;
             -- Create user
             CREATE USER {credentials.Username} WITH PASSWORD '{credentials.Password}';
-            -- Add user to user role
+            -- Add user to the role
             GRANT appusers TO {credentials.Username};
         ");
     }
