@@ -13,9 +13,10 @@ Deployment to a fresh environment requires the following steps to be performed i
     - `pulumi up`
 - manually run the initial database migrations:
   - with a oneliner (with the correct AWS Profile):
-    - `aws lambda invoke --function-name $(pulumi stack output DatabaseMigratorLambdaArn) output.txt`
+    - `aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name $(pulumi stack output AdminFunctionArn) output.json`
   - or by using the AWS Console:
     - Go to AWS Console and select Lambda
-    - Select the function with name like `users-api-DatabaseMigrationRunner-<stage>-<random-hash>`
+    - Select the function with name like `users-api-AdminFunctionArn-<stage>-<random-hash>`
     - Select the tab "Test"
+    - Add a new test event with the following content: `{"Action": "Migrate"}`
     - Click "Test" button and wait for the execution to finish

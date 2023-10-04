@@ -25,12 +25,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: Application_Artifact
-          path: ./
-      - uses: actions/download-artifact@v3
-        with:
-          name: DatabaseMigrator_Artifacts
-          path: ./
+          name: Application_Artifacts
+          path: ./build-artifacts
       - name: Configure AWS credentials
         uses: Virtual-Finland-Development/infrastructure/.github/actions/configure-aws-credentials@main
         with:
@@ -43,6 +39,5 @@ jobs:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
           stack-name: ${{ secrets.PULUMI_ORGANIZATION }}/${{ env.TEST_ENVIRONMENT }}
-          config-map: "{ appArtifactPath: { value: ../VirtualFinland.UsersAPI.zip, secret: false }, dbMigratorArtifactPath: { value: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip, secret: false } }"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}

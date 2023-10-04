@@ -42,10 +42,12 @@ docker network create vfd-network
 
 ## Project Structure
 
-1. **VirtualFinland.UsersAPI**: The API functionalities
+1. **VirtualFinland.UserAPI**: The API functionalities
 2. **VirtualFinland.UsersAPI.Deployment**: The Pulumi IaC definitions for AWS resources provisioning
-3. **VirtualFinland.UsersAPI.IntegrationTests**: Tests for the API functionalities
-4. **Tools**: Contains scripts and definitions that help with the development process
+3. **VirtualFinland.UsersAPI.UnitTests**: Tests for the API functionalities
+4. **VirtualFinland.UsersAPI.AdminFunction**: The AWS Lambda function that is used to run migrations and other administrative tasks
+5. **VirtualFinland.UsersAPI.AdminFunction.CLI**: Command-line tool for running the AWS Lambda function locally
+6. **Tools**: Contains scripts and definitions that help with the development process
 
 ## Q&A
 
@@ -95,20 +97,45 @@ Navigate to the VirtualFinland.UsersAPI project root folder (./VirtualFinland.Us
 dotnet lambda package
 ```
 
-### Which environments are supported
-
-At the moment only a development/staging environment configurations are supported. You can set the following environment variable.
-
-```
-ASPNETCORE_ENVIRONMENT=dev
-```
-
 ### What functionalities and requests the API has
 
 You can use the swagger UI when the API is started in development mode.
 https://localhost:5001/swagger/
 
 Or you can use premade Postman Collection with ready made environments to testing, these can be found in the **/Tools/Postman** folder.
+
+### Database tools
+
+#### Adminer
+
+Adminer is a database management tool that can be used to manage the database. It is available in the docker-compose file and can be started with the following command:
+
+```
+docker-compose up -d adminer
+
+```
+
+The Adminer UI is available at the following address: `http://localhost:8080/` with login credentials `system: postgresql, server: postgresdb, user: postgres, password: example, database: postgres`.
+
+
+#### How to run migrations
+
+Migrations are run automatically when the application is started using the docker-compose. To run the migrations manually you can use the following command with make (if you have make installed) and the database is running:
+
+```
+make migrate
+```
+
+Or you can use the following command with dotnet:
+
+```
+dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+```
+
+* More infromation about the adminfunction tool can be found from the [Docs/README.adminfunction.md](./Docs/README.adminfunction.md) file.
+
+* More database related information can be found from the [Docs/README.database.md](./Docs/README.database.md) file.
+
 
 ### How to deploy the infrastructure into AWS
 
@@ -122,6 +149,8 @@ https://www.pulumi.com/docs/intro/concepts/stack/
 https://www.pulumi.com/docs/intro/concepts/secrets/  
 https://www.pulumi.com/docs/intro/concepts/config/  
 https://www.pulumi.com/docs/intro/concepts/inputs-outputs/
+
+Read more about the deployment steps from the [Docs/README.deployment.md](./Docs/README.deployment.md) file.
 
 #### Pulumi basic commands
 
