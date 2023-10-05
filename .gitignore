@@ -357,3 +357,6 @@ MigrationBackup/
 
 # VSCode
 .vscode/
+
+# Build artifacts folder
+build-artifacts/

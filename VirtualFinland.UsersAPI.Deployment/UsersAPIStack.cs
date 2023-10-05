@@ -36,18 +36,22 @@ public class UsersApiStack : Stack
 
         var vpcSetup = new VpcSetup(stackSetup);
         var database = new PostgresDatabase(config, stackSetup, vpcSetup);
-        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
         var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret, redisCache);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
-        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
+        AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Ensure database user 
+        database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     private bool IsProductionEnvironment()
@@ -66,5 +70,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
-    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
+    [Output] public Output<string>? AdminFunctionArn { get; set; }
 }

@@ -3,12 +3,13 @@ description: Users API Infrastructure Definitions
 runtime: dotnet
 config:
   aws:region: eu-north-1
-  users-api:dbAdmin: apiDbAdmin
+  users-api:dbUser: apiDbUser
+  users-api:dbAdminUser: apiDbAdmin
   users-api:dbName: usersapidb
   users-api:name: users-api
   users-api:infraStackReferenceName: infrastructure
-  users-api:appArtifactPath: ../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/bin/Release/net6.0/VirtualFinland.UsersAPI.zip
-  users-api:dbMigratorArtifactPath: ../VirtualFinland.UsersAPI.DatabaseMigrationRunner/bin/Release/net6.0/VirtualFinland.UsersAPI.DatabaseMigrationRunner.zip
+  users-api:appArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.zip
+  users-api:adminFunctionArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.AdminFunction.zip
   users-api:useRdsProxy: false
   acl:accessfinland-isEnabled: false
   acl:dataspace-isEnabled: false
