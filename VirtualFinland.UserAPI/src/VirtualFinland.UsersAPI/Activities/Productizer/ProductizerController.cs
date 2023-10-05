@@ -120,6 +120,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/Service/Terms/Agreement_v0.1")]
+    [HttpPost("productizer/Service/Terms/Agreement_v1.0")]
     [SwaggerOperation(Summary = "Get the user terms agreement status (Testbed Productizer)",
         Description = "Returns the current logged user terms agreement status.")]
     [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
@@ -132,6 +133,7 @@ public class ProductizerController : ControllerBase
     }
 
     [HttpPost("productizer/Service/Terms/Agreement/Write_v0.1")]
+    [HttpPost("productizer/Service/Terms/Agreement/Write_v1.0")]
     [SwaggerOperation(Summary = "Update the current logged user terms agreement status (Testbed Productizer)",
         Description = "Updates the current logged user terms agreement status.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
