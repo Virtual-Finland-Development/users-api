@@ -7,7 +7,7 @@ The administration tool [../VirtualFinland.UsersAPI.AdminFunction](../VirtualFin
 With correct aws credentials in place the admin function can be invoked using the aws cli, for example a database migration can be run with the following command:
 
 ```
-aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name $(pulumi stack output AdminFunctionArn) output.json
+aws lambda invoke --payload '{"action": "migrate"}' --cli-binary-format raw-in-base64-out --function-name $(pulumi stack output AdminFunctionArn) output.json
 ```
 
 - where the `--payload` is the json payload that is passed to the function
@@ -31,8 +31,8 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
 ## Available actions
 
 - `migrate` - runs the database migrations
-  - lambda function payload: `{"Action": "Migrate"}`
+  - lambda function payload: `{"action": "migrate"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate`
 - `initialize-database-user` - setup the application-level user credentials to the database
-  - lambda function payload: `{"Action": "InitializeDatabaseUser", "data": "{\"Username\": \"appuser\", \"Password\": \"pass\"}"}`
+  - lambda function payload: `{"action": "initialize-database-user", "data": "{\"username\": \"appuser\", \"password\": \"pass\"}"}`
   - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user`

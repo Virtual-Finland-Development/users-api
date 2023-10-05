@@ -3,7 +3,8 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.AdminFunction.AdminApp;
 using VirtualFinland.AdminFunction.AdminApp.Models;
 using Amazon.Lambda.Core;
-[assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
+using VirtualFinland.Converters;
+[assembly: LambdaSerializer(typeof(CaseInsensitiveLambdaJsonSerializer))]
 
 namespace VirtualFinland.AdminFunction;
 

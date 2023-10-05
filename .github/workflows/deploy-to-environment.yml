@@ -90,7 +90,7 @@ jobs:
       - name: Invoke database migration runner lambda
         if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' }}
         run: |
-          aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name ${{ steps.get-pulumi-outputs.outputs.AdminFunctionArn }} output.json
+          aws lambda invoke --payload '{"action": "migrate"}' --cli-binary-format raw-in-base64-out --function-name ${{ steps.get-pulumi-outputs.outputs.AdminFunctionArn }} output.json
           cat output.json
       - name: Tag the deployment
         uses: Virtual-Finland-Development/automatic-release-action@v1.0
