@@ -19,14 +19,14 @@ public class AuthenticationService
         _applicationSecurity = applicationSecurity;
     }
 
-    public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context)
+    public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context, CancellationToken cancellationToken = default)
     {
         var requestAuthenticationCandinate = await ParseJwtToken(context);
 
         try
         {
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
-            var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+            var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 
             var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
 
@@ -40,18 +40,18 @@ public class AuthenticationService
         }
     }
 
-    public async Task<Person> AuthenticateAndGetOrRegisterAndGetPerson(HttpContext context)
+    public async Task<Person> AuthenticateAndGetOrRegisterAndGetPerson(HttpContext context, CancellationToken cancellationToken = default)
     {
         var requestAuthenticationCandinate = await ParseJwtToken(context);
 
         var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
-            o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
+            o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, cancellationToken);
 
         // Create a new system user if no one found based on given authentication information
         if (externalIdentity is null)
         {
             var newDbPerson = await _usersDbContext.Persons.AddAsync(
-                new Person().MakeAuditAddition(requestAuthenticationCandinate)
+               new Person().MakeAuditAddition(requestAuthenticationCandinate), cancellationToken
             );
 
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
@@ -61,16 +61,16 @@ public class AuthenticationService
                 UserId = newDbPerson.Entity.Id,
                 Created = DateTime.UtcNow,
                 Modified = DateTime.UtcNow
-            }, CancellationToken.None);
+            }, cancellationToken);
 
-            await _usersDbContext.SaveChangesAsync(CancellationToken.None);
+            await _usersDbContext.SaveChangesAsync(cancellationToken);
 
             context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate));
 
             return newDbPerson.Entity;
         }
 
-        var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, CancellationToken.None);
+        var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 
         context.Items.Add("User", new RequestAuthenticatedUser(person, requestAuthenticationCandinate));
 

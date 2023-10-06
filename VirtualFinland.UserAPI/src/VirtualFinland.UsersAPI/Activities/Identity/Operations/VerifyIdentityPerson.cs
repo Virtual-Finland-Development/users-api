@@ -28,7 +28,7 @@ public static class VerifyIdentityPerson
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
-            var person = await _authenticationService.AuthenticateAndGetOrRegisterAndGetPerson(request.Context);
+            var person = await _authenticationService.AuthenticateAndGetOrRegisterAndGetPerson(request.Context, cancellationToken);
             return new User(person.Id, person.Created, person.Modified);
         }
     }
