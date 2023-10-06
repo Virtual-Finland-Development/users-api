@@ -46,7 +46,7 @@ public static class UpdatePersonBasicInformation
             person.Email = request.Email;
             person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
-            person.MakeAuditUpdate(request.User);
+            person.SetupAuditEvents(_context, request.User);
 
             try
             {

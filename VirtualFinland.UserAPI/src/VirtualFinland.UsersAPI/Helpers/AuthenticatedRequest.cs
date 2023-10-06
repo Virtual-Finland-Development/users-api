@@ -14,14 +14,14 @@ public abstract class AuthenticatedRequest<T> : IRequest<T>
     {
     }
 
-    public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
+    public AuthenticatedRequest(RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        User = RequestAuthenticatedUser;
+        User = requestAuthenticatedUser;
     }
 
-    public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
+    public void SetAuth(RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        User = RequestAuthenticatedUser;
+        User = requestAuthenticatedUser;
     }
 }
 
@@ -34,13 +34,13 @@ public abstract class AuthenticatedRequest : IRequest
     {
     }
 
-    public AuthenticatedRequest(RequestAuthenticatedUser RequestAuthenticatedUser)
+    public AuthenticatedRequest(RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        User = RequestAuthenticatedUser;
+        User = requestAuthenticatedUser;
     }
 
-    public void SetAuth(RequestAuthenticatedUser RequestAuthenticatedUser)
+    public void SetAuth(RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        User = RequestAuthenticatedUser;
+        User = requestAuthenticatedUser;
     }
 }

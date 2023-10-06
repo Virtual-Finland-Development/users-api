@@ -146,8 +146,11 @@ public static class UpdateUser
 
             await VerifyUserUpdate(dbUser, request);
 
+
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
+
+            dbUser.SetupAuditEvents(_usersDbContext, request.User);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 

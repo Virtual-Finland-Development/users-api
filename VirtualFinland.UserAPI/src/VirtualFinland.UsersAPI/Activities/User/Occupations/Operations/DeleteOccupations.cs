@@ -42,6 +42,11 @@ public static class DeleteOccupations
                 _ => userOccupations
             };
 
+            foreach (var occupation in occupationsToRemove)
+            {
+                occupation.SetupAuditUpdate(request.User);
+            }
+
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 

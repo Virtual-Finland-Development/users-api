@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
@@ -33,4 +35,43 @@ public class Person : Auditable<Person>, IEntity
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
+
+    public void SetupAuditEvents(UsersDbContext dbContext, RequestAuthenticatedUser requestAuthenticatedUser)
+    {
+        if (!dbContext.ChangeTracker.HasChanges()) return;
+
+        SetupAuditEvent(dbContext.Entry(this)?.State, requestAuthenticatedUser);
+        AdditionalInformation?.SetupAuditEvent(dbContext.Entry(AdditionalInformation)?.State, requestAuthenticatedUser);
+        WorkPreferences?.SetupAuditEvent(dbContext.Entry(WorkPreferences)?.State, requestAuthenticatedUser);
+
+        foreach (var entry in Occupations)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+
+        foreach (var entry in Educations)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+
+        foreach (var entry in Certifications)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+
+        foreach (var entry in Permits)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+
+        foreach (var entry in Skills)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+
+        foreach (var entry in LanguageSkills)
+        {
+            entry.SetupAuditEvent(dbContext.Entry(entry)?.State, requestAuthenticatedUser);
+        }
+    }
 }

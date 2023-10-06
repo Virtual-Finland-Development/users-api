@@ -113,6 +113,8 @@ public static class UpdateUser
 
             await VerifyUserUpdate(dbUser, request);
 
+            dbUser.SetupAuditEvents(_usersDbContext, request.User);
+
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
@@ -167,7 +169,6 @@ public static class UpdateUser
             dbUser.AdditionalInformation.Address.ZipCode = request.Address?.ZipCode ?? dbUser.AdditionalInformation.Address.ZipCode;
             dbUser.AdditionalInformation.Address.City = request.Address?.City ?? dbUser.AdditionalInformation.Address.City;
             dbUser.AdditionalInformation.Address.Country = request.Address?.Country ?? dbUser.AdditionalInformation.Address.Country;
-            dbUser.Modified = DateTime.UtcNow;
             dbUser.AdditionalInformation.CitizenshipCode = request.CitizenshipCode ?? dbUser.AdditionalInformation.CitizenshipCode;
             dbUser.AdditionalInformation.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.AdditionalInformation.NativeLanguageCode;
             dbUser.AdditionalInformation.OccupationCode = request.OccupationCode ?? dbUser.AdditionalInformation.OccupationCode;
@@ -176,7 +177,6 @@ public static class UpdateUser
             dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue
                 ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault())
                 : dbUser.AdditionalInformation.DateOfBirth;
-
         }
 
         private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)

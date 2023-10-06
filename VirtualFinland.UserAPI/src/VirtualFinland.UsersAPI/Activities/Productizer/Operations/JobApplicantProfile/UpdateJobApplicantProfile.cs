@@ -59,9 +59,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .FirstOrDefaultAsync(p => p.Id == command.User.PersonId, cancellationToken);
-
-            if (person is null) throw new NotFoundException();
+                .FirstOrDefaultAsync(p => p.Id == command.User.PersonId, cancellationToken) ?? throw new NotFoundException();
 
             person.Occupations = command.Occupations.Select(x => new Occupation
             {
@@ -124,7 +122,10 @@ public static class UpdateJobApplicantProfile
             }
 
             person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
+
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
+
+            person.SetupAuditEvents(_context, command.User);
 
             try
             {

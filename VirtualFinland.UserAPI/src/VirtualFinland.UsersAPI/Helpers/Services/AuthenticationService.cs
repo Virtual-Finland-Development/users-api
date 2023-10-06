@@ -51,7 +51,7 @@ public class AuthenticationService
         if (externalIdentity is null)
         {
             var newDbPerson = await _usersDbContext.Persons.AddAsync(
-               new Person().MakeAuditAddition(requestAuthenticationCandinate), cancellationToken
+               new Person().SetupAuditAddition(requestAuthenticationCandinate), cancellationToken
             );
 
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity

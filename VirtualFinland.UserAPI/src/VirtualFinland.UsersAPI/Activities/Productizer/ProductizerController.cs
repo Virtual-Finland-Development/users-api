@@ -159,7 +159,6 @@ public class ProductizerController : ControllerBase
             {
                 var query = new VerifyIdentityPerson.Query(HttpContext);
                 var createdUser = await _mediator.Send(query);
-                _logger.LogInformation("New user was created with Id: {UserId}", createdUser.Id);
                 return HttpContext.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on registering");
             }
             catch (Exception exception)

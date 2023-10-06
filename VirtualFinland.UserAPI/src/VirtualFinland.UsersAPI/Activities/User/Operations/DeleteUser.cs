@@ -35,6 +35,7 @@ public static class DeleteUser
                 .Include(p => p.WorkPreferences)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
             var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.User.PersonId);
+            person.SetupAuditEvents(_context, request.User);
 
             try
             {

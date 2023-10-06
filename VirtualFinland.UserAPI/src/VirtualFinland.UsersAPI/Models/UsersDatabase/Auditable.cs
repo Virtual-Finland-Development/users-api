@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -11,20 +12,29 @@ public class Auditable<T> where T : Auditable<T>
     [Column(TypeName = "jsonb")]
     public AuditableMetadata? Metadata { get; set; }
 
-    public Auditable()
+    public T SetupAuditEvent(EntityState entityState, IRequestAuthenticationCandinate user)
     {
-        Created = DateTime.Now;
-        Modified = DateTime.Now;
-    }
-
-    public T MakeAuditAddition(IRequestAuthenticationCandinate user)
-    {
-        Created = DateTime.Now;
-        MakeAuditUpdate(user);
+        switch (entityState)
+        {
+            case EntityState.Added:
+                SetupAuditAddition(user);
+                break;
+            case EntityState.Deleted:
+            case EntityState.Modified:
+                SetupAuditUpdate(user);
+                break;
+        }
         return (T)this;
     }
 
-    public T MakeAuditUpdate(IRequestAuthenticationCandinate user)
+    public T SetupAuditAddition(IRequestAuthenticationCandinate user)
+    {
+        Created = DateTime.Now;
+        SetupAuditUpdate(user);
+        return (T)this;
+    }
+
+    public T SetupAuditUpdate(IRequestAuthenticationCandinate user)
     {
         Modified = DateTime.Now;
         Metadata = new AuditableMetadata(user);

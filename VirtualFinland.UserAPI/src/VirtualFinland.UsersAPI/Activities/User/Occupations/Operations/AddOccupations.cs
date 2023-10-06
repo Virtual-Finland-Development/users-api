@@ -52,6 +52,8 @@ public static class AddOccupations
                 .Select(x => x.Entity)
                 .ToList();
 
+            user?.SetupAuditEvents(_usersDbContext, request.User);
+
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
             var addedOccupations = new List<AddOccupationsResponse>();

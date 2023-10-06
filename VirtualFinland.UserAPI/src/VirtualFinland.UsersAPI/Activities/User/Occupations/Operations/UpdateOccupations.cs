@@ -43,6 +43,7 @@ public static class UpdateOccupations
                 editable.EscoUri = occupation.EscoUri ?? editable.EscoUri;
                 editable.EscoCode = occupation.EscoCode ?? editable.EscoCode;
                 editable.WorkMonths = occupation.WorkMonths ?? editable.WorkMonths;
+                editable.SetupAuditUpdate(request.User);
             }
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
