@@ -95,6 +95,7 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
     options.UseNpgsql(dbConnectionString,
         op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
 });
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
 // App security
