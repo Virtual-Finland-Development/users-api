@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class PersonAdditionalInformation : Auditable, IEntity
+public class PersonAdditionalInformation : Auditable<PersonAdditionalInformation>, IEntity
 {
     public Address? Address { get; set; }
     public DateOnly? DateOfBirth { get; set; }

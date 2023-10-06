@@ -37,7 +37,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
                 case EntityState.Added:
                 case EntityState.Modified:
                 case EntityState.Deleted:
-                    if (entry.Entity is Auditable)
+                    if (entry.Entity.GetType().IsAssignableTo(typeof(Auditable<>)))
                     {
                         _logger.LogInformation("@{AuditLog}", _CreateAuditLog(entry));
                     }

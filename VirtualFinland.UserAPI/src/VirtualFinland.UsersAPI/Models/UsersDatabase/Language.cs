@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Language : Auditable, IEntity
+public class Language : Auditable<Language>, IEntity
 {
     /// <summary>
     ///     http://uri.suomi.fi/codelist/dataecon/cerf
