@@ -11,8 +11,8 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     [Fact]
     public async Task GetJobApplicantProfile_WithExistingUser_ReturnsData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var query = new GetJobApplicantProfile.Query(entities.user.Id);
+        var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var query = new GetJobApplicantProfile.Query(requestAuthenticatedUser);
         var sut = new GetJobApplicantProfile.Handler(_dbContext);
 
         var actual = await sut.Handle(query, CancellationToken.None);
@@ -23,9 +23,9 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     [Fact]
     public async Task UpdateJobApplicantProfile_WithValidData_ReturnsUpdatedData()
     {
-        var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
-        command.SetAuth(entities.user.Id);
+        command.SetAuth(requestAuthenticatedUser);
         var sut = new UpdateJobApplicantProfile.Handler(_dbContext);
 
         var actual = await sut.Handle(command, CancellationToken.None);

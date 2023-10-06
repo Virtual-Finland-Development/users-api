@@ -16,9 +16,9 @@ public class ProductizerTests : APITestBase
     public async Task Should_GetUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var query = new GetUser.Query(dbEntities.user.Id);
+        var query = new GetUser.Query(requestAuthenticatedUser);
         var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
 
         // Act
@@ -28,16 +28,16 @@ public class ProductizerTests : APITestBase
         result.Should()
             .Match<GetUser.User>(o =>
                 o.DateOfBirth != null &&
-                o.Id == dbEntities.user.Id &&
-                o.Address!.StreetAddress == dbEntities.user.AdditionalInformation!.Address!.StreetAddress &&
-                o.FirstName == dbEntities.user.GivenName &&
-                o.LastName == dbEntities.user.LastName &&
-                o.CitizenshipCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
-                o.OccupationCode == dbEntities.user.AdditionalInformation.OccupationCode &&
-                o.NativeLanguageCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
-                o.CountryOfBirthCode == dbEntities.user.AdditionalInformation.CountryOfBirthCode &&
-                o.Gender == dbEntities.user.AdditionalInformation.Gender &&
-                o.DateOfBirth == dbEntities.user.AdditionalInformation.DateOfBirth);
+                o.Id == user.Id &&
+                o.Address!.StreetAddress == user.AdditionalInformation!.Address!.StreetAddress &&
+                o.FirstName == user.GivenName &&
+                o.LastName == user.LastName &&
+                o.CitizenshipCode == user.AdditionalInformation.CitizenshipCode &&
+                o.OccupationCode == user.AdditionalInformation.OccupationCode &&
+                o.NativeLanguageCode == user.AdditionalInformation.CitizenshipCode &&
+                o.CountryOfBirthCode == user.AdditionalInformation.CountryOfBirthCode &&
+                o.Gender == user.AdditionalInformation.Gender &&
+                o.DateOfBirth == user.AdditionalInformation.DateOfBirth);
 
     }
 
@@ -45,13 +45,13 @@ public class ProductizerTests : APITestBase
     public async Task Should_UpdateUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(dbEntities.user.Id);
+        command.SetAuth(requestAuthenticatedUser);
         var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
 
         // Act
@@ -60,7 +60,7 @@ public class ProductizerTests : APITestBase
         // Assert
         result.Should()
             .Match<UpdateUser.User>(o =>
-                o.Id == dbEntities.user.Id &&
+                o.Id == user.Id &&
                 o.FirstName == command.FirstName &&
                 o.LastName == command.LastName &&
                 o.CitizenshipCode == command.CitizenshipCode &&
@@ -90,7 +90,7 @@ public class ProductizerTests : APITestBase
             .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
-        command.SetAuth(dbEntities.user.Id);
+        command.SetAuth(dbEntities.requestAuthenticatedUser);
 
         // Assert
         var result = validator.TestValidate(command);

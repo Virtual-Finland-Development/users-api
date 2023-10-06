@@ -1,7 +1,11 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
+[Keyless]
+[NotMapped]
 public class AuditableMetadata
 {
     public AuditableMetadata()

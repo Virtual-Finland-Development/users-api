@@ -66,38 +66,13 @@ public class AuthenticationTests : APITestBase
     public async Task Should_SuccessInAuthVerification()
     {
         // Arrange
-        var (user, externalIdentity) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-
-        // Create mock jwt token
-        var idToken = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
-            externalIdentity.Issuer,
-            "test-audience",
-            new List<Claim>
-            {
-                new("sub", externalIdentity.IdentityId ?? throw new Exception("IdentityId is null")),
-            },
-            DateTime.Now,
-            DateTime.Now.AddDays(1),
-            new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
-        ));
-
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
-        var applicationSecurity = new ApplicationSecurity(new List<ISecurityFeature>
-        {
-            new SecurityFeature(new SecurityFeatureOptions { Issuer = externalIdentity.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" })
-        });
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
-        var mockHttpRequest = new Mock<HttpRequest>();
-        var mockHeaders = new Mock<IHeaderDictionary>();
-        var mockHttpContext = new Mock<HttpContext>();
-        mockHeaders.Setup(o => o.Authorization).Returns($"Bearer {idToken}");
-        mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
-        mockHttpContext.Setup(o => o.Request).Returns(mockHttpRequest.Object);
+        var (person, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (_, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         // Act
         var result = await authenticationService.Authenticate(mockHttpContext.Object);
 
         // Assert
-        result.Should().Be(user.Id);
+        result.PersonId.Should().Be(person.Id);
     }
 }

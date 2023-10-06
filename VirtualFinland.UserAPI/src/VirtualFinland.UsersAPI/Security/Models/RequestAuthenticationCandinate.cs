@@ -10,6 +10,10 @@ public interface IRequestAuthenticationCandinate
 
 public class RequestAuthenticationCandinate : IRequestAuthenticationCandinate
 {
+    public RequestAuthenticationCandinate()
+    {
+    }
+
     public string IdentityId { get; set; } = default!;
     public string Issuer { get; set; } = default!;
     public string Audience { get; set; } = default!;
