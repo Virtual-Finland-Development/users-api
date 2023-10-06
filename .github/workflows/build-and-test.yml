@@ -13,7 +13,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Test and build
-        run: make prep-deploy
+        run: make packages
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:

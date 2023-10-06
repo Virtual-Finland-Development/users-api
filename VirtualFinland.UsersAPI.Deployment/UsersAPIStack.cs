@@ -37,19 +37,23 @@ public class UsersApiStack : Stack
         var cloudwatch = new CloudWatch(stackSetup);
         var vpcSetup = new VpcSetup(stackSetup);
         var database = new PostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
-        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
-
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret, cloudwatch);
-        var usersApiFunctionUrl = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+        var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
         var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
 
-        ApplicationUrl = usersApiFunctionUrl.ApplicationUrl;
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, cloudwatch);
+        var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+
+        ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
         AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
-        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
+        AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Ensure database user 
+        database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     private static bool IsProductionEnvironment()
@@ -68,6 +72,6 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
-    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
+    [Output] public Output<string>? AdminFunctionArn { get; set; }
     [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
 }
