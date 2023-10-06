@@ -30,8 +30,8 @@ namespace VirtualFinland.UserAPI.Migrations
                     old_value text;
                 BEGIN
                     if (TG_OP = 'INSERT') then
-                        RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%""}}', 
-                            TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr();
+                        RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%"", meta: ""%""}}', 
+                            TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr(), NEW.""Metadata"";
                         RETURN NEW;
                     elsif (TG_OP = 'UPDATE') then
                         -- Check each column in the table
@@ -49,13 +49,13 @@ namespace VirtualFinland.UserAPI.Migrations
 
                         -- Return the array of changed column names
                         IF array_length(changed_columns, 1) > 0 THEN
-                            RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%""}, columns: ""%""}', 
-                                TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr(), changed_columns;
+                            RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%"", meta: ""%""}, columns: ""%""}', 
+                                TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr(), NEW.""Metadata"", changed_columns;
                         END IF;
                         RETURN NEW;
                     elsif (TG_OP = 'DELETE') then
-                        RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%""}}', 
-                            TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr();
+                        RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%"", meta: ""%""}}', 
+                            TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr(), NEW.""Metadata"";
                         RETURN OLD;
                     end if;
                 END;
