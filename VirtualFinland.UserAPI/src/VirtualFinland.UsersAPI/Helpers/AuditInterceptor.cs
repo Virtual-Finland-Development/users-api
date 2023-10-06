@@ -57,7 +57,8 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
             Action = entry.State.ToString(),
             KeyValues = primaryKeys.Any() ? $"[{string.Join(", ", primaryKeys)}]" : "[]",
             ChangedColumns = nonPrimaryKeys.Any() ? $"[{string.Join(", ", nonPrimaryKeys)}]" : "[]",
-            EventDate = DateTime.UtcNow
+            EventDate = DateTime.UtcNow,
+            Metadata = entry.Properties.Where(property => property.Metadata.Name == "Metadata").Select(property => property.CurrentValue?.ToString()).FirstOrDefault() ?? "{}"
         };
     }
 
@@ -78,5 +79,6 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
         public string KeyValues { get; init; } = default!;
         public string ChangedColumns { get; init; } = default!;
         public DateTime EventDate { get; init; } = default!;
+        public string Metadata { get; init; } = default!;
     }
 }
