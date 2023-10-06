@@ -23,4 +23,9 @@ public class AuditableMetadata
     public string? IdentityId { get; set; }
     public string? Issuer { get; set; }
     public string? Audience { get; set; }
+
+    public override string ToString()
+    {
+        return $"{{\"TraceId\": \"{TraceId}\", \"IdentityId\": \"{IdentityId}\", \"Issuer\": \"{Issuer}\", \"Audience\": \"{Audience}\"}}";
+    }
 }

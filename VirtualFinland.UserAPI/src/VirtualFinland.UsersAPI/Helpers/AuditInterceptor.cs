@@ -30,6 +30,11 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
         if (eventData.Context is null)
             throw new ArgumentNullException(nameof(eventData), $"{nameof(eventData)} is null");
 
+        var audibleEntries = eventData.Context.ChangeTracker.Entries().Where(entry => entry.GetType().GetInterfaces().Any(x =>
+                x.IsGenericType &&
+                x.GetGenericTypeDefinition() == typeof(Auditable<>)
+            )
+        );
         foreach (var entry in eventData.Context.ChangeTracker.Entries())
         {
             switch (entry.State)
@@ -37,10 +42,7 @@ public class AuditInterceptor : SaveChangesInterceptor, IAuditInterceptor
                 case EntityState.Added:
                 case EntityState.Modified:
                 case EntityState.Deleted:
-                    if (entry.Entity.GetType().IsAssignableTo(typeof(Auditable<>)))
-                    {
-                        _logger.LogInformation("@{AuditLog}", _CreateAuditLog(entry));
-                    }
+                    _logger.LogInformation("@{AuditLog}", _CreateAuditLog(entry));
                     break;
             }
         }
