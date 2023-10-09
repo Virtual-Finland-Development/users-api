@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
@@ -46,7 +47,7 @@ public static class UpdatePersonBasicInformation
             person.Email = request.Email;
             person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
             person.ResidencyCode = request.Residency ?? person.ResidencyCode;
-            person.SetupAuditEvents(_context, request.User);
+            person.SetupPersonAuditEvents(_context, request.User);
 
             try
             {

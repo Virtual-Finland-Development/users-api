@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -35,7 +36,7 @@ public static class DeleteUser
                 .Include(p => p.WorkPreferences)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
             var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.User.PersonId);
-            person.SetupAuditEvents(_context, request.User);
+            person.SetupPersonAuditEvents(_context, request.User);
 
             try
             {

@@ -27,7 +27,6 @@ public class App
         builder.ConfigureServices(
             services =>
             {
-                services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,

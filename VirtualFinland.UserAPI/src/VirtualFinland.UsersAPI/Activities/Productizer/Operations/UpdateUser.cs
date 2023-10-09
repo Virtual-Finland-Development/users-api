@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
@@ -113,11 +114,12 @@ public static class UpdateUser
 
             await VerifyUserUpdate(dbUser, request);
 
-            dbUser.SetupAuditEvents(_usersDbContext, request.User);
+
 
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
+            dbUser.SetupPersonAuditEvents(_usersDbContext, request.User);
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
@@ -52,7 +53,7 @@ public static class AddOccupations
                 .Select(x => x.Entity)
                 .ToList();
 
-            user?.SetupAuditEvents(_usersDbContext, request.User);
+            user?.SetupPersonAuditEvents(_usersDbContext, request.User);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 

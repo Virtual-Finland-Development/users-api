@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -12,9 +13,10 @@ public class Auditable<T> where T : Auditable<T>
     [Column(TypeName = "jsonb")]
     public AuditableMetadata? Metadata { get; set; }
 
-    public T SetupAuditEvent(EntityState entityState, IRequestAuthenticationCandinate user)
+    public T SetupAuditEvent(UsersDbContext dbContext, IRequestAuthenticationCandinate user)
     {
-        switch (entityState)
+        var entry = dbContext.Entry(this);
+        switch (entry?.State)
         {
             case EntityState.Added:
                 SetupAuditAddition(user);

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
@@ -8,16 +7,13 @@ namespace VirtualFinland.UserAPI.Data;
 public class UsersDbContext : DbContext
 {
     private readonly bool _isTesting;
-    private readonly IAuditInterceptor _auditInterceptor;
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor) : base(options)
+    public UsersDbContext(DbContextOptions options) : base(options)
     {
-        _auditInterceptor = auditInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
-        _auditInterceptor = auditInterceptor;
         _isTesting = isTesting;
     }
 
@@ -35,7 +31,7 @@ public class UsersDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor);
+
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

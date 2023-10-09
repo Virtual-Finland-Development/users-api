@@ -16,9 +16,9 @@ public static class GetSearchProfile
     {
         public Guid ProfileId { get; }
 
-        public Query(RequestAuthenticatedUser RequestAuthenticatedUser, Guid profileId)
+        public Query(RequestAuthenticatedUser requestAuthenticatedUser, Guid profileId)
         {
-            RequestAuthenticatedUser = RequestAuthenticatedUser;
+            User = requestAuthenticatedUser;
             ProfileId = profileId;
         }
     }
