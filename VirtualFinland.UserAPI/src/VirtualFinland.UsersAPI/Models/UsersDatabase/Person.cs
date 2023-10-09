@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Person : Auditable<Person>, IEntity
+public class Person : Auditable, IEntity
 {
     [MaxLength(255)]
     public string? GivenName { get; set; }

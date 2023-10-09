@@ -31,8 +31,6 @@ public class APIUserFactory
             UserId = dbUser.Entity.Id
         });
 
-        await dbContext.SaveChangesAsync();
-
         var requestAuthenticatedUser = new RequestAuthenticatedUser()
         {
             PersonId = dbUser.Entity.Id,
@@ -41,6 +39,8 @@ public class APIUserFactory
             Audience = Audience,
             TraceId = Guid.NewGuid().ToString(),
         };
+
+        await dbContext.SaveChangesAsync(requestAuthenticatedUser);
 
         return (dbUser.Entity, externalIdentity.Entity, requestAuthenticatedUser);
     }

@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Occupation : Auditable<Occupation>, IEntity
+public class Occupation : Auditable, IEntity
 {
     [Url]
     public string? EscoUri { get; set; }

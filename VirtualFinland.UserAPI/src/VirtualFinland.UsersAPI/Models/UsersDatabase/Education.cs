@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Education : Auditable<Education>, IEntity
+public class Education : Auditable, IEntity
 {
     /// <summary>
     ///     http://uri.suomi.fi/codelist/dataecon/educationlevel

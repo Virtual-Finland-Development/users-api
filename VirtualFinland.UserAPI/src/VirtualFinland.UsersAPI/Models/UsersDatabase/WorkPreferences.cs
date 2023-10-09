@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class WorkPreferences : Auditable<WorkPreferences>, IEntity
+public class WorkPreferences : Auditable, IEntity
 {
     /// <summary>
     ///     Region.cs values

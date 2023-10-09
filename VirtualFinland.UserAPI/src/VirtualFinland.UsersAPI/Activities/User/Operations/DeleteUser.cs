@@ -36,7 +36,6 @@ public static class DeleteUser
                 .Include(p => p.WorkPreferences)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
             var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.User.PersonId);
-            person.SetupPersonAuditEvents(_context, request.User);
 
             try
             {
@@ -47,7 +46,7 @@ public static class DeleteUser
                     _context.ExternalIdentities.Remove(externalIdentity);
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(request.User, cancellationToken);
             }
             catch (DbUpdateException e)
             {

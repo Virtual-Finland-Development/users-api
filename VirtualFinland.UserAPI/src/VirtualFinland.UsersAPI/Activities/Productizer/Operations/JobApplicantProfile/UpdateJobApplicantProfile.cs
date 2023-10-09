@@ -5,7 +5,6 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
@@ -126,11 +125,9 @@ public static class UpdateJobApplicantProfile
 
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
 
-            person.SetupPersonAuditEvents(_context, command.User);
-
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(command.User, cancellationToken);
             }
             catch (DbUpdateException e)
             {

@@ -51,7 +51,7 @@ public class AuthenticationService
         if (externalIdentity is null)
         {
             var newDbPerson = await _usersDbContext.Persons.AddAsync(
-               new Person().SetupAuditAddition(requestAuthenticationCandinate), cancellationToken
+               new Person(), cancellationToken
             );
 
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
@@ -63,7 +63,7 @@ public class AuthenticationService
                 Modified = DateTime.UtcNow
             }, cancellationToken);
 
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(requestAuthenticationCandinate, cancellationToken);
 
             context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate));
 

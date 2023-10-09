@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Permit : Auditable<Permit>, IEntity
+public class Permit : Auditable, IEntity
 {
     /// <summary>
     ///     http://uri.suomi.fi/codelist/dataecon/permit

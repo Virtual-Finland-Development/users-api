@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Data;
 
@@ -44,5 +45,20 @@ public class UsersDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+    }
+
+    public Task<int> SaveChangesAsync(IRequestAuthenticationCandinate user, CancellationToken cancellationToken = new CancellationToken())
+    {
+        var audibleEntries = ChangeTracker
+            .Entries()
+            .Where(e => e.Entity is Auditable);
+
+        foreach (var entityEntry in audibleEntries)
+        {
+            if (entityEntry.Entity is Auditable auditable)
+                auditable.SetupAuditEvent(this, user);
+        }
+
+        return SaveChangesAsync(cancellationToken);
     }
 }

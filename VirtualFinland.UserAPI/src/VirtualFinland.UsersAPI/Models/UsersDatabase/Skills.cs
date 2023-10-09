@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Skills : Auditable<Skills>, IEntity
+public class Skills : Auditable, IEntity
 {
     public enum SkillLevel
     {
