@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -6,9 +5,7 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
 /// <summary>
-/// Sets up the database user for the application. 
-/// The intented use is to allow the pulumi deployment process to create and manage the application level database user.
-/// In live environments the script is called during a deployment (finishing phases) from a cloud function residing in the same virtual private cloud (VPC) as the database.
+/// Initializes the database audit log triggers for the auditable models
 /// </summary>
 public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
 {
@@ -62,7 +59,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
                 END;
                 $body$
                 LANGUAGE plpgsql
-            ".Replace("{", "{{").Replace("}", "}}")); // Curly escapes by: https://github.com/dotnet/efcore/issues/30188#issuecomment-1411763443
+            ".Replace("{", "{{").Replace("}", "}}")); // Curly escapes idea from: https://github.com/dotnet/efcore/issues/30188#issuecomment-1411763443
 
         foreach (var table in loggingTables)
         {
