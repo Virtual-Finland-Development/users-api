@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -16,7 +17,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
             .Select(e => e.GetTableName())
             .ToList();
 
-        Console.WriteLine("Creating audit trigger function..");
+        Console.WriteLine("> Creating audit log trigger function..");
 
         await dataContext.Database.ExecuteSqlRawAsync(@"
                 CREATE OR REPLACE FUNCTION audit_trigger_func()
@@ -63,7 +64,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
 
         foreach (var table in loggingTables)
         {
-            Console.WriteLine($"Creating audit trigger for table {table}");
+            Console.WriteLine($"> Creating audit trigger for table {table}");
             await dataContext.Database.ExecuteSqlRawAsync(@$"
                 DROP TRIGGER IF EXISTS ""{table}_audit_trigger"" ON ""{table}"";
                 CREATE TRIGGER ""{table}_audit_trigger""
