@@ -199,6 +199,19 @@ public class PostgresDatabase
         );
     }
 
+    public void InvokeInitialDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
+    {
+        var invokePayload = JsonSerializer.Serialize(new
+        {
+            action = "InitializeDatabaseAuditLogTriggers",
+        });
+
+        _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitializeDatabaseAuditLogTriggers"), new()
+        {
+            Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
+        });
+    }
+
     public Output<string> DBIdentifier = default!;
     public string DbUsername = default!;
     public Output<string> DbPassword = default!;

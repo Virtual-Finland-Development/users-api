@@ -247,8 +247,6 @@ public static class UpdateUser
                     PersonId = dbUser.Id,
                     JobTitles = request.JobTitles,
                     Regions = request.Regions,
-                    Created = DateTime.UtcNow,
-                    Modified = DateTime.UtcNow,
                     IsDefault = true
                 }, cancellationToken);
 
@@ -258,7 +256,6 @@ public static class UpdateUser
             dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
             dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
             dbUserDefaultSearchProfile.IsDefault = true;
-            dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
             return dbUserDefaultSearchProfile;
         }

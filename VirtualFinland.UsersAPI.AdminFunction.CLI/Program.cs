@@ -8,36 +8,28 @@ internal class Program
     private static async Task Main(string[] args)
     {
         var command = args[0] ?? throw new ArgumentNullException(nameof(args));
-        switch (command)
+        var action = (Actions)Enum.Parse(typeof(Actions), command.Replace("-", ""), true);
+        var payload = ResolveFunctionPayload(action);
+        await Function.FunctionHandler(payload);
+    }
+
+    private static FunctionPayload ResolveFunctionPayload(Actions action)
+    {
+        if (action == Actions.InitializeDatabaseUser)
         {
-            case "migrate":
-                await Migrate();
-                break;
-            case "initialize-database-user":
-                await InitializeDatabaseUser();
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(command), command, null);
+            return new FunctionPayload
+            {
+                Action = Actions.InitializeDatabaseUser,
+                Data = JsonSerializer.Serialize(new DatabaseUserInitializationAction.DatabaseUserCredentials(
+                    Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable)),
+                    Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable))
+                ))
+            };
         }
-    }
 
-    private static async Task Migrate()
-    {
-        await Function.FunctionHandler(new FunctionPayload
+        return new FunctionPayload
         {
-            Action = Actions.Migrate,
-        });
-    }
-
-    private static async Task InitializeDatabaseUser()
-    {
-        await Function.FunctionHandler(new FunctionPayload
-        {
-            Action = Actions.InitializeDatabaseUser,
-            Data = JsonSerializer.Serialize(new DatabaseUserInitializationAction.DatabaseUserCredentials(
-                Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable)),
-                Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable))
-            ))
-        });
+            Action = action,
+        };
     }
 }

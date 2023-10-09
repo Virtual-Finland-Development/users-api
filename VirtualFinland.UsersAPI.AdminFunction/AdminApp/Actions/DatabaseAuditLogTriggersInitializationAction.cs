@@ -1,29 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore;
+using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 
-#nullable disable
+namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
-namespace VirtualFinland.UserAPI.Migrations
+/// <summary>
+/// Sets up the database user for the application. 
+/// The intented use is to allow the pulumi deployment process to create and manage the application level database user.
+/// In live environments the script is called during a deployment (finishing phases) from a cloud function residing in the same virtual private cloud (VPC) as the database.
+/// </summary>
+public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
 {
-    /// <inheritdoc />
-    public partial class AddAuditLogTriggers : Migration
+    public async Task Execute(UsersDbContext dataContext, string? _)
     {
-        private string[] _loggingTables = new[] {
-            "Persons",
-            "PersonAdditionalInformation",
-            "WorkPreferences",
-            "Occupations",
-            "Educations",
-            "Certifications",
-            "Permits",
-            "Skills",
-            "Languages",
-            "SearchProfiles",
-        };
+        var loggingTables = dataContext.GetDbSetEntityTypes()
+            .Where(e => e.ClrType.GetInterfaces().Contains(typeof(Auditable)))
+            .Select(e => e.GetTableName())
+            .ToList();
 
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql(@"
+        Console.WriteLine("Creating audit trigger function..");
+
+        await dataContext.Database.ExecuteSqlRawAsync(@"
                 CREATE OR REPLACE FUNCTION audit_trigger_func()
                 RETURNS trigger AS $body$
                 DECLARE
@@ -64,25 +62,18 @@ namespace VirtualFinland.UserAPI.Migrations
                 END;
                 $body$
                 LANGUAGE plpgsql
-            ");
+            ".Replace("{", "{{").Replace("}", "}}")); // Curly escapes by: https://github.com/dotnet/efcore/issues/30188#issuecomment-1411763443
 
-            foreach (var table in _loggingTables)
-            {
-                migrationBuilder.Sql(@$"
-                    CREATE TRIGGER ""{table}_audit_trigger""
-                        AFTER INSERT OR UPDATE OR DELETE ON ""{table}""
-                        FOR EACH ROW EXECUTE FUNCTION audit_trigger_func();
-                ");
-            }
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
+        foreach (var table in loggingTables)
         {
-            foreach (var table in _loggingTables)
-            {
-                migrationBuilder.Sql($"DROP TRIGGER IF EXISTS \"{table}_audit_trigger\" ON \"{table}\";");
-            }
+            Console.WriteLine($"Creating audit trigger for table {table}");
+            await dataContext.Database.ExecuteSqlRawAsync(@$"
+                DROP TRIGGER IF EXISTS ""{table}_audit_trigger"" ON ""{table}"";
+                CREATE TRIGGER ""{table}_audit_trigger""
+                    AFTER INSERT OR UPDATE OR DELETE ON ""{table}""
+                    FOR EACH ROW EXECUTE FUNCTION audit_trigger_func();
+            ");
         }
+
     }
 }

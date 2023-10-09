@@ -54,6 +54,8 @@ public class UsersApiStack : Stack
 
         // Ensure database user 
         database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
+        // Ensure database audit log triggers
+        database.InvokeInitialDatabaseAuditLogTriggersSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     private static bool IsProductionEnvironment()

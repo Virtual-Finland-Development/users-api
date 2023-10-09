@@ -33,6 +33,9 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
 - `migrate` - runs the database migrations
   - lambda function payload: `{"Action": "Migrate"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate`
+- `initialize-database-audit-log-triggers` - initializes the database audit logging triggers
+  - lambda function payload: `{"Action": "InitializeDatabaseAuditLogTriggers"}`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-audit-log-triggers`
 - `initialize-database-user` - setup the application-level user credentials to the database
   - lambda function payload: `{"Action": "InitializeDatabaseUser", "data": "{\"Username\": \"appuser\", \"Password\": \"pass\"}"}`
   - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user`
