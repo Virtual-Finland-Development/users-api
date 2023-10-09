@@ -11,10 +11,13 @@ namespace VirtualFinland.UserAPI.Migrations
             "Persons",
             "PersonAdditionalInformation",
             "WorkPreferences",
-            "Skills",
-            "Permits",
-            "Languages",
+            "Occupations",
             "Educations",
+            "Certifications",
+            "Permits",
+            "Skills",
+            "Languages",
+            "SearchProfiles",
         };
 
         /// <inheritdoc />
