@@ -21,7 +21,7 @@ public class AuthenticationService
 
     public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context, CancellationToken cancellationToken = default)
     {
-        var requestAuthenticationCandinate = await ParseJwtToken(context);
+        var requestAuthenticationCandinate = await ResolveAuthenticationCandinate(context);
 
         try
         {
@@ -42,7 +42,7 @@ public class AuthenticationService
 
     public async Task<Person> AuthenticateAndGetOrRegisterAndGetPerson(HttpContext context, CancellationToken cancellationToken = default)
     {
-        var requestAuthenticationCandinate = await ParseJwtToken(context);
+        var requestAuthenticationCandinate = await ResolveAuthenticationCandinate(context);
 
         var externalIdentity = await _usersDbContext.ExternalIdentities.SingleOrDefaultAsync(
             o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, cancellationToken);
@@ -78,11 +78,13 @@ public class AuthenticationService
     }
 
     /// <summary>
-    /// Parses the JWT token and returns the issuer and the user id
+    /// Parses the JWT token and returns the authentication candinate
     /// </summary>
-    private Task<RequestAuthenticationCandinate> ParseJwtToken(HttpContext context)
+    private async Task<RequestAuthenticationCandinate> ResolveAuthenticationCandinate(HttpContext context)
     {
         var token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
-        return _applicationSecurity.ParseJwtToken(token);
+        var requestAuthenticationCandinate = await _applicationSecurity.ParseJwtToken(token);
+        requestAuthenticationCandinate.TraceId = context.Request.Headers[Constants.Headers.XRequestTraceId].ToString();
+        return requestAuthenticationCandinate;
     }
 }
