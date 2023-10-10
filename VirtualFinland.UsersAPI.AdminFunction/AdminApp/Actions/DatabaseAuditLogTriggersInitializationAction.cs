@@ -13,7 +13,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
     public async Task Execute(UsersDbContext dataContext, string? _)
     {
         var loggingTables = dataContext.GetDbSetEntityTypes()
-            .Where(e => e.ClrType.GetInterfaces().Contains(typeof(Auditable)))
+            .Where(e => e.ClrType.GetInterfaces().Contains(typeof(IAuditable)))
             .Select(e => e.GetTableName())
             .ToList();
 

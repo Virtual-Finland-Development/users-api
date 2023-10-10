@@ -5,7 +5,7 @@ using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class Auditable
+public class Auditable : IAuditable
 {
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
