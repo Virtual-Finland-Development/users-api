@@ -152,8 +152,8 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags
         });
 
-        // Configure log group
-        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource);
+        // Configure log group with retention of 180 days
+        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource, 180);
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
