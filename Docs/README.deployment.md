@@ -20,3 +20,12 @@ Deployment to a fresh environment requires the following steps to be performed i
     - Select the tab "Test"
     - Add a new test event with the following content: `{"Action": "Migrate"}`
     - Click "Test" button and wait for the execution to finish
+
+## Deployment on existing environment
+ 
+Pulumi does not have good tooling to handle attaching to existing resources such as AWS CloudWatch log groups. When deploying to a system where there are already resources created, one could tackle the problem by manually importing the resources to the pulumi state. 
+
+Example for importing a CloudWatch log group of a RDS instance:
+  - `pulumi import aws:cloudwatch/logGroup:LogGroup users-api-database-dev /aws/rds/instance/users-api-postgres-db-dev2313s/postgresql`
+
+Read more of the pulumi import-tooling from [here](https://www.pulumi.com/docs/cli/commands/pulumi_import/).
