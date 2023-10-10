@@ -7,6 +7,6 @@ public static class AuditLoggerExtensions
 {
     public static void LogAuditLogEvent(this ILogger logger, AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        logger.LogInformation("AuditLog: {auditEvent} on {user}", auditEvent, requestAuthenticatedUser);
+        logger.LogInformation("AuditLog: {auditEvent} on {user}", auditEvent.ToString().ToUpper(), requestAuthenticatedUser);
     }
 }
