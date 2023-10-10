@@ -25,7 +25,7 @@ public class CloudWatch
         return new LogGroup(stackSetup.CreateResourceName(name), new LogGroupArgs
         {
             Name = logGroupIdentifier,
-            RetentionInDays = 30,
+            RetentionInDays = 182, // 6 months
             Tags = _stackSetup.Tags,
         });
     }
