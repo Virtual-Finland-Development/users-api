@@ -4,6 +4,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -17,10 +18,12 @@ public static class DeleteUser
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, ILogger<Handler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Unit> Handle(Command request,
@@ -47,6 +50,8 @@ public static class DeleteUser
                 }
 
                 await _context.SaveChangesAsync(request.User, cancellationToken);
+
+                _logger.LogAuditLogEvent(AuditLogEvent.Delete, request.User);
             }
             catch (DbUpdateException e)
             {

@@ -3,6 +3,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
@@ -36,7 +37,7 @@ public class AuthenticationService
         }
         catch (InvalidOperationException e)
         {
-            throw new NotAuthorizedException("User could not be identified as a valid user. Use the verify path to make sure that the given access token is valid in the system: /identity/testbed/verify", e);
+            throw new NotAuthorizedException("User could not be identified as a valid user", e);
         }
     }
 
@@ -65,7 +66,11 @@ public class AuthenticationService
 
             await _usersDbContext.SaveChangesAsync(requestAuthenticationCandinate, cancellationToken);
 
-            context.Items.Add("User", new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate));
+            var authenticatedUser = new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate);
+
+            _logger.LogAuditLogEvent(AuditLogEvent.Create, authenticatedUser);
+
+            context.Items.Add("User", authenticatedUser);
 
             return newDbPerson.Entity;
         }

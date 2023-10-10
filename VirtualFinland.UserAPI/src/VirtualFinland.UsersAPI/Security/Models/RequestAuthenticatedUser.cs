@@ -1,3 +1,4 @@
+using System.Text.Json;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Security.Models;
@@ -22,4 +23,9 @@ public class RequestAuthenticatedUser : RequestAuthenticationCandinate
     }
 
     public Guid PersonId { get; set; } = default!;
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this);
+    }
 }
