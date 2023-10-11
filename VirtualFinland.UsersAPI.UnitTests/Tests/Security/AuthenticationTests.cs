@@ -107,7 +107,11 @@ public class AuthenticationTests : APITestBase
         mockHeaders.Setup(o => o.Authorization).Returns($"Bearer {idToken}");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
-        var mockCacheRepository = new Mock<ICacheRepository>();
+        var securityClientProviders = new SecurityClientProviders()
+        {
+            HttpClient = new Mock<HttpClient>().Object,
+            CacheRepositoryFactory = new Mock<ICacheRepositoryFactory>().Object,
+        };
 
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>
@@ -118,11 +122,17 @@ public class AuthenticationTests : APITestBase
                     OpenIdConfigurationUrl = "test-openid-config-url",
                     AudienceGuard = new AudienceGuardConfig
                     {
-                        IsEnabled = true,
-                        AllowedAudiences = new List<string> { "test-audience" }
+                        StaticConfig = new AudienceGuardStaticConfig
+                        {
+                            IsEnabled = true,
+                            AllowedAudiences = new List<string> { "test-audience" }
+                        },
+                        Service = new AudienceGuardServiceConfig {
+                            IsEnabled = false
+                        }
                     }
                 },
-                mockCacheRepository.Object
+                securityClientProviders
             )
         };
 
