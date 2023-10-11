@@ -105,13 +105,38 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     /// <param name="audience"></param>
     /// <exception cref="NotAuthorizedException"></exception>
-    public virtual Task ValidateSecurityTokenAudience(string audience)
+    public virtual async Task ValidateSecurityTokenAudience(string audience)
     {
-        if (_options.AudienceGuard.IsEnabled)
+        if (_options.AudienceGuard.StaticConfig.IsEnabled)
         {
-            if (!_options.AudienceGuard.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
+            await ValidateSecurityTokenAudienceByStaticConfiguration(audience);
         }
+
+        if (_options.AudienceGuard.Service.IsEnabled)
+        {
+            await ValidateSecurityTokenAudienceByService(audience);
+        }
+    }
+
+    /// <summary>
+    /// Validates the token audience by static configuration
+    /// </summary>
+    /// <param name="audience"></param>
+    /// <exception cref="NotAuthorizedException"></exception>
+    public virtual Task ValidateSecurityTokenAudienceByStaticConfiguration(string audience)
+    {
+        if (!_options.AudienceGuard.StaticConfig.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Validates the token audience by external service
+    /// </summary>
+    /// <param name="audience"></param>
+    /// <exception cref="NotAuthorizedException"></exception>
+    public virtual Task ValidateSecurityTokenAudienceByService(string audience)
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
@@ -12,7 +11,7 @@ public class SinunaSecurityFeature : SecurityFeature
 
     public SinunaSecurityFeature(SecurityFeatureOptions configuration, SecurityClientProviders securityClientProviders) : base(configuration, securityClientProviders)
     {
-        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service!, securityClientProviders);
+        _dataspaceAudienceSecurityService = new DataspaceAudienceSecurityService(configuration.AudienceGuard.Service, securityClientProviders);
     }
 
     /// <summary>
@@ -29,7 +28,7 @@ public class SinunaSecurityFeature : SecurityFeature
     /// </summary>
     /// <param name="audience"></param>
     /// <exception cref="NotAuthorizedException"></exception>
-    public override async Task ValidateSecurityTokenAudience(string audience)
+    public override async Task ValidateSecurityTokenAudienceByService(string audience)
     {
         await _dataspaceAudienceSecurityService.VerifyAudience(audience);
     }
