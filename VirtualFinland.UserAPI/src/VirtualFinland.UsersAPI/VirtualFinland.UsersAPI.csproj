@@ -34,6 +34,7 @@
     <PackageReference Include="NetDevPack.Security.JwtExtensions" Version="6.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.7" />
+    <PackageReference Include="NRedisStack" Version="0.9.0" />
     <PackageReference Include="Serilog" Version="2.12.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />

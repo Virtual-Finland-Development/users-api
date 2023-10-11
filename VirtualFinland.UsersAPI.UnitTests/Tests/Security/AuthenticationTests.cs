@@ -13,6 +13,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using VirtualFinland.UserAPI.Security.Models;
+using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Security.Configurations;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
@@ -105,11 +107,23 @@ public class AuthenticationTests : APITestBase
         mockHeaders.Setup(o => o.Authorization).Returns($"Bearer {idToken}");
         mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
+        var mockCacheRepository = new Mock<ICacheRepository>();
 
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>
         {
-            new SecurityFeature(new SecurityFeatureOptions { Issuer = dbEntity.externalIdentity.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" })
+            new SecurityFeature(
+                new SecurityFeatureOptions {
+                    Issuer = dbEntity.externalIdentity.Issuer,
+                    OpenIdConfigurationUrl = "test-openid-config-url",
+                    AudienceGuard = new AudienceGuardConfig
+                    {
+                        IsEnabled = true,
+                        AllowedAudiences = new List<string> { "test-audience" }
+                    }
+                },
+                mockCacheRepository.Object
+            )
         };
 
         var applicationSecurity = new ApplicationSecurity(features);
