@@ -78,7 +78,9 @@ public class UserTests : APITestBase
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteUser.Command();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new DeleteUser.Handler(_dbContext);
+
+        var mockLogger = new Mock<ILogger<DeleteUser.Handler>>();
+        var sut = new DeleteUser.Handler(_dbContext, mockLogger.Object);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);

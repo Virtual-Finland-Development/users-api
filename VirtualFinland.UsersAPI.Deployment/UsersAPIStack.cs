@@ -40,8 +40,9 @@ public class UsersApiStack : Stack
         var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
         var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
         var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
+        var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, cloudwatch);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;

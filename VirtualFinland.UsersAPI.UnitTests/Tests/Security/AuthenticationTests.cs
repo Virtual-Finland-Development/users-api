@@ -7,10 +7,6 @@ using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 

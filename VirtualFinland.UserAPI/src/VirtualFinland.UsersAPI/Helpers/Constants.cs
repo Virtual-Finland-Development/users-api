@@ -13,6 +13,7 @@ public static class Constants
         public static string ResolvePolicyFromTokenIssuer => "ResolvePolicyFromTokenIssuer";
         public static string RequestFromAccessFinland => "RequestFromAccessFinland";
         public static string RequestFromDataspace => "RequestFromDataspace";
+        public static string CachePrefix => "security";
     }
 
     public static class Headers

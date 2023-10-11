@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Services;
-using VirtualFinland.UserAPI.Models;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security;
+using VirtualFinland.UserAPI.Security.Configurations;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -49,10 +48,32 @@ public class APITestBase
         ));
 
         var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var securityClientProviders = new SecurityClientProviders()
+        {
+            HttpClient = new Mock<HttpClient>().Object,
+            CacheRepositoryFactory = new Mock<ICacheRepositoryFactory>().Object,
+        };
+
         var applicationSecurity = new ApplicationSecurity(new List<ISecurityFeature>
         {
-            new SecurityFeature(new SecurityFeatureOptions { Issuer = requestAuthenticationCandinate.Issuer, OpenIdConfigurationUrl = "test-openid-config-url" })
+            new SecurityFeature(
+                new SecurityFeatureOptions {
+                    Issuer = requestAuthenticationCandinate.Issuer,
+                    OpenIdConfigurationUrl = "test-openid-config-url",
+                    AudienceGuard = new AudienceGuardConfig {
+                        StaticConfig = new AudienceGuardStaticConfig {
+                            IsEnabled = true,
+                            AllowedAudiences = new List<string> { requestAuthenticationCandinate.Audience }
+                        },
+                        Service = new AudienceGuardServiceConfig {
+                            IsEnabled = false
+                        }
+                    }
+                },
+                securityClientProviders
+            )
         });
+
         var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();

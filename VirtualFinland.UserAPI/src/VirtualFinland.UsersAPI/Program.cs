@@ -16,6 +16,8 @@ using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using StackExchange.Redis;
+using Microsoft.Extensions.DependencyInjection;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -82,7 +84,7 @@ builder.Services.AddSwaggerGen(config =>
 //
 // Database connection
 //
-AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+AwsConfigurationManager awsConfigurationManager = new();
 
 var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
@@ -97,9 +99,15 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
+// Redis connection
+//
+var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+
+//
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration);
+builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
