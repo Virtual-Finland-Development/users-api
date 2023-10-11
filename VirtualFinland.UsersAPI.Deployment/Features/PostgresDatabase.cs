@@ -41,6 +41,7 @@ public class PostgresDatabase
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
+            Tags = stackSetup.Tags,
         });
 
         // Encryption key (KMS)
@@ -121,6 +122,7 @@ public class PostgresDatabase
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("dbsubnets"), new()
         {
             SubnetIds = vpcSetup.PrivateSubnetIds,
+            Tags = stackSetup.Tags,
         });
 
         var DbName = config.Require("dbName");

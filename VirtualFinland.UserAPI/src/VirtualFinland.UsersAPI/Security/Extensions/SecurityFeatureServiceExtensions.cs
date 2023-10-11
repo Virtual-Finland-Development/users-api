@@ -1,11 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Net.Http.Headers;
-using VirtualFinland.UserAPI.Data;
+using StackExchange.Redis;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.AccessRequirements;
-using VirtualFinland.UserAPI.Security.Configurations;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -19,7 +18,7 @@ public static class SecurityFeatureServiceExtensions
     /// <param name="services"></param>
     /// <param name="configuration"></param>
     /// <returns></returns>
-    public static IServiceCollection RegisterSecurityFeatures(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection RegisterSecurityFeatures(this IServiceCollection services, IConfiguration configuration, ConnectionMultiplexer redis)
     {
         var features = new List<ISecurityFeature>();
 
@@ -27,11 +26,17 @@ public static class SecurityFeatureServiceExtensions
         var enabledSecurityFeatureNames = securityConfigurations.Where(x => x.Value.IsEnabled).Select(x => x.Key).ToArray();
         if (!enabledSecurityFeatureNames.Any()) throw new ArgumentException("No security features enabled");
 
+        var securityClientProviders = new SecurityClientProviders()
+        {
+            HttpClient = new HttpClient(),
+            CacheRepositoryFactory = new CacheRepositoryFactory(redis.GetDatabase(), Constants.Security.CachePrefix),
+        };
+
         // Dynamically map security feature name to correct class
         foreach (var securityFeatureName in enabledSecurityFeatureNames)
         {
             var securityFeatureType = Type.GetType($"VirtualFinland.UserAPI.Security.Features.{securityFeatureName}SecurityFeature") ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
-            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName]) as ISecurityFeature ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
+            var securityFeature = Activator.CreateInstance(securityFeatureType, securityConfigurations[securityFeatureName], securityClientProviders) as ISecurityFeature ?? throw new ArgumentException($"Security feature {securityFeatureName} not found");
             features.Add(securityFeature);
         }
 
