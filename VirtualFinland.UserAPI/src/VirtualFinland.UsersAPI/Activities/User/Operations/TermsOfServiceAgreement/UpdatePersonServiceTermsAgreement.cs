@@ -1,13 +1,10 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 
-namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.TermsOfServiceAgreement;
+namespace VirtualFinland.UserAPI.Activities.User.Operations.TermsOfServiceAgreement;
 
 public static class UpdatePersonServiceTermsAgreement
 {

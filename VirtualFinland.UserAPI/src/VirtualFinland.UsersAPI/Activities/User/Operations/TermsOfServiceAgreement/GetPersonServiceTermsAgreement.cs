@@ -3,7 +3,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 
-namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.TermsOfServiceAgreement;
+namespace VirtualFinland.UserAPI.Activities.User.Operations.TermsOfServiceAgreement;
 
 public static class GetPersonServiceTermsAgreement
 {
