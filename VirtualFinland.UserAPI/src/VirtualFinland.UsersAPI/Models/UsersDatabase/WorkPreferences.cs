@@ -9,12 +9,12 @@ public class WorkPreferences : Auditable, IEntity
     /// <summary>
     ///     Region.cs values
     /// </summary>
-    public ICollection<string>? PreferredRegionCode { get; set; }
+    public List<string>? PreferredRegionCode { get; set; }
 
     /// <summary>
     ///     Municipality.cs values
     /// </summary>
-    public ICollection<string>? PreferredMunicipalityCode { get; set; }
+    public List<string>? PreferredMunicipalityCode { get; set; }
 
     public string? EmploymentTypeCode { get; set; }
 
@@ -26,7 +26,7 @@ public class WorkPreferences : Auditable, IEntity
     /// <summary>
     ///     WorkingLanguage.cs values
     /// </summary>
-    public ICollection<string>? WorkingLanguageEnum { get; set; }
+    public List<string>? WorkingLanguageEnum { get; set; }
 
     /// <summary>
     ///     http://uri.suomi.fi/codelist/jhs/toimiala_1_20080101
