@@ -38,6 +38,7 @@ public static class AddOccupations
         {
             var user = _usersDbContext.Persons
                 .Include(u => u.Occupations)
+                .AsSingleQuery()
                 .FirstOrDefault(u => u.Id == request.UserId);
 
             foreach (var occupation in request.Occupations)
@@ -48,15 +49,15 @@ public static class AddOccupations
                     EscoUri = occupation.EscoUri,
                     WorkMonths = occupation.WorkMonths
                 };
-                user?.Occupations?.Add(newOccupation);  
+                user?.Occupations?.Add(newOccupation);
             }
-            
+
             var addedEntries = _usersDbContext.ChangeTracker
                 .Entries()
                 .Where(x => x.State == EntityState.Added)
                 .Select(x => x.Entity)
                 .ToList();
-            
+
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
             var addedOccupations = new List<AddOccupationsResponse>();
@@ -70,7 +71,7 @@ public static class AddOccupations
                     WorkMonths = entry.WorkMonths
                 });
             }
-            
+
             return addedOccupations;
         }
     }

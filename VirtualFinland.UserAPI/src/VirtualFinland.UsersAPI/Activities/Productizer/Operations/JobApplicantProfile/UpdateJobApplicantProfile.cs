@@ -69,6 +69,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
+                .AsSingleQuery()
                 .FirstOrDefaultAsync(p => p.Id == command.UserId, cancellationToken);
 
             if (person is null) throw new NotFoundException();
@@ -226,7 +227,7 @@ public static class UpdateJobApplicantProfile
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
-            
+
             public string? InstitutionName { get; set; }
         }
 

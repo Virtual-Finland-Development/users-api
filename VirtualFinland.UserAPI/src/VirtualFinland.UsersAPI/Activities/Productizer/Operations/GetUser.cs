@@ -50,6 +50,7 @@ public static class GetUser
                 .Include(p => p.Occupations)
                 .Include(p => p.WorkPreferences)
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
+                .AsSingleQuery()
                 .SingleAsync(p => p.Id == request.UserId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear

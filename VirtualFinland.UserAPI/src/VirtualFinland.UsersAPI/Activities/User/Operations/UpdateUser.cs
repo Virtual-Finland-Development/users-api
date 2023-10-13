@@ -151,6 +151,7 @@ public static class UpdateUser
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)
                 .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
+                .AsSingleQuery()
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);
 
             await VerifyUserUpdate(dbUser, request);
