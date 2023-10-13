@@ -77,7 +77,7 @@ public static class UpdateJobApplicantProfile
 
         public sealed class OccupationsValidator : AbstractValidator<List<Request.Occupation>>
         {
-            IOccupationsFlatRepository _occupationsFlatRepository;
+            private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
             public OccupationsValidator(IOccupationsFlatRepository occupationsFlatRepository)
             {
@@ -109,7 +109,7 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
-        IOccupationsFlatRepository _occupationsFlatRepository;
+        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
         public Handler(UsersDbContext context, IOccupationsFlatRepository occupationsFlatRepository)
         {
