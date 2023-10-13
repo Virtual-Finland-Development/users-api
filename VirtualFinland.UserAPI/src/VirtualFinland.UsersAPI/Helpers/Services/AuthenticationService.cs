@@ -89,7 +89,7 @@ public class AuthenticationService
     {
         var token = context.Request.Headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         var requestAuthenticationCandinate = await _applicationSecurity.ParseJwtToken(token);
-        requestAuthenticationCandinate.TraceId = context.Request.Headers[Constants.Headers.XRequestTraceId].ToString();
+        requestAuthenticationCandinate.TraceId = context.TraceIdentifier;
         return requestAuthenticationCandinate;
     }
 }

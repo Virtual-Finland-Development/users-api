@@ -154,6 +154,7 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 
 
 app.UseSerilogRequestLogging();
+app.UseMiddleware<RequestTracingMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
