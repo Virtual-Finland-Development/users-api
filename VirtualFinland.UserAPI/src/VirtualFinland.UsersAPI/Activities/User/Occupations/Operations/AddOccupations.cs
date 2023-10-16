@@ -38,7 +38,6 @@ public static class AddOccupations
         {
             var user = _usersDbContext.Persons
                 .Include(u => u.Occupations)
-                .AsSingleQuery()
                 .FirstOrDefault(u => u.Id == request.UserId);
 
             foreach (var occupation in request.Occupations)

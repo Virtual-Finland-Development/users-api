@@ -108,7 +108,10 @@ builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
-        op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
+        op => op
+            .EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
+        );
 });
 
 //

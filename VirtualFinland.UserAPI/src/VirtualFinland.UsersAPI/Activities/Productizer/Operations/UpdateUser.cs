@@ -118,7 +118,6 @@ public static class UpdateUser
         {
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .AsSingleQuery()
                 .SingleAsync(o => o.Id == request.UserId, cancellationToken);
 
             await VerifyUserUpdate(dbUser, request);
