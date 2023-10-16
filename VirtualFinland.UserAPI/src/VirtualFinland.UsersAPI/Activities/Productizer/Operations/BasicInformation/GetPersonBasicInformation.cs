@@ -33,7 +33,7 @@ public static class GetPersonBasicInformation
         {
             var person = await _context.Persons.SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, "Person", request.User);
 
             return new GetPersonBasicInformationResponse(
                 person.GivenName,

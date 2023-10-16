@@ -120,7 +120,7 @@ public static class UpdateUserProfile
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Person", request.User);
 
             return new User
             {

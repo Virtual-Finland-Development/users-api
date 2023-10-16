@@ -5,8 +5,8 @@ namespace VirtualFinland.UserAPI.Helpers.Extensions;
 
 public static class AuditLoggerExtensions
 {
-    public static void LogAuditLogEvent(this ILogger logger, AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser)
+    public static void LogAuditLogEvent(this ILogger logger, AuditLogEvent auditEvent, string eventContextInfo, RequestAuthenticatedUser requestAuthenticatedUser)
     {
-        logger.LogInformation("AuditLog: {auditEvent} on {user}", auditEvent.ToString().ToUpper(), requestAuthenticatedUser);
+        logger.LogInformation("AuditLog: {auditEvent} ({eventContextInfo}) on {user}", auditEvent.ToString().ToUpper(), eventContextInfo, requestAuthenticatedUser);
     }
 }

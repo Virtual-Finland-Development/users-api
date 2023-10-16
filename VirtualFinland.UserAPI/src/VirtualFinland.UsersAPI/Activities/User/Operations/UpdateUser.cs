@@ -154,7 +154,7 @@ public static class UpdateUser
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Person", request.User);
 
             List<UpdateUserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is { Count: > 0 })

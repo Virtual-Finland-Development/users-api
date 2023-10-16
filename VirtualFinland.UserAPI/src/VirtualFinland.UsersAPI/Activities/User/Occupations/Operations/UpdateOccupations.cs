@@ -50,7 +50,7 @@ public static class UpdateOccupations
             }
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Occupations", request.User);
 
             return Unit.Value;
         }
