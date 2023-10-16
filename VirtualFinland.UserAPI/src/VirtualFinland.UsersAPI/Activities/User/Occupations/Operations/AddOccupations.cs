@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
@@ -24,9 +24,9 @@ public static class AddOccupations
     public class Handler : IRequestHandler<Command, List<AddOccupationsResponse>>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;

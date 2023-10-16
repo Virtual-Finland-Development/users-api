@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
@@ -21,9 +21,9 @@ public static class GetPersonBasicInformation
     public class Handler : IRequestHandler<Query, GetPersonBasicInformationResponse>
     {
         private readonly UsersDbContext _context;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(UsersDbContext context, ILogger<Handler> logger)
+        public Handler(UsersDbContext context, AnalyticsService logger)
         {
             _context = context;
             _logger = logger;

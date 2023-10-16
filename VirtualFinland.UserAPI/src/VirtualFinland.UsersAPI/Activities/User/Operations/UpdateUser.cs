@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security.Models;
@@ -124,12 +125,12 @@ public static class UpdateUser
     public class Handler : IRequestHandler<Command, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
         private readonly ILanguageRepository _languageRepository;
         private readonly ICountriesRepository _countriesRepository;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsFlatRepository occupationsFlatRepository)
+        public Handler(UsersDbContext usersDbContext, AnalyticsService logger, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;

@@ -1,7 +1,7 @@
 using MediatR;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
@@ -25,9 +25,9 @@ public static class DeleteOccupations
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;

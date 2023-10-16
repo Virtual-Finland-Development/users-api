@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Swagger;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Security.Models;
@@ -32,9 +33,9 @@ public static class GetUser
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
         {
             _usersDbContext = usersDbContext;
             _logger = logger;

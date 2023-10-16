@@ -4,5 +4,6 @@ public enum Actions
 {
     Migrate,
     InitializeDatabaseAuditLogTriggers,
-    InitializeDatabaseUser
+    InitializeDatabaseUser,
+    UpdateAnalytics,
 }

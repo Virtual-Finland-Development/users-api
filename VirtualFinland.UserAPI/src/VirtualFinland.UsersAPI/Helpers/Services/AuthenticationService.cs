@@ -10,10 +10,10 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class AuthenticationService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly AnalyticsService _logger;
     private readonly IApplicationSecurity _applicationSecurity;
 
-    public AuthenticationService(UsersDbContext usersDbContext, ILogger<AuthenticationService> logger, IApplicationSecurity applicationSecurity)
+    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsService logger, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
         _logger = logger;

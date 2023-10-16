@@ -17,13 +17,16 @@ using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using StackExchange.Redis;
-using Microsoft.Extensions.DependencyInjection;
 
+var builder = WebApplication.CreateBuilder(args);
+
+//
+// Logging and analytics
+//
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-
-var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<AnalyticsService>();
 
 //
 // App runtime configuration

@@ -1,6 +1,5 @@
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -22,9 +21,9 @@ public static class VerifyIdentityPerson
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly AuthenticationService _authenticationService;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(AuthenticationService authenticationService, ILogger<Handler> logger)
+        public Handler(AuthenticationService authenticationService, AnalyticsService logger)
         {
             _authenticationService = authenticationService;
             _logger = logger;

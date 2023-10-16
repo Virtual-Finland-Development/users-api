@@ -5,7 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -45,9 +45,9 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsService _logger;
 
-        public Handler(UsersDbContext context, ILogger<Handler> logger)
+        public Handler(UsersDbContext context, AnalyticsService logger)
         {
             _context = context;
             _logger = logger;
