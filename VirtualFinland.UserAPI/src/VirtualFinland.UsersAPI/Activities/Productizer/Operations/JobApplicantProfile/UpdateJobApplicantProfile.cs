@@ -1,11 +1,14 @@
 using System.Text.Json.Serialization;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
@@ -48,19 +51,78 @@ public static class UpdateJobApplicantProfile
         {
             UserId = userDatabaseId;
         }
+
+        private sealed class WorkPreferencesValidator : AbstractValidator<Request.WorkPreferenceValues>
+        {
+            public WorkPreferencesValidator()
+            {
+                RuleForEach(wp => wp.PreferredMunicipality)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<Municipality>(x, out _));
+
+                RuleForEach(wp => wp.PreferredRegion)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<Region>(x, out _));
+
+                RuleFor(x => x.TypeOfEmployment)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<EmploymentType>(x!, out _))
+                    .When(x => !string.IsNullOrEmpty(x.TypeOfEmployment));
+
+                RuleFor(x => x.WorkingTime)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x!, out _))
+                    .When(x => !string.IsNullOrEmpty(x.WorkingTime));
+
+                RuleForEach(wp => wp.WorkingLanguage)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x, out _));
+            }
+        }
+
+        public sealed class OccupationsValidator : AbstractValidator<List<Request.Occupation>>
+        {
+            private readonly IOccupationsFlatRepository _occupationsFlatRepository;
+
+            public OccupationsValidator(IOccupationsFlatRepository occupationsFlatRepository)
+            {
+                _occupationsFlatRepository = occupationsFlatRepository;
+
+                RuleFor(occupations => occupations)
+                    .MustAsync(async (occupations, cancellationToken) =>
+                    {
+                        var knownOccupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
+                        return occupations.Any(x =>
+                        {
+                            var occupation = knownOccupations.FirstOrDefault(y => y.Notation == x.EscoCode);
+                            return occupation != null;
+                        });
+                    }).WithMessage("EscoCode is not valid");
+            }
+        }
+
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(command => command.UserId).NotNull().NotEmpty();
+                RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator());
+            }
+        }
     }
 
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
+        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _context = context;
+            _occupationsFlatRepository = occupationsFlatRepository;
         }
 
         public async Task<Request> Handle(Command command, CancellationToken cancellationToken)
         {
+            // Validate command async parts
+            var validator = new Command.OccupationsValidator(_occupationsFlatRepository);
+            await validator.ValidateAndThrowAsync(command.Occupations, cancellationToken);
+
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)
@@ -226,7 +288,7 @@ public static class UpdateJobApplicantProfile
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
-            
+
             public string? InstitutionName { get; set; }
         }
 
