@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -43,7 +44,7 @@ public static class GetSearchProfiles
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.PersonId == dbUser.Id);
 
-            _logger.LogDebug("Retrieving search profiles");
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions, o.Created, o.Modified)).ToListAsync(cancellationToken);
         }

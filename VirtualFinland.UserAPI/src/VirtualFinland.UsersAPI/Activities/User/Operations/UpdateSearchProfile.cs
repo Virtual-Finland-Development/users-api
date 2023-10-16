@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
@@ -56,7 +58,7 @@ public static class UpdateSearchProfile
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogDebug("Search Profile updated: {RequestId}", request.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

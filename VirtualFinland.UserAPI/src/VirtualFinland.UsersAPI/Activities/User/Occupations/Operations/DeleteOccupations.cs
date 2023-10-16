@@ -1,6 +1,8 @@
 using MediatR;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
@@ -23,10 +25,12 @@ public static class DeleteOccupations
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
@@ -44,6 +48,7 @@ public static class DeleteOccupations
 
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

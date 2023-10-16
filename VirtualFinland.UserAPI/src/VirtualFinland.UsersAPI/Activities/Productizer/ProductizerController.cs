@@ -6,6 +6,7 @@ using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
+using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
@@ -43,14 +44,14 @@ public class ProductizerController : ControllerBase
     [HttpPost("/productizer/test/lassipatanen/User/Profile")]
     [SwaggerOperation(Summary = "Get the current logged user personal profile (Testbed Productizer)",
         Description = "Returns the current logged user own personal details and his default search profile.")]
-    [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetUserProfile.User), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         var RequestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);
-        return Ok(await _mediator.Send(new GetUser.Query(RequestAuthenticatedUser)));
+        return Ok(await _mediator.Send(new GetUserProfile.Query(RequestAuthenticatedUser)));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -58,7 +59,7 @@ public class ProductizerController : ControllerBase
         Description = "Updates the current logged user own personal details and his default search profile.")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
+    public async Task<IActionResult> UpdateUser(UpdateUserProfile.Command command)
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
         var RequestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);

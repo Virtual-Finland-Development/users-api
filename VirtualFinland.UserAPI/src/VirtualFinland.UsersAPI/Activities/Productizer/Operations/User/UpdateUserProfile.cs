@@ -7,13 +7,15 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
-namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;
+namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 
-public static class UpdateUser
+public static class UpdateUserProfile
 {
     [SwaggerSchema(Title = "UpdateUserRequest")]
     public class Command : AuthenticatedRequest<User>
@@ -118,7 +120,7 @@ public static class UpdateUser
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new User
             {

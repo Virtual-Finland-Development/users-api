@@ -4,6 +4,8 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
@@ -30,10 +32,12 @@ public static class UpdatePersonBasicInformation
     public class Handler : IRequestHandler<Command, UpdatePersonBasicInformationResponse>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, ILogger<Handler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
@@ -56,6 +60,7 @@ public static class UpdatePersonBasicInformation
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new UpdatePersonBasicInformationResponse
             (

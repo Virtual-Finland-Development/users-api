@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -54,7 +55,7 @@ public static class GetSearchProfile
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
-            _logger.LogDebug("Search Profile Retrieved: {SearchProfileId}", userSearchProfile.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }

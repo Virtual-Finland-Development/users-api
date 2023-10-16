@@ -9,6 +9,7 @@ using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -153,7 +154,7 @@ public static class UpdateUser
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             List<UpdateUserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is { Count: > 0 })

@@ -5,7 +5,9 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
@@ -43,10 +45,12 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, ILogger<Handler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Request> Handle(Command command, CancellationToken cancellationToken)
@@ -134,6 +138,7 @@ public static class UpdateJobApplicantProfile
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, command.User);
 
             return new Response
             {
