@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 using VirtualFinland.UserAPI.Activities.User.Operations;
+using VirtualFinland.UserAPI.Activities.User.Operations.TermsOfServiceAgreement;
+using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
@@ -29,7 +31,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
-        return Ok(await Mediator.Send(new GetUser.Query(await this.GetCurrentUserId())));
+        return Ok(await _mediator.Send(new GetUser.Query(await GetCurrentUserId())));
     }
 
     [HttpPatch("/user")]
@@ -38,8 +40,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUser(UpdateUser.Command command)
     {
-        command.SetAuth(await this.GetCurrentUserId());
-        return Ok(await Mediator.Send(command));
+        command.SetAuth(await GetCurrentUserId());
+        return Ok(await _mediator.Send(command));
     }
 
     [HttpDelete("/user")]
@@ -49,8 +51,9 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> DeleteUser()
     {
         var command = new DeleteUser.Command();
-        command.SetAuth(await this.GetCurrentUserId());
-        return Ok(await Mediator.Send(command));
+
+        command.SetAuth(await GetCurrentUserId(false));
+        return Ok(await _mediator.Send(command));
     }
 
     [HttpGet("/user/search-profiles/")]
@@ -58,7 +61,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IList<GetSearchProfiles.SearchProfile>> GetUserSearchProfiles()
     {
-        return await Mediator.Send(new GetSearchProfiles.Query(await this.GetCurrentUserId()));
+        return await _mediator.Send(new GetSearchProfiles.Query(await GetCurrentUserId()));
     }
 
     [HttpGet("/user/search-profiles/{profileId}")]
@@ -67,7 +70,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetUserSearchProfile(Guid profileId)
     {
-        var searchProfile = await Mediator.Send(new GetSearchProfile.Query(await this.GetCurrentUserId(), profileId));
+        var searchProfile = await _mediator.Send(new GetSearchProfile.Query(await GetCurrentUserId(), profileId));
 
         return Ok(searchProfile);
     }
@@ -77,8 +80,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> UpdateUserSearchProfile(UpdateSearchProfile.Command command, Guid profileId)
     {
-        command.SetAuth(await this.GetCurrentUserId());
-        await Mediator.Send(command);
+        command.SetAuth(await GetCurrentUserId());
+        await _mediator.Send(command);
         return NoContent();
     }
 
@@ -87,8 +90,8 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> CreateUserSearchProfile(CreateSearchProfile.Command command)
     {
-        command.SetAuth(await this.GetCurrentUserId());
-        var searchProfile = await Mediator.Send(command);
+        command.SetAuth(await GetCurrentUserId());
+        var searchProfile = await _mediator.Send(command);
 
         return CreatedAtAction(nameof(GetUserSearchProfile), new
         {
@@ -104,7 +107,7 @@ public class UserController : ApiControllerBase
         var command = new AddOccupations.Command(occupations);
         command.SetAuth(await GetCurrentUserId());
 
-        var result = await Mediator.Send(command);
+        var result = await _mediator.Send(command);
 
         return CreatedAtAction(
             nameof(AddOccupation),
@@ -120,7 +123,7 @@ public class UserController : ApiControllerBase
         var command = new UpdateOccupations.Command(occupations);
         command.SetAuth(await GetCurrentUserId());
 
-        await Mediator.Send(command);
+        await _mediator.Send(command);
 
         return NoContent();
     }
@@ -131,9 +134,9 @@ public class UserController : ApiControllerBase
     public async Task<IActionResult> DeleteSelectedOccupations(List<Guid> ids)
     {
         var command = new DeleteOccupations.Command(ids);
-        command.SetAuth(await GetCurrentUserId());
+        command.SetAuth(await GetCurrentUserId(false));
 
-        await Mediator.Send(command);
+        await _mediator.Send(command);
 
         return NoContent();
     }
@@ -146,9 +149,37 @@ public class UserController : ApiControllerBase
         var command = new DeleteOccupations.Command();
         command.SetAuth(await GetCurrentUserId());
 
-        await Mediator.Send(command);
+        await _mediator.Send(command);
 
         return NoContent();
+    }
+
+    [HttpGet("/user/terms-of-service-agreement")]
+    [SwaggerOperation(Summary = "Get the user terms agreement status",
+        Description = "Returns the current logged user terms agreement status.")]
+    [ProducesResponseType(typeof(GetUser.User), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> GetPersonTermsOfServiceAgreement()
+    {
+        var personId = await GetPersonIdOrCreateNewPersonWithId();
+        return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(personId)));
+    }
+
+    [HttpPost("/user/terms-of-service-agreement")]
+    [SwaggerOperation(Summary = "Update the current logged user terms agreement status",
+        Description = "Updates the current logged user terms agreement status.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesErrorResponseType(typeof(ProblemDetails))]
+    public async Task<IActionResult> UpdatePersonTermsOfServiceAgreement(UpdatePersonServiceTermsAgreement.Command command)
+    {
+        var personId = await GetCurrentUserId(false);
+        if (personId == null)
+        {
+            throw new NotAuthorizedException("User not found");
+        }
+        command.SetAuth((Guid)personId);
+        return Ok(await _mediator.Send(command));
     }
 
 }

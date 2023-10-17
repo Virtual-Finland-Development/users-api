@@ -13,6 +13,9 @@ internal class Program
             case "migrate":
                 await Migrate();
                 break;
+            case "update-terms-of-service":
+                await UpdateTermsOfServices();
+                break;
             case "initialize-database-user":
                 await InitializeDatabaseUser();
                 break;
@@ -26,6 +29,14 @@ internal class Program
         await Function.FunctionHandler(new FunctionPayload
         {
             Action = Actions.Migrate,
+        });
+    }
+
+    private static async Task UpdateTermsOfServices()
+    {
+        await Function.FunctionHandler(new FunctionPayload
+        {
+            Action = Actions.UpdateTermsOfService,
         });
     }
 

@@ -47,6 +47,8 @@ public class App
         {
             case Models.Actions.Migrate:
                 return new DatabaseMigrationAction();
+            case Models.Actions.UpdateTermsOfService:
+                return new TermsOfServiceUpdateAction();
             case Models.Actions.InitializeDatabaseUser:
                 return new DatabaseUserInitializationAction();
             default:

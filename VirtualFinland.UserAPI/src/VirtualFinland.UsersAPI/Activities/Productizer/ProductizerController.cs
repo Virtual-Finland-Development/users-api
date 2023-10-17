@@ -2,11 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
@@ -16,13 +16,11 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 [Authorize(Policy = "RequestFromDataspace")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [Produces("application/json")]
-public class ProductizerController : ControllerBase
+public class ProductizerController : ApiControllerBase
 {
-    private readonly AuthenticationService _authenticationService;
     private readonly TestbedConsentSecurityService _consentSecurityService;
     private readonly ILogger<ProductizerController> _logger;
 
-    private readonly IMediator _mediator;
     private readonly string _userProfileDataSourceURI;
 
     public ProductizerController(
@@ -30,10 +28,8 @@ public class ProductizerController : ControllerBase
         AuthenticationService authenticationService,
         TestbedConsentSecurityService consentSecurityService,
         ILogger<ProductizerController> logger,
-        IConfiguration configuration)
+        IConfiguration configuration) : base(mediator, authenticationService)
     {
-        _mediator = mediator;
-        _authenticationService = authenticationService;
         _consentSecurityService = consentSecurityService;
         _logger = logger;
         _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"] ?? throw new ArgumentNullException("ConsentDataSources:UserProfile");
@@ -71,20 +67,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonBasicInformation()
     {
-        Guid? userId;
-        try
-        {
-            userId = await _authenticationService.GetCurrentUserId(Request);
-        }
-        catch (NotAuthorizedException)
-        {
-            _logger.LogInformation(
-                "Person was not found in database while trying to retrieve person basic information");
-            throw new NotFoundException("Person not found");
-        }
-
-        var result = await _mediator.Send(new GetPersonBasicInformation.Query(userId));
-
+        var personId = await _authenticationService.GetCurrentUserId(Request);
+        var result = await _mediator.Send(new GetPersonBasicInformation.Query(personId));
         if (!ProductizerProfileValidator.IsPersonBasicInformationCreated(result)) throw new NotFoundException("Person not found");
 
         return Ok(result);
@@ -99,7 +83,7 @@ public class ProductizerController : ControllerBase
     public async Task<IActionResult> SaveOrUpdatePersonBasicInformation(
         UpdatePersonBasicInformation.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        command.SetAuth(await GetPersonIdOrCreateNewPersonWithId());
         return Ok(await _mediator.Send(command));
     }
 
@@ -111,20 +95,8 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonJobApplicantInformation()
     {
-        Guid? userId;
-        try
-        {
-            userId = await _authenticationService.GetCurrentUserId(Request);
-        }
-        catch (NotAuthorizedException)
-        {
-            _logger.LogInformation(
-                "Person was not found in database while trying to retrieve person job applicant profile");
-            throw new NotFoundException("Person not found");
-        }
-
-        var result = await _mediator.Send(new GetJobApplicantProfile.Query(userId));
-
+        var personId = await _authenticationService.GetCurrentUserId(Request);
+        var result = await _mediator.Send(new GetJobApplicantProfile.Query(personId));
         if (!ProductizerProfileValidator.IsJobApplicantProfileCreated(result)) throw new NotFoundException("Job applicant profile not found");
 
         return Ok(result);
@@ -138,40 +110,7 @@ public class ProductizerController : ControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        command.SetAuth(await GetUserIdOrCreateNewUserWithId());
+        command.SetAuth(await GetPersonIdOrCreateNewPersonWithId());
         return Ok(await _mediator.Send(command));
-    }
-
-    /// <summary>
-    ///     If user is not found in database, create new user and return users Id
-    ///     - authentication header / token should be verified before calling this method
-    /// </summary>
-    private async Task<Guid?> GetUserIdOrCreateNewUserWithId()
-    {
-        Guid? userId;
-        try
-        {
-            userId = await _authenticationService.GetCurrentUserId(Request);
-        }
-        catch (NotAuthorizedException e)
-        {
-            _logger.LogInformation("Could not get userId for user with error message: {Error}. Try create new user",
-                e.Message);
-            try
-            {
-                var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
-                var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
-                var createdUser = await _mediator.Send(query);
-                userId = createdUser.Id;
-                _logger.LogInformation("New user was created with Id: {UserId}", userId);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError("Could not create new user. Error message: {Error}", exception.Message);
-                throw;
-            }
-        }
-
-        return userId;
     }
 }

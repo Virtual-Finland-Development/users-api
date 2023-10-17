@@ -43,7 +43,7 @@ public static class VerifyIdentityUser
             if (externalIdentity is null)
             {
                 var newDbUSer = await _usersDbContext.Persons.AddAsync(
-                    new Person { Created = DateTime.UtcNow, Modified = DateTime.UtcNow }, cancellationToken);
+                    new Person { Created = DateTime.UtcNow }, cancellationToken);
 
                 await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
                 {
