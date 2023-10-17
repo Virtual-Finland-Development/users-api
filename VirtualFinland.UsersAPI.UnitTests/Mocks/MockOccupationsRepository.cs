@@ -13,7 +13,7 @@ public class MockOccupationsRepository : IOccupationsFlatRepository
             new() { Notation = "01"},
             new() { Notation = "02"},
             new() { Notation = "03"},
-            new() { Notation = "2654.1.6"},
+            new() { Notation = "2654.1.7"},
         };
 
         return Task.FromResult<List<OccupationFlatRoot.Occupation>>(occupations);
