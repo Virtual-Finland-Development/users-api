@@ -20,7 +20,7 @@ public class ApplicationSecurity : IApplicationSecurity
     /// <summary>
     /// Parses the JWT token and returns the issuer and the user id
     /// </summary>
-    public JwtTokenResult ParseJwtToken(string token)
+    public async Task<JwtTokenResult> ParseJwtToken(string token)
     {
         if (string.IsNullOrEmpty(token)) throw new NotAuthorizedException("No token provided");
 
@@ -33,9 +33,13 @@ public class ApplicationSecurity : IApplicationSecurity
         var tokenIssuer = parsedToken.Issuer;
         var securityFeature = _setup.Features.Find(o => o.Issuer == tokenIssuer) ?? throw new NotAuthorizedException("The given token issuer is not valid");
 
+        // Resolve and validate the token audience
+        var tokenAudience = parsedToken.Audiences.FirstOrDefault() ?? throw new NotAuthorizedException("The given token audience is not valid");
+        await securityFeature.ValidateSecurityTokenAudience(tokenAudience);
+
         // Resolve user id
         var userId = securityFeature.ResolveTokenUserId(parsedToken) ?? throw new NotAuthorizedException("The given token claim is not valid");
-        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer };
+        return new JwtTokenResult { UserId = userId, Issuer = securityFeature.Issuer, Audience = tokenAudience };
     }
 
     /// <summary>
@@ -45,6 +49,6 @@ public class ApplicationSecurity : IApplicationSecurity
     {
         if (!_setup.Options.TermsOfServiceAgreementRequired) return;
         // Fetch person terms of service agreement
-        _ = await _termsOfServiceRepository.GetNewestTermsOfServiceAgreementByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
+        _ = await _termsOfServiceRepository.GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
     }
 }

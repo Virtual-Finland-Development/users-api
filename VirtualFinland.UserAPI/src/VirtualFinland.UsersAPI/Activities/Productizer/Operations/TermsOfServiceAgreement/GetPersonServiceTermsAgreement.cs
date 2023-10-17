@@ -33,37 +33,38 @@ public static class GetPersonServiceTermsAgreement
             // Fetch the newest terms of service
             var termsOfService = await _termsOfServiceRepository.GetNewestTermsOfService();
 
-            // Fetch persons existing agreements
-            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId);
-
-            // Check if person has accepted any previous versions of the terms of service
-            var personHasAcceptedAnyVersions = existingAgreements.Where(t => t.TermsOfServiceId != termsOfService.Id).Any();
-
-            // Fetch the current person tos agreement
-            var currentTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == termsOfService.Id);
+            // Fetch the persons latest agreement
+            var latestExistingAgreement = await _termsOfServiceRepository.GetTheLatestTermsOfServiceAgreementByPersonId(request.PersonId);
 
             // Has accepted
-            var personHasAccepted = currentTosAgreement != null;
+            var hasAcceptedLatest = latestExistingAgreement?.TermsOfServiceId == termsOfService.Id;
 
             // Handle the request
             return new GetPersonServiceTermsAgreementResponse(
-                termsOfService.Url,
-                termsOfService.Description,
-                termsOfService.Version,
-                personHasAccepted,
-                currentTosAgreement?.AcceptedAt ?? null,
-                personHasAcceptedAnyVersions
+                new CurrentTerms(
+                    termsOfService.Url,
+                    termsOfService.Description,
+                    termsOfService.Version
+                ),
+                latestExistingAgreement?.Version,
+                latestExistingAgreement?.AcceptedAt,
+                hasAcceptedLatest
             );
         }
     }
 
+    [SwaggerSchema(Title = "CurrentTerms")]
+    public record CurrentTerms(
+        string Url,
+        string Description,
+        string Version
+    );
+
     [SwaggerSchema(Title = "GetPersonServiceTermsAgreementResponse")]
     public record GetPersonServiceTermsAgreementResponse(
-        string TermsOfServiceUrl,
-        string Description,
-        string Version,
-        bool Accepted,
+        CurrentTerms CurrentTerms,
+        string? AcceptedVersion,
         DateTime? AcceptedAt,
-        bool AcceptedPreviousVersion
+        bool HasAcceptedLatest
     );
 }

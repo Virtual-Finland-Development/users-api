@@ -6,7 +6,6 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Command.Local;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -16,7 +15,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -27,6 +26,7 @@ class UsersApiLambdaFunction
         var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
         var aclConfig = new Config("acl");
         var authorizationConfig = new Config("auth");
+        var termsOfServiceConfig = new Config("termsOfService");
 
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("LambdaRole"), new RoleArgs
@@ -82,11 +82,20 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags,
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
+        // Grant access to the secret manager
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManagerReadPolicy.Arn
         });
+
+        // Allow function to access elasticache
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-ElastiCache"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
+        });
+
 
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
@@ -119,6 +128,9 @@ class UsersApiLambdaFunction
                         "DB_CONNECTION_SECRET_NAME", secretsManager.Name
                     },
                     {
+                        "REDIS_ENDPOINT", Output.Format($"{redis.ClusterEndpoint}")
+                    },
+                    {
                         "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                     {
@@ -145,6 +157,9 @@ class UsersApiLambdaFunction
                     {
                         "Security__Authorization__SuomiFi__IsEnabled", authorizationConfig.Require("suomifi-isEnabled")
                     },
+                    {
+                        "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),

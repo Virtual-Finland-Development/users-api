@@ -1,4 +1,6 @@
+using System.Text.Json;
 using VirtualFinland.AdminFunction;
+using VirtualFinland.AdminFunction.AdminApp.Actions;
 using VirtualFinland.AdminFunction.AdminApp.Models;
 
 internal class Program
@@ -13,6 +15,9 @@ internal class Program
                 break;
             case "update-terms-of-service":
                 await UpdateTermsOfServices();
+                break;
+            case "initialize-database-user":
+                await InitializeDatabaseUser();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(command), command, null);
@@ -32,6 +37,18 @@ internal class Program
         await Function.FunctionHandler(new FunctionPayload
         {
             Action = Actions.UpdateTermsOfService,
+        });
+    }
+
+    private static async Task InitializeDatabaseUser()
+    {
+        await Function.FunctionHandler(new FunctionPayload
+        {
+            Action = Actions.InitializeDatabaseUser,
+            Data = JsonSerializer.Serialize(new DatabaseUserInitializationAction.DatabaseUserCredentials(
+                Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable)),
+                Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable))
+            ))
         });
     }
 }

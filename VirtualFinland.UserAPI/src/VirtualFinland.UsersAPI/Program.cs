@@ -15,6 +15,9 @@ using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using StackExchange.Redis;
+using Microsoft.Extensions.DependencyInjection;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -81,7 +84,7 @@ builder.Services.AddSwaggerGen(config =>
 //
 // Database connection
 //
-AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+AwsConfigurationManager awsConfigurationManager = new();
 
 var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
@@ -96,9 +99,15 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
 });
 
 //
+// Redis connection
+//
+var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+
+//
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration);
+builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
@@ -109,6 +118,7 @@ builder.Services.AddTransient<TestbedConsentSecurityService>();
 // Route handlers
 //
 builder.Services.AddControllers();
+builder.Services.AddTransient<ProblemDetailsFactory, ValidationProblemDetailsFactory>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.AddResponseCaching();
 
@@ -152,20 +162,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
-
-// Only run database migrations in local environment
-if (EnvironmentExtensions.IsLocal(app.Environment))
-{
-    using var scope = app.Services.CreateScope();
-    Log.Information("Migrate database");
-
-    // Initialize automatically any database changes
-    var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-    await dataContext.Database.MigrateAsync();
-
-    Log.Information("Database migration completed");
-}
-
 
 app.MapGet("/", () => "App is up!");
 

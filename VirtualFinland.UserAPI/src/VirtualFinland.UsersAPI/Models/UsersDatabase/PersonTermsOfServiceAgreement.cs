@@ -7,6 +7,7 @@ public class PersonTermsOfServiceAgreement
 {
     public Person Person { get; set; } = null!;
     public TermsOfService TermsOfService { get; set; } = null!;
+    public string Version { get; set; } = default!;
     public DateTime AcceptedAt { get; set; } = DateTime.UtcNow;
 
     [Key]

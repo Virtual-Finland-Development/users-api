@@ -36,17 +36,22 @@ public class UsersApiStack : Stack
 
         var vpcSetup = new VpcSetup(stackSetup);
         var database = new PostgresDatabase(config, stackSetup, vpcSetup);
-        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
+        var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
 
-        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, secretManagerSecret);
-        AdminFunctionArn = adminFunction.LambdaFunctionArn;
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
+        AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Ensure database user 
+        database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     private bool IsProductionEnvironment()

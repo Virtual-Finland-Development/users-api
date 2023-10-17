@@ -4,4 +4,5 @@ public enum Actions
 {
     Migrate,
     UpdateTermsOfService,
+    InitializeDatabaseUser
 }

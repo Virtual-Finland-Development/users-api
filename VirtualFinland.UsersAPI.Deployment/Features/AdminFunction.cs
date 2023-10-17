@@ -58,8 +58,8 @@ class AdminFunction
             SubnetIds = vpcSetup.PrivateSubnetIds
         };
 
-        var appArtifactPath = Environment.GetEnvironmentVariable("DB_MIGRATOR_ARTIFACT_PATH") ?? config.Require("dbMigratorArtifactPath");
-        var lambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
+        var appArtifactPath = config.Require("adminFunctionArtifactPath");
+        LambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
@@ -82,11 +82,7 @@ class AdminFunction
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
         });
-
-        LambdaFunctionArn = lambdaFunction.Arn;
-        LambdaFunctionId = lambdaFunction.Id;
     }
 
-    public Output<string> LambdaFunctionArn = default!;
-    public Output<string> LambdaFunctionId = default!;
+    public Function LambdaFunction = default!;
 }
