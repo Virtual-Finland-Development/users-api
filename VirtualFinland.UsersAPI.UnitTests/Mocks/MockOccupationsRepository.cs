@@ -10,11 +10,12 @@ public class MockOccupationsRepository : IOccupationsFlatRepository
     {
         var occupations = new List<OccupationFlatRoot.Occupation>()
         {
-            new OccupationFlatRoot.Occupation() { Notation = "01"},
-            new OccupationFlatRoot.Occupation() { Notation = "02"},
-            new OccupationFlatRoot.Occupation() { Notation = "03"}
+            new() { Notation = "01"},
+            new() { Notation = "02"},
+            new() { Notation = "03"},
+            new() { Notation = "2654.1.7"},
         };
-        
+
         return Task.FromResult<List<OccupationFlatRoot.Occupation>>(occupations);
     }
 }

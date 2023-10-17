@@ -1,7 +1,11 @@
 shell:
 	bash
 
-test:
+restore:
+	@echo "> Restoring dependencies"
+	dotnet restore ./VirtualFinland.UsersAPI.sln
+
+test: restore
 	@echo "> Running unit tests"
 	dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
 
