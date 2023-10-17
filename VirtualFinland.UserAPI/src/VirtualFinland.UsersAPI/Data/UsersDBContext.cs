@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Helpers;
@@ -5,7 +6,7 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Data;
 
-public class UsersDbContext : DbContext
+public class UsersDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly bool _isTesting;
     private readonly IAuditInterceptor _auditInterceptor;
@@ -34,6 +35,7 @@ public class UsersDbContext : DbContext
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
     public DbSet<TermsOfService> TermsOfServices => Set<TermsOfService>();
     public DbSet<PersonTermsOfServiceAgreement> PersonTermsOfServiceAgreements => Set<PersonTermsOfServiceAgreement>();
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
