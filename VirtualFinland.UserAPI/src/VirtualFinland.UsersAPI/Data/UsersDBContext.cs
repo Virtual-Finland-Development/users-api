@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -5,7 +6,7 @@ using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Data;
 
-public class UsersDbContext : DbContext
+public class UsersDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly bool _isTesting;
 
@@ -29,6 +30,8 @@ public class UsersDbContext : DbContext
     public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
