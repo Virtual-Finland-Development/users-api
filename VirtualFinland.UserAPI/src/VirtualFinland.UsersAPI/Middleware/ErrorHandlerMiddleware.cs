@@ -76,6 +76,35 @@ public class ErrorHandlerMiddleware
                         }, HttpStatusCode.UnprocessableEntity);
                     }
                     break;
+                case FluentValidation.ValidationException:
+                    var fluentValidationError = error as FluentValidation.ValidationException;
+                    if (fluentValidationError?.Errors is not null)
+                    {
+                        var errorDetail = new List<ValidationErrorDetail>();
+                        foreach (var validationErrorDetail in fluentValidationError.Errors)
+                        {
+                            errorDetail.Add(new ValidationErrorDetail()
+                            {
+                                Loc = new List<object>() { validationErrorDetail.PropertyName },
+                                Msg = validationErrorDetail.ErrorMessage,
+                                Type = "ValidationError"
+                            });
+                        }
+
+                        await WriteErrorResponse(context, new ValidationErrorResponse()
+                        {
+                            Detail = errorDetail,
+                        }, HttpStatusCode.UnprocessableEntity);
+                    }
+                    else
+                    {
+                        await WriteErrorResponse(context, new ErrorResponse()
+                        {
+                            Type = "UnprocessableEntity",
+                            Message = error.Message ?? "Validation error"
+                        }, HttpStatusCode.UnprocessableEntity);
+                    }
+                    break;
                 default:
                     _logger.LogError(error, "Request processing failure!");
                     await WriteErrorResponse(context, new ErrorResponse()
