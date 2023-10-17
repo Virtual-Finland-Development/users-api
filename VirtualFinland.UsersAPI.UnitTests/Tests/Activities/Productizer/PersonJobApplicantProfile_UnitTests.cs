@@ -1,6 +1,9 @@
 using FluentAssertions;
+using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
+using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
@@ -26,7 +29,8 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
         var entities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
         command.SetAuth(entities.user.Id);
-        var sut = new UpdateJobApplicantProfile.Handler(_dbContext);
+        var occupationRepository = new MockOccupationsRepository();
+        var sut = new UpdateJobApplicantProfile.Handler(_dbContext, occupationRepository);
 
         var actual = await sut.Handle(command, CancellationToken.None);
 
