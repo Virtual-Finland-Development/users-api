@@ -75,7 +75,7 @@ public class PostgresDatabase
         {
             ClusterIdentifier = clusterIdentifier,
             Engine = "aurora-postgresql",
-            EngineVersion = "13.6",
+            EngineVersion = "13.8",
             EngineMode = "provisioned", // serverless v2
             Serverlessv2ScalingConfiguration = new ClusterServerlessv2ScalingConfigurationArgs
             {
