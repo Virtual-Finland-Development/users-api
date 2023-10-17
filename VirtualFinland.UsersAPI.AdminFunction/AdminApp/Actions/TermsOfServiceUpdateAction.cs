@@ -78,6 +78,13 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
 
         // Read the built-in terms of service default
         var currentDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? throw new InvalidOperationException();
+
+        // Fix: lambda runtime is not in the same folder as the function code
+        if (currentDirectory == "/var/runtime")
+        {
+            currentDirectory = "/var/task";
+        }
+
         string archiveFolder = Path.Combine(currentDirectory, "terms-of-services.json");
 
         return File.ReadAllText(archiveFolder);

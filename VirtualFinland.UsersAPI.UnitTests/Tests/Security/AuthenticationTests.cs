@@ -13,7 +13,6 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Models;
-using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Configurations;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
@@ -94,7 +93,7 @@ public class AuthenticationTests : APITestBase
             "test-audience",
             new List<Claim>
             {
-                new Claim("sub", dbEntity.externalIdentity.IdentityId ?? throw new Exception("IdentityId is null")),
+                new("sub", dbEntity.externalIdentity.IdentityId ?? throw new Exception("IdentityId is null")),
             },
             DateTime.Now,
             DateTime.Now.AddDays(1),
