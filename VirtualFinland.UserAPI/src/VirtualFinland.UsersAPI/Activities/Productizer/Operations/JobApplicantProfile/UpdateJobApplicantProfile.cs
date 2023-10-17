@@ -86,6 +86,8 @@ public static class UpdateJobApplicantProfile
                 RuleFor(occupations => occupations)
                     .MustAsync(async (occupations, cancellationToken) =>
                     {
+                        if (occupations is null || !occupations.Any()) return true;
+
                         var knownOccupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
                         return occupations.Any(x =>
                         {
