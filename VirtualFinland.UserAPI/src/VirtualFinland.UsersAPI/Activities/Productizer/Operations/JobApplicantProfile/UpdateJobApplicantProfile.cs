@@ -71,7 +71,7 @@ public static class UpdateJobApplicantProfile
                     .When(x => !string.IsNullOrEmpty(x.WorkingTime));
 
                 RuleForEach(wp => wp.WorkingLanguage)
-                    .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x, out _));
+                    .Must(x => !string.IsNullOrEmpty(x) && x.Length == 2); // TODO: Check if language code is valid ISO 639-1 code
             }
         }
 
