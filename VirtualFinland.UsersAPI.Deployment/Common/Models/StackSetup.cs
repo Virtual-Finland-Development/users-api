@@ -12,4 +12,5 @@ public class StackSetup
     public string Region = default!;
     public string CreateResourceName(string name) => $"{ProjectName}-{name}-{Environment}".ToLower();
     public string GetInfrastructureStackName() => $"{Organization}/infrastructure/{Environment}";
+    public string GetAlertingStackName() => $"{Organization}/cloudwatch-logs-alerts/{Environment}";
 }

@@ -167,8 +167,35 @@ class UsersApiLambdaFunction
         // Configure log group with retention of 180 days
         LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource, 180);
 
+        // Setup error alerting
+        SetupErrorAlerting(stackSetup);
+
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
+    }
+
+    private void SetupErrorAlerting(StackSetup stackSetup)
+    {
+        var stackReference = new StackReference(stackSetup.GetAlertingStackName());
+        var errorLambdaFunctionArnRef = stackReference.RequireOutput("errorSubLambdaFunctionArn");
+        var errorLambdaFunctionArn = Output.Format($"{errorLambdaFunctionArnRef}");
+
+        // Permissions for the log group subscription to invoke the error alerting lambda function of monitoring stack
+        var logGroupInvokePermission = new Permission(stackSetup.CreateResourceName("ErrorAlerter"), new PermissionArgs
+        {
+            Action = "lambda:InvokeFunction",
+            Function = errorLambdaFunctionArn,
+            Principal = "logs.amazonaws.com",
+            SourceArn = Output.Format($"{LogGroup.Arn}:*"),
+        }, new() { DependsOn = { LogGroup } });
+
+        // Subscribe to the log group
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("ErrorAlerterSubscriptionFilter"), new LogSubscriptionFilterArgs
+        {
+            LogGroup = LogGroup.Name,
+            FilterPattern = "$.StatusCode >= 422 || %Task timed out%",
+            DestinationArn = errorLambdaFunctionArn,
+        }, new() { DependsOn = { logGroupInvokePermission } });
     }
 
     public Function LambdaFunctionResource = default!;
