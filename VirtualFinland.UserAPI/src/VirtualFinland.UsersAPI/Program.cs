@@ -26,6 +26,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+Console.WriteLine($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
 // App runtime configuration
@@ -144,6 +145,7 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
 
 //
 // Other dependencies

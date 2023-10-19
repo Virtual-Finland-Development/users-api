@@ -76,7 +76,7 @@ public class PostgresDatabase
         {
             ClusterIdentifier = clusterIdentifier,
             Engine = "aurora-postgresql",
-            EngineVersion = "13.6",
+            EngineVersion = "13.8",
             EngineMode = "provisioned", // serverless v2
             Serverlessv2ScalingConfiguration = new ClusterServerlessv2ScalingConfigurationArgs
             {
@@ -100,7 +100,7 @@ public class PostgresDatabase
         });
 
         var dbInstanceIdentifier = stackSetup.CreateResourceName("database-instance");
-        _ = new ClusterInstance(dbInstanceIdentifier, new()
+        var dbInstance = new ClusterInstance(dbInstanceIdentifier, new()
         {
             Identifier = dbInstanceIdentifier,
             ClusterIdentifier = auroraCluster.ClusterIdentifier,
@@ -113,7 +113,7 @@ public class PostgresDatabase
         var DbEndpoint = auroraCluster.Endpoint;
         DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
-        DBIdentifier = auroraCluster.ClusterIdentifier;
+        DBIdentifier = dbInstance.Identifier;
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"));
     }

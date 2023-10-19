@@ -1,12 +1,15 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
+using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
@@ -19,7 +22,8 @@ public class AuthenticationTests : APITestBase
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
 
         var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
-        var applicationSecurity = new ApplicationSecurity(new List<ISecurityFeature>());
+        var features = new List<ISecurityFeature>();
+        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
         var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
@@ -40,16 +44,18 @@ public class AuthenticationTests : APITestBase
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
-        var applicationSecurity = new ApplicationSecurity(new List<ISecurityFeature>());
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
         mockHeaders.Setup(o => o.Authorization).Returns("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
         mockHttpContext.Setup(o => o.Request).Returns(mockHttpRequest.Object);
+
+        var mockConfiguration = new Mock<IConfiguration>();
+        var features = new List<ISecurityFeature>();
+        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
+        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
 
         // Act
         var act = () => authenticationService.Authenticate(mockHttpContext.Object);

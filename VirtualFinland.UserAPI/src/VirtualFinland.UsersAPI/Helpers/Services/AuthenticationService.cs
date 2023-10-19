@@ -20,7 +20,16 @@ public class AuthenticationService
         _applicationSecurity = applicationSecurity;
     }
 
-    public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="verifyTermsOfServiceAgreement"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotFoundException">If user id and the issuer are not found in the DB for any given user, this is not a valid user within the users database.</exception>
+    /// <exception cref="NotAuthorizedException">If the access was restricted by security constraints.</exception>
+    public async Task<RequestAuthenticatedUser> Authenticate(HttpContext context, bool verifyTermsOfServiceAgreement = true, CancellationToken cancellationToken = default)
     {
         var requestAuthenticationCandinate = await ResolveAuthenticationCandinate(context);
 
@@ -28,6 +37,7 @@ public class AuthenticationService
         {
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
+            if (verifyTermsOfServiceAgreement) await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(person.Id);
 
             var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
 
@@ -35,9 +45,9 @@ public class AuthenticationService
 
             return requestAuthenticatedUser;
         }
-        catch (InvalidOperationException e)
+        catch (InvalidOperationException)
         {
-            throw new NotAuthorizedException("User could not be identified as a valid user", e);
+            throw new NotFoundException("Person not found");
         }
     }
 

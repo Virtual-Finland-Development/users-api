@@ -37,11 +37,17 @@ public static class DeleteUser
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
+                .Include(p => p.TermsOfServiceAgreements)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
             var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.User.PersonId);
 
             try
             {
+                // Update the person's metadata for the delete log
+                person.Modified = DateTime.UtcNow;
+                await _context.SaveChangesAsync(request.User, cancellationToken);
+
+                // Actually remove
                 _context.Persons.Remove(person);
 
                 if (externalIdentity != null)
