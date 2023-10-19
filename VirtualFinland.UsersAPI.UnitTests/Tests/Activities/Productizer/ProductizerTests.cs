@@ -2,7 +2,7 @@ using FluentAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Logging;
 using Moq;
-using VirtualFinland.UserAPI.Activities.Productizer.Operations;
+using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
@@ -17,16 +17,16 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var query = new GetUser.Query(requestAuthenticatedUser);
-        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
+        var mockLogger = new Mock<ILogger<GetUserProfile.Handler>>();
+        var query = new GetUserProfile.Query(requestAuthenticatedUser);
+        var handler = new GetUserProfile.Handler(_dbContext, mockLogger.Object);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
         result.Should()
-            .Match<GetUser.User>(o =>
+            .Match<GetUserProfile.User>(o =>
                 o.DateOfBirth != null &&
                 o.Id == user.Id &&
                 o.Address!.StreetAddress == user.AdditionalInformation!.Address!.StreetAddress &&
@@ -46,20 +46,20 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLogger = new Mock<ILogger<UpdateUserProfile.Handler>>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var sut = new UpdateUserProfile.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.Should()
-            .Match<UpdateUser.User>(o =>
+            .Match<UpdateUserProfile.User>(o =>
                 o.Id == user.Id &&
                 o.FirstName == command.FirstName &&
                 o.LastName == command.LastName &&
@@ -75,7 +75,7 @@ public class ProductizerTests : APITestBase
     public async Task Should_FailUserUpdateWithMaxLengths_FluentValidation()
     {
         // Arrange
-        var validator = new UpdateUser.CommandValidator();
+        var validator = new UpdateUserProfile.CommandValidator();
         var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdateUserCommandBuilder()
             .WithFirstName(new string('*', 256))

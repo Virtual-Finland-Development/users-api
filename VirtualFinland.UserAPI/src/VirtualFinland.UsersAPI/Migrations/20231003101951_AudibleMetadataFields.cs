@@ -68,6 +68,12 @@ namespace VirtualFinland.UserAPI.Migrations
                 table: "SearchProfiles",
                 type: "jsonb",
                 nullable: true);
+
+            migrationBuilder.AddColumn<AuditableMetadata>(
+                name: "Metadata",
+                table: "TermsOfServices",
+                type: "jsonb",
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -111,6 +117,11 @@ namespace VirtualFinland.UserAPI.Migrations
             migrationBuilder.DropColumn(
                 name: "Metadata",
                 table: "SearchProfiles");
+
+            migrationBuilder.DropColumn(
+                name: "Metadata",
+                table: "TermsOfServices");
+
         }
     }
 }

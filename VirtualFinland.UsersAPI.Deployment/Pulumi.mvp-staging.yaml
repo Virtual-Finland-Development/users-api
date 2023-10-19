@@ -6,3 +6,4 @@ config:
   auth:sinuna-isEnabled: true
   auth:suomifi-isEnabled: false
   auth:testbed-isEnabled: false
+  termsOfService:isEnabled: true

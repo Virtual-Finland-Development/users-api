@@ -30,8 +30,9 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<PersonAdditionalInformation> PersonAdditionalInformation => Set<PersonAdditionalInformation>();
     public DbSet<Skills> Skills => Set<Skills>();
     public DbSet<WorkPreferences> WorkPreferences => Set<WorkPreferences>();
+    public DbSet<TermsOfService> TermsOfServices => Set<TermsOfService>();
+    public DbSet<PersonTermsOfServiceAgreement> PersonTermsOfServiceAgreements => Set<PersonTermsOfServiceAgreement>();
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
-
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -46,6 +47,7 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.ApplyConfiguration(new PersonAdditionalInformationConfiguration());
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
+        modelBuilder.ApplyConfiguration(new TermsOfServiceConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
     }

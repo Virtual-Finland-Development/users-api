@@ -46,6 +46,7 @@ public class App
             Models.Actions.Migrate => new DatabaseMigrationAction(),
             Models.Actions.InitializeDatabaseAuditLogTriggers => new DatabaseAuditLogTriggersInitializationAction(),
             Models.Actions.InitializeDatabaseUser => new DatabaseUserInitializationAction(),
+            Models.Actions.UpdateTermsOfService => new TermsOfServiceUpdateAction(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };
     }

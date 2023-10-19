@@ -27,6 +27,7 @@ class UsersApiLambdaFunction
         var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
         var aclConfig = new Config("acl");
         var authorizationConfig = new Config("auth");
+        var termsOfServiceConfig = new Config("termsOfService");
 
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("LambdaRole"), new RoleArgs
@@ -157,6 +158,9 @@ class UsersApiLambdaFunction
                     {
                         "Security__Authorization__SuomiFi__IsEnabled", authorizationConfig.Require("suomifi-isEnabled")
                     },
+                    {
+                        "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),

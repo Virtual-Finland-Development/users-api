@@ -1,6 +1,9 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
+using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer;
@@ -13,7 +16,8 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     {
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var query = new GetJobApplicantProfile.Query(requestAuthenticatedUser);
-        var sut = new GetJobApplicantProfile.Handler(_dbContext);
+        var mockLogger = new Mock<ILogger<GetJobApplicantProfile.Handler>>();
+        var sut = new GetJobApplicantProfile.Handler(_dbContext, mockLogger.Object);
 
         var actual = await sut.Handle(query, CancellationToken.None);
 
@@ -26,7 +30,9 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateJobApplicantProfile.Handler(_dbContext);
+        var mockLogger = new Mock<ILogger<UpdateJobApplicantProfile.Handler>>();
+        var occupationRepository = new MockOccupationsRepository();
+        var sut = new UpdateJobApplicantProfile.Handler(_dbContext, mockLogger.Object, occupationRepository);
 
         var actual = await sut.Handle(command, CancellationToken.None);
 

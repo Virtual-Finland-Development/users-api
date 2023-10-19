@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -54,25 +55,34 @@ public class APITestBase
             CacheRepositoryFactory = new Mock<ICacheRepositoryFactory>().Object,
         };
 
-        var applicationSecurity = new ApplicationSecurity(new List<ISecurityFeature>
-        {
-            new SecurityFeature(
-                new SecurityFeatureOptions {
-                    Issuer = requestAuthenticationCandinate.Issuer,
-                    OpenIdConfigurationUrl = "test-openid-config-url",
-                    AudienceGuard = new AudienceGuardConfig {
-                        StaticConfig = new AudienceGuardStaticConfig {
-                            IsEnabled = true,
-                            AllowedAudiences = new List<string> { requestAuthenticationCandinate.Audience }
+        var applicationSecurity = new ApplicationSecurity(
+            new TermsOfServiceRepository(GetMockedServiceProvider().Object),
+            new SecuritySetup()
+            {
+                Features = new List<ISecurityFeature>() {
+                    new SecurityFeature(
+                        new SecurityFeatureOptions {
+                            Issuer = requestAuthenticationCandinate.Issuer,
+                            OpenIdConfigurationUrl = "test-openid-config-url",
+                            AudienceGuard = new AudienceGuardConfig {
+                                StaticConfig = new AudienceGuardStaticConfig {
+                                    IsEnabled = true,
+                                    AllowedAudiences = new List<string> { requestAuthenticationCandinate.Audience }
+                                },
+                                Service = new AudienceGuardServiceConfig {
+                                    IsEnabled = false
+                                }
+                            }
                         },
-                        Service = new AudienceGuardServiceConfig {
-                            IsEnabled = false
-                        }
-                    }
+                        securityClientProviders
+                    )
                 },
-                securityClientProviders
-            )
-        });
+                Options = new SecurityOptions()
+                {
+                    TermsOfServiceAgreementRequired = false
+                }
+            }
+        );
 
         var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
@@ -84,5 +94,27 @@ public class APITestBase
         mockHttpContext.Setup(o => o.Items).Returns(new Dictionary<object, object?>());
 
         return (requestAuthenticationCandinate, authenticationService, mockHttpContext);
+    }
+
+    protected Mock<IServiceProvider> GetMockedServiceProvider()
+    {
+        var serviceProvider = new Mock<IServiceProvider>();
+        serviceProvider
+            .Setup(x => x.GetService(typeof(UsersDbContext)))
+            .Returns(_dbContext);
+
+        var serviceScope = new Mock<IServiceScope>();
+        serviceScope.Setup(x => x.ServiceProvider).Returns(serviceProvider.Object);
+
+        var serviceScopeFactory = new Mock<IServiceScopeFactory>();
+        serviceScopeFactory
+            .Setup(x => x.CreateScope())
+            .Returns(serviceScope.Object);
+
+        serviceProvider
+            .Setup(x => x.GetService(typeof(IServiceScopeFactory)))
+            .Returns(serviceScopeFactory.Object);
+
+        return serviceProvider;
     }
 }

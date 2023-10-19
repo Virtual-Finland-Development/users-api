@@ -63,7 +63,7 @@ public static class UpdateJobApplicantProfile
                     .When(x => !string.IsNullOrEmpty(x.WorkingTime));
 
                 RuleForEach(wp => wp.WorkingLanguage)
-                    .Must(x => EnumUtilities.TryParseWithMemberName<WorkingLanguage>(x, out _));
+                    .Must(x => !string.IsNullOrEmpty(x) && x.Length == 2); // TODO: Check if language code is valid ISO 639-1 code
             }
         }
 
@@ -78,6 +78,8 @@ public static class UpdateJobApplicantProfile
                 RuleFor(occupations => occupations)
                     .MustAsync(async (occupations, cancellationToken) =>
                     {
+                        if (occupations is null || !occupations.Any()) return true;
+
                         var knownOccupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
                         return occupations.Any(x =>
                         {
