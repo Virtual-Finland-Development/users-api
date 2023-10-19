@@ -2,14 +2,12 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Activities.Productizer.Operations;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
-using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer;
 
@@ -21,19 +19,15 @@ namespace VirtualFinland.UserAPI.Activities.Productizer;
 public class ProductizerController : ApiControllerBase
 {
     private readonly TestbedConsentSecurityService _consentSecurityService;
-    private readonly ILogger<ProductizerController> _logger;
-
     private readonly string _userProfileDataSourceURI;
 
     public ProductizerController(
         IMediator mediator,
         AuthenticationService authenticationService,
         TestbedConsentSecurityService consentSecurityService,
-        ILogger<ProductizerController> logger,
         IConfiguration configuration) : base(mediator, authenticationService)
     {
         _consentSecurityService = consentSecurityService;
-        _logger = logger;
         _userProfileDataSourceURI = configuration["ConsentDataSources:UserProfile"] ?? throw new ArgumentNullException("ConsentDataSources:UserProfile");
     }
 
@@ -46,8 +40,8 @@ public class ProductizerController : ApiControllerBase
     public async Task<IActionResult> GetTestbedIdentityUser()
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        var RequestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);
-        return Ok(await _mediator.Send(new GetUserProfile.Query(RequestAuthenticatedUser)));
+        var requestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);
+        return Ok(await _mediator.Send(new GetUserProfile.Query(requestAuthenticatedUser)));
     }
 
     [HttpPost("/productizer/test/lassipatanen/User/Profile/Write")]
@@ -58,8 +52,8 @@ public class ProductizerController : ApiControllerBase
     public async Task<IActionResult> UpdateUser(UpdateUserProfile.Command command)
     {
         await _consentSecurityService.VerifyConsentTokenRequestHeaders(Request.Headers, _userProfileDataSourceURI);
-        var RequestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);
-        command.SetAuth(RequestAuthenticatedUser);
+        var requestAuthenticatedUser = await _authenticationService.Authenticate(HttpContext);
+        command.SetAuth(requestAuthenticatedUser);
         return Ok(await _mediator.Send(command));
     }
 
@@ -115,8 +109,8 @@ public class ProductizerController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> SaveOrUpdatePersonJobApplicantProfile(UpdateJobApplicantProfile.Command command)
     {
-        var RequestAuthenticatedUser = await AuthenticateOrRegisterPerson();
-        command.SetAuth(RequestAuthenticatedUser);
+        var requestAuthenticatedUser = await AuthenticateOrRegisterPerson();
+        command.SetAuth(requestAuthenticatedUser);
         return Ok(await _mediator.Send(command));
     }
 }
