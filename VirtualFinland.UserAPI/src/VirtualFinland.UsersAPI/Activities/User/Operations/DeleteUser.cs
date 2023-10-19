@@ -43,6 +43,11 @@ public static class DeleteUser
 
             try
             {
+                // Update the person's metadata for the delete log
+                person.Modified = DateTime.UtcNow;
+                await _context.SaveChangesAsync(request.User, cancellationToken);
+
+                // Actually remove
                 _context.Persons.Remove(person);
 
                 if (externalIdentity != null)
