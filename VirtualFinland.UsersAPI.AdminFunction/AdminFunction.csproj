@@ -21,4 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="../Data/terms-of-services.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

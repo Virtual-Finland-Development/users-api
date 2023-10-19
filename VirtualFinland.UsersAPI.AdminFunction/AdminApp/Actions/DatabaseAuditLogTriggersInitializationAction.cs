@@ -54,7 +54,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
                         RETURN NEW;
                     elsif (TG_OP = 'DELETE') then
                         RAISE LOG 'AuditLog: {action: ""%"", table: ""%"", id: ""%"", timestamp: ""%"", session: {user: ""%"", ip: ""%"", meta: ""%""}}', 
-                            TG_OP, TG_TABLE_NAME::text, NEW.""Id"", current_timestamp, session_user::text, inet_client_addr(), NEW.""Metadata"";
+                            TG_OP, TG_TABLE_NAME::text, OLD.""Id"", current_timestamp, session_user::text, inet_client_addr(), OLD.""Metadata"";
                         RETURN OLD;
                     end if;
                 END;

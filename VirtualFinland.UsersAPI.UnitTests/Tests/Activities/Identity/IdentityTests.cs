@@ -19,7 +19,8 @@ public class IdentityTests : APITestBase
         var (requestAuthenticationCandinate, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         var query = new VerifyIdentityPerson.Query(mockHttpContext.Object);
-        var handler = new VerifyIdentityPerson.Handler(authenticationService);
+        var mockLogger = new Mock<ILogger<VerifyIdentityPerson.Handler>>();
+        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLogger.Object);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -43,7 +44,8 @@ public class IdentityTests : APITestBase
         var (_, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         var query = new VerifyIdentityPerson.Query(mockHttpContext.Object);
-        var handler = new VerifyIdentityPerson.Handler(authenticationService);
+        var mockLogger = new Mock<ILogger<VerifyIdentityPerson.Handler>>();
+        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLogger.Object);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);

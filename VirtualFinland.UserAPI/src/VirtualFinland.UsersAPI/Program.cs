@@ -17,6 +17,9 @@ using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using StackExchange.Redis;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 builder.Services.AddSingleton<AnalyticsService>();
+Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
 // App runtime configuration
@@ -42,6 +46,17 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
         .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
 });
+
+// @see: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-6.0
+builder.Services.AddDataProtection()
+    .SetApplicationName("VirtualFinland.UsersAPI")
+    .PersistKeysToDbContext<UsersDbContext>();
+builder.Services.AddDataProtection().UseCryptographicAlgorithms(
+    new AuthenticatedEncryptorConfiguration
+    {
+        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+    });
 
 // Validate server configuration
 ServerConfigurationValidation.ValidateServer(builder.Configuration);
@@ -97,7 +112,10 @@ var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionSt
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
-        op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
+        op => op
+            .EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
+        );
 });
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
@@ -131,6 +149,7 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
 
 //
 // Other dependencies

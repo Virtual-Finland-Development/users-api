@@ -1,13 +1,21 @@
 shell:
 	bash
 
-test:
+restore:
+	@echo "> Restoring dependencies"
+	dotnet restore ./VirtualFinland.UsersAPI.sln
+
+test: restore
 	@echo "> Running unit tests"
 	dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
 
-migrate: build
+migrate:
 	@echo "> Running database migrations"
 	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+
+update-terms-of-service:
+	@echo "> Updating terms of service in database"
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service
 
 packages: test
 	@echo "> Ensuring local dependencies are installed"

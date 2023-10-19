@@ -34,10 +34,16 @@ public class DataspaceAudienceSecurityService
             using var response = await _httpClient.GetAsync(verifyUrl);
             response.EnsureSuccessStatusCode();
 
-            var responseData = await JsonSerializer.DeserializeAsync<AudienceVerifyResponse>(await response.Content.ReadAsStreamAsync()) ??
+            var responseData = await JsonSerializer.DeserializeAsync<AudienceVerifyResponse>(await response.Content.ReadAsStreamAsync(), new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            }) ??
                    throw new NotAuthorizedException("Could not verify audience");
 
-            if (!_config.AllowedGroups.Contains(responseData.Group)) throw new NotAuthorizedException("Audience group is not allowed");
+            if (!_config.AllowedGroups.Contains(responseData.Group))
+            {
+                throw new NotAuthorizedException("Audience group is not allowed");
+            }
 
             // Cache audience for 24 hours
             await _cacheRepository.Set(audience, responseData, TimeSpan.FromHours(24));

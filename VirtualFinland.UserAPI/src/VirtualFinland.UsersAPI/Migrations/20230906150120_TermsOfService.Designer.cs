@@ -3,45 +3,27 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 #nullable disable
 
 namespace VirtualFinland.UserAPI.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    partial class UsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230906150120_TermsOfService")]
+    partial class TermsOfService
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.23")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FriendlyName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Xml")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DataProtectionKeys");
-                });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.Address", b =>
                 {
@@ -85,9 +67,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
@@ -128,9 +107,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("InstitutionName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
-
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -196,9 +172,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(3)
                         .HasColumnType("character varying(3)");
 
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
@@ -232,9 +205,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("EscoUri")
                         .HasColumnType("text");
 
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
@@ -259,9 +229,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -300,9 +267,6 @@ namespace VirtualFinland.UserAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
@@ -340,9 +304,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<string>("Gender")
                         .HasColumnType("text");
-
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -428,9 +389,6 @@ namespace VirtualFinland.UserAPI.Migrations
                     b.Property<string>("EscoUri")
                         .HasColumnType("text");
 
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
-
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
 
@@ -490,9 +448,6 @@ namespace VirtualFinland.UserAPI.Migrations
 
                     b.Property<string>("EmploymentTypeCode")
                         .HasColumnType("text");
-
-                    b.Property<AuditableMetadata>("Metadata")
-                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Modified")
                         .HasColumnType("timestamp with time zone");
@@ -639,8 +594,7 @@ namespace VirtualFinland.UserAPI.Migrations
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.PersonAdditionalInformation", b =>
                 {
-                    b.Navigation("Address")
-                        .IsRequired();
+                    b.Navigation("Address");
                 });
 
             modelBuilder.Entity("VirtualFinland.UserAPI.Models.UsersDatabase.TermsOfService", b =>

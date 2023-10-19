@@ -20,6 +20,7 @@ public class RequestAuthenticatedUser : RequestAuthenticationCandinate
         IdentityId = requestAuthenticationCandinate.IdentityId;
         Issuer = requestAuthenticationCandinate.Issuer;
         Audience = requestAuthenticationCandinate.Audience;
+        TraceId = requestAuthenticationCandinate.TraceId;
     }
 
     public Guid PersonId { get; set; } = default!;

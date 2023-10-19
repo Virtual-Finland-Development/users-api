@@ -6,7 +6,7 @@ namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
 public class PersonAdditionalInformation : Auditable, IEntity
 {
-    public Address? Address { get; set; }
+    public Address Address { get; set; } = null!;
     public DateOnly? DateOfBirth { get; set; }
     public string? Gender { get; set; }
 

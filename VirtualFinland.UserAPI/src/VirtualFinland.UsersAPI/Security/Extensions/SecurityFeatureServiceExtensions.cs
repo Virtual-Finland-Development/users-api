@@ -40,7 +40,11 @@ public static class SecurityFeatureServiceExtensions
             features.Add(securityFeature);
         }
 
-        services.AddSingleton<IApplicationSecurity>(new ApplicationSecurity(features));
+        // Register security setup
+        services.AddSingleton(new SecuritySetup { Features = features, Options = configuration.GetSection("Security:Options").Get<SecurityOptions>() });
+
+        // Register app security instance
+        services.AddSingleton<IApplicationSecurity, ApplicationSecurity>();
 
         var authenticationBuilder = services.AddAuthentication(options =>
         {
