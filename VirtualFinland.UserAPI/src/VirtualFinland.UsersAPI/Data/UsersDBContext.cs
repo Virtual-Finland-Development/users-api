@@ -1,25 +1,22 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Data;
 
 public class UsersDbContext : DbContext, IDataProtectionKeyContext
 {
     private readonly bool _isTesting;
-    private readonly IAuditInterceptor _auditInterceptor;
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor) : base(options)
+    public UsersDbContext(DbContextOptions options) : base(options)
     {
-        _auditInterceptor = auditInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, IAuditInterceptor auditInterceptor, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
         _isTesting = isTesting;
-        _auditInterceptor = auditInterceptor;
     }
 
     public DbSet<ExternalIdentity> ExternalIdentities => Set<ExternalIdentity>();
@@ -39,7 +36,7 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor);
+
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -53,5 +50,20 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.ApplyConfiguration(new TermsOfServiceConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+    }
+
+    public Task<int> SaveChangesAsync(IRequestAuthenticationCandinate user, CancellationToken cancellationToken = new CancellationToken())
+    {
+        var audibleEntries = ChangeTracker
+            .Entries()
+            .Where(e => e.Entity is Auditable);
+
+        foreach (var entityEntry in audibleEntries)
+        {
+            if (entityEntry.Entity is Auditable auditable)
+                auditable.SetupAuditEvent(this, user);
+        }
+
+        return SaveChangesAsync(cancellationToken);
     }
 }

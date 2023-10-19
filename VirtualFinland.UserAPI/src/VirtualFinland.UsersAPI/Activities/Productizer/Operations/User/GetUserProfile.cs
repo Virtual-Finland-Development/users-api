@@ -5,22 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
+using VirtualFinland.UserAPI.Security.Models;
 
-namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;
+namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 
-public static class GetUser
+public static class GetUserProfile
 {
     [SwaggerSchema(Title = "UserRequest")]
-    public class Query : IRequest<User>
+    public class Query : AuthenticatedRequest<User>
     {
-        [SwaggerIgnore]
-        public Guid? UserId { get; }
-
-        public Query(Guid? userId)
+        public Query(RequestAuthenticatedUser RequestAuthenticatedUser) : base(RequestAuthenticatedUser)
         {
-            this.UserId = userId;
         }
     }
 
@@ -28,7 +25,7 @@ public static class GetUser
     {
         public QueryValidator()
         {
-            RuleFor(query => query.UserId).NotNull().NotEmpty();
+            RuleFor(query => query.User.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -50,11 +47,10 @@ public static class GetUser
                 .Include(p => p.Occupations)
                 .Include(p => p.WorkPreferences)
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(p => p.Id == request.UserId, cancellationToken);
+                .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
             // TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
-            _logger.LogDebug("User data retrieved for user: {DbUserId}", dbUser.Id);
 
             List<UserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is not null)
@@ -82,6 +78,8 @@ public static class GetUser
                     dbUser.WorkPreferences?.Modified
                 );
             }
+
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, "Person", request.User);
 
             return new User
             {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -17,35 +18,22 @@ public class ApiControllerBase : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    protected async Task<Guid?> GetCurrentUserId(bool verifyTermsOfServiceAgreement = true)
+    protected async Task<RequestAuthenticatedUser> Authenticate(bool verifyTermsOfServiceAgreement = true)
     {
-        return await _authenticationService.GetCurrentUserId(this.Request, verifyTermsOfServiceAgreement);
+        return await _authenticationService.Authenticate(HttpContext, verifyTermsOfServiceAgreement);
     }
 
-    /// <summary>
-    /// If user is not found in database, create new user and return users Id
-    ///  - authentication header / token should be verified before calling this method
-    /// </summary>
-    protected async Task<Guid> GetPersonIdOrCreateNewPersonWithId()
+    protected async Task<RequestAuthenticatedUser> AuthenticateOrRegisterPerson()
     {
-        Guid personId;
         try
         {
-            personId = await _authenticationService.GetCurrentUserId(Request);
+            return await _authenticationService.Authenticate(HttpContext);
         }
-        catch (Exception e)
+        catch (NotFoundException)
         {
-            if (e is not NotFoundException && e is not NotAuthorizedException)
-            {
-                throw;
-            }
-
-            var jwkToken = await _authenticationService.ParseAuthenticationHeader(Request);
-            var query = new VerifyIdentityUser.Query(jwkToken.UserId, jwkToken.Issuer);
-            var createdUser = await _mediator.Send(query);
-            personId = createdUser.Id;
+            var query = new VerifyIdentityPerson.Query(HttpContext);
+            _ = await _mediator.Send(query);
+            return HttpContext.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on registering");
         }
-
-        return personId;
     }
 }

@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminFunction", "VirtualFin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminFunction.CLI", "VirtualFinland.UsersAPI.AdminFunction.CLI\AdminFunction.CLI.csproj", "{187CAFFA-63F6-4647-8225-A5CBE560F7EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuditLogSubscription", "VirtualFinland.UsersAPI.AuditLogSubscription\AuditLogSubscription.csproj", "{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{187CAFFA-63F6-4647-8225-A5CBE560F7EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC8DC5CB-8AAB-4384-B329-E1344D463AB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

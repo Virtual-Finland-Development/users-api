@@ -26,6 +26,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+Console.WriteLine($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
 // App runtime configuration
@@ -104,7 +105,6 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
@@ -113,6 +113,7 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
         );
 });
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
 // Redis connection
@@ -125,7 +126,6 @@ ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},ab
 //
 builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
-builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
 builder.Services.AddTransient<TestbedConsentSecurityService>();
@@ -172,6 +172,7 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 
 
 app.UseSerilogRequestLogging();
+app.UseMiddleware<RequestTracingMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();

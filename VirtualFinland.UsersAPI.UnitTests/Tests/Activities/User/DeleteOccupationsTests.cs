@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 
@@ -9,10 +11,11 @@ public class DeleteOccupationsTests : APITestBase
     [Fact]
     public async Task TryingToDeleteUserOccupations_WithEmptyIdList_ShouldThrowError()
     {
-        var db = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteOccupations.Command(new List<Guid>());
-        command.SetAuth(db.user.Id);
-        var sut = new DeleteOccupations.Handler(_dbContext);
+        command.SetAuth(requestAuthenticatedUser);
+        var mockLogger = new Mock<ILogger<DeleteOccupations.Handler>>();
+        var sut = new DeleteOccupations.Handler(_dbContext, mockLogger.Object);
 
         var act = () => sut.Handle(command, default);
 
@@ -22,11 +25,12 @@ public class DeleteOccupationsTests : APITestBase
     [Fact]
     public async Task TryingToDeleteUserOccupations_WithCorrectId_ShouldNotThrowError()
     {
-        var db = await APIUserFactory.CreateAndGetLogInUser(_dbContext,
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext,
             new Guid("c03ed8cb-5aa5-41fe-89ed-f1cfad44e2f6"));
         var command = new DeleteOccupations.Command(new List<Guid> { new("c03ed8cb-5aa5-41fe-89ed-f1cfad44e2f6") });
-        command.SetAuth(db.user.Id);
-        var sut = new DeleteOccupations.Handler(_dbContext);
+        command.SetAuth(requestAuthenticatedUser);
+        var mockLogger = new Mock<ILogger<DeleteOccupations.Handler>>();
+        var sut = new DeleteOccupations.Handler(_dbContext, mockLogger.Object);
 
         var act = () => sut.Handle(command, default);
 
@@ -36,10 +40,11 @@ public class DeleteOccupationsTests : APITestBase
     [Fact]
     public async Task TryingToDeleteAllOccupations_ShouldNotThrowError()
     {
-        var db = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteOccupations.Command();
-        command.SetAuth(db.user.Id);
-        var sut = new DeleteOccupations.Handler(_dbContext);
+        command.SetAuth(requestAuthenticatedUser);
+        var mockLogger = new Mock<ILogger<DeleteOccupations.Handler>>();
+        var sut = new DeleteOccupations.Handler(_dbContext, mockLogger.Object);
 
         var act = () => sut.Handle(command, default);
 

@@ -10,6 +10,7 @@ config:
   users-api:infraStackReferenceName: infrastructure
   users-api:appArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.zip
   users-api:adminFunctionArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.AdminFunction.zip
+  users-api:auditlogSubscriptionArtifactPath: ../build-artifacts/VirtualFinland.UsersAPI.AuditLogSubscription.zip
   users-api:useRdsProxy: false
   acl:accessfinland-isEnabled: false
   acl:dataspace-isEnabled: false

@@ -7,17 +7,18 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Repositories;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
-namespace VirtualFinland.UserAPI.Activities.Productizer.Operations;
+namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 
-public static class UpdateUser
+public static class UpdateUserProfile
 {
     [SwaggerSchema(Title = "UpdateUserRequest")]
-    public class Command : IRequest<User>
+    public class Command : AuthenticatedRequest<User>
     {
         public string? FirstName { get; }
         public string? LastName { get; }
@@ -30,9 +31,6 @@ public static class UpdateUser
         public List<string>? Regions { get; }
         public string? Gender { get; }
         public DateTime? DateOfBirth { get; }
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; private set; }
 
         public Command(string? firstName,
             string? lastName,
@@ -58,11 +56,6 @@ public static class UpdateUser
             Gender = gender;
             DateOfBirth = dateOfBirth;
         }
-
-        public void SetAuth(Guid? userDbId)
-        {
-            this.UserId = userDbId;
-        }
     }
 
     public class AddressValidator : AbstractValidator<Address>
@@ -80,7 +73,7 @@ public static class UpdateUser
     {
         public CommandValidator()
         {
-            RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
             RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
@@ -118,16 +111,16 @@ public static class UpdateUser
         {
             var dbUser = await _usersDbContext.Persons
                 .Include(p => p.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(o => o.Id == request.UserId, cancellationToken);
+                .SingleAsync(o => o.Id == request.User.PersonId, cancellationToken);
 
             await VerifyUserUpdate(dbUser, request);
 
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Person", request.User);
 
             return new User
             {
@@ -176,7 +169,6 @@ public static class UpdateUser
             dbUser.AdditionalInformation.Address.ZipCode = request.Address?.ZipCode ?? dbUser.AdditionalInformation.Address.ZipCode;
             dbUser.AdditionalInformation.Address.City = request.Address?.City ?? dbUser.AdditionalInformation.Address.City;
             dbUser.AdditionalInformation.Address.Country = request.Address?.Country ?? dbUser.AdditionalInformation.Address.Country;
-            dbUser.Modified = DateTime.UtcNow;
             dbUser.AdditionalInformation.CitizenshipCode = request.CitizenshipCode ?? dbUser.AdditionalInformation.CitizenshipCode;
             dbUser.AdditionalInformation.NativeLanguageCode = request.NativeLanguageCode ?? dbUser.AdditionalInformation.NativeLanguageCode;
             dbUser.AdditionalInformation.OccupationCode = request.OccupationCode ?? dbUser.AdditionalInformation.OccupationCode;
@@ -185,7 +177,6 @@ public static class UpdateUser
             dbUser.AdditionalInformation.DateOfBirth = request.DateOfBirth.HasValue
                 ? DateOnly.FromDateTime(request.DateOfBirth.GetValueOrDefault())
                 : dbUser.AdditionalInformation.DateOfBirth;
-
         }
 
         private async Task<List<ValidationErrorDetail>> ValidateOccupationCodesLogic(Command request)
@@ -258,8 +249,6 @@ public static class UpdateUser
                     PersonId = dbUser.Id,
                     JobTitles = request.JobTitles,
                     Regions = request.Regions,
-                    Created = DateTime.UtcNow,
-                    Modified = DateTime.UtcNow,
                     IsDefault = true
                 }, cancellationToken);
 
@@ -269,7 +258,6 @@ public static class UpdateUser
             dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
             dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
             dbUserDefaultSearchProfile.IsDefault = true;
-            dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
             return dbUserDefaultSearchProfile;
         }

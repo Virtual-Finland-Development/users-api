@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace VirtualFinland.UserAPI.Models.UsersDatabase;
 
-public class SearchProfile : IEntity
+public class SearchProfile : Auditable, IEntity
 {
     [Required]
     public Guid PersonId { get; set; }
@@ -17,7 +17,4 @@ public class SearchProfile : IEntity
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-
-    public DateTime Created { get; set; }
-    public DateTime Modified { get; set; }
 }

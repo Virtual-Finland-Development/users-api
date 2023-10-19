@@ -6,9 +6,10 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 using Address = VirtualFinland.UserAPI.Models.Shared.Address;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -16,7 +17,7 @@ namespace VirtualFinland.UserAPI.Activities.User.Operations;
 public static class UpdateUser
 {
     [SwaggerSchema(Title = "UpdateUserRequest")]
-    public class Command : IRequest<User>
+    public class Command : AuthenticatedRequest<User>
     {
         public string? FirstName { get; }
         public string? LastName { get; }
@@ -31,9 +32,6 @@ public static class UpdateUser
         public DateTime? DateOfBirth { get; }
         public List<UpdateUserRequestOccupation>? Occupations { get; }
         public UpdateUserRequestWorkPreferences? WorkPreferences { get; }
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; private set; }
 
         public Command(
             string? firstName,
@@ -64,11 +62,6 @@ public static class UpdateUser
             DateOfBirth = dateOfBirth;
             Occupations = occupations;
             WorkPreferences = workPreferences;
-        }
-
-        public void SetAuth(Guid? userDbId)
-        {
-            UserId = userDbId;
         }
     }
 
@@ -110,7 +103,7 @@ public static class UpdateUser
     {
         public CommandValidator()
         {
-            RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
             RuleFor(command => command.FirstName).MaximumLength(255);
             RuleFor(command => command.LastName).MaximumLength(255);
             RuleFor(command => command.Address).SetValidator(new AddressValidator()!);
@@ -151,16 +144,17 @@ public static class UpdateUser
                 .Include(u => u.WorkPreferences)
                 .Include(u => u.Occupations)
                 .Include(u => u.AdditionalInformation).ThenInclude(ai => ai!.Address)
-                .SingleAsync(o => o.Id == request.UserId, cancellationToken);
+                .SingleAsync(o => o.Id == request.User.PersonId, cancellationToken);
 
             await VerifyUserUpdate(dbUser, request);
+
 
             var dbUserDefaultSearchProfile = await _usersDbContext.SearchProfiles.FirstOrDefaultAsync(o => o.IsDefault && o.PersonId == dbUser.Id, cancellationToken);
             dbUserDefaultSearchProfile = await VerifyUserSearchProfile(dbUserDefaultSearchProfile, dbUser, request, cancellationToken);
 
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            _logger.LogDebug("User data updated for user: {DbUserId}", dbUser.Id);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Person", request.User);
 
             List<UpdateUserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is { Count: > 0 })
@@ -392,8 +386,6 @@ public static class UpdateUser
                     PersonId = dbUser.Id,
                     JobTitles = request.JobTitles,
                     Regions = request.Regions,
-                    Created = DateTime.UtcNow,
-                    Modified = DateTime.UtcNow,
                     IsDefault = true
                 }, cancellationToken);
 
@@ -403,7 +395,6 @@ public static class UpdateUser
             dbUserDefaultSearchProfile.JobTitles = request.JobTitles ?? dbUserDefaultSearchProfile.JobTitles;
             dbUserDefaultSearchProfile.Regions = request.Regions ?? dbUserDefaultSearchProfile.Regions;
             dbUserDefaultSearchProfile.IsDefault = true;
-            dbUserDefaultSearchProfile.Modified = DateTime.UtcNow;
 
             return dbUserDefaultSearchProfile;
         }

@@ -3,42 +3,40 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class AddOccupations
 {
-    public class Command : IRequest<List<AddOccupationsResponse>>
+    public class Command : AuthenticatedRequest<List<AddOccupationsResponse>>
     {
         public Command(List<AddOccupationsRequest> occupations)
         {
             Occupations = occupations;
         }
 
-        [SwaggerIgnore] public Guid? UserId { get; private set; }
         public List<AddOccupationsRequest> Occupations { get; init; }
-
-        public void SetAuth(Guid? userDatabaseIdentifier)
-        {
-            UserId = userDatabaseIdentifier;
-        }
     }
 
     public class Handler : IRequestHandler<Command, List<AddOccupationsResponse>>
     {
         private readonly UsersDbContext _usersDbContext;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
 
         public async Task<List<AddOccupationsResponse>> Handle(Command request, CancellationToken cancellationToken)
         {
             var user = _usersDbContext.Persons
                 .Include(u => u.Occupations)
-                .FirstOrDefault(u => u.Id == request.UserId);
+                .FirstOrDefault(u => u.Id == request.User.PersonId);
 
             foreach (var occupation in request.Occupations)
             {
@@ -57,7 +55,8 @@ public static class AddOccupations
                 .Select(x => x.Entity)
                 .ToList();
 
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Occupations", request.User);
 
             var addedOccupations = new List<AddOccupationsResponse>();
             foreach (Models.UsersDatabase.Occupation entry in addedEntries)

@@ -2,7 +2,7 @@ using StackExchange.Redis;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
 
-class CacheRepositoryFactory : ICacheRepositoryFactory
+public class CacheRepositoryFactory : ICacheRepositoryFactory
 {
     private readonly IDatabase _database;
     private readonly string _factoryKeyPrefix;
@@ -16,7 +16,6 @@ class CacheRepositoryFactory : ICacheRepositoryFactory
 
     public ICacheRepository Create(string keyPrefix = "")
     {
-
         return new CacheRepository(_database, $"{_factoryKeyPrefix}{keyPrefix}");
     }
 }

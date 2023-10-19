@@ -1,4 +1,5 @@
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Kms;
 using Pulumi.Aws.Rds;
 using Pulumi.Aws.Rds.Inputs;
@@ -15,15 +16,15 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 public class PostgresDatabase
 {
-    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         if (stackSetup.IsProductionEnvironment)
         {
-            SetupProductionPostgresDatabase(config, stackSetup, vpcSetup);
+            SetupProductionPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
         else
         {
-            SetupDevelopmentPostgresDatabase(config, stackSetup, vpcSetup);
+            SetupDevelopmentPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
 
         if (config.GetBoolean("useRdsProxy") == true)
@@ -36,7 +37,7 @@ public class PostgresDatabase
     /// <summary>
     ///  Setup AWS Aurora RDS Serverless V2 for postgresql
     /// </summary>
-    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public void SetupProductionPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("database-subnets"), new()
         {
@@ -95,6 +96,7 @@ public class PostgresDatabase
             DbSubnetGroupName = dbSubNetGroup.Name,
             Tags = stackSetup.Tags,
             BackupRetentionPeriod = 7, // @TODO: Define for production
+            EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
         var dbInstanceIdentifier = stackSetup.CreateResourceName("database-instance");
@@ -112,12 +114,14 @@ public class PostgresDatabase
         DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = dbInstance.Identifier;
+
+        LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"), 3);
     }
 
     /// <summary>
     /// Setup AWS RDS for postgresql
     /// </summary>
-    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup)
+    public void SetupDevelopmentPostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
         var dbSubNetGroup = new SubnetGroup(stackSetup.CreateResourceName("dbsubnets"), new()
         {
@@ -153,13 +157,16 @@ public class PostgresDatabase
             Password = DbAdminPassword,
             Tags = stackSetup.Tags,
             PubliclyAccessible = false,
-            SkipFinalSnapshot = true
+            SkipFinalSnapshot = true,
+            EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 
         var DbEndpoint = rdsPostgreSqlInstance.Endpoint;
         DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = rdsPostgreSqlInstance.Identifier;
+
+        LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
 
     /// <summary>
@@ -194,9 +201,23 @@ public class PostgresDatabase
         );
     }
 
+    public void InvokeInitialDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
+    {
+        var invokePayload = JsonSerializer.Serialize(new
+        {
+            action = "InitializeDatabaseAuditLogTriggers",
+        });
+
+        _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitializeDatabaseAuditLogTriggers"), new()
+        {
+            Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
+        });
+    }
+
     public Output<string> DBIdentifier = default!;
     public string DbUsername = default!;
     public Output<string> DbPassword = default!;
     public Output<string> DatabaseConnectionString = default!;
     public Output<string> DatabaseAdminConnectionString = default!;
+    public LogGroup LogGroup = default!;
 }

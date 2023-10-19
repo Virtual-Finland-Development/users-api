@@ -4,30 +4,29 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
 public static class GetJobApplicantProfile
 {
-    public class Query : IRequest<PersonJobApplicantProfileResponse>
+    public class Query : AuthenticatedRequest<PersonJobApplicantProfileResponse>
     {
-        public Query(Guid? personId)
+        public Query(RequestAuthenticatedUser RequestAuthenticatedUser) : base(RequestAuthenticatedUser)
         {
-            PersonId = personId;
         }
-
-        [SwaggerIgnore]
-        public Guid? PersonId { get; }
     }
 
     public class Handler : IRequestHandler<Query, PersonJobApplicantProfileResponse>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, ILogger<Handler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<PersonJobApplicantProfileResponse> Handle(Query request, CancellationToken cancellationToken)
@@ -40,7 +39,9 @@ public static class GetJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.PersonId, cancellationToken);
+                .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
+
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, "JobApplicantProfile", request.User);
 
             return new PersonJobApplicantProfileResponse
             {

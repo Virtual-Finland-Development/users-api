@@ -2,13 +2,13 @@ using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations.TermsOfServiceAgreement;
 
 public static class UpdatePersonServiceTermsAgreement
 {
-    public class Command : IRequest<UpdatePersonServiceTermsAgreementResponse>
+    public class Command : AuthenticatedRequest<UpdatePersonServiceTermsAgreementResponse>
     {
         public Command(string version, bool accepted)
         {
@@ -16,16 +16,8 @@ public static class UpdatePersonServiceTermsAgreement
             Accepted = accepted;
         }
 
-        [SwaggerIgnore]
-        public Guid PersonId { get; set; }
-
         public string Version { get; }
         public bool Accepted { get; }
-
-        public void SetAuth(Guid personId)
-        {
-            PersonId = personId;
-        }
     }
 
     public class Handler : IRequestHandler<Command, UpdatePersonServiceTermsAgreementResponse>
@@ -47,7 +39,7 @@ public static class UpdatePersonServiceTermsAgreement
             var requestedTermsOfService = request.Version == latestTermsOfService.Version ? latestTermsOfService : await _termsOfServiceRepository.GetTermsOfServiceByVersion(request.Version) ?? throw new BadRequestException("Terms of service not found");
 
             // Fetch persons existing agreements
-            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.PersonId);
+            var existingAgreements = await _termsOfServiceRepository.GetAllTermsOfServiceAgreementsByPersonId(request.User.PersonId);
 
             // Resolve the requested person tos agreement
             var requestedTosAgreement = existingAgreements.SingleOrDefault(t => t.TermsOfServiceId == requestedTermsOfService.Id);
@@ -67,7 +59,7 @@ public static class UpdatePersonServiceTermsAgreement
 
                 if (requestedTosAgreement is null)
                 {
-                    await _termsOfServiceRepository.AddNewTermsOfServiceAgreement(requestedTermsOfService, request.PersonId);
+                    await _termsOfServiceRepository.AddNewTermsOfServiceAgreement(requestedTermsOfService, request.User.PersonId);
                     acceptedAt = DateTime.UtcNow;
                 }
             }

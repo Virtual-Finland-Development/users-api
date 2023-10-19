@@ -1,10 +1,8 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
-using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UserAPI.Activities.Identity;
 
@@ -25,15 +23,13 @@ public class IdentityController : ControllerBase
     [SwaggerOperation(Summary = "Verifies the existence of a user that was identified by an external identity provider.",
         Description =
             "Given the access token from an external identity provider, the operation tries to find if the user exists in the system database and creates the user into the system. Notice: The user can't access the API other paths without being created into the system with this call.")]
-    [ProducesResponseType(typeof(VerifyIdentityUser.User), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(VerifyIdentityPerson.User), StatusCodes.Status200OK)]
     [ProducesErrorResponseType(typeof(ProblemDetails))]
-    public async Task<IActionResult> VerifyIdentityUser()
+    public async Task<IActionResult> VerifyIdentityPerson()
     {
         var user = await _mediator.Send(
-            new VerifyIdentityUser.Query(
-                this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                this.User.FindFirst(Constants.Web.ClaimUserId)?.Value,
-                this.User.Claims.First().Issuer
+            new VerifyIdentityPerson.Query(
+                HttpContext
             )
         );
 

@@ -23,5 +23,6 @@ public static class Constants
         public static string XConsentToken => "x-consent-token";
         public static string XconsentDataSource => "x-consent-data-source";
         public static string XconsentUserId => "x-consent-user-id";
+        public static string XRequestTraceId => "x-request-trace-id";
     }
 }

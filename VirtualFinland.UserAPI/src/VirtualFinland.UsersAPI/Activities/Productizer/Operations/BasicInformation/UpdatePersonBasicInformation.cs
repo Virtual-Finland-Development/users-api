@@ -3,13 +3,15 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 
 public static class UpdatePersonBasicInformation
 {
-    public class Command : IRequest<UpdatePersonBasicInformationResponse>
+    public class Command : AuthenticatedRequest<UpdatePersonBasicInformationResponse>
     {
         public Command(string? givenName, string? lastName, string email, string? phoneNumber, string residency)
         {
@@ -20,34 +22,28 @@ public static class UpdatePersonBasicInformation
             Residency = residency;
         }
 
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
         public string? GivenName { get; }
         public string? LastName { get; }
         public string Email { get; }
         public string? PhoneNumber { get; }
         public string? Residency { get; }
-
-        public void SetAuth(Guid? userDatabaseId)
-        {
-            UserId = userDatabaseId;
-        }
     }
 
     public class Handler : IRequestHandler<Command, UpdatePersonBasicInformationResponse>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, ILogger<Handler> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
             CancellationToken cancellationToken)
         {
-            var person = await _context.Persons.SingleAsync(p => p.Id == request.UserId, cancellationToken);
+            var person = await _context.Persons.SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
             person.GivenName = request.GivenName ?? person.GivenName;
             person.LastName = request.LastName ?? person.LastName;
@@ -57,13 +53,14 @@ public static class UpdatePersonBasicInformation
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(request.User, cancellationToken);
             }
             catch (DbUpdateException e)
             {
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Person", request.User);
 
             return new UpdatePersonBasicInformationResponse
             (

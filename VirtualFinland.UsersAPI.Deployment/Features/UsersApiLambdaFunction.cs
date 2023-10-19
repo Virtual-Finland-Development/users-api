@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
@@ -15,7 +16,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -167,6 +168,9 @@ class UsersApiLambdaFunction
             Tags = stackSetup.Tags
         });
 
+        // Configure log group with retention of 180 days
+        LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource, 180);
+
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
     }
@@ -174,4 +178,5 @@ class UsersApiLambdaFunction
     public Function LambdaFunctionResource = default!;
     public Output<string> LambdaFunctionArn = default!;
     public Output<string> LambdaFunctionId = default!;
+    public LogGroup LogGroup = default!;
 }

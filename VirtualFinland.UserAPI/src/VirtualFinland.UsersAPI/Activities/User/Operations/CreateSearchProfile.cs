@@ -3,22 +3,21 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class CreateSearchProfile
 {
     [SwaggerSchema(Title = "CreateSearchProfileRequest")]
-    public class Command : IRequest<SearchProfile>
+    public class Command : AuthenticatedRequest<SearchProfile>
     {
         public List<string> JobTitles { get; }
         public List<string> Regions { get; }
-        
+
         public string? Name { get; }
-        
-        [SwaggerIgnore]
-        public Guid? UserId { get; private set; }
 
         public Command(List<string> jobTitles, List<string> regions, string? name)
         {
@@ -26,18 +25,13 @@ public static class CreateSearchProfile
             this.Regions = regions;
             this.Name = name;
         }
-        
-        public void SetAuth(Guid? userDbId)
-        {
-            this.UserId = userDbId;
-        }
     }
-    
+
     public class CommandValidator : AbstractValidator<Command>
     {
         public CommandValidator()
         {
-            RuleFor(command => command.UserId).NotNull().NotEmpty();
+            RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
         }
     }
 
@@ -54,8 +48,8 @@ public static class CreateSearchProfile
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
         {
-            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.UserId, cancellationToken: cancellationToken);
-            
+            var dbUser = await _usersDbContext.Persons.SingleAsync(o => o.Id == request.User.PersonId, cancellationToken: cancellationToken);
+
             var dbNewSearchProfile = await _usersDbContext.SearchProfiles.AddAsync(new Models.UsersDatabase.SearchProfile()
             {
                 Name = request.Name ?? request.JobTitles.FirstOrDefault(),
@@ -67,8 +61,8 @@ public static class CreateSearchProfile
             }, cancellationToken);
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
-            
-            _logger.LogDebug("Search Profile Created: {SearchProfileId}", dbNewSearchProfile.Entity.Id);
+
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "SearchProfile", request.User);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }

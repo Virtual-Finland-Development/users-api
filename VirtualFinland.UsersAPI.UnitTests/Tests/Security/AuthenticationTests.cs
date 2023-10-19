@@ -1,73 +1,64 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using Moq.Protected;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Models;
-using VirtualFinland.UserAPI.Security.Configurations;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
 public class AuthenticationTests : APITestBase
 {
     [Fact]
-    public async Task Should_FailIfTokenClaimsNotInUsersDb()
+    public async Task Should_FailAuthVerificationIfEmptyToken()
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockHttpRequest = new Mock<HttpRequest>();
-        var mockHeaders = new Mock<IHeaderDictionary>();
-        var mockConfiguration = new Mock<IConfiguration>();
+
+        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
-
+        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var mockHttpRequest = new Mock<HttpRequest>();
+        var mockHeaders = new Mock<IHeaderDictionary>();
+        var mockHttpContext = new Mock<HttpContext>();
         mockHeaders.Setup(o => o.Authorization).Returns("");
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
-
-        var authenticationService = new AuthenticationService(userSecurityService);
+        mockHttpContext.Setup(o => o.Request).Returns(mockHttpRequest.Object);
 
         // Act
-        var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var act = () => authenticationService.Authenticate(mockHttpContext.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
     }
 
     [Fact]
-    public async Task Should_FailAuthVerificationIfEmptyToken()
+    public async Task Should_FailIfUnknownToken()
     {
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var mockHttpRequest = new Mock<HttpRequest>();
-        var mockHttpClientFactory = new Mock<IHttpClientFactory>();
         var mockHeaders = new Mock<IHeaderDictionary>();
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage { });
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        mockHeaders.Setup(o => o.Authorization).Returns("");
-        mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        var mockHttpContext = new Mock<HttpContext>();
+        mockHeaders.Setup(o => o.Authorization).Returns("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
         mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
+        mockHttpContext.Setup(o => o.Request).Returns(mockHttpRequest.Object);
 
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
-        var authenticationService = new AuthenticationService(userSecurityService);
+        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+
         // Act
-        var act = () => authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var act = () => authenticationService.Authenticate(mockHttpContext.Object);
 
         // Assert
         await act.Should().ThrowAsync<NotAuthorizedException>();
@@ -77,69 +68,13 @@ public class AuthenticationTests : APITestBase
     public async Task Should_SuccessInAuthVerification()
     {
         // Arrange
-        var dbEntity = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockHttpRequest = new Mock<HttpRequest>();
-        var mockHttpClientFactory = new Mock<IHttpClientFactory>();
-        var mockHeaders = new Mock<IHeaderDictionary>();
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage { });
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-
-        // Create mock jwt token
-        var idToken = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
-            dbEntity.externalIdentity.Issuer,
-            "test-audience",
-            new List<Claim>
-            {
-                new("sub", dbEntity.externalIdentity.IdentityId ?? throw new Exception("IdentityId is null")),
-            },
-            DateTime.Now,
-            DateTime.Now.AddDays(1),
-            new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
-        ));
-
-        mockHeaders.Setup(o => o.Authorization).Returns($"Bearer {idToken}");
-        mockHttpClientFactory.Setup(o => o.CreateClient(It.IsAny<string>())).Returns(httpClient);
-        mockHttpRequest.Setup(o => o.Headers).Returns(mockHeaders.Object);
-        var securityClientProviders = new SecurityClientProviders()
-        {
-            HttpClient = new Mock<HttpClient>().Object,
-            CacheRepositoryFactory = new Mock<ICacheRepositoryFactory>().Object,
-        };
-
-        var mockConfiguration = new Mock<IConfiguration>();
-        var features = new List<ISecurityFeature>
-        {
-            new SecurityFeature(
-                new SecurityFeatureOptions {
-                    Issuer = dbEntity.externalIdentity.Issuer,
-                    OpenIdConfigurationUrl = "test-openid-config-url",
-                    AudienceGuard = new AudienceGuardConfig
-                    {
-                        StaticConfig = new AudienceGuardStaticConfig
-                        {
-                            IsEnabled = true,
-                            AllowedAudiences = new List<string> { "test-audience" }
-                        },
-                        Service = new AudienceGuardServiceConfig {
-                            IsEnabled = false
-                        }
-                    }
-                },
-                securityClientProviders
-            )
-        };
-
-        var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var userSecurityService = new UserSecurityService(_dbContext, applicationSecurity);
-        var authenticationService = new AuthenticationService(userSecurityService);
+        var (person, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (_, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         // Act
-        var result = await authenticationService.GetCurrentUserId(mockHttpRequest.Object);
+        var result = await authenticationService.Authenticate(mockHttpContext.Object);
 
         // Assert
-        result.Should().Be(dbEntity.user.Id);
+        result.PersonId.Should().Be(person.Id);
     }
 }

@@ -25,6 +25,8 @@ packages: test
 	dotnet lambda package --project-location ./VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI --output-package ./build-artifacts/VirtualFinland.UsersAPI.zip
 	@echo "> Building and packaging deployment package for the admin functions"
 	dotnet lambda package --project-location ./VirtualFinland.UsersAPI.AdminFunction --output-package ./build-artifacts/VirtualFinland.UsersAPI.AdminFunction.zip
+	@echo "> Building and packaging deployment package for the audit log subscription function"
+	dotnet lambda package --project-location ./VirtualFinland.UsersAPI.AuditLogSubscription --output-package ./build-artifacts/VirtualFinland.UsersAPI.AuditLogSubscription.zip
 
 deploy: packages
 	pulumi -C ./VirtualFinland.UsersAPI.Deployment up

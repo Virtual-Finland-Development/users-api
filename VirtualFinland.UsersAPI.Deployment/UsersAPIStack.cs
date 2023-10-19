@@ -34,27 +34,32 @@ public class UsersApiStack : Stack
             Tags = tags,
         };
 
+        var cloudwatch = new CloudWatch(stackSetup);
         var vpcSetup = new VpcSetup(stackSetup);
-        var database = new PostgresDatabase(config, stackSetup, vpcSetup);
+        var database = new PostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
         var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
+        var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
         var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
+        AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
         var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
         AdminFunctionArn = adminFunction.LambdaFunction.Arn;
 
         // Ensure database user 
         database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
+        // Ensure database audit log triggers
+        database.InvokeInitialDatabaseAuditLogTriggersSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
-    private bool IsProductionEnvironment()
+    private static bool IsProductionEnvironment()
     {
         var stackName = Pulumi.Deployment.Instance.StackName;
         return stackName switch
@@ -71,4 +76,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
     [Output] public Output<string>? AdminFunctionArn { get; set; }
+    [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
 }

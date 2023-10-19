@@ -1,22 +1,19 @@
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data.Repositories;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations.TermsOfServiceAgreement;
 
 public static class GetPersonServiceTermsAgreement
 {
     [SwaggerSchema(Title = "GetPersonServiceTermsAgreement")]
-    public class Query : IRequest<GetPersonServiceTermsAgreementResponse>
+    public class Query : AuthenticatedRequest<GetPersonServiceTermsAgreementResponse>
     {
-        public Query(Guid personId)
+        public Query(RequestAuthenticatedUser requestAuthenticatedUser) : base(requestAuthenticatedUser)
         {
-            PersonId = personId;
         }
-
-        [SwaggerIgnore]
-        public Guid PersonId { get; }
     }
 
     public class Handler : IRequestHandler<Query, GetPersonServiceTermsAgreementResponse>
@@ -34,7 +31,7 @@ public static class GetPersonServiceTermsAgreement
             var termsOfService = await _termsOfServiceRepository.GetNewestTermsOfService();
 
             // Fetch the persons latest agreement
-            var latestExistingAgreement = await _termsOfServiceRepository.GetTheLatestTermsOfServiceAgreementByPersonId(request.PersonId);
+            var latestExistingAgreement = await _termsOfServiceRepository.GetTheLatestTermsOfServiceAgreementByPersonId(request.User.PersonId);
 
             // Has accepted
             var hasAcceptedLatest = latestExistingAgreement?.TermsOfServiceId == termsOfService.Id;

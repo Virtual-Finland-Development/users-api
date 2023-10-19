@@ -7,15 +7,16 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
 public static class UpdateJobApplicantProfile
 {
-    public class Command : IRequest<Request>
+    public class Command : AuthenticatedRequest<Request>
     {
         public Command(
             List<Request.Occupation> occupations,
@@ -42,15 +43,6 @@ public static class UpdateJobApplicantProfile
         public List<Request.Certification> Certifications { get; }
         public List<string> Permits { get; }
         public Request.WorkPreferenceValues WorkPreferences { get; }
-
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
-        public void SetAuth(Guid? userDatabaseId)
-        {
-            UserId = userDatabaseId;
-        }
 
         private sealed class WorkPreferencesValidator : AbstractValidator<Request.WorkPreferenceValues>
         {
@@ -102,7 +94,7 @@ public static class UpdateJobApplicantProfile
         {
             public CommandValidator()
             {
-                RuleFor(command => command.UserId).NotNull().NotEmpty();
+                RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
                 RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator());
             }
         }
@@ -111,11 +103,14 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
+        private readonly ILogger<Handler> _logger;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext context, IOccupationsFlatRepository occupationsFlatRepository)
+
+        public Handler(UsersDbContext context, ILogger<Handler> logger, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _context = context;
+            _logger = logger;
             _occupationsFlatRepository = occupationsFlatRepository;
         }
 
@@ -133,9 +128,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .FirstOrDefaultAsync(p => p.Id == command.UserId, cancellationToken);
-
-            if (person is null) throw new NotFoundException();
+                .FirstOrDefaultAsync(p => p.Id == command.User.PersonId, cancellationToken) ?? throw new NotFoundException();
 
             person.Occupations = command.Occupations.Select(x => new Occupation
             {
@@ -198,17 +191,19 @@ public static class UpdateJobApplicantProfile
             }
 
             person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
+
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(command.User, cancellationToken);
             }
             catch (DbUpdateException e)
             {
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "JobApplicantProfile", command.User);
 
             return new Response
             {

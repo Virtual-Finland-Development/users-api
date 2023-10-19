@@ -3,41 +3,39 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class UpdateOccupations
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
         public Command(List<Occupation> occupations)
         {
             Occupations = occupations;
         }
 
-        [SwaggerIgnore] public Guid? UserId { get; private set; }
         public List<Occupation> Occupations { get; init; }
-
-        public void SetAuth(Guid? userDatabaseIdentifier)
-        {
-            UserId = userDatabaseIdentifier;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
+        private readonly ILogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext)
+        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
         {
             _usersDbContext = usersDbContext;
+            _logger = logger;
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupationsToUpdate = await _usersDbContext.Occupations
-                .Where(o => o.PersonId == request.UserId)
+                .Where(o => o.PersonId == request.User.PersonId)
                 .Where(o => request.Occupations.Select(e => e.Id).Contains(o.Id))
                 .ToListAsync(cancellationToken);
 
@@ -51,7 +49,8 @@ public static class UpdateOccupations
                 editable.WorkMonths = occupation.WorkMonths ?? editable.WorkMonths;
             }
 
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, "Occupations", request.User);
 
             return Unit.Value;
         }

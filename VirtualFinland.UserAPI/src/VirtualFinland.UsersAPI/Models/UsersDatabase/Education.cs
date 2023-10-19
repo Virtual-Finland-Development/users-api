@@ -24,7 +24,7 @@ public class Education : Auditable, IEntity
 
     [MaxLength(256)]
     public string? Name { get; set; }
-    
+
     [MaxLength(1)]
     public string? EducationLevelCode { get; set; }
 
