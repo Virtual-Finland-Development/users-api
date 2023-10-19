@@ -18,11 +18,13 @@ public class AuditableMetadata
         TraceId = user.TraceId;
         Issuer = user.Issuer;
         Audience = user.Audience;
+        EventTime = DateTime.UtcNow;
     }
 
     public string? TraceId { get; set; }
     public string? Issuer { get; set; }
     public string? Audience { get; set; }
+    public DateTime EventTime { get; set; }
 
     public override string ToString()
     {
