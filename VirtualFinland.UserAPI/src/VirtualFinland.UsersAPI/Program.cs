@@ -178,7 +178,7 @@ app.UseSerilogRequestLogging(options =>
         if (httpContext.Items["Exception"] is Exception exception)
         {
             // Add the exception to the log context, omit the stack trace
-            diagnosticContext.Set("$x", $"{exception.GetType().Name}: {exception.Message}");
+            diagnosticContext.Set("@x", $"{exception.GetType().Name}: {exception.Message}");
         }
     };
 });
