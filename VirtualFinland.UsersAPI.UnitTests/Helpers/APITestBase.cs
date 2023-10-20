@@ -49,7 +49,7 @@ public class APITestBase
             new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
         ));
 
-        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory<AuthenticationService>();
+        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory();
         var securityClientProviders = new SecurityClientProviders()
         {
             HttpClient = new Mock<HttpClient>().Object,
@@ -119,7 +119,7 @@ public class APITestBase
         return serviceProvider;
     }
 
-    protected AnalyticsServiceFactory GetMockedAnalyticsServiceFactory<T>()
+    protected AnalyticsServiceFactory GetMockedAnalyticsServiceFactory()
     {
         var loggerFactory = new Mock<ILoggerFactory>();
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);

@@ -1,10 +1,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
@@ -19,7 +16,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<GetUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var query = new GetUser.Query(requestAuthenticatedUser);
         var handler = new GetUser.Handler(_dbContext, mockLoggerFactory);
 
@@ -47,7 +44,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -80,7 +77,7 @@ public class UserTests : APITestBase
         var command = new DeleteUser.Command();
         command.SetAuth(requestAuthenticatedUser);
 
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<DeleteUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var sut = new DeleteUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
@@ -95,7 +92,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -116,7 +113,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -137,7 +134,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -158,7 +155,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -178,7 +175,7 @@ public class UserTests : APITestBase
     public async Task Should_FailUserCheckWithNonExistingUserIdAsync()
     {
         // Arrange
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();

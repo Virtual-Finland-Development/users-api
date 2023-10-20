@@ -1,9 +1,6 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
@@ -18,7 +15,7 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<GetUserProfile.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var query = new GetUserProfile.Query(requestAuthenticatedUser);
         var handler = new GetUserProfile.Handler(_dbContext, mockLoggerFactory);
 
@@ -47,7 +44,7 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUserProfile.Handler>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
