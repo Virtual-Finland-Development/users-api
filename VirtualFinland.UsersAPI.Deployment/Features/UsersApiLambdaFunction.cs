@@ -193,11 +193,18 @@ class UsersApiLambdaFunction
             SourceArn = Output.Format($"{LogGroup.Arn}:*"),
         }, new() { DependsOn = { LogGroup } });
 
-        // Subscribe to the log group
-        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("ErrorAlerterSubscriptionFilter"), new LogSubscriptionFilterArgs
+        // Subscribe to the log groups
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("StatusCodeAlert"), new LogSubscriptionFilterArgs
         {
             LogGroup = LogGroup.Name,
-            FilterPattern = "$.StatusCode >= 422 || %Task timed out%",
+            FilterPattern = "{ $.StatusCode > 401 }", // Users API should not encounter errors with status code > 401, for example validation errors not expected
+            DestinationArn = errorLambdaFunctionArn,
+        }, new() { DependsOn = { logGroupInvokePermission } });
+
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("TaskTimedOutAlert"), new LogSubscriptionFilterArgs
+        {
+            LogGroup = LogGroup.Name,
+            FilterPattern = "%Task timed out%", // Users API should not encounter timeouts
             DestinationArn = errorLambdaFunctionArn,
         }, new() { DependsOn = { logGroupInvokePermission } });
     }
