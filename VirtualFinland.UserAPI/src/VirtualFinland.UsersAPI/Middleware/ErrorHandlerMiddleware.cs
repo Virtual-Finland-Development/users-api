@@ -23,6 +23,10 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
+            // Attach exception to the request context for request logger middleware
+            context.Items.Add("Exception", error);
+
+            // Write the error response
             switch (error)
             {
                 case NotAuthorizedException:

@@ -171,7 +171,17 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 }
 
 
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        if (httpContext.Items["Exception"] is Exception exception)
+        {
+            // Add the exception to the log context, omit the stack trace
+            diagnosticContext.Set("$x", $"{exception.GetType().Name}: {exception.Message}");
+        }
+    };
+});
 app.UseMiddleware<RequestTracingMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
