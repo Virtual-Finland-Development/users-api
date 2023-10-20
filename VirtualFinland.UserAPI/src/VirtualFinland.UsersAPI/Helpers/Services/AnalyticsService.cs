@@ -21,32 +21,31 @@ public class AnalyticsService<T> : ILogger<T>
     /// <returns></returns>
     public void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
-        eventContextName ??= ParseHandlerTypeContextName();
+        eventContextName = ParseHandlerTypeContextName(eventContextName);
+        var auditEventFormatted = auditEvent.ToString().ToLower();
 
-        _logger.LogInformation("AuditLog: {auditEvent} ({eventContextName}) on {userInfo}",
-            auditEvent.ToString().ToUpper(),
-            eventContextName,
-            requestAuthenticatedUser
+        _logger.LogInformation("AuditLog: {auditEventFormatted}-event on {userInfo} from {eventContextName}",
+            auditEventFormatted,
+            requestAuthenticatedUser,
+            eventContextName
         );
-        if (eventContextName == "Person" && (auditEvent == AuditLogEvent.Create || auditEvent == AuditLogEvent.Delete))
+
+        //
+        // Analytics events for the Persons table inserts and deletes
+        //
+        var personsTableCountChangedEventContextNames = new[] {
+            "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson",
+            "DeleteUser",
+        };
+        if (personsTableCountChangedEventContextNames.Contains(eventContextName))
         {
-            // Fire an analytics update event..
+            if (auditEvent != AuditLogEvent.Create && auditEvent != AuditLogEvent.Delete)
+            {
+                throw new Exception($"AuditLogEvent {auditEventFormatted} is not supported for {eventContextName}");
+            }
+
+            _logger.LogInformation(">>> FIRE ANALYTICS UPDATER CALL HERE <<<");
         }
-    }
-
-    public IDisposable BeginScope<TState>(TState state)
-    {
-        return _logger.BeginScope(state);
-    }
-
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return _logger.IsEnabled(logLevel);
-    }
-
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-    {
-        _logger.Log(logLevel, eventId, state, exception, formatter);
     }
 
     /// <summary>
@@ -54,8 +53,10 @@ public class AnalyticsService<T> : ILogger<T>
     /// eg. VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation.GetPersonBasicInformation+Handler -> GetPersonBasicInformation
     /// </summary>
     /// <returns></returns>
-    private string ParseHandlerTypeContextName()
+    private string ParseHandlerTypeContextName(string? eventContextName = null)
     {
+        if (eventContextName is not null) return eventContextName;
+
         var handlerType = _handlerType.ToString();
         var handlerTypeParts = handlerType.Split('.');
         var handlerTypeContextName = handlerTypeParts[^1];
@@ -65,4 +66,20 @@ public class AnalyticsService<T> : ILogger<T>
         }
         return handlerTypeContextName;
     }
+
+
+    //---> ILogger<T> implementations
+    public IDisposable BeginScope<TState>(TState state)
+    {
+        return _logger.BeginScope(state);
+    }
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        return _logger.IsEnabled(logLevel);
+    }
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
+        _logger.Log(logLevel, eventId, state, exception, formatter);
+    }
+    //<--- ILogger<T> implementations
 }
