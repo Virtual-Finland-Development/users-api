@@ -29,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-builder.Services.AddSingleton<AnalyticsService>();
+builder.Services.AddSingleton<AnalyticsServiceFactory>();
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //

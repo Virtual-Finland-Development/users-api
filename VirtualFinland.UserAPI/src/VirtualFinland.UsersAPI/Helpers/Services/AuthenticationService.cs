@@ -3,20 +3,19 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AuthenticationService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly AnalyticsService _logger;
+    private readonly AnalyticsService<AuthenticationService> _logger;
     private readonly IApplicationSecurity _applicationSecurity;
 
-    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsService logger, IApplicationSecurity applicationSecurity)
+    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
-        _logger = logger;
+        _logger = loggerFactory.CreateAnalyticsService<AuthenticationService>();
         _applicationSecurity = applicationSecurity;
     }
 

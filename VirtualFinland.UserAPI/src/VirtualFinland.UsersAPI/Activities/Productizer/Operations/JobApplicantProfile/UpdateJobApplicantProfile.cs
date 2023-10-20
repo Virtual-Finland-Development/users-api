@@ -104,13 +104,13 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext context, AnalyticsService logger, IOccupationsFlatRepository occupationsFlatRepository)
+        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
             _occupationsFlatRepository = occupationsFlatRepository;
         }
 

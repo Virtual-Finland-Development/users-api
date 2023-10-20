@@ -89,19 +89,19 @@ public static class UpdateUserProfile
     public class Handler : IRequestHandler<Command, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
         private readonly ILanguageRepository _languageRepository;
         private readonly ICountriesRepository _countriesRepository;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
         public Handler(UsersDbContext usersDbContext,
-            AnalyticsService logger,
+            AnalyticsServiceFactory loggerFactory,
             ILanguageRepository languageRepository,
             ICountriesRepository countriesRepository,
             IOccupationsFlatRepository occupationsFlatRepository)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
             _languageRepository = languageRepository;
             _countriesRepository = countriesRepository;
             _occupationsFlatRepository = occupationsFlatRepository;

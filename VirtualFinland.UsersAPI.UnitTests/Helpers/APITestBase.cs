@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Security.Configurations;
@@ -48,7 +49,7 @@ public class APITestBase
             new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
         ));
 
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory<AuthenticationService>();
         var securityClientProviders = new SecurityClientProviders()
         {
             HttpClient = new Mock<HttpClient>().Object,
@@ -84,7 +85,7 @@ public class APITestBase
             }
         );
 
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var authenticationService = new AuthenticationService(_dbContext, analyticsServiceFactoryMock, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -116,5 +117,13 @@ public class APITestBase
             .Returns(serviceScopeFactory.Object);
 
         return serviceProvider;
+    }
+
+    protected AnalyticsServiceFactory GetMockedAnalyticsServiceFactory<T>()
+    {
+        var loggerFactory = new Mock<ILoggerFactory>();
+        loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
+        return new AnalyticsServiceFactory(loggerFactory.Object);
     }
 }

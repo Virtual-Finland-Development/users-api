@@ -10,6 +10,7 @@ using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Models;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
@@ -21,10 +22,10 @@ public class AuthenticationTests : APITestBase
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
 
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory<AuthenticationService>();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var authenticationService = new AuthenticationService(_dbContext, analyticsServiceFactoryMock, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -54,8 +55,8 @@ public class AuthenticationTests : APITestBase
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory<AuthenticationService>();
+        var authenticationService = new AuthenticationService(_dbContext, analyticsServiceFactoryMock, applicationSecurity);
 
         // Act
         var act = () => authenticationService.Authenticate(mockHttpContext.Object);

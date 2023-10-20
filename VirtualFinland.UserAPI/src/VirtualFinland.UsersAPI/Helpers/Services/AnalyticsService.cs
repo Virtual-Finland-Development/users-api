@@ -2,11 +2,11 @@ using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
-public class AnalyticsService : ILogger<AnalyticsService>
+public class AnalyticsService<T> : ILogger<T>
 {
-    private readonly ILogger<AnalyticsService> _logger;
+    private readonly ILogger<T> _logger;
 
-    public AnalyticsService(ILogger<AnalyticsService> logger)
+    public AnalyticsService(ILogger<T> logger)
     {
         _logger = logger;
     }

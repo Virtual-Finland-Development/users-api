@@ -1,5 +1,6 @@
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -21,12 +22,12 @@ public static class VerifyIdentityPerson
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly AuthenticationService _authenticationService;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(AuthenticationService authenticationService, AnalyticsService logger)
+        public Handler(AuthenticationService authenticationService, AnalyticsServiceFactory loggerFactory)
         {
             _authenticationService = authenticationService;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)

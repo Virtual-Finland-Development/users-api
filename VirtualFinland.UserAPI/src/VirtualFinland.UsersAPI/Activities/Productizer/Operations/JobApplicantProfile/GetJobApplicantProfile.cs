@@ -21,12 +21,12 @@ public static class GetJobApplicantProfile
     public class Handler : IRequestHandler<Query, PersonJobApplicantProfileResponse>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsService logger)
+        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<PersonJobApplicantProfileResponse> Handle(Query request, CancellationToken cancellationToken)

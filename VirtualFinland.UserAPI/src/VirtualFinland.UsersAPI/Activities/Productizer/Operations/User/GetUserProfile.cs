@@ -32,12 +32,12 @@ public static class GetUserProfile
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)

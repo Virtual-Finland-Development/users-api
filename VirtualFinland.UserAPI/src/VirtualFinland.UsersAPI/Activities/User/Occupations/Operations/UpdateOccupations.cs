@@ -24,12 +24,12 @@ public static class UpdateOccupations
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)

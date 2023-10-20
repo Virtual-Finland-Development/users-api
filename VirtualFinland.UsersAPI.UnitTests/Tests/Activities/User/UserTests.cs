@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
@@ -18,9 +19,9 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<GetUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<GetUser.Handler>();
         var query = new GetUser.Query(requestAuthenticatedUser);
-        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
+        var handler = new GetUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -46,13 +47,13 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -79,8 +80,8 @@ public class UserTests : APITestBase
         var command = new DeleteUser.Command();
         command.SetAuth(requestAuthenticatedUser);
 
-        var mockLogger = new Mock<ILogger<DeleteUser.Handler>>();
-        var sut = new DeleteUser.Handler(_dbContext, mockLogger.Object);
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<DeleteUser.Handler>();
+        var sut = new DeleteUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);
@@ -94,13 +95,13 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCitizenshipCode("not a code").Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -115,13 +116,13 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCountryOfBirthCode("not a code").Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -136,13 +137,13 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithNativeLanguageCode("not a code").Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -157,13 +158,13 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithOccupationCode("not a code").Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -177,13 +178,13 @@ public class UserTests : APITestBase
     public async Task Should_FailUserCheckWithNonExistingUserIdAsync()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsServiceFactory<UpdateUser.Handler>();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(new RequestAuthenticatedUser(Guid.NewGuid()));
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act

@@ -24,12 +24,12 @@ public static class AddOccupations
     public class Handler : IRequestHandler<Command, List<AddOccupationsResponse>>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<List<AddOccupationsResponse>> Handle(Command request, CancellationToken cancellationToken)

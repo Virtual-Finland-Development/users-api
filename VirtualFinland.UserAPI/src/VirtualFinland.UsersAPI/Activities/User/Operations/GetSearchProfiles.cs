@@ -31,12 +31,12 @@ public static class GetSearchProfiles
     public class Handler : IRequestHandler<Query, IList<SearchProfile>>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsService logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)

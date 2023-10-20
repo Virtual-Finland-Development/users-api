@@ -18,12 +18,12 @@ public static class DeleteUser
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService _logger;
+        private readonly AnalyticsService<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsService logger)
+        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsService<Handler>();
         }
 
         public async Task<Unit> Handle(Command request,
