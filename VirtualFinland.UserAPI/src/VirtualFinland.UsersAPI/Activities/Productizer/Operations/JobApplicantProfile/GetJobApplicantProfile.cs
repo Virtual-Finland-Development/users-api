@@ -41,7 +41,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.WorkPreferences)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, "JobApplicantProfile", request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new PersonJobApplicantProfileResponse
             {

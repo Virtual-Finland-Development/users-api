@@ -55,7 +55,7 @@ public static class GetSearchProfile
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, "SearchProfile", request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }

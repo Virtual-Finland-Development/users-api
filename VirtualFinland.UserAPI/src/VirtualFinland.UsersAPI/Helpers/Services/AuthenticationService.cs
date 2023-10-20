@@ -77,7 +77,7 @@ public class AuthenticationService
 
             var authenticatedUser = new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Create, "Person", authenticatedUser);
+            _logger.LogAuditLogEvent(AuditLogEvent.Create, authenticatedUser);
 
             context.Items.Add("User", authenticatedUser);
 

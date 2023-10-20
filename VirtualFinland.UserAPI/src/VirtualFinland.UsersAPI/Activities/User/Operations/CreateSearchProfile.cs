@@ -63,7 +63,7 @@ public static class CreateSearchProfile
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, "SearchProfile", request.User);
+            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }

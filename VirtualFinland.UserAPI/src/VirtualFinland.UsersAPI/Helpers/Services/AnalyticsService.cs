@@ -5,6 +5,7 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class AnalyticsService<T> : ILogger<T>
 {
     private readonly ILogger<T> _logger;
+    private readonly Type _handlerType = typeof(T);
 
     public AnalyticsService(ILogger<T> logger)
     {
@@ -15,13 +16,19 @@ public class AnalyticsService<T> : ILogger<T>
     /// Log an audit log event
     /// </summary>
     /// <param name="auditEvent">The audit log event</param>
-    /// <param name="eventContextInfo">The event context info, TODO: enumify this params</param>
     /// <param name="requestAuthenticatedUser">The authenticated user</param>
+    /// <param name="eventContextName">Context name for the log</param>
     /// <returns></returns>
-    public void LogAuditLogEvent(AuditLogEvent auditEvent, string eventContextInfo, RequestAuthenticatedUser requestAuthenticatedUser)
+    public void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
-        _logger.LogInformation("AuditLog: {auditEvent} ({eventContextInfo}) on {user}", auditEvent.ToString().ToUpper(), eventContextInfo, requestAuthenticatedUser);
-        if (eventContextInfo == "Person" && (auditEvent == AuditLogEvent.Create || auditEvent == AuditLogEvent.Delete))
+        if (eventContextName == null) eventContextName = _handlerType.ToString();
+
+        _logger.LogInformation("AuditLog: {auditEvent} ({eventContextName}) on {userInfo}",
+            auditEvent.ToString().ToUpper(),
+            eventContextName,
+            requestAuthenticatedUser
+        );
+        if (eventContextName == "Person" && (auditEvent == AuditLogEvent.Create || auditEvent == AuditLogEvent.Delete))
         {
             // Fire an analytics update event..
         }
