@@ -23,7 +23,7 @@ Deployment to a fresh environment requires the following steps to be performed i
 
 ## Deployment on existing environment
  
-Pulumi does not have good tooling to handle attaching to existing resources such as AWS CloudWatch log groups. When deploying to a system where there are already resources created, one could tackle the problem by manually importing the resources to the pulumi state. 
+Pulumi does not have good tooling to handle attaching to existing resources such as AWS CloudWatch log groups. When deploying to a system where there are already resources created, one could tackle the problem of deployment failure by `ResourceAlreadyExistsException` by manually importing the resources to the pulumi state. 
 
 Example for importing a CloudWatch log group of a RDS instance:
   - `pulumi import aws:cloudwatch/logGroup:LogGroup users-api-database-dev /aws/rds/instance/users-api-postgres-db-dev2313s/postgresql`

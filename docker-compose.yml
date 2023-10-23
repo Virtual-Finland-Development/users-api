@@ -26,10 +26,10 @@ services:
       - "host.docker.internal:host-gateway"
 
   usersapi-local-initialization:
-    image: mcr.microsoft.com/dotnet/sdk:6.0
-    volumes:
-      - ./:/app
-    working_dir: /app
+    image: virtualfinland/usersapi-adminfunction-cli:latest
+    build:
+      context: ./
+      dockerfile: ./VirtualFinland.UsersAPI.AdminFunction.CLI/Dockerfile
     command: >
       bash -c "
         set -e
