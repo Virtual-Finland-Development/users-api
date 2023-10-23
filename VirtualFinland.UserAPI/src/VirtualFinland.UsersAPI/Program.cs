@@ -1,3 +1,4 @@
+using Amazon.CloudWatch;
 using System.Reflection;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
@@ -30,6 +31,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 builder.Services.AddSingleton<AnalyticsServiceFactory>();
+builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //

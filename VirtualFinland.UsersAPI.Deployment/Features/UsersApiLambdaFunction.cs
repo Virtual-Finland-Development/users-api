@@ -97,6 +97,32 @@ class UsersApiLambdaFunction
             PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
         });
 
+        // Allow function to post metrics to cloudwatch
+        var cloudWatchMetricsPushPolicy = new Policy(stackSetup.CreateResourceName("LambdaCloudWatchMetricsPushPolicy"), new()
+        {
+            Description = "Users-API CloudWatch Metrics Push Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""cloudwatch:PutMetricData""
+                        ],
+                        ""Resource"": [
+                            ""*""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-CloudWatch"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = cloudWatchMetricsPushPolicy.Arn
+        });
+
 
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
