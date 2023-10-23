@@ -40,16 +40,42 @@ class AdminFunction
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment"), new RolePolicyAttachmentArgs
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment"), new RolePolicyAttachmentArgs
         {
             Role = Output.Format($"{execRole.Name}"),
             PolicyArn = ManagedPolicy.AWSLambdaVPCAccessExecutionRole.ToString()
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = execRole.Name,
             PolicyArn = secretsManager.ReadPolicy.Arn
+        });
+
+        // Allow function to post metrics to cloudwatch
+        var cloudWatchMetricsPushPolicy = new Policy(stackSetup.CreateResourceName("AdminFunctionCloudWatchMetricsPushPolicy"), new()
+        {
+            Description = "Users-API CloudWatch Metrics Push Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""cloudwatch:PutMetricData""
+                        ],
+                        ""Resource"": [
+                            ""*""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-CloudWatch"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = cloudWatchMetricsPushPolicy.Arn
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()

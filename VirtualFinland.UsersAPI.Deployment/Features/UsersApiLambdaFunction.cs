@@ -123,7 +123,6 @@ class UsersApiLambdaFunction
             PolicyArn = cloudWatchMetricsPushPolicy.Arn
         });
 
-
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = vpcSetup.VpcId,
