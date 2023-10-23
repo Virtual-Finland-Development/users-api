@@ -31,7 +31,7 @@ public static class SecurityFeatureServiceExtensions
             HttpClient = new HttpClient(
                 new HttpRequestTimeoutHandler
                 {
-                    DefaultTimeout = TimeSpan.FromSeconds(3),
+                    DefaultTimeout = TimeSpan.FromSeconds(6),
                     DefaultTimeoutMessage = "Security feature request timeout",
                     InnerHandler = new HttpClientHandler()
                 }

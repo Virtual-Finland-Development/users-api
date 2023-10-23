@@ -106,10 +106,11 @@ public class ErrorHandlerMiddleware
                     }
                     break;
                 case TimeoutException:
+                    _logger.LogError(error, "Request timeout on external service");
                     await WriteErrorResponse(context, new ErrorResponse()
                     {
-                        Type = "Timeout",
-                        Message = error.Message ?? "Request timeout"
+                        Type = "RequestTimeout",
+                        Message = error.Message ?? "Request timeout on external service"
                     }, HttpStatusCode.RequestTimeout);
                     break;
                 default:
