@@ -20,6 +20,7 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.Extensions.Options;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -151,6 +152,7 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 // Other dependencies
 //
 builder.Services.Configure<CodesetConfig>(builder.Configuration);
+builder.Services.AddSingleton(builder => new CodesetsService(builder.GetRequiredService<IOptions<CodesetConfig>>().Value));
 
 //
 // Application build
