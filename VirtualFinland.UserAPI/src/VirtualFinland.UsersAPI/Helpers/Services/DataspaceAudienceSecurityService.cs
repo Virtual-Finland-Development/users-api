@@ -19,7 +19,6 @@ public class DataspaceAudienceSecurityService
         _httpClient = securityClientProviders.HttpClient;
     }
 
-
     public async Task VerifyAudience(string audience)
     {
         if (!_config.IsEnabled) return;

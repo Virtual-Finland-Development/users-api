@@ -105,6 +105,13 @@ public class ErrorHandlerMiddleware
                         }, HttpStatusCode.UnprocessableEntity);
                     }
                     break;
+                case TimeoutException:
+                    await WriteErrorResponse(context, new ErrorResponse()
+                    {
+                        Type = "Timeout",
+                        Message = error.Message ?? "Request timeout"
+                    }, HttpStatusCode.RequestTimeout);
+                    break;
                 default:
                     _logger.LogError(error, "Request processing failure!");
                     await WriteErrorResponse(context, new ErrorResponse()

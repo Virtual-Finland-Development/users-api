@@ -28,7 +28,14 @@ public static class SecurityFeatureServiceExtensions
 
         var securityClientProviders = new SecurityClientProviders()
         {
-            HttpClient = new HttpClient(),
+            HttpClient = new HttpClient(
+                new HttpRequestTimeoutHandler
+                {
+                    DefaultTimeout = TimeSpan.FromSeconds(3),
+                    DefaultTimeoutMessage = "Security feature request timeout",
+                    InnerHandler = new HttpClientHandler()
+                }
+            ),
             CacheRepositoryFactory = new CacheRepositoryFactory(redis.GetDatabase(), Constants.Security.CachePrefix),
         };
 
