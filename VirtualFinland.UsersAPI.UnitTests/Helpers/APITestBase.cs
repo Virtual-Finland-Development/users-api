@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Amazon.CloudWatch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -123,7 +124,8 @@ public class APITestBase
     {
         var loggerFactory = new Mock<ILoggerFactory>();
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+        var cloudWatchClient = new Mock<IAmazonCloudWatch>();
 
-        return new AnalyticsServiceFactory(loggerFactory.Object);
+        return new AnalyticsServiceFactory(loggerFactory.Object, cloudWatchClient.Object);
     }
 }
