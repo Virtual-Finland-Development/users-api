@@ -14,15 +14,16 @@ public class App
     public static async Task<IHost> Build()
     {
         var builder = Host.CreateDefaultBuilder();
-        AwsConfigurationManager awsConfigurationManager = new();
+        var configurationBuilder = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
+            .Build();
 
+        AwsConfigurationManager awsConfigurationManager = new();
         var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
             ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
             : null;
-        var dbConnectionString = databaseSecret ?? new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddEnvironmentVariables()
-            .Build().GetConnectionString("DefaultConnection");
+        var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
 
         builder.ConfigureServices(
             services =>
@@ -37,6 +38,7 @@ public class App
                     );
                 });
                 services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+                services.Configure<AnalyticsConfig>(configurationBuilder);
 
                 // Actions
                 services.AddTransient<DatabaseMigrationAction>();

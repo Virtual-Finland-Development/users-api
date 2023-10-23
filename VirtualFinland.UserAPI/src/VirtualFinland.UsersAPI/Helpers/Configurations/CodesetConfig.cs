@@ -1,3 +1,5 @@
+namespace VirtualFinland.UserAPI.Helpers.Configurations;
+
 public class CodesetConfig
 {
     public CodesetConfig(IConfiguration configuration)

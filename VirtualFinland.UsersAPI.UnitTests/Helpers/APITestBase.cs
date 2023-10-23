@@ -3,13 +3,16 @@ using System.Security.Claims;
 using Amazon.CloudWatch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Security.Configurations;
@@ -125,7 +128,15 @@ public class APITestBase
         var loggerFactory = new Mock<ILoggerFactory>();
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
         var cloudWatchClient = new Mock<IAmazonCloudWatch>();
+        var analyticsConfig = Options.Create(new AnalyticsConfig()
+        {
+            CloudWatch = new AnalyticsConfig.CloudWatchSettings()
+            {
+                IsEnabled = true,
+                Namespace = "test-namespace"
+            }
+        });
 
-        return new AnalyticsServiceFactory(loggerFactory.Object, cloudWatchClient.Object);
+        return new AnalyticsServiceFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object);
     }
 }

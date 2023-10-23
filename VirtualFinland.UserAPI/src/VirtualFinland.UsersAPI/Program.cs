@@ -32,6 +32,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 builder.Services.AddSingleton<AnalyticsServiceFactory>();
 builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+builder.Services.Configure<AnalyticsConfig>(builder.Configuration);
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //

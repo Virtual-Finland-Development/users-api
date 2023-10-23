@@ -1,17 +1,21 @@
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
+using Microsoft.Extensions.Options;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AnalyticsService<T> : ILogger<T>
 {
+    private readonly AnalyticsConfig.CloudWatchSettings _cloudWatchSettings;
     private readonly ILogger<T> _logger;
     private readonly Type _handlerType = typeof(T);
     private readonly IAmazonCloudWatch _cloudwatchClient;
 
-    public AnalyticsService(ILogger<T> logger, IAmazonCloudWatch cloudwatchClient)
+    public AnalyticsService(IOptions<AnalyticsConfig> options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient)
     {
+        _cloudWatchSettings = options.Value.CloudWatch;
         _logger = logger;
         _cloudwatchClient = cloudwatchClient;
     }
@@ -25,35 +29,30 @@ public class AnalyticsService<T> : ILogger<T>
     /// <returns></returns>
     public void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
-        eventContextName = ParseHandlerTypeContextName(eventContextName);
+        var eventContext = ParseHandlerTypeContextName(eventContextName);
 
-        _logger.LogInformation("AuditLog: {auditEvent}-event on {userInfo} from {eventContextName}",
+        _logger.LogInformation("AuditLog: {auditEvent}-event on {userInfo} from {eventContext}",
             auditEvent,
             requestAuthenticatedUser,
-            eventContextName
+            eventContext
         );
 
-        PutCloudWatchCustomMetrics(auditEvent, requestAuthenticatedUser, eventContextName);
-
-        //
-        // Analytics events for the Persons table inserts and deletes
-        //
-        var personsTableCountChangedEventContextNames = new[] {
-            "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson",
-            "DeleteUser",
-        };
-        if (personsTableCountChangedEventContextNames.Contains(eventContextName))
-        {
-            if (auditEvent != AuditLogEvent.Create && auditEvent != AuditLogEvent.Delete)
-            {
-                throw new Exception($"AuditLogEvent {auditEvent} is not supported for {eventContextName}");
-            }
-
-            _logger.LogInformation(">>> FIRE ANALYTICS UPDATER CALL HERE <<<");
-        }
+        PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
     }
 
-    private void PutCloudWatchCustomMetrics(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    public void PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    {
+        if (!_cloudWatchSettings.IsEnabled)
+        {
+            return;
+        }
+
+        var eventContext = ParseHandlerTypeContextName(eventContextName);
+        PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
+        EngageInSpecialAnalyticEvents(eventContext);
+    }
+
+    private void PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         // Push an AWS Cloudwatch custom metric that counts the number of requests per audience
         _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
@@ -96,8 +95,23 @@ public class AnalyticsService<T> : ILogger<T>
                     }
                 }
             },
-            Namespace = Constants.Analytics.Namespace
+            Namespace = _cloudWatchSettings.Namespace
         });
+    }
+
+    private void EngageInSpecialAnalyticEvents(string eventContextName)
+    {
+        //
+        // Analytics events for the Persons table inserts and deletes
+        //
+        var personsTableCountChangedEventContextNames = new[] {
+            "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson",
+            "DeleteUser",
+        };
+        if (personsTableCountChangedEventContextNames.Contains(eventContextName))
+        {
+            _logger.LogInformation(">>> FIRE ANALYTICS UPDATER CALL HERE <<<");
+        }
     }
 
     /// <summary>

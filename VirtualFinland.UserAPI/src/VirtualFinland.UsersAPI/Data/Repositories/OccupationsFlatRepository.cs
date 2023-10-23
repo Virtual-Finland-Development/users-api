@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Options;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;

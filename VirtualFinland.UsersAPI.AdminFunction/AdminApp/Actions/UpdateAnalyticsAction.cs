@@ -2,8 +2,9 @@ using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
@@ -14,12 +15,14 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class UpdateAnalyticsAction : IAdminAppAction
 {
+    private readonly AnalyticsConfig.CloudWatchSettings _cloudWatchSettings;
     private readonly UsersDbContext _dataContext;
     private readonly IAmazonCloudWatch _cloudWatchClient;
     private readonly ILogger<UpdateAnalyticsAction> _logger;
 
-    public UpdateAnalyticsAction(UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
+    public UpdateAnalyticsAction(IOptions<AnalyticsConfig> options, UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
     {
+        _cloudWatchSettings = options.Value.CloudWatch;
         _dataContext = dataContext;
         _cloudWatchClient = cloudWatchClient;
         _logger = logger;
@@ -27,6 +30,12 @@ public class UpdateAnalyticsAction : IAdminAppAction
 
     public async Task Execute(string? _)
     {
+        if (!_cloudWatchSettings.IsEnabled)
+        {
+            _logger.LogInformation("CloudWatch analytics is disabled");
+            return;
+        }
+
         // Gather statistics
         var personsCount = await _dataContext.Persons.CountAsync();
 
@@ -45,7 +54,7 @@ public class UpdateAnalyticsAction : IAdminAppAction
                     TimestampUtc = DateTime.UtcNow
                 }
             },
-            Namespace = Constants.Analytics.Namespace
+            Namespace = _cloudWatchSettings.Namespace
         });
 
     }
