@@ -10,16 +10,22 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
 {
-    public async Task Execute(UsersDbContext dataContext, string? _)
+    private readonly UsersDbContext _dataContext;
+    public DatabaseAuditLogTriggersInitializationAction(UsersDbContext dataContext)
     {
-        var loggingTables = dataContext.GetDbSetEntityTypes()
+        _dataContext = dataContext;
+    }
+
+    public async Task Execute(string? _)
+    {
+        var loggingTables = _dataContext.GetDbSetEntityTypes()
             .Where(e => e.ClrType.GetInterfaces().Contains(typeof(IAuditable)))
             .Select(e => e.GetTableName())
             .ToList();
 
         Console.WriteLine("> Creating audit log trigger function..");
 
-        await dataContext.Database.ExecuteSqlRawAsync(@"
+        await _dataContext.Database.ExecuteSqlRawAsync(@"
                 CREATE OR REPLACE FUNCTION audit_trigger_func()
                 RETURNS trigger AS $body$
                 DECLARE
@@ -65,7 +71,7 @@ public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
         foreach (var table in loggingTables)
         {
             Console.WriteLine($"> Creating audit trigger for table {table}");
-            await dataContext.Database.ExecuteSqlRawAsync(@$"
+            await _dataContext.Database.ExecuteSqlRawAsync(@$"
                 DROP TRIGGER IF EXISTS ""{table}_audit_trigger"" ON ""{table}"";
                 CREATE TRIGGER ""{table}_audit_trigger""
                     AFTER INSERT OR UPDATE OR DELETE ON ""{table}""

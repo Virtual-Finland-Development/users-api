@@ -11,7 +11,13 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class DatabaseUserInitializationAction : IAdminAppAction
 {
-    public async Task Execute(UsersDbContext dataContext, string? credentialsPayload)
+    private readonly UsersDbContext _dataContext;
+    public DatabaseUserInitializationAction(UsersDbContext dataContext)
+    {
+        _dataContext = dataContext;
+    }
+
+    public async Task Execute(string? credentialsPayload)
     {
         if (credentialsPayload == null)
         {
@@ -24,7 +30,7 @@ public class DatabaseUserInitializationAction : IAdminAppAction
 
         // Manages the appusers role, permissions and the user that belong to it with a sync-strategy: 
         // - clearing the previous users and then creating the new one
-        await dataContext.Database.ExecuteSqlRawAsync(@$"
+        await _dataContext.Database.ExecuteSqlRawAsync(@$"
             -- Create role if not exists
             DO $$ 
             BEGIN 

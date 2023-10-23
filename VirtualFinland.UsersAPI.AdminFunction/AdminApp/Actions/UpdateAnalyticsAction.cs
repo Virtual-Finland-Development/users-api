@@ -1,4 +1,7 @@
 using System.Text.Json;
+using Amazon.CloudWatch;
+using Amazon.CloudWatch.Model;
+using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
@@ -10,18 +13,34 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class UpdateAnalyticsAction : IAdminAppAction
 {
-    public async Task Execute(UsersDbContext dataContext, string? eventPayload)
+    private readonly UsersDbContext _dataContext;
+    private readonly IAmazonCloudWatch _cloudWatchClient;
+
+    public UpdateAnalyticsAction(UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient)
     {
-        if (eventPayload == null)
-        {
-            throw new ArgumentNullException(nameof(eventPayload));
-        }
-        var analyticsEvent = JsonSerializer.Deserialize<AnalyticsEvent>(eventPayload, new JsonSerializerOptions()
-        {
-            PropertyNameCaseInsensitive = true
-        }) ?? throw new ArgumentException("Invalid analytics event payload", nameof(eventPayload));
+        _dataContext = dataContext;
+        _cloudWatchClient = cloudWatchClient;
+    }
 
+    public async Task Execute(string? _)
+    {
+        // Gather statistics
+        var personsCount = await _dataContext.Persons.CountAsync();
 
+        // Update analytics
+        await _cloudWatchClient.PutMetricDataAsync(new PutMetricDataRequest()
+        {
+            MetricData = new List<MetricDatum>()
+            {
+                new()
+                {
+                    MetricName = "PersonsCount",
+                    Value = personsCount,
+                    Unit = StandardUnit.Count,
+                }
+            },
+            Namespace = "VirtualFinland/UsersAPI"
+        });
 
     }
 
