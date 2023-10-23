@@ -43,6 +43,7 @@ public class App
                 services.AddTransient<DatabaseAuditLogTriggersInitializationAction>();
                 services.AddTransient<DatabaseUserInitializationAction>();
                 services.AddTransient<TermsOfServiceUpdateAction>();
+                services.AddTransient<UpdateAnalyticsAction>();
             });
 
         return builder.Build();
@@ -59,6 +60,7 @@ public static class AppExtensions
             Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<DatabaseAuditLogTriggersInitializationAction>(),
             Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<DatabaseUserInitializationAction>(),
             Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<TermsOfServiceUpdateAction>(),
+            Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };
     }

@@ -7,3 +7,11 @@ public enum AuditLogEvent
     Update,
     Delete
 }
+
+public static class AuditLogEventExtensions
+{
+    public static string ToString(this AuditLogEvent auditLogEvent)
+    {
+        return auditLogEvent.ToString().ToUpper();
+    }
+}

@@ -1,8 +1,9 @@
-using System.Text.Json;
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
@@ -15,17 +16,21 @@ public class UpdateAnalyticsAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
     private readonly IAmazonCloudWatch _cloudWatchClient;
+    private readonly ILogger<UpdateAnalyticsAction> _logger;
 
-    public UpdateAnalyticsAction(UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient)
+    public UpdateAnalyticsAction(UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
     {
         _dataContext = dataContext;
         _cloudWatchClient = cloudWatchClient;
+        _logger = logger;
     }
 
     public async Task Execute(string? _)
     {
         // Gather statistics
         var personsCount = await _dataContext.Persons.CountAsync();
+
+        _logger.LogInformation("PersonsCount: {PersonsCount}", personsCount);
 
         // Update analytics
         await _cloudWatchClient.PutMetricDataAsync(new PutMetricDataRequest()
@@ -36,10 +41,11 @@ public class UpdateAnalyticsAction : IAdminAppAction
                 {
                     MetricName = "PersonsCount",
                     Value = personsCount,
-                    Unit = StandardUnit.Count,
+                    Unit = StandardUnit.None,
+                    TimestampUtc = DateTime.UtcNow
                 }
             },
-            Namespace = "VirtualFinland/UsersAPI"
+            Namespace = Constants.Analytics.Namespace
         });
 
     }

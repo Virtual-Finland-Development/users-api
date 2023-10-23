@@ -1,4 +1,5 @@
 using Amazon.CloudWatch;
+using Amazon.CloudWatch.Model;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
@@ -25,15 +26,14 @@ public class AnalyticsService<T> : ILogger<T>
     public void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         eventContextName = ParseHandlerTypeContextName(eventContextName);
-        var auditEventFormatted = auditEvent.ToString().ToUpper();
 
-        _logger.LogInformation("AuditLog: {auditEventFormatted}-event on {userInfo} from {eventContextName}",
-            auditEventFormatted,
+        _logger.LogInformation("AuditLog: {auditEvent}-event on {userInfo} from {eventContextName}",
+            auditEvent,
             requestAuthenticatedUser,
             eventContextName
         );
 
-        PutCloudWatchCustomMetrics(requestAuthenticatedUser);
+        PutCloudWatchCustomMetrics(auditEvent, requestAuthenticatedUser, eventContextName);
 
         //
         // Analytics events for the Persons table inserts and deletes
@@ -46,31 +46,57 @@ public class AnalyticsService<T> : ILogger<T>
         {
             if (auditEvent != AuditLogEvent.Create && auditEvent != AuditLogEvent.Delete)
             {
-                throw new Exception($"AuditLogEvent {auditEventFormatted} is not supported for {eventContextName}");
+                throw new Exception($"AuditLogEvent {auditEvent} is not supported for {eventContextName}");
             }
 
             _logger.LogInformation(">>> FIRE ANALYTICS UPDATER CALL HERE <<<");
         }
     }
 
-    private void PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser)
+    private void PutCloudWatchCustomMetrics(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
-        _cloudwatchClient.PutMetricDataAsync(new Amazon.CloudWatch.Model.PutMetricDataRequest()
+        // Push an AWS Cloudwatch custom metric that counts the number of requests per audience
+        _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
         {
-            MetricData = new List<Amazon.CloudWatch.Model.MetricDatum>() {
-                new() {
-                    MetricName = "Audiences",
-                    Dimensions = new List<Amazon.CloudWatch.Model.Dimension>() {
-                        new() {
+            MetricData = new List<MetricDatum>()
+            {
+                new()
+                {
+                    MetricName = "RequestsTotalPerAudience",
+                    Value = 1,
+                    Unit = StandardUnit.None,
+                    TimestampUtc = DateTime.UtcNow,
+                    Dimensions = new List<Dimension>()
+                    {
+                        new()
+                        {
+                            Name = "Audience",
+                            Value = requestAuthenticatedUser.Audience
+                        }
+                    }
+                },
+                new()
+                {
+                    MetricName = "RequestsPerAudience",
+                    Value = 1,
+                    Unit = StandardUnit.None,
+                    TimestampUtc = DateTime.UtcNow,
+                    Dimensions = new List<Dimension>()
+                    {
+                        new()
+                        {
                             Name = "Audience",
                             Value = requestAuthenticatedUser.Audience
                         },
-                    },
-                    Unit = StandardUnit.Count,
-                    Value = 1
+                        new()
+                        {
+                            Name = "Context",
+                            Value = eventContextName
+                        }
+                    }
                 }
             },
-            Namespace = "VirtualFinland.UserAPI"
+            Namespace = Constants.Analytics.Namespace
         });
     }
 

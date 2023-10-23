@@ -25,4 +25,9 @@ public static class Constants
         public static string XconsentUserId => "x-consent-user-id";
         public static string XRequestTraceId => "x-request-trace-id";
     }
+
+    public static class Analytics
+    {
+        public static string Namespace => "VirtualFinland.UsersAPI";
+    }
 }

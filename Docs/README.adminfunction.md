@@ -42,3 +42,5 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
 - `update-terms-of-service`:
   - lambda function payload: `{"Action": "UpdateTermsOfService"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service`
+- `update-analytics`:
+  - lambda function payload: `{"Action": "UpdateAnalytics"}`
