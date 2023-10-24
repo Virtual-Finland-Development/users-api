@@ -23,6 +23,9 @@ public class ErrorHandlerMiddleware
         }
         catch (Exception error)
         {
+            // Debug mode logging
+            _logger.LogDebug(error, "Debug");
+
             // Attach exception to the request context for request logger middleware
             context.Items.Add("Exception", error);
 
@@ -44,7 +47,6 @@ public class ErrorHandlerMiddleware
                     }, HttpStatusCode.NotFound);
                     break;
                 case BadRequestException:
-                    _logger.LogError(error, "Request processing failure!");
                     await WriteErrorResponse(context, new ErrorResponse()
                     {
                         Type = "BadRequest",
@@ -110,7 +112,6 @@ public class ErrorHandlerMiddleware
                     }
                     break;
                 default:
-                    _logger.LogError(error, "Request processing failure!");
                     await WriteErrorResponse(context, new ErrorResponse()
                     {
                         Type = "InternalServerError",
