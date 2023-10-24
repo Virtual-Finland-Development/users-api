@@ -1,4 +1,5 @@
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Repositories;
 
@@ -8,10 +9,8 @@ public class OccupationsRepository : CodesetsResourceRepository<List<OccupationR
 {
     public OccupationsRepository(CodesetsService codesetsService) : base(codesetsService)
     {
+        _resource = CodesetConfig.Resource.Occupations;
     }
 
-    public Task<List<OccupationRoot.Occupation>> GetAllOccupations()
-    {
-        return GetResource();
-    }
+    public Task<List<OccupationRoot.Occupation>> GetAllOccupations() => GetResource();
 }

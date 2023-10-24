@@ -21,18 +21,17 @@ public class CodesetsService
         );
     }
 
-    public async Task<T> GetResource<T>(string? resourceName = null)
+    public async Task<T> GetResource<T>(CodesetConfig.Resource resource)
     {
-        var resourceIdent = resourceName ?? typeof(T).Name.ToLowerInvariant();
-        var resourceEndpoint = _config.GetResourceEndpoint(resourceIdent);
+        var resourceEndpoint = _config.GetResourceEndpoint(resource);
 
         var httpResponseMessage = await _httpClient.GetAsync(resourceEndpoint);
 
         if (!httpResponseMessage.IsSuccessStatusCode)
         {
-            throw new Exception($"Failed to get resource {resourceIdent} from {resourceEndpoint}");
+            throw new Exception($"Failed to get resource {resource} from {resourceEndpoint}");
         }
 
-        return JsonSerializer.Deserialize<T>(await httpResponseMessage.Content.ReadAsStringAsync()) ?? throw new Exception($"Failed to deserialize resource {resourceName} from {resourceEndpoint}");
+        return JsonSerializer.Deserialize<T>(await httpResponseMessage.Content.ReadAsStringAsync()) ?? throw new Exception($"Failed to deserialize resource {resource} from {resourceEndpoint}");
     }
 }

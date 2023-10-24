@@ -1,4 +1,5 @@
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Repositories;
 
@@ -8,10 +9,8 @@ public class LanguageRepository : CodesetsResourceRepository<List<Language>>, IL
 {
     public LanguageRepository(CodesetsService codesetsService) : base(codesetsService)
     {
+        _resource = CodesetConfig.Resource.Languages;
     }
 
-    public Task<List<Language>> GetAllLanguages()
-    {
-        return GetResource();
-    }
+    public Task<List<Language>> GetAllLanguages() => GetResource();
 }

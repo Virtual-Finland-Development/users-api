@@ -12,25 +12,29 @@ public class CodesetConfig
 
     public string? CodesetApiBaseUrl { get; set; }
 
-    // @TODO: change structure so it can be type cheked (or find if there is a way to do it)
-    public Dictionary<string, string> ResourceEndpoints { get; set; } = new Dictionary<string, string>() {
-        { "Countries", "ISO3166CountriesURL" },
-        { "Occupations", "OccupationsEscoURL" },
-        { "OccupationsFlat", "OccupationsFlatURL" },
-        { "Languages", "ISO639Languages" }
-    };
+    public sealed class Resource
+    {
+        private Resource(string value) { Value = value; }
 
-    // @TODO: type safefy the resource name parameter
-    public string GetResourceEndpoint(string resourceName)
+        public string Value { get; private set; }
+
+        public static Resource Countries => new("ISO3166CountriesURL");
+        public static Resource Occupations => new("OccupationsEscoURL");
+        public static Resource OccupationsFlat => new("OccupationsFlatURL");
+        public static Resource Languages => new("ISO639Languages");
+
+        public override string ToString()
+        {
+            return Value;
+        }
+    }
+
+    public string GetResourceEndpoint(Resource resource)
     {
         if (CodesetApiBaseUrl is null)
         {
             throw new Exception("CodesetApiBaseUrl not defined");
         }
-        if (!ResourceEndpoints.ContainsKey(resourceName))
-        {
-            throw new Exception($"Resource {resourceName} not defined");
-        }
-        return $"{CodesetApiBaseUrl}/{ResourceEndpoints[resourceName]}";
+        return $"{CodesetApiBaseUrl}/{resource}";
     }
 }
