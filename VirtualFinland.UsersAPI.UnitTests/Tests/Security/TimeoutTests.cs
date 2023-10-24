@@ -1,11 +1,6 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using Moq;
-using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security;
-using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Data.Repositories;
@@ -27,12 +22,15 @@ public class TimeoutTests : APITestBase
     public async Task Should_RetrievingSecurityServiceInformation_shouldThrowTimeoutException()
     {
         // Arrange
+        var requestDelay = 2;
+        var requestTimeout = 1;
+
         var innerHandler = new Mock<HttpMessageHandler>();
         innerHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .Returns(async () =>
             {
-                await Task.Delay(2);
+                await Task.Delay(requestDelay);
                 return new HttpResponseMessage()
                 {
                     StatusCode = HttpStatusCode.OK,
@@ -41,7 +39,7 @@ public class TimeoutTests : APITestBase
             });
         var httpClient = new HttpClient(new HttpRequestTimeoutHandler
         {
-            DefaultTimeout = TimeSpan.FromMilliseconds(1),
+            DefaultTimeout = TimeSpan.FromMilliseconds(requestTimeout),
             DefaultTimeoutMessage = "Security feature request timeout",
             InnerHandler = new HttpClientHandler()
         });
