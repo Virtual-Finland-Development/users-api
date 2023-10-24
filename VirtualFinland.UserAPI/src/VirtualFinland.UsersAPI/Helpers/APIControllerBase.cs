@@ -23,11 +23,11 @@ public class ApiControllerBase : ControllerBase
         return await _authenticationService.Authenticate(HttpContext, verifyTermsOfServiceAgreement);
     }
 
-    protected async Task<RequestAuthenticatedUser> AuthenticateOrRegisterPerson()
+    protected async Task<RequestAuthenticatedUser> AuthenticateOrRegisterPerson(bool verifyTermsOfServiceAgreement = true)
     {
         try
         {
-            return await _authenticationService.Authenticate(HttpContext);
+            return await _authenticationService.Authenticate(HttpContext, verifyTermsOfServiceAgreement);
         }
         catch (NotFoundException)
         {
