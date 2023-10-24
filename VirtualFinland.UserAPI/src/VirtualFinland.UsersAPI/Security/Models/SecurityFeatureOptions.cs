@@ -8,5 +8,5 @@ public class SecurityFeatureOptions
     public string? AuthorizationJwksJsonUrl { get; set; }
     public string? Issuer { get; set; } = default!;
     public bool IsEnabled { get; set; }
-    public AudienceGuardConfig AudienceGuard { get; set; } = default!;
+    public AudienceGuardConfig AudienceGuard { get; set; } = new();
 }
