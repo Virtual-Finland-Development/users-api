@@ -35,7 +35,7 @@ public class AuthenticationService
 
         try
         {
-            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, CancellationToken.None);
+            var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, cancellationToken);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             if (verifyTermsOfServiceAgreement) await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(person.Id);
 

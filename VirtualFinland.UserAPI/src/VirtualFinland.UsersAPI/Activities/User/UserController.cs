@@ -161,7 +161,7 @@ public class UserController : ApiControllerBase
     [ProducesErrorResponseType(typeof(ProblemDetails))]
     public async Task<IActionResult> GetPersonTermsOfServiceAgreement()
     {
-        var authenticated = await AuthenticateOrRegisterPerson();
+        var authenticated = await AuthenticateOrRegisterPerson(false);
         return Ok(await _mediator.Send(new GetPersonServiceTermsAgreement.Query(authenticated)));
     }
 
