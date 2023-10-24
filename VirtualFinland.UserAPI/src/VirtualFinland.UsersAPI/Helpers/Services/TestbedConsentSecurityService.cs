@@ -24,7 +24,7 @@ public class TestbedConsentSecurityService
 
     public async Task VerifyConsentTokenRequestHeaders(IHeaderDictionary headers, string dataSourceUri)
     {
-        _logger.LogInformation("Verifying consent request");
+        _logger.LogDebug("Verifying consent request");
         var idToken = headers.Authorization.ToString().Replace("Bearer ", string.Empty);
         if (string.IsNullOrEmpty(idToken))
             throw new NotAuthorizedException("Authorization token is missing");
@@ -36,12 +36,12 @@ public class TestbedConsentSecurityService
         VerifyConsentToken(consentToken, idToken, dataSourceUri);
         await VerifyConsentTokenWithService(consentToken, idToken, dataSourceUri); // Checks for token revokation
 
-        _logger.LogInformation("Consent request verified");
+        _logger.LogDebug("Consent request verified");
     }
 
     public void VerifyConsentToken(string consentTokenRaw, string idTokenRaw, string dataSourceUri)
     {
-        _logger.LogInformation("Verifying consent token");
+        _logger.LogDebug("Verifying consent token");
 
         var idToken = ParseJwtToken(idTokenRaw);
         if (idToken == null)
@@ -96,13 +96,13 @@ public class TestbedConsentSecurityService
         if (consentToken.Payload["dsi"] as string != dataSourceUri)
             throw new NotAuthorizedException("Token mismatch: dsi");
 
-        _logger.LogInformation("Consent token verified");
+        _logger.LogDebug("Consent token verified");
     }
 
 
     public async Task VerifyConsentTokenWithService(string consentToken, string idToken, string dataSourceUri)
     {
-        _logger.LogInformation("Verifying consent with Testbed Consent API");
+        _logger.LogDebug("Verifying consent with Testbed Consent API");
         try
         {
             var httpClient = _httpClientFactory.CreateClient();
@@ -130,7 +130,7 @@ public class TestbedConsentSecurityService
             throw new NotAuthorizedException(e.Message);
         }
 
-        _logger.LogInformation("Consent verified by Testbed Consent API");
+        _logger.LogDebug("Consent verified by Testbed Consent API");
     }
 
 
