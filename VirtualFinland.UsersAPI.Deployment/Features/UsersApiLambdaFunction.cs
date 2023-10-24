@@ -116,7 +116,7 @@ class UsersApiLambdaFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "VirtualFinland.UsersAPI",
-            Timeout = 10,
+            Timeout = 15,
             MemorySize = 2048,
             Environment = new FunctionEnvironmentArgs
             {
