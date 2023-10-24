@@ -9,7 +9,7 @@ public class CountriesRepository : CodesetsResourceRepository<List<Country>>, IC
 {
     public CountriesRepository(CodesetsService codesetsService) : base(codesetsService)
     {
-        _resource = CodesetConfig.Resource.Countries;
+        _resource = CodesetsResource.Countries;
     }
 
     public Task<List<Country>> GetAllCountries() => GetResource();

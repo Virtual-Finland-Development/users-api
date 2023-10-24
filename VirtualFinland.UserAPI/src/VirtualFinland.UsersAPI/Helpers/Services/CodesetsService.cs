@@ -21,7 +21,7 @@ public class CodesetsService
         );
     }
 
-    public async Task<T> GetResource<T>(CodesetConfig.Resource resource)
+    public async Task<T> GetResource<T>(CodesetsResource resource)
     {
         var resourceEndpoint = _config.GetResourceEndpoint(resource);
 

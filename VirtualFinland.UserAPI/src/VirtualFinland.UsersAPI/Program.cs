@@ -55,9 +55,6 @@ builder.Services.AddDataProtection().UseCryptographicAlgorithms(
         ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
     });
 
-// Validate server configuration
-ServerConfigurationValidation.ValidateServer(builder.Configuration);
-
 //
 // Swagger setup
 //
@@ -151,8 +148,8 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 //
 // Other dependencies
 //
-builder.Services.Configure<CodesetConfig>(builder.Configuration);
-builder.Services.AddSingleton(builder => new CodesetsService(builder.GetRequiredService<IOptions<CodesetConfig>>().Value));
+builder.Services.AddSingleton<CodesetConfig>();
+builder.Services.AddSingleton<CodesetsService>();
 
 //
 // Application build

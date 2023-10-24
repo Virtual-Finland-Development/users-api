@@ -9,7 +9,7 @@ public class OccupationsRepository : CodesetsResourceRepository<List<OccupationR
 {
     public OccupationsRepository(CodesetsService codesetsService) : base(codesetsService)
     {
-        _resource = CodesetConfig.Resource.Occupations;
+        _resource = CodesetsResource.Occupations;
     }
 
     public Task<List<OccupationRoot.Occupation>> GetAllOccupations() => GetResource();

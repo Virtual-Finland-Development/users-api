@@ -9,7 +9,7 @@ public class LanguageRepository : CodesetsResourceRepository<List<Language>>, IL
 {
     public LanguageRepository(CodesetsService codesetsService) : base(codesetsService)
     {
-        _resource = CodesetConfig.Resource.Languages;
+        _resource = CodesetsResource.Languages;
     }
 
     public Task<List<Language>> GetAllLanguages() => GetResource();

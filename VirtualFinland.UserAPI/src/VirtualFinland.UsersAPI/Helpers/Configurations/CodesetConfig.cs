@@ -2,39 +2,25 @@ namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
 public class CodesetConfig
 {
+    private readonly CodesetsServiceConfig _codesetsServiceConfig;
+
     public CodesetConfig(IConfiguration configuration)
     {
-        CodesetApiBaseUrl = configuration.GetValue<string>("CodesetApiBaseUrl");
-    }
-    public CodesetConfig()
-    {
-    }
-
-    public string? CodesetApiBaseUrl { get; set; }
-
-    public sealed class Resource
-    {
-        private Resource(string value) { Value = value; }
-
-        public string Value { get; private set; }
-
-        public static Resource Countries => new("ISO3166CountriesURL");
-        public static Resource Occupations => new("OccupationsEscoURL");
-        public static Resource OccupationsFlat => new("OccupationsFlatURL");
-        public static Resource Languages => new("ISO639Languages");
-
-        public override string ToString()
+        _codesetsServiceConfig = configuration.GetSection("Services:Codesets").Get<CodesetsServiceConfig>();
+        if (string.IsNullOrEmpty(_codesetsServiceConfig.ApiEndpoint))
         {
-            return Value;
+            throw new ArgumentException("Services:Codesets.ApiEndpoint not defined");
         }
     }
 
-    public string GetResourceEndpoint(Resource resource)
+    public string GetResourceEndpoint(CodesetsResource resource)
     {
-        if (CodesetApiBaseUrl is null)
-        {
-            throw new Exception("CodesetApiBaseUrl not defined");
-        }
-        return $"{CodesetApiBaseUrl}/{resource}";
+        return $"{_codesetsServiceConfig.ApiEndpoint}/{resource}";
+    }
+
+    private record CodesetsServiceConfig
+    {
+        public string ApiEndpoint { get; init; } = string.Empty;
+        public int ServiceRequestTimeoutInMilliseconds { get; init; } = 9000;
     }
 }

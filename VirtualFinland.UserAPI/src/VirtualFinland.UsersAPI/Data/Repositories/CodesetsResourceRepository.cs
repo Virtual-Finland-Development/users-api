@@ -6,15 +6,15 @@ namespace VirtualFinland.UserAPI.Helpers;
 public abstract class CodesetsResourceRepository<T>
 {
     private readonly CodesetsService _codesetsService;
-    private T? _resourceCache;
-    protected CodesetConfig.Resource? _resource;
+    private T? _resourceCache; // @TODO: Add caching suitable for AWS Lambda
+    protected CodesetsResource? _resource;
 
     public CodesetsResourceRepository(CodesetsService codesetsService)
     {
         _codesetsService = codesetsService;
     }
 
-    public async Task<T> GetResource(CodesetConfig.Resource? resource = null)
+    public async Task<T> GetResource(CodesetsResource? resource = null)
     {
         if (_resourceCache is not null)
         {
