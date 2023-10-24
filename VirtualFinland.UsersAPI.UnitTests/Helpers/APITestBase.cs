@@ -79,7 +79,8 @@ public class APITestBase
                 },
                 Options = new SecurityOptions()
                 {
-                    TermsOfServiceAgreementRequired = false
+                    TermsOfServiceAgreementRequired = false,
+                    ServiceRequestTimeoutInMilliseconds = 1000
                 }
             }
         );
