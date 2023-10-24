@@ -19,6 +19,9 @@ public class TimeoutTests : APITestBase
 {
 
     [Fact]
+    ///
+    /// Test that the security feature times out when retrieving service information using the AudienceGuardService feature
+    /// 
     public async Task Should_RetrievingSecurityServiceInformation_shouldThrowTimeoutException()
     {
         // Arrange
