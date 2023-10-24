@@ -80,7 +80,8 @@ public class APITestBase
                 },
                 Options = new SecurityOptions()
                 {
-                    TermsOfServiceAgreementRequired = verifyTermsOfServiceAgreement
+                    TermsOfServiceAgreementRequired = verifyTermsOfServiceAgreement,
+                    ServiceRequestTimeoutInMilliseconds = 1000
                 }
             }
         );
