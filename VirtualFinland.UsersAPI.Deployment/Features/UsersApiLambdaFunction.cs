@@ -116,7 +116,7 @@ class UsersApiLambdaFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "VirtualFinland.UsersAPI",
-            Timeout = 30,
+            Timeout = 15,
             MemorySize = 2048,
             Environment = new FunctionEnvironmentArgs
             {
@@ -171,8 +171,42 @@ class UsersApiLambdaFunction
         // Configure log group with retention of 180 days
         LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource, 180);
 
+        // Setup error alerting
+        SetupErrorAlerting(stackSetup);
+
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
+    }
+
+    private void SetupErrorAlerting(StackSetup stackSetup)
+    {
+        var stackReference = new StackReference(stackSetup.GetAlertingStackName());
+        var errorLambdaFunctionArnRef = stackReference.RequireOutput("errorSubLambdaFunctionArn");
+        var errorLambdaFunctionArn = Output.Format($"{errorLambdaFunctionArnRef}");
+
+        // Permissions for the log group subscription to invoke the error alerting lambda function of monitoring stack
+        var logGroupInvokePermission = new Permission(stackSetup.CreateResourceName("ErrorAlerter"), new PermissionArgs
+        {
+            Action = "lambda:InvokeFunction",
+            Function = errorLambdaFunctionArn,
+            Principal = "logs.amazonaws.com",
+            SourceArn = Output.Format($"{LogGroup.Arn}:*"),
+        }, new() { DependsOn = { LogGroup } });
+
+        // Subscribe to the log groups
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("StatusCodeAlert"), new LogSubscriptionFilterArgs
+        {
+            LogGroup = LogGroup.Name,
+            FilterPattern = "{ $.StatusCode > 404 }", // Users API should not encounter errors with status code > 404, for example validation errors not expected
+            DestinationArn = errorLambdaFunctionArn,
+        }, new() { DependsOn = { logGroupInvokePermission } });
+
+        _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("TaskTimedOutAlert"), new LogSubscriptionFilterArgs
+        {
+            LogGroup = LogGroup.Name,
+            FilterPattern = "%Task timed out%", // Users API should not encounter timeouts
+            DestinationArn = errorLambdaFunctionArn,
+        }, new() { DependsOn = { logGroupInvokePermission } });
     }
 
     public Function LambdaFunctionResource = default!;
