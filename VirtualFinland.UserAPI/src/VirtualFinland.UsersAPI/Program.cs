@@ -20,6 +20,7 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.Extensions.Options;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -53,9 +54,6 @@ builder.Services.AddDataProtection().UseCryptographicAlgorithms(
         EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
         ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
     });
-
-// Validate server configuration
-ServerConfigurationValidation.ValidateServer(builder.Configuration);
 
 //
 // Swagger setup
@@ -150,7 +148,8 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 //
 // Other dependencies
 //
-builder.Services.Configure<CodesetConfig>(builder.Configuration);
+builder.Services.AddSingleton<CodesetConfig>();
+builder.Services.AddSingleton<CodesetsService>();
 
 //
 // Application build

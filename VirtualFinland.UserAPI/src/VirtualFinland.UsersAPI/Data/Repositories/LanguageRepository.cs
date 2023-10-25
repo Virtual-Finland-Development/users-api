@@ -1,43 +1,16 @@
-using System.Text.Json;
-using Microsoft.Extensions.Options;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Repositories;
 
 namespace VirtualFinland.UserAPI.Data.Repositories;
 
-public class LanguageRepository : ILanguageRepository
+public class LanguageRepository : CodesetsResourceRepository<List<Language>>, ILanguageRepository
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _languagesUrl;
-    private List<Language>? _languages;
-
-
-    public LanguageRepository(IOptions<CodesetConfig> settings, IHttpClientFactory httpClientFactory)
+    public LanguageRepository(CodesetsService codesetsService) : base(codesetsService)
     {
-        _httpClientFactory = httpClientFactory;
-        _languagesUrl = settings.Value.IsoLanguages;
+        _resource = CodesetsResource.Languages;
     }
 
-    public async Task<List<Language>> GetAllLanguages()
-    {
-        if (_languages is not null)
-        {
-            return _languages;
-        }
-
-        var httpClient = _httpClientFactory.CreateClient();
-        var httpResponseMessage = await httpClient.GetAsync(_languagesUrl);
-
-        if (httpResponseMessage.IsSuccessStatusCode)
-        {
-            var languages = JsonSerializer.Deserialize<List<Language>>(await httpResponseMessage.Content.ReadAsStringAsync());
-
-            if (languages is not null)
-            {
-                _languages = languages;
-                return languages;
-            }
-        }
-
-        return new List<Language>();
-    }
+    public Task<List<Language>> GetAllLanguages() => GetResource();
 }

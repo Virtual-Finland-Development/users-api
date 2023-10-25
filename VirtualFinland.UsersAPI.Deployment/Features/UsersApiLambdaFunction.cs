@@ -132,7 +132,7 @@ class UsersApiLambdaFunction
                         "REDIS_ENDPOINT", Output.Format($"{redis.ClusterEndpoint}")
                     },
                     {
-                        "CodesetApiBaseUrl", Output.Format($"{codesetsEndpointUrl}/resources")
+                        "Services__Codesets__ApiEndpoint", Output.Format($"{codesetsEndpointUrl}/resources")
                     },
                     {
                         "Security__Access__AccessFinland__IsEnabled", aclConfig.Require("accessfinland-isEnabled")
