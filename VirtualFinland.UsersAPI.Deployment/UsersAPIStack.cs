@@ -54,6 +54,9 @@ public class UsersApiStack : Stack
         var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS);
         AdminFunctionArn = adminFunction.LambdaFunction.Arn;
 
+        // Analytics triggers
+        adminFunction.CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
+
         // Ensure database user 
         database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
         // Ensure database audit log triggers

@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Pulumi;
+using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
@@ -137,7 +137,10 @@ class AdminFunction
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
         });
+    }
 
+    public void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    {
         // Configure SQS trigger
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
         {
@@ -147,6 +150,36 @@ class AdminFunction
             Enabled = true,
             StartingPosition = "LATEST"
         });
+
+        // Configure CloudWatch scheduled event
+        var eventRule = new EventRule(stackSetup.CreateResourceName("AdminFunctionScheduledEvent"), new EventRuleArgs
+        {
+            ScheduleExpression = "rate(1 day)",
+            Description = "Users-API Analytics Update Trigger",
+            EventPattern = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                { "detail-type", new[] { "Scheduled UpdateAnalytics Event" } },
+                {
+                    "detail", new Dictionary<string, string> {
+                        { "Action", "UpdateAnalytics" }
+                    }
+                }
+            }),
+            Tags = stackSetup.Tags
+        });
+        _ = new Permission(stackSetup.CreateResourceName("AdminFunctionScheduledEventPermission"), new PermissionArgs
+        {
+            Principal = "events.amazonaws.com",
+            Action = "lambda:InvokeFunction",
+            Function = LambdaFunction.Name,
+            SourceArn = eventRule.Arn
+        });
+        _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionScheduledEventTarget"), new EventTargetArgs
+        {
+            Rule = eventRule.Name,
+            Arn = LambdaFunction.Arn
+        });
+
     }
 
     public Function LambdaFunction = default!;
