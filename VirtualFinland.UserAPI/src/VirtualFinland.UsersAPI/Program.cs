@@ -20,7 +20,6 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
-using Microsoft.Extensions.Options;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
