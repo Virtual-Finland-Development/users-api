@@ -14,7 +14,6 @@ services:
       AWS_REGION: eu-north-1
       REDIS_ENDPOINT: redis:6379
       "Services__Codesets__ApiEndpoint": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
-      "SuomiFi__AuthorizationJwksJsonUrl": ${SuomiFi__AuthorizationJwksJsonUrl:-http://host.docker.internal:4078/auth/saml2/suomifi/.well-known/jwks.json}
     depends_on:
       postgresdb:
         condition: service_healthy
