@@ -21,6 +21,7 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,9 +61,6 @@ builder.Services.AddDataProtection().UseCryptographicAlgorithms(
         EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
         ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
     });
-
-// Validate server configuration
-ServerConfigurationValidation.ValidateServer(builder.Configuration);
 
 //
 // Swagger setup
@@ -157,7 +155,8 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 //
 // Other dependencies
 //
-builder.Services.Configure<CodesetConfig>(builder.Configuration);
+builder.Services.AddSingleton<CodesetConfig>();
+builder.Services.AddSingleton<CodesetsService>();
 
 //
 // Application build
@@ -178,7 +177,17 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 }
 
 
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        if (httpContext.Items["Exception"] is Exception exception)
+        {
+            // Add the exception to the log context, omit the stack trace
+            diagnosticContext.Set("@x", $"{exception.GetType().Name}: {exception.Message}");
+        }
+    };
+});
 app.UseMiddleware<RequestTracingMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();

@@ -23,12 +23,20 @@ public static class SecurityFeatureServiceExtensions
         var features = new List<ISecurityFeature>();
 
         var securityConfigurations = configuration.GetSection("Security:Authorization").Get<Dictionary<string, SecurityFeatureOptions>>();
+        var securityOptions = configuration.GetSection("Security:Options").Get<SecurityOptions>();
         var enabledSecurityFeatureNames = securityConfigurations.Where(x => x.Value.IsEnabled).Select(x => x.Key).ToArray();
         if (!enabledSecurityFeatureNames.Any()) throw new ArgumentException("No security features enabled");
 
         var securityClientProviders = new SecurityClientProviders()
         {
-            HttpClient = new HttpClient(),
+            HttpClient = new HttpClient(
+                new HttpRequestTimeoutHandler
+                {
+                    DefaultTimeout = TimeSpan.FromMilliseconds(securityOptions.ServiceRequestTimeoutInMilliseconds),
+                    DefaultTimeoutMessage = "Security feature request timeout",
+                    InnerHandler = new HttpClientHandler()
+                }
+            ),
             CacheRepositoryFactory = new CacheRepositoryFactory(redis.GetDatabase(), Constants.Security.CachePrefix),
         };
 
@@ -41,7 +49,7 @@ public static class SecurityFeatureServiceExtensions
         }
 
         // Register security setup
-        services.AddSingleton(new SecuritySetup { Features = features, Options = configuration.GetSection("Security:Options").Get<SecurityOptions>() });
+        services.AddSingleton(new SecuritySetup { Features = features, Options = securityOptions });
 
         // Register app security instance
         services.AddSingleton<IApplicationSecurity, ApplicationSecurity>();

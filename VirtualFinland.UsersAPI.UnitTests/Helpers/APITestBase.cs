@@ -3,7 +3,6 @@ using System.Security.Claims;
 using Amazon.CloudWatch;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,6 +13,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Security.Configurations;
 using VirtualFinland.UserAPI.Security.Features;
@@ -38,7 +38,7 @@ public class APITestBase
         return new UsersDbContext(options, true);
     }
 
-    public (IRequestAuthenticationCandinate requestAuthenticationCandinate, AuthenticationService authenticationService, Mock<HttpContext> httpContext) GetGoodLoginRequestSituation(IRequestAuthenticationCandinate requestAuthenticationCandinate)
+    public (IRequestAuthenticationCandinate requestAuthenticationCandinate, AuthenticationService authenticationService, Mock<HttpContext> httpContext) GetGoodLoginRequestSituation(IRequestAuthenticationCandinate requestAuthenticationCandinate, bool verifyTermsOfServiceAgreement = false)
     {
         // Create mock jwt token
         var idToken = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
@@ -84,7 +84,8 @@ public class APITestBase
                 },
                 Options = new SecurityOptions()
                 {
-                    TermsOfServiceAgreementRequired = false
+                    TermsOfServiceAgreementRequired = verifyTermsOfServiceAgreement,
+                    ServiceRequestTimeoutInMilliseconds = 1000
                 }
             }
         );
@@ -138,5 +139,19 @@ public class APITestBase
         });
 
         return new AnalyticsServiceFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object);
+    }
+
+    protected async Task<TermsOfService> SetupTermsOfServices()
+    {
+        var termsOfServicesData = TermsOfServiceBuilder.Build();
+        var tos = await _dbContext.TermsOfServices.SingleOrDefaultAsync(tos => tos.Version == termsOfServicesData.Version);
+        if (tos != null)
+        {
+            return tos;
+        }
+
+        var entry = _dbContext.TermsOfServices.Add(termsOfServicesData);
+        await _dbContext.SaveChangesAsync();
+        return entry.Entity;
     }
 }

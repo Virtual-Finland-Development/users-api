@@ -51,7 +51,6 @@ public static class GetSearchProfile
 
             if (userSearchProfile is null)
             {
-                _logger.LogInformation("Failed to retrieve search profile: {RequestProfileId}", request.ProfileId);
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
