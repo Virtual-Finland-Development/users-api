@@ -7,6 +7,7 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
+using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -16,7 +17,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -185,6 +186,15 @@ class UsersApiLambdaFunction
                     },
                     {
                         "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
+                    },
+                    {
+                        "Analytics__CloudWatch__IsEnabled", "true"
+                    },
+                    {
+                        "Analytics__SQS__QueueUrl", analyticsSqS.Url
+                    },
+                    {
+                        "Analytics__SQS__IsEnabled", "true"
                     }
                 }
             },

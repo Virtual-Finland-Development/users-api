@@ -1,5 +1,8 @@
+using System.Text.Json;
 using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Security.Models;
@@ -8,16 +11,18 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AnalyticsService<T> : ILogger<T>
 {
-    private readonly AnalyticsConfig.CloudWatchSettings _cloudWatchSettings;
+    private readonly AnalyticsConfig _analyticsConfig;
     private readonly ILogger<T> _logger;
     private readonly Type _handlerType = typeof(T);
     private readonly IAmazonCloudWatch _cloudwatchClient;
+    private readonly IAmazonSQS _sqsClient;
 
-    public AnalyticsService(IOptions<AnalyticsConfig> options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient)
+    public AnalyticsService(IOptions<AnalyticsConfig> options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient, IAmazonSQS sqsClient)
     {
-        _cloudWatchSettings = options.Value.CloudWatch;
+        _analyticsConfig = options.Value;
         _logger = logger;
         _cloudwatchClient = cloudwatchClient;
+        _sqsClient = sqsClient;
     }
 
     /// <summary>
@@ -42,11 +47,6 @@ public class AnalyticsService<T> : ILogger<T>
 
     public void PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
-        if (!_cloudWatchSettings.IsEnabled)
-        {
-            return;
-        }
-
         var eventContext = ParseHandlerTypeContextName(eventContextName);
         PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
         EngageInSpecialAnalyticEvents(eventContext);
@@ -54,6 +54,11 @@ public class AnalyticsService<T> : ILogger<T>
 
     private void PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
+        if (!_analyticsConfig.CloudWatch.IsEnabled)
+        {
+            return;
+        }
+
         // Push an AWS Cloudwatch custom metric that counts the number of requests per audience
         _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
         {
@@ -95,12 +100,17 @@ public class AnalyticsService<T> : ILogger<T>
                     }
                 }
             },
-            Namespace = _cloudWatchSettings.Namespace
+            Namespace = _analyticsConfig.CloudWatch.Namespace
         });
     }
 
     private void EngageInSpecialAnalyticEvents(string eventContextName)
     {
+        if (!_analyticsConfig.Sqs.IsEnabled)
+        {
+            return;
+        }
+
         //
         // Analytics events for the Persons table inserts and deletes
         //
@@ -110,7 +120,16 @@ public class AnalyticsService<T> : ILogger<T>
         };
         if (personsTableCountChangedEventContextNames.Contains(eventContextName))
         {
-            _logger.LogInformation(">>> FIRE ANALYTICS UPDATER CALL HERE <<<");
+            // Publish an SQS message to the analytics updater lambda
+            _sqsClient.SendMessageAsync(new SendMessageRequest()
+            {
+                QueueUrl = _analyticsConfig.Sqs.QueueUrl,
+                MessageBody = JsonSerializer.Serialize(new
+                {
+                    Action = "UpdateAnalytics"
+                }),
+            });
+
         }
     }
 

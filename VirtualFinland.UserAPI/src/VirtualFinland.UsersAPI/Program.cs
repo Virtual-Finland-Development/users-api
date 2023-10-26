@@ -21,7 +21,7 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
-using Microsoft.Extensions.Options;
+using Amazon.SQS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +33,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateBootstrapLogger();
 builder.Services.AddSingleton<AnalyticsServiceFactory>();
 builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+builder.Services.AddTransient<IAmazonSQS, AmazonSQSClient>();
 builder.Services.Configure<AnalyticsConfig>(builder.Configuration);
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 

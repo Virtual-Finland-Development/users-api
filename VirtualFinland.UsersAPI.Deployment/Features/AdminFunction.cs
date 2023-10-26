@@ -5,13 +5,14 @@ using Pulumi;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
+using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue analyticsSqS)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -78,6 +79,34 @@ class AdminFunction
             PolicyArn = cloudWatchMetricsPushPolicy.Arn
         });
 
+        // Allow function to be invoked by SQS
+        var sqsInvokePolicy = new Policy(stackSetup.CreateResourceName("AdminFunctionSQSInvokePolicy"), new()
+        {
+            Description = "Users-API SQS Invoke Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""sqs:ReceiveMessage"",
+                            ""sqs:DeleteMessage"",
+                            ""sqs:GetQueueAttributes""
+                        ],
+                        ""Resource"": [
+                            ""{analyticsSqS.Arn}""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SQS"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = sqsInvokePolicy.Arn
+        });
+
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
@@ -107,6 +136,16 @@ class AdminFunction
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
+        });
+
+        // Configure SQS trigger
+        _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
+        {
+            EventSourceArn = analyticsSqS.Arn,
+            FunctionName = LambdaFunction.Name,
+            BatchSize = 1,
+            Enabled = true,
+            StartingPosition = "LATEST"
         });
     }
 
