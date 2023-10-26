@@ -182,9 +182,6 @@ class UsersApiLambdaFunction
                         "Security__Authorization__Sinuna__IsEnabled", authorizationConfig.Require("sinuna-isEnabled")
                     },
                     {
-                        "Security__Authorization__SuomiFi__IsEnabled", authorizationConfig.Require("suomifi-isEnabled")
-                    },
-                    {
                         "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
                     },
                     {

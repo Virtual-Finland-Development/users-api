@@ -17,5 +17,4 @@ config:
   acl:dataspace-agent: ""
   auth:testbed-isEnabled: true
   auth:sinuna-isEnabled: true
-  auth:suomifi-isEnabled: false
   termsOfService:isEnabled: false
