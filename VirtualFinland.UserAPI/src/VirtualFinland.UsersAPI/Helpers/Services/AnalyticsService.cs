@@ -128,7 +128,6 @@ public class AnalyticsService<T> : ILogger<T>
                     Action = "UpdateAnalytics"
                 }),
             });
-
         }
     }
 
