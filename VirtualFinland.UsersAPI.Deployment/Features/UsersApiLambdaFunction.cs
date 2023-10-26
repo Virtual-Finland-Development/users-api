@@ -124,6 +124,32 @@ class UsersApiLambdaFunction
             PolicyArn = cloudWatchMetricsPushPolicy.Arn
         });
 
+        // Allow function to send SQS messages
+        var sqsSendMessagePolicy = new Policy(stackSetup.CreateResourceName("LambdaSQSSendMessagePolicy"), new()
+        {
+            Description = "Users-API SQS Send Message Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""sqs:SendMessage""
+                        ],
+                        ""Resource"": [
+                            ""{analyticsSqS.Arn}""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SQS"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = sqsSendMessagePolicy.Arn
+        });
+
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
             VpcId = vpcSetup.VpcId,

@@ -59,7 +59,7 @@ public static class UpdateSearchProfile
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

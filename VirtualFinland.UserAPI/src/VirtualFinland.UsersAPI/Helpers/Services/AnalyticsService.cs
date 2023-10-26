@@ -31,7 +31,7 @@ public class AnalyticsService<T> : ILogger<T>
     /// <param name="requestAuthenticatedUser">The authenticated user</param>
     /// <param name="eventContextName">Context name for the log, defaults to the parsed form of the generic type T</param>
     /// <returns></returns>
-    public void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    public async Task LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         var eventContext = ParseHandlerTypeContextName(eventContextName);
 
@@ -41,17 +41,17 @@ public class AnalyticsService<T> : ILogger<T>
             eventContext
         );
 
-        PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
+        await PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
     }
 
-    public void PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    public async Task PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         var eventContext = ParseHandlerTypeContextName(eventContextName);
-        PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
-        EngageInSpecialAnalyticEvents(eventContext);
+        await PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
+        await EngageInSpecialAnalyticEvents(eventContext);
     }
 
-    private void PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    private async Task PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         if (!_analyticsConfig.CloudWatch.IsEnabled)
         {
@@ -59,7 +59,7 @@ public class AnalyticsService<T> : ILogger<T>
         }
 
         // Push an AWS Cloudwatch custom metric that counts the number of requests per audience
-        _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
+        await _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
         {
             MetricData = new List<MetricDatum>()
             {
@@ -103,7 +103,7 @@ public class AnalyticsService<T> : ILogger<T>
         });
     }
 
-    private void EngageInSpecialAnalyticEvents(string eventContextName)
+    private async Task EngageInSpecialAnalyticEvents(string eventContextName)
     {
         if (!_analyticsConfig.Sqs.IsEnabled)
         {
@@ -120,9 +120,10 @@ public class AnalyticsService<T> : ILogger<T>
         if (personsTableCountChangedEventContextNames.Contains(eventContextName))
         {
             // Publish an SQS message to the analytics updater lambda
-            _sqsClient.SendMessageAsync(new SendMessageRequest()
+            await _sqsClient.SendMessageAsync(new SendMessageRequest()
             {
                 QueueUrl = _analyticsConfig.Sqs.QueueUrl,
+                MessageGroupId = "PersonsTableCountChanged",
                 MessageBody = JsonSerializer.Serialize(new
                 {
                     Action = "UpdateAnalytics"

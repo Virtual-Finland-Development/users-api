@@ -79,7 +79,7 @@ public static class GetUser
                 );
             }
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new User(
                 dbUser.Id,

@@ -15,7 +15,8 @@ public class SqsQueue
         {
             FifoQueue = true,
             ContentBasedDeduplication = true,
-            VisibilityTimeoutSeconds = 60,
+            DeduplicationScope = "messageGroup",
+            VisibilityTimeoutSeconds = 30,
             Tags = stackSetup.Tags,
         });
     }

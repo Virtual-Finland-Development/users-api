@@ -114,16 +114,9 @@ class AdminFunction
         };
 
         var appArtifactPath = config.Require("adminFunctionArtifactPath");
-        LambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
+        var environmentArg = new FunctionEnvironmentArgs
         {
-            Role = execRole.Arn,
-            Runtime = "dotnet6",
-            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
-            Timeout = 30,
-            MemorySize = 256,
-            Environment = new FunctionEnvironmentArgs
-            {
-                Variables =
+            Variables =
                 {
                     {
                         "ASPNETCORE_ENVIRONMENT", stackSetup.Environment
@@ -131,8 +124,46 @@ class AdminFunction
                     {
                         "DB_CONNECTION_SECRET_NAME", secretsManager.Name
                     },
+                    {
+                        "Analytics__CloudWatch__IsEnabled", "true"
+                    },
                 }
-            },
+        };
+
+        LambdaFunction = new Function(stackSetup.CreateResourceName("AdminFunction"), new FunctionArgs
+        {
+            Role = execRole.Arn,
+            Runtime = "dotnet6",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
+            Timeout = 30,
+            MemorySize = 256,
+            Environment = environmentArg,
+            Code = new FileArchive(appArtifactPath),
+            VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
+        });
+
+        SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-handler"), new FunctionArgs
+        {
+            Role = execRole.Arn,
+            Runtime = "dotnet6",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
+            Timeout = 30,
+            MemorySize = 256,
+            Environment = environmentArg,
+            Code = new FileArchive(appArtifactPath),
+            VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
+        });
+
+        CloudWatchEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-cloudwatch-handler"), new FunctionArgs
+        {
+            Role = execRole.Arn,
+            Runtime = "dotnet6",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
+            Timeout = 30,
+            MemorySize = 256,
+            Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
@@ -145,7 +176,7 @@ class AdminFunction
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
         {
             EventSourceArn = analyticsSqS.Arn,
-            FunctionName = LambdaFunction.Name,
+            FunctionName = SqsEventHandlerFunction.Name,
             BatchSize = 1,
             Enabled = true,
         });
@@ -161,14 +192,13 @@ class AdminFunction
         {
             Principal = "events.amazonaws.com",
             Action = "lambda:InvokeFunction",
-            Function = LambdaFunction.Name,
+            Function = CloudWatchEventHandlerFunction.Name,
             SourceArn = eventRule.Arn
         });
-
         _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionScheduledEventTarget"), new EventTargetArgs
         {
             Rule = eventRule.Name,
-            Arn = LambdaFunction.Arn,
+            Arn = CloudWatchEventHandlerFunction.Arn,
             Input = JsonSerializer.Serialize(new Dictionary<string, object?>
             {
                 { "Action", "UpdateAnalytics" }
@@ -178,4 +208,6 @@ class AdminFunction
     }
 
     public Function LambdaFunction = default!;
+    public Function SqsEventHandlerFunction = default!;
+    public Function CloudWatchEventHandlerFunction = default!;
 }

@@ -56,7 +56,7 @@ public static class AddOccupations
                 .ToList();
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             var addedOccupations = new List<AddOccupationsResponse>();
             foreach (Models.UsersDatabase.Occupation entry in addedEntries)

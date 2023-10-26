@@ -23,7 +23,7 @@ public class Function
         await action.Execute(payload.Data);
     }
 
-    public static async Task FunctionHandler(SQSEvent sqsEvent)
+    public static async Task SQSEventHandler(SQSEvent sqsEvent)
     {
         // Setup
         var payloadBody = sqsEvent.Records.First().Body;
@@ -38,7 +38,7 @@ public class Function
         await action.Execute(payload.Data);
     }
 
-    public static async Task FunctionHandler(CloudWatchEvent<object> cloudWatchEvent)
+    public static async Task CloudWatchEventHandler(CloudWatchEvent<object> cloudWatchEvent)
     {
         // Setup
         var payloadBody = cloudWatchEvent.Detail.ToString() ?? throw new Exception("Could not get payload");
