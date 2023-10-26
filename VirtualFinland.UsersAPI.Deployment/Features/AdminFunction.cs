@@ -148,7 +148,6 @@ class AdminFunction
             FunctionName = LambdaFunction.Name,
             BatchSize = 1,
             Enabled = true,
-            StartingPosition = "LATEST"
         });
 
         // Configure CloudWatch scheduled event
@@ -156,15 +155,6 @@ class AdminFunction
         {
             ScheduleExpression = "rate(1 day)",
             Description = "Users-API Analytics Update Trigger",
-            EventPattern = JsonSerializer.Serialize(new Dictionary<string, object?>
-            {
-                { "detail-type", new[] { "Scheduled UpdateAnalytics Event" } },
-                {
-                    "detail", new Dictionary<string, string> {
-                        { "Action", "UpdateAnalytics" }
-                    }
-                }
-            }),
             Tags = stackSetup.Tags
         });
         _ = new Permission(stackSetup.CreateResourceName("AdminFunctionScheduledEventPermission"), new PermissionArgs
@@ -174,10 +164,15 @@ class AdminFunction
             Function = LambdaFunction.Name,
             SourceArn = eventRule.Arn
         });
+
         _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionScheduledEventTarget"), new EventTargetArgs
         {
             Rule = eventRule.Name,
-            Arn = LambdaFunction.Arn
+            Arn = LambdaFunction.Arn,
+            Input = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                { "Action", "UpdateAnalytics" }
+            })
         });
 
     }
