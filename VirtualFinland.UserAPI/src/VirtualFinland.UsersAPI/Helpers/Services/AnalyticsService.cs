@@ -3,7 +3,6 @@ using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -17,9 +16,9 @@ public class AnalyticsService<T> : ILogger<T>
     private readonly IAmazonCloudWatch _cloudwatchClient;
     private readonly IAmazonSQS _sqsClient;
 
-    public AnalyticsService(IOptions<AnalyticsConfig> options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient, IAmazonSQS sqsClient)
+    public AnalyticsService(AnalyticsConfig options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient, IAmazonSQS sqsClient)
     {
-        _analyticsConfig = options.Value;
+        _analyticsConfig = options;
         _logger = logger;
         _cloudwatchClient = cloudwatchClient;
         _sqsClient = sqsClient;

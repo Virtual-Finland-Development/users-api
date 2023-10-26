@@ -4,12 +4,13 @@ public class AnalyticsConfig
 {
     public AnalyticsConfig(IConfiguration configuration)
     {
-        CloudWatch = configuration.GetValue<CloudWatchSettings>("Analytics:CloudWatch");
-        Sqs = configuration.GetValue<SqsSettings>("Analytics:Sqs");
+        CloudWatch = configuration.GetSection("Analytics:CloudWatch").Get<CloudWatchSettings>();
+        Sqs = configuration.GetSection("Analytics:SQS").Get<SqsSettings>();
     }
-
-    public AnalyticsConfig()
+    public AnalyticsConfig(CloudWatchSettings cloudWatch, SqsSettings sqs)
     {
+        CloudWatch = cloudWatch;
+        Sqs = sqs;
     }
 
     public CloudWatchSettings CloudWatch { get; set; } = new();

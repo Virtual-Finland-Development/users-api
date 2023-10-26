@@ -2,7 +2,6 @@ using Amazon.CloudWatch;
 using Amazon.CloudWatch.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 
@@ -20,9 +19,9 @@ public class UpdateAnalyticsAction : IAdminAppAction
     private readonly IAmazonCloudWatch _cloudWatchClient;
     private readonly ILogger<UpdateAnalyticsAction> _logger;
 
-    public UpdateAnalyticsAction(IOptions<AnalyticsConfig> options, UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
+    public UpdateAnalyticsAction(AnalyticsConfig options, UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
     {
-        _cloudWatchSettings = options.Value.CloudWatch;
+        _cloudWatchSettings = options.CloudWatch;
         _dataContext = dataContext;
         _cloudWatchClient = cloudWatchClient;
         _logger = logger;

@@ -38,7 +38,7 @@ public class App
                     );
                 });
                 services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
-                services.Configure<AnalyticsConfig>(configurationBuilder);
+                services.AddSingleton<AnalyticsConfig>();
 
                 // Actions
                 services.AddTransient<DatabaseMigrationAction>();

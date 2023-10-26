@@ -34,7 +34,6 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddSingleton<AnalyticsServiceFactory>();
 builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
 builder.Services.AddTransient<IAmazonSQS, AmazonSQSClient>();
-builder.Services.Configure<AnalyticsConfig>(builder.Configuration);
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
@@ -158,6 +157,7 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 //
 builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
+builder.Services.AddSingleton<AnalyticsConfig>();
 
 //
 // Application build

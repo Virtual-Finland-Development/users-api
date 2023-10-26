@@ -131,19 +131,18 @@ public class APITestBase
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
         var cloudWatchClient = new Mock<IAmazonCloudWatch>();
         var sqsClient = new Mock<IAmazonSQS>();
-        var analyticsConfig = Options.Create(new AnalyticsConfig()
-        {
-            CloudWatch = new AnalyticsConfig.CloudWatchSettings()
+        var analyticsConfig = new AnalyticsConfig(
+            new AnalyticsConfig.CloudWatchSettings()
             {
                 IsEnabled = true,
                 Namespace = "test-namespace"
             },
-            Sqs = new AnalyticsConfig.SqsSettings()
+            new AnalyticsConfig.SqsSettings()
             {
                 IsEnabled = false,
                 QueueUrl = "test-queue-url"
             }
-        });
+        );
 
         return new AnalyticsServiceFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object, sqsClient.Object);
     }
