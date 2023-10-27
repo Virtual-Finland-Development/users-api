@@ -67,6 +67,7 @@ public class AuthenticationService
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
                 Issuer = requestAuthenticationCandinate.Issuer,
+                Audience = requestAuthenticationCandinate.Audience,
                 IdentityId = requestAuthenticationCandinate.IdentityId,
                 UserId = newDbPerson.Entity.Id,
                 Created = DateTime.UtcNow,
@@ -82,6 +83,13 @@ public class AuthenticationService
             context.Items.Add("User", authenticatedUser);
 
             return newDbPerson.Entity;
+        }
+
+        // Update the audience if it is not set
+        if (externalIdentity.Audience == null && requestAuthenticationCandinate.Audience != null)
+        {
+            externalIdentity.Audience = requestAuthenticationCandinate.Audience;
+            await _usersDbContext.SaveChangesAsync(requestAuthenticationCandinate, cancellationToken);
         }
 
         var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);

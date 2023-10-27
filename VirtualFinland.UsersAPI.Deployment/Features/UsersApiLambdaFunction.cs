@@ -255,7 +255,7 @@ class UsersApiLambdaFunction
         _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("StatusCodeAlert"), new LogSubscriptionFilterArgs
         {
             LogGroup = LogGroup.Name,
-            FilterPattern = "{ $.StatusCode > 404 }", // Users API should not encounter errors with status code > 404, for example validation errors not expected
+            FilterPattern = "{ $.StatusCode > 404 || $.StatusCode = 400 }", // Users API should not encounter errors with status code > 404, for example validation errors not expected. 400 is also considered an error.
             DestinationArn = errorLambdaFunctionArn,
         }, new() { DependsOn = { logGroupInvokePermission } });
 

@@ -19,9 +19,9 @@ public class UpdateAnalyticsAction : IAdminAppAction
     private readonly IAmazonCloudWatch _cloudWatchClient;
     private readonly ILogger<UpdateAnalyticsAction> _logger;
 
-    public UpdateAnalyticsAction(AnalyticsConfig options, UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
+    public UpdateAnalyticsAction(AnalyticsConfig settings, UsersDbContext dataContext, IAmazonCloudWatch cloudWatchClient, ILogger<UpdateAnalyticsAction> logger)
     {
-        _cloudWatchSettings = options.CloudWatch;
+        _cloudWatchSettings = settings.CloudWatch;
         _dataContext = dataContext;
         _cloudWatchClient = cloudWatchClient;
         _logger = logger;
@@ -36,23 +36,74 @@ public class UpdateAnalyticsAction : IAdminAppAction
         }
 
         // Gather statistics
-        var personsCount = await _dataContext.Persons.CountAsync();
+        var metricData = new List<MetricDatum>();
 
+        var personsCount = await _dataContext.Persons.CountAsync();
         _logger.LogInformation("PersonsCount: {PersonsCount}", personsCount);
+        metricData.Add(new()
+        {
+            MetricName = "PersonsCount",
+            Value = personsCount,
+            Unit = StandardUnit.None,
+            TimestampUtc = DateTime.UtcNow
+        });
+
+        var personsCountByIssuers = await _dataContext.ExternalIdentities.GroupBy(x => x.Issuer).Select(x => new { Issuer = x.Key, Count = x.Count() }).ToListAsync();
+        foreach (var personsCountByIssuer in personsCountByIssuers)
+        {
+            if (string.IsNullOrEmpty(personsCountByIssuer.Issuer))
+            {
+                continue;
+            }
+
+            _logger.LogInformation("PersonsCountByIssuer: {Issuer} {Count}", personsCountByIssuer.Issuer, personsCountByIssuer.Count);
+            metricData.Add(new()
+            {
+                MetricName = "PersonsCountByIssuer",
+                Value = personsCountByIssuer.Count,
+                Unit = StandardUnit.None,
+                TimestampUtc = DateTime.UtcNow,
+                Dimensions = new List<Dimension>()
+                {
+                    new()
+                    {
+                        Name = "Issuer",
+                        Value = personsCountByIssuer.Issuer
+                    }
+                }
+            });
+        }
+
+        var personsCountByAudiences = await _dataContext.ExternalIdentities.GroupBy(x => x.Audience).Select(x => new { Audience = x.Key, Count = x.Count() }).ToListAsync();
+        foreach (var personsCountByAudience in personsCountByAudiences)
+        {
+            if (string.IsNullOrEmpty(personsCountByAudience.Audience))
+            {
+                continue;
+            }
+
+            _logger.LogInformation("PersonsCountByAudience: {Audience} {Count}", personsCountByAudience.Audience, personsCountByAudience.Count);
+            metricData.Add(new()
+            {
+                MetricName = "PersonsCountByAudience",
+                Value = personsCountByAudience.Count,
+                Unit = StandardUnit.None,
+                TimestampUtc = DateTime.UtcNow,
+                Dimensions = new List<Dimension>()
+                {
+                    new()
+                    {
+                        Name = "Audience",
+                        Value = personsCountByAudience.Audience
+                    }
+                }
+            });
+        }
 
         // Update analytics
         await _cloudWatchClient.PutMetricDataAsync(new PutMetricDataRequest()
         {
-            MetricData = new List<MetricDatum>()
-            {
-                new()
-                {
-                    MetricName = "PersonsCount",
-                    Value = personsCount,
-                    Unit = StandardUnit.None,
-                    TimestampUtc = DateTime.UtcNow
-                }
-            },
+            MetricData = metricData,
             Namespace = _cloudWatchSettings.Namespace
         });
 
