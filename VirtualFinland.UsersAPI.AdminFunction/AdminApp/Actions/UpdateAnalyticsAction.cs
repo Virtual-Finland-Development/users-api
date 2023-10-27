@@ -74,7 +74,15 @@ public class UpdateAnalyticsAction : IAdminAppAction
             });
         }
 
-        var personsCountByAudiences = await _dataContext.ExternalIdentities.GroupBy(x => x.Audience).Select(x => new { Audience = x.Key, Count = x.Count() }).ToListAsync();
+        var personsCountByAudiences = await _dataContext.ExternalIdentities
+            .SelectMany(e => e.Audiences, (entity, textValue) => new { entity, textValue })
+                .GroupBy(x => x.textValue)
+                .Select(group => new
+                {
+                    Audience = group.Key,
+                    Count = group.Count()
+                }).ToListAsync();
+
         foreach (var personsCountByAudience in personsCountByAudiences)
         {
             if (string.IsNullOrEmpty(personsCountByAudience.Audience))

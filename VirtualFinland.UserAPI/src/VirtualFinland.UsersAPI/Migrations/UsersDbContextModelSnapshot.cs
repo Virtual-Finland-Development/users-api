@@ -155,8 +155,8 @@ namespace VirtualFinland.UserAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Audience")
-                        .HasColumnType("text");
+                    b.Property<string>("Audiences")
+                        .HasColumnType("text[]");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");

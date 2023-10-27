@@ -37,6 +37,7 @@ public class AuthenticationService
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, cancellationToken);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             if (verifyTermsOfServiceAgreement) await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(person.Id);
+            await EnsureAudienceListedInExternalIdentity(externalIdentity, requestAuthenticationCandinate.Audience, cancellationToken);
 
             var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
 
@@ -67,7 +68,7 @@ public class AuthenticationService
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
                 Issuer = requestAuthenticationCandinate.Issuer,
-                Audience = requestAuthenticationCandinate.Audience,
+                Audiences = new List<string> { requestAuthenticationCandinate.Audience },
                 IdentityId = requestAuthenticationCandinate.IdentityId,
                 UserId = newDbPerson.Entity.Id,
                 Created = DateTime.UtcNow,
@@ -85,12 +86,7 @@ public class AuthenticationService
             return newDbPerson.Entity;
         }
 
-        // Update the audience if it is not set
-        if (externalIdentity.Audience == null && requestAuthenticationCandinate.Audience != null)
-        {
-            externalIdentity.Audience = requestAuthenticationCandinate.Audience;
-            await _usersDbContext.SaveChangesAsync(requestAuthenticationCandinate, cancellationToken);
-        }
+        await EnsureAudienceListedInExternalIdentity(externalIdentity, requestAuthenticationCandinate.Audience, cancellationToken);
 
         var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 
@@ -108,5 +104,14 @@ public class AuthenticationService
         var requestAuthenticationCandinate = await _applicationSecurity.ParseJwtToken(token);
         requestAuthenticationCandinate.TraceId = context.TraceIdentifier;
         return requestAuthenticationCandinate;
+    }
+
+    private async Task EnsureAudienceListedInExternalIdentity(ExternalIdentity externalIdentity, string audience, CancellationToken cancellationToken = default)
+    {
+        if (externalIdentity.Audiences.Contains(audience)) return;
+
+        externalIdentity.Audiences.Add(audience);
+
+        await _usersDbContext.SaveChangesAsync(cancellationToken);
     }
 }
