@@ -48,6 +48,7 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.ApplyConfiguration(new WorkPreferencesConfiguration());
         modelBuilder.ApplyConfiguration(new CertificationConfiguration());
         modelBuilder.ApplyConfiguration(new TermsOfServiceConfiguration());
+        modelBuilder.ApplyConfiguration(new ExternalIdentityConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
     }
