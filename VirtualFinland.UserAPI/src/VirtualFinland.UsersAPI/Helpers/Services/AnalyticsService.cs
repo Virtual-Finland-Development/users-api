@@ -31,7 +31,20 @@ public class AnalyticsService<T> : ILogger<T>
     /// <param name="requestAuthenticatedUser">The authenticated user</param>
     /// <param name="eventContextName">Context name for the log, defaults to the parsed form of the generic type T</param>
     /// <returns></returns>
-    public async Task LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    public async Task HandleAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    {
+        var eventContext = ParseHandlerTypeContextName(eventContextName);
+        LogAuditLogEvent(auditEvent, requestAuthenticatedUser, eventContext);
+        await PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
+    }
+
+    /// <summary>
+    /// Log an audit log event
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <param name="requestAuthenticatedUser"></param>
+    /// <param name="eventContextName"></param>
+    private void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         var eventContext = ParseHandlerTypeContextName(eventContextName);
 
@@ -40,11 +53,15 @@ public class AnalyticsService<T> : ILogger<T>
             requestAuthenticatedUser,
             eventContext
         );
-
-        await PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
     }
 
-    public async Task PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    /// <summary>
+    /// Publishes the request metrics to CloudWatch and SQS
+    /// </summary>
+    /// <param name="requestAuthenticatedUser"></param>
+    /// <param name="eventContextName"></param>
+    /// <returns></returns>
+    private async Task PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
     {
         var eventContext = ParseHandlerTypeContextName(eventContextName);
         await PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
@@ -58,7 +75,7 @@ public class AnalyticsService<T> : ILogger<T>
             return;
         }
 
-        // Push an AWS Cloudwatch custom metric that counts the number of requests per audience
+        // Publish AWS Cloudwatch custom metrics for the request
         await _cloudwatchClient.PutMetricDataAsync(new PutMetricDataRequest()
         {
             MetricData = new List<MetricDatum>()
@@ -104,7 +121,22 @@ public class AnalyticsService<T> : ILogger<T>
                             Value = eventContextName
                         }
                     }
-                }
+                },
+                new()
+                {
+                    MetricName = "RequestsTotalPerIssuer",
+                    Value = 1,
+                    Unit = StandardUnit.None,
+                    TimestampUtc = DateTime.UtcNow,
+                    Dimensions = new List<Dimension>()
+                    {
+                        new()
+                        {
+                            Name = "Issuer",
+                            Value = requestAuthenticatedUser.Issuer
+                        }
+                    }
+                },
             },
             Namespace = _analyticsConfig.CloudWatch.Namespace
         });

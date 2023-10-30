@@ -203,7 +203,7 @@ public static class UpdateJobApplicantProfile
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
-            await _logger.LogAuditLogEvent(AuditLogEvent.Update, command.User);
+            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, command.User);
 
             return new Response
             {

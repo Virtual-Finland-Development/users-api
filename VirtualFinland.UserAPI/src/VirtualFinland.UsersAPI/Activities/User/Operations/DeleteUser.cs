@@ -57,7 +57,7 @@ public static class DeleteUser
 
                 await _context.SaveChangesAsync(request.User, cancellationToken);
 
-                await _logger.LogAuditLogEvent(AuditLogEvent.Delete, request.User);
+                await _logger.HandleAuditLogEvent(AuditLogEvent.Delete, request.User);
             }
             catch (DbUpdateException e)
             {

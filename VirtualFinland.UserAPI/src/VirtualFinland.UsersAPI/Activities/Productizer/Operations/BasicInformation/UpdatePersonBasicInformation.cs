@@ -60,7 +60,7 @@ public static class UpdatePersonBasicInformation
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
-            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new UpdatePersonBasicInformationResponse
             (

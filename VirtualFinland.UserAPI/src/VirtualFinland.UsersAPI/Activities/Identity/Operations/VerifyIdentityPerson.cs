@@ -33,7 +33,7 @@ public static class VerifyIdentityPerson
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
             var person = await _authenticationService.AuthenticateAndGetOrRegisterAndGetPerson(request.Context, cancellationToken);
-            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.Context.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on verifying identity"));
+            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.Context.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on verifying identity"));
             return new User(person.Id, person.Created, person.Modified);
         }
     }

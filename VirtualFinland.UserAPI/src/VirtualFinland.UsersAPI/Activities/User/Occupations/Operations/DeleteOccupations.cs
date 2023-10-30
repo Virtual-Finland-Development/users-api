@@ -48,7 +48,7 @@ public static class DeleteOccupations
 
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
-            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

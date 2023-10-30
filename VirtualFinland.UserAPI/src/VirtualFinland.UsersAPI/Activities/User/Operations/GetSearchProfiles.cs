@@ -45,7 +45,7 @@ public static class GetSearchProfiles
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.PersonId == dbUser.Id);
 
-            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions, o.Created, o.Modified)).ToListAsync(cancellationToken);
         }
