@@ -11,12 +11,12 @@ namespace VirtualFinland.UserAPI.Migrations
             migrationBuilder.AddColumn<List<string>>(
                 name: "Audiences",
                 table: "ExternalIdentities",
-                type: "text",
+                type: "text[]",
                 nullable: true);
 
             migrationBuilder.Sql(@"
-                UPDATE ""ExternalIdentities"" SET ""Audiences"" = '6fa88191-477e-4082-a119-e1e3ad09b7be' WHERE ""Audiences"" IS NULL AND ""Issuer"" = 'https://login.iam.qa.sinuna.fi';
-                UPDATE ""ExternalIdentities"" SET ""Audiences"" = 'e6a5a645-0cf6-48a1-9f08-3d72be3aceaf' WHERE ""Audiences"" IS NULL AND ""Issuer"" = 'https://login.testbed.fi';
+                UPDATE ""ExternalIdentities"" SET ""Audiences"" = {'6fa88191-477e-4082-a119-e1e3ad09b7be'} WHERE ""Audiences"" IS NULL AND ""Issuer"" = 'https://login.iam.qa.sinuna.fi';
+                UPDATE ""ExternalIdentities"" SET ""Audiences"" = {'e6a5a645-0cf6-48a1-9f08-3d72be3aceaf'} WHERE ""Audiences"" IS NULL AND ""Issuer"" = 'https://login.testbed.fi';
             ");
         }
 
