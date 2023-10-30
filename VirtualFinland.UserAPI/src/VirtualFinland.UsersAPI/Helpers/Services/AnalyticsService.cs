@@ -65,6 +65,13 @@ public class AnalyticsService<T> : ILogger<T>
             {
                 new()
                 {
+                    MetricName = "RequestsTotal",
+                    Value = 1,
+                    Unit = StandardUnit.None,
+                    TimestampUtc = DateTime.UtcNow
+                },
+                new()
+                {
                     MetricName = "RequestsTotalPerAudience",
                     Value = 1,
                     Unit = StandardUnit.None,
