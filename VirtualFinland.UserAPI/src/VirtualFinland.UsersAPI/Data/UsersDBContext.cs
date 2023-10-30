@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
+using VirtualFinland.UserAPI.Data.Virtual;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -33,6 +34,7 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<TermsOfService> TermsOfServices => Set<TermsOfService>();
     public DbSet<PersonTermsOfServiceAgreement> PersonTermsOfServiceAgreements => Set<PersonTermsOfServiceAgreement>();
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    public DbSet<PersonsByAudiencesResult> PersonsByAudiencesResults => Set<PersonsByAudiencesResult>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

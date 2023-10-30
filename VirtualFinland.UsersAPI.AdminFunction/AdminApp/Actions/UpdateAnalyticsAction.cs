@@ -74,14 +74,12 @@ public class UpdateAnalyticsAction : IAdminAppAction
             });
         }
 
-        var personsCountByAudiences = await _dataContext.ExternalIdentities
-            .SelectMany(e => e.Audiences, (entity, textValue) => new { entity, textValue })
-                .GroupBy(x => x.textValue)
-                .Select(group => new
-                {
-                    Audience = group.Key,
-                    Count = group.Count()
-                }).ToListAsync();
+        var rawQuery = @"
+            SELECT COUNT(*) AS Amount, regexp_split_to_table(""Audiences"", ',') AS Audience  
+            FROM ""ExternalIdentities""
+            GROUP BY Audience;
+        ";
+        var personsCountByAudiences = _dataContext.PersonsByAudiencesResults.FromSqlRaw(rawQuery).ToList();
 
         foreach (var personsCountByAudience in personsCountByAudiences)
         {
@@ -90,11 +88,11 @@ public class UpdateAnalyticsAction : IAdminAppAction
                 continue;
             }
 
-            _logger.LogInformation("PersonsCountByAudience: {Audience} {Count}", personsCountByAudience.Audience, personsCountByAudience.Count);
+            _logger.LogInformation("PersonsCountByAudience: {Audience} {Amount}", personsCountByAudience.Audience, personsCountByAudience.Amount);
             metricData.Add(new()
             {
                 MetricName = "PersonsCountByAudience",
-                Value = personsCountByAudience.Count,
+                Value = personsCountByAudience.Amount,
                 Unit = StandardUnit.None,
                 TimestampUtc = DateTime.UtcNow,
                 Dimensions = new List<Dimension>()
