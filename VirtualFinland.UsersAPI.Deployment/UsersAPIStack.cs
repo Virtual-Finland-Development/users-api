@@ -41,6 +41,7 @@ public class UsersApiStack : Stack
         var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
         var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
         var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
+        ElastiCacheClusterId = redisCache.ClusterId;
 
         var analyticsSqS = SqsQueue.CreateSqsQueueForAnalyticsCommand(stackSetup);
         var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS);
@@ -81,4 +82,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? DBIdentifier { get; set; }
     [Output] public Output<string>? AdminFunctionArn { get; set; }
     [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
+    [Output] public Output<string>? ElastiCacheClusterId { get; set; }
 }
