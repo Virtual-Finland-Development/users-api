@@ -129,8 +129,10 @@ public class APITestBase
     {
         var loggerFactory = new Mock<ILoggerFactory>();
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
         var cloudWatchClient = new Mock<IAmazonCloudWatch>();
         var sqsClient = new Mock<IAmazonSQS>();
+
         var analyticsConfig = new AnalyticsConfig(
             new AnalyticsConfig.CloudWatchSettings()
             {
@@ -144,7 +146,9 @@ public class APITestBase
             }
         );
 
-        return new AnalyticsLoggerFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object, sqsClient.Object);
+        var analyticsService = new AnalyticsService(analyticsConfig, cloudWatchClient.Object, sqsClient.Object);
+
+        return new AnalyticsLoggerFactory(loggerFactory.Object, analyticsService);
     }
 
     protected async Task<TermsOfService> SetupTermsOfServices()
