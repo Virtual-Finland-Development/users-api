@@ -119,26 +119,6 @@ public class AnalyticsService<T> : ILogger<T>
                 },
                 new()
                 {
-                    MetricName = "RequestsPerAudience",
-                    Value = 1,
-                    Unit = StandardUnit.None,
-                    TimestampUtc = DateTime.UtcNow,
-                    Dimensions = new List<Dimension>()
-                    {
-                        new()
-                        {
-                            Name = "Audience",
-                            Value = requestAuthenticatedUser.Audience
-                        },
-                        new()
-                        {
-                            Name = "Context",
-                            Value = eventContextName
-                        }
-                    }
-                },
-                new()
-                {
                     MetricName = "RequestsTotalPerIssuer",
                     Value = 1,
                     Unit = StandardUnit.None,
