@@ -54,7 +54,7 @@ public class APITestBase
             new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
         ));
 
-        var analyticsServiceFactoryMock = GetMockedAnalyticsServiceFactory();
+        var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
         var securityClientProviders = new SecurityClientProviders()
         {
             HttpClient = new Mock<HttpClient>().Object,
@@ -91,7 +91,7 @@ public class APITestBase
             }
         );
 
-        var authenticationService = new AuthenticationService(_dbContext, analyticsServiceFactoryMock, applicationSecurity);
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -125,7 +125,7 @@ public class APITestBase
         return serviceProvider;
     }
 
-    protected AnalyticsServiceFactory GetMockedAnalyticsServiceFactory()
+    protected AnalyticsLoggerFactory GetMockedAnalyticsLoggerFactory()
     {
         var loggerFactory = new Mock<ILoggerFactory>();
         loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
@@ -144,7 +144,7 @@ public class APITestBase
             }
         );
 
-        return new AnalyticsServiceFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object, sqsClient.Object);
+        return new AnalyticsLoggerFactory(analyticsConfig, loggerFactory.Object, cloudWatchClient.Object, sqsClient.Object);
     }
 
     protected async Task<TermsOfService> SetupTermsOfServices()

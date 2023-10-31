@@ -31,7 +31,7 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-builder.Services.AddSingleton<AnalyticsServiceFactory>();
+builder.Services.AddSingleton<AnalyticsLoggerFactory>();
 builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
 builder.Services.AddTransient<IAmazonSQS, AmazonSQSClient>();
 Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
@@ -158,6 +158,7 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
 builder.Services.AddSingleton<AnalyticsConfig>();
+builder.Services.AddSingleton<AnalyticsService>();
 
 //
 // Application build
@@ -189,7 +190,8 @@ app.UseSerilogRequestLogging(options =>
         }
     };
 });
-app.UseMiddleware<RequestTracingMiddleware>();
+
+app.UseMiddleware<AnalyticsMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();

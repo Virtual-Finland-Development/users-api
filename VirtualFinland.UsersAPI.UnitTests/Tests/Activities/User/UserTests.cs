@@ -16,7 +16,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var query = new GetUser.Query(requestAuthenticatedUser);
         var handler = new GetUser.Handler(_dbContext, mockLoggerFactory);
 
@@ -44,7 +44,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -77,7 +77,7 @@ public class UserTests : APITestBase
         var command = new DeleteUser.Command();
         command.SetAuth(requestAuthenticatedUser);
 
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new DeleteUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
@@ -92,7 +92,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -113,7 +113,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -134,7 +134,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -155,7 +155,7 @@ public class UserTests : APITestBase
     {
         // Arrange
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
@@ -175,7 +175,7 @@ public class UserTests : APITestBase
     public async Task Should_FailUserCheckWithNonExistingUserIdAsync()
     {
         // Arrange
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();

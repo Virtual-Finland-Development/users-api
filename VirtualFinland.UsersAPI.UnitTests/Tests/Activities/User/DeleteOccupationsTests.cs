@@ -12,7 +12,7 @@ public class DeleteOccupationsTests : APITestBase
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteOccupations.Command(new List<Guid>());
         command.SetAuth(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new DeleteOccupations.Handler(_dbContext, mockLoggerFactory);
 
         var act = () => sut.Handle(command, default);
@@ -27,7 +27,7 @@ public class DeleteOccupationsTests : APITestBase
             new Guid("c03ed8cb-5aa5-41fe-89ed-f1cfad44e2f6"));
         var command = new DeleteOccupations.Command(new List<Guid> { new("c03ed8cb-5aa5-41fe-89ed-f1cfad44e2f6") });
         command.SetAuth(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new DeleteOccupations.Handler(_dbContext, mockLoggerFactory);
 
         var act = () => sut.Handle(command, default);
@@ -41,7 +41,7 @@ public class DeleteOccupationsTests : APITestBase
         var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteOccupations.Command();
         command.SetAuth(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new DeleteOccupations.Handler(_dbContext, mockLoggerFactory);
 
         var act = () => sut.Handle(command, default);

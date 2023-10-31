@@ -35,12 +35,12 @@ public static class GetSearchProfile
     public class Handler : IRequestHandler<Query, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<SearchProfile> Handle(Query request, CancellationToken cancellationToken)
@@ -54,7 +54,7 @@ public static class GetSearchProfile
                 throw new NotFoundException($"Specified search profile not found by ID: {request.ProfileId}");
             }
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new SearchProfile(userSearchProfile.Id, userSearchProfile.JobTitles, userSearchProfile.Name, userSearchProfile.Regions, userSearchProfile.Created, userSearchProfile.Modified);
         }

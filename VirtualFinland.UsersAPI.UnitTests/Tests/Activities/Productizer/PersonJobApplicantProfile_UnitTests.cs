@@ -14,7 +14,7 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
     {
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var query = new GetJobApplicantProfile.Query(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new GetJobApplicantProfile.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(query, CancellationToken.None);
@@ -28,7 +28,7 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var sut = new UpdateJobApplicantProfile.Handler(_dbContext, mockLoggerFactory, occupationRepository);
 

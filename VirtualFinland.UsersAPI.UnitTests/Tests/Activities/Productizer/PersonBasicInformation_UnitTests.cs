@@ -13,7 +13,7 @@ public class PersonBasicInformation_UnitTests : APITestBase
     {
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var query = new GetPersonBasicInformation.Query(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new GetPersonBasicInformation.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(query, CancellationToken.None);
@@ -32,7 +32,7 @@ public class PersonBasicInformation_UnitTests : APITestBase
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdatePersonBasicInformationCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var sut = new UpdatePersonBasicInformation.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(command, CancellationToken.None);

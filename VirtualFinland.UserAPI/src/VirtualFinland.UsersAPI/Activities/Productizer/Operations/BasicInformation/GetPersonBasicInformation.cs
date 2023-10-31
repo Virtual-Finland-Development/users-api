@@ -21,19 +21,19 @@ public static class GetPersonBasicInformation
     public class Handler : IRequestHandler<Query, GetPersonBasicInformationResponse>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<GetPersonBasicInformationResponse> Handle(Query request, CancellationToken cancellationToken)
         {
             var person = await _context.Persons.SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new GetPersonBasicInformationResponse(
                 person.GivenName,

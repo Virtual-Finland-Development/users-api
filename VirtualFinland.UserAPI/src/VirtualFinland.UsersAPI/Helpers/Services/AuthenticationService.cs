@@ -9,13 +9,13 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 public class AuthenticationService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly AnalyticsService<AuthenticationService> _logger;
+    private readonly AnalyticsLogger<AuthenticationService> _logger;
     private readonly IApplicationSecurity _applicationSecurity;
 
-    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory, IApplicationSecurity applicationSecurity)
+    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
-        _logger = loggerFactory.CreateAnalyticsService<AuthenticationService>();
+        _logger = loggerFactory.CreateAnalyticsLogger<AuthenticationService>();
         _applicationSecurity = applicationSecurity;
     }
 
@@ -79,7 +79,7 @@ public class AuthenticationService
 
             var authenticatedUser = new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Create, authenticatedUser, "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson");
+            await _logger.LogAuditLogEvent(AuditLogEvent.Create, authenticatedUser, "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson");
 
             context.Items.Add("User", authenticatedUser);
 

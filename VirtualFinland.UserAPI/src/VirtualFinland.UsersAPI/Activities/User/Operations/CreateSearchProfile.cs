@@ -39,12 +39,12 @@ public static class CreateSearchProfile
     public class Handler : IRequestHandler<Command, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ public static class CreateSearchProfile
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }

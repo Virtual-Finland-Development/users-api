@@ -8,67 +8,27 @@ using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
-public class AnalyticsService<T> : ILogger<T>
+public class AnalyticsService
 {
     private readonly AnalyticsConfig _analyticsConfig;
-    private readonly ILogger<T> _logger;
-    private readonly Type _handlerType = typeof(T);
     private readonly IAmazonCloudWatch _cloudwatchClient;
     private readonly IAmazonSQS _sqsClient;
 
-    public AnalyticsService(AnalyticsConfig options, ILogger<T> logger, IAmazonCloudWatch cloudwatchClient, IAmazonSQS sqsClient)
+    public AnalyticsService(AnalyticsConfig options, IAmazonCloudWatch cloudwatchClient, IAmazonSQS sqsClient)
     {
         _analyticsConfig = options;
-        _logger = logger;
         _cloudwatchClient = cloudwatchClient;
         _sqsClient = sqsClient;
     }
 
+
     /// <summary>
-    /// Log an audit log event
+    /// Publish request as an analytics event
     /// </summary>
-    /// <param name="auditEvent">The audit log event</param>
     /// <param name="requestAuthenticatedUser">The authenticated user</param>
     /// <param name="eventContextName">Context name for the log, defaults to the parsed form of the generic type T</param>
     /// <returns></returns>
-    public async Task HandleAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
-    {
-        var eventContext = ParseHandlerTypeContextName(eventContextName);
-        LogAuditLogEvent(auditEvent, requestAuthenticatedUser, eventContext);
-        await PutUpdateToRequestMetrics(requestAuthenticatedUser, eventContext);
-    }
-
-    /// <summary>
-    /// Log an audit log event
-    /// </summary>
-    /// <param name="auditEvent"></param>
-    /// <param name="requestAuthenticatedUser"></param>
-    /// <param name="eventContextName"></param>
-    private void LogAuditLogEvent(AuditLogEvent auditEvent, RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
-    {
-        var eventContext = ParseHandlerTypeContextName(eventContextName);
-
-        _logger.LogInformation("AuditLog: {auditEvent}-event on {userInfo} from {eventContext}",
-            auditEvent,
-            requestAuthenticatedUser,
-            eventContext
-        );
-    }
-
-    /// <summary>
-    /// Publishes the request metrics to CloudWatch and SQS
-    /// </summary>
-    /// <param name="requestAuthenticatedUser"></param>
-    /// <param name="eventContextName"></param>
-    /// <returns></returns>
-    private async Task PutUpdateToRequestMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
-    {
-        var eventContext = ParseHandlerTypeContextName(eventContextName);
-        await PutCloudWatchCustomMetrics(requestAuthenticatedUser, eventContext);
-        await EngageInSpecialAnalyticEvents(eventContext);
-    }
-
-    private async Task PutCloudWatchCustomMetrics(RequestAuthenticatedUser requestAuthenticatedUser, string? eventContextName = null)
+    public async Task HandleAuthenticatedRequest(RequestAuthenticatedUser requestAuthenticatedUser, string eventContext)
     {
         if (!_analyticsConfig.CloudWatch.IsEnabled)
         {
@@ -98,7 +58,7 @@ public class AnalyticsService<T> : ILogger<T>
                         new()
                         {
                             Name = "Context",
-                            Value = eventContextName
+                            Value = eventContext
                         }
                     }
                 },
@@ -137,7 +97,10 @@ public class AnalyticsService<T> : ILogger<T>
         });
     }
 
-    private async Task EngageInSpecialAnalyticEvents(string eventContextName)
+    /// <summary>
+    /// Handle special analytics events
+    /// </summary>
+    public async Task HandleSpecialAnalyticEvents(string eventContextName)
     {
         if (!_analyticsConfig.Sqs.IsEnabled)
         {
@@ -165,39 +128,4 @@ public class AnalyticsService<T> : ILogger<T>
             });
         }
     }
-
-    /// <summary>
-    /// Parse the handler type context name from the handler type
-    /// eg. VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation.GetPersonBasicInformation+Handler -> GetPersonBasicInformation
-    /// </summary>
-    /// <returns></returns>
-    private string ParseHandlerTypeContextName(string? eventContextName = null)
-    {
-        if (eventContextName is not null) return eventContextName;
-
-        var handlerType = _handlerType.ToString();
-        var handlerTypeParts = handlerType.Split('.');
-        var handlerTypeContextName = handlerTypeParts[^1];
-        if (handlerTypeContextName.Contains('+'))
-        {
-            handlerTypeContextName = handlerTypeContextName.Split('+')[0];
-        }
-        return handlerTypeContextName;
-    }
-
-
-    //---> ILogger<T> implementations
-    public IDisposable BeginScope<TState>(TState state)
-    {
-        return _logger.BeginScope(state);
-    }
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return _logger.IsEnabled(logLevel);
-    }
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-    {
-        _logger.Log(logLevel, eventId, state, exception, formatter);
-    }
-    //<--- ILogger<T> implementations
 }

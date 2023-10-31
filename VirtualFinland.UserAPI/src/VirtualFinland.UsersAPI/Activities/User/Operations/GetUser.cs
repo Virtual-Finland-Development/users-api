@@ -31,12 +31,12 @@ public static class GetUser
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ public static class GetUser
                 );
             }
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new User(
                 dbUser.Id,

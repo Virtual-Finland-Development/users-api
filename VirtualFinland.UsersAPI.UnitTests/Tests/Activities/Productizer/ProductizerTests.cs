@@ -15,7 +15,7 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var query = new GetUserProfile.Query(requestAuthenticatedUser);
         var handler = new GetUserProfile.Handler(_dbContext, mockLoggerFactory);
 
@@ -44,7 +44,7 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLoggerFactory = GetMockedAnalyticsServiceFactory();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();

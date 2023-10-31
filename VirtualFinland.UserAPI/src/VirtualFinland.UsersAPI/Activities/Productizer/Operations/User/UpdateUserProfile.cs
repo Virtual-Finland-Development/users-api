@@ -89,19 +89,19 @@ public static class UpdateUserProfile
     public class Handler : IRequestHandler<Command, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
         private readonly ILanguageRepository _languageRepository;
         private readonly ICountriesRepository _countriesRepository;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
         public Handler(UsersDbContext usersDbContext,
-            AnalyticsServiceFactory loggerFactory,
+            AnalyticsLoggerFactory loggerFactory,
             ILanguageRepository languageRepository,
             ICountriesRepository countriesRepository,
             IOccupationsFlatRepository occupationsFlatRepository)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
             _languageRepository = languageRepository;
             _countriesRepository = countriesRepository;
             _occupationsFlatRepository = occupationsFlatRepository;
@@ -120,7 +120,7 @@ public static class UpdateUserProfile
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new User
             {

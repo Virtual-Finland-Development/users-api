@@ -31,12 +31,12 @@ public static class GetSearchProfiles
     public class Handler : IRequestHandler<Query, IList<SearchProfile>>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<IList<SearchProfile>> Handle(Query request, CancellationToken cancellationToken)
@@ -45,7 +45,7 @@ public static class GetSearchProfiles
 
             var userSearchProfiles = _usersDbContext.SearchProfiles.Where(o => o.PersonId == dbUser.Id);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return await userSearchProfiles.Select(o => new SearchProfile(o.Id, o.JobTitles, o.Name, o.Regions, o.Created, o.Modified)).ToListAsync(cancellationToken);
         }

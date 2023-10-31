@@ -21,12 +21,12 @@ public static class GetJobApplicantProfile
     public class Handler : IRequestHandler<Query, PersonJobApplicantProfileResponse>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<PersonJobApplicantProfileResponse> Handle(Query request, CancellationToken cancellationToken)
@@ -41,7 +41,7 @@ public static class GetJobApplicantProfile
                 .Include(p => p.WorkPreferences)
                 .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Read, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new PersonJobApplicantProfileResponse
             {

@@ -25,12 +25,12 @@ public static class DeleteOccupations
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ public static class DeleteOccupations
 
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

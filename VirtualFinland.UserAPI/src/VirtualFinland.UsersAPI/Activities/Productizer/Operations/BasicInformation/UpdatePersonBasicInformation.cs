@@ -32,12 +32,12 @@ public static class UpdatePersonBasicInformation
     public class Handler : IRequestHandler<Command, UpdatePersonBasicInformationResponse>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<UpdatePersonBasicInformationResponse> Handle(Command request,
@@ -60,7 +60,7 @@ public static class UpdatePersonBasicInformation
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new UpdatePersonBasicInformationResponse
             (

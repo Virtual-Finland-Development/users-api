@@ -125,15 +125,15 @@ public static class UpdateUser
     public class Handler : IRequestHandler<Command, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
         private readonly ILanguageRepository _languageRepository;
         private readonly ICountriesRepository _countriesRepository;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext usersDbContext, AnalyticsServiceFactory loggerFactory, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsFlatRepository occupationsFlatRepository)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory, ILanguageRepository languageRepository, ICountriesRepository countriesRepository, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _usersDbContext = usersDbContext;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
             _languageRepository = languageRepository;
             _countriesRepository = countriesRepository;
             _occupationsFlatRepository = occupationsFlatRepository;
@@ -155,7 +155,7 @@ public static class UpdateUser
 
             await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
 
-            await _logger.HandleAuditLogEvent(AuditLogEvent.Update, request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             List<UpdateUserResponseOccupation>? occupations = null;
             if (dbUser.Occupations is { Count: > 0 })

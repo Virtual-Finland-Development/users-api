@@ -18,12 +18,12 @@ public static class DeleteUser
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _context;
-        private readonly AnalyticsService<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext context, AnalyticsServiceFactory loggerFactory)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
-            _logger = loggerFactory.CreateAnalyticsService<Handler>();
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<Unit> Handle(Command request,
@@ -57,7 +57,7 @@ public static class DeleteUser
 
                 await _context.SaveChangesAsync(request.User, cancellationToken);
 
-                await _logger.HandleAuditLogEvent(AuditLogEvent.Delete, request.User);
+                await _logger.LogAuditLogEvent(AuditLogEvent.Delete, request.User);
             }
             catch (DbUpdateException e)
             {
