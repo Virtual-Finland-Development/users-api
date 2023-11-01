@@ -191,6 +191,7 @@ app.UseSerilogRequestLogging(options =>
     };
 });
 
+app.UseMiddleware<RequestTracingMiddleware>();
 app.UseMiddleware<AnalyticsMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();

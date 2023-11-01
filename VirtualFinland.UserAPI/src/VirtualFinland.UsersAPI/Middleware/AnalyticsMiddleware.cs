@@ -4,6 +4,9 @@ using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Middleware;
 
+/// <summary>
+/// Adds analytics to the request pipeline (for authenticated user requests)
+/// </summary>
 public class AnalyticsMiddleware
 {
     private readonly RequestDelegate _next;
@@ -17,11 +20,6 @@ public class AnalyticsMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        if (context.Request.Headers.TryGetValue(Constants.Headers.XRequestTraceId, out var traceId))
-        {
-            context.TraceIdentifier = traceId;
-        }
-
         await _next.Invoke(context);
 
         var authenticatedUser = context.Items["User"];
