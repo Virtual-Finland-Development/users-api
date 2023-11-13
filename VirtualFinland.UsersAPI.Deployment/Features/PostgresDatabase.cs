@@ -166,6 +166,7 @@ public class PostgresDatabase
         DatabaseConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbUsername};Password={DbPassword}");
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = rdsPostgreSqlInstance.Identifier;
+        DBClusterIdentifier = Output.Create("");
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
