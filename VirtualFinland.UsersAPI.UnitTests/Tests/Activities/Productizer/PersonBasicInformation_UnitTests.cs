@@ -1,6 +1,4 @@
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.BasicInformation;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder;
@@ -15,8 +13,8 @@ public class PersonBasicInformation_UnitTests : APITestBase
     {
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var query = new GetPersonBasicInformation.Query(requestAuthenticatedUser);
-        var mockLogger = new Mock<ILogger<GetPersonBasicInformation.Handler>>();
-        var sut = new GetPersonBasicInformation.Handler(_dbContext, mockLogger.Object);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var sut = new GetPersonBasicInformation.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(query, CancellationToken.None);
 
@@ -34,8 +32,8 @@ public class PersonBasicInformation_UnitTests : APITestBase
         var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new UpdatePersonBasicInformationCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var mockLogger = new Mock<ILogger<UpdatePersonBasicInformation.Handler>>();
-        var sut = new UpdatePersonBasicInformation.Handler(_dbContext, mockLogger.Object);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var sut = new UpdatePersonBasicInformation.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(command, CancellationToken.None);
 

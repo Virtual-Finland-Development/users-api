@@ -1,5 +1,5 @@
-using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Repositories;
 

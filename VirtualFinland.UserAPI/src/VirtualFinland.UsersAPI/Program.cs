@@ -1,3 +1,4 @@
+using Amazon.CloudWatch;
 using System.Reflection;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
@@ -20,13 +21,20 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Amazon.SQS;
 
+var builder = WebApplication.CreateBuilder(args);
+
+//
+// Logging and analytics
+//
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-
-var builder = WebApplication.CreateBuilder(args);
-Console.WriteLine($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
+builder.Services.AddSingleton<AnalyticsLoggerFactory>();
+builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+builder.Services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
 // App runtime configuration
@@ -149,6 +157,8 @@ builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepositor
 //
 builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
+builder.Services.AddSingleton<AnalyticsConfig>();
+builder.Services.AddSingleton<AnalyticsService>();
 
 //
 // Application build
@@ -180,7 +190,9 @@ app.UseSerilogRequestLogging(options =>
         }
     };
 });
+
 app.UseMiddleware<RequestTracingMiddleware>();
+app.UseMiddleware<AnalyticsMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();

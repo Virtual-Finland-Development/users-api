@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using VirtualFinland.UserAPI.Exceptions;
@@ -21,10 +20,10 @@ public class AuthenticationTests : APITestBase
         // Arrange
         await APIUserFactory.CreateAndGetLogInUser(_dbContext);
 
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -54,8 +53,8 @@ public class AuthenticationTests : APITestBase
         var mockConfiguration = new Mock<IConfiguration>();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
 
         // Act
         var act = () => authenticationService.Authenticate(mockHttpContext.Object);

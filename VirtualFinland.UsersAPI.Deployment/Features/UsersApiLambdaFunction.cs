@@ -7,6 +7,7 @@ using Pulumi.Aws.Ec2;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
+using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
@@ -16,7 +17,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -97,6 +98,57 @@ class UsersApiLambdaFunction
             PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
         });
 
+        // Allow function to post metrics to cloudwatch
+        var cloudWatchMetricsPushPolicy = new Policy(stackSetup.CreateResourceName("LambdaCloudWatchMetricsPushPolicy"), new()
+        {
+            Description = "Users-API CloudWatch Metrics Push Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""cloudwatch:PutMetricData""
+                        ],
+                        ""Resource"": [
+                            ""*""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-CloudWatch"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = cloudWatchMetricsPushPolicy.Arn
+        });
+
+        // Allow function to send SQS messages
+        var sqsSendMessagePolicy = new Policy(stackSetup.CreateResourceName("LambdaSQSSendMessagePolicy"), new()
+        {
+            Description = "Users-API SQS Send Message Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""sqs:SendMessage""
+                        ],
+                        ""Resource"": [
+                            ""{analyticsSqS.Arn}""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("LambdaRoleAttachment-SQS"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = sqsSendMessagePolicy.Arn
+        });
 
         var defaultSecurityGroup = GetSecurityGroup.Invoke(new GetSecurityGroupInvokeArgs()
         {
@@ -157,6 +209,15 @@ class UsersApiLambdaFunction
                     },
                     {
                         "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
+                    },
+                    {
+                        "Analytics__CloudWatch__IsEnabled", "true"
+                    },
+                    {
+                        "Analytics__SQS__QueueUrl", analyticsSqS.Url
+                    },
+                    {
+                        "Analytics__SQS__IsEnabled", "true"
                     }
                 }
             },
@@ -194,7 +255,7 @@ class UsersApiLambdaFunction
         _ = new LogSubscriptionFilter(stackSetup.CreateResourceName("StatusCodeAlert"), new LogSubscriptionFilterArgs
         {
             LogGroup = LogGroup.Name,
-            FilterPattern = "{ $.StatusCode > 404 }", // Users API should not encounter errors with status code > 404, for example validation errors not expected
+            FilterPattern = "{ $.StatusCode > 404 || $.StatusCode = 400 }", // Users API should not encounter errors with status code > 404, for example validation errors not expected. 400 is also considered an error.
             DestinationArn = errorLambdaFunctionArn,
         }, new() { DependsOn = { logGroupInvokePermission } });
 

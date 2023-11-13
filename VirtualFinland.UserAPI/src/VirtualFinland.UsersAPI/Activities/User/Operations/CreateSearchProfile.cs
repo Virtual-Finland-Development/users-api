@@ -5,6 +5,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
@@ -38,12 +39,12 @@ public static class CreateSearchProfile
     public class Handler : IRequestHandler<Command, SearchProfile>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<SearchProfile> Handle(Command request, CancellationToken cancellationToken)
@@ -62,7 +63,7 @@ public static class CreateSearchProfile
 
             await _usersDbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, "SearchProfile", request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return new SearchProfile(dbNewSearchProfile.Entity.Id);
         }

@@ -1,6 +1,6 @@
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -22,18 +22,18 @@ public static class VerifyIdentityPerson
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly AuthenticationService _authenticationService;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(AuthenticationService authenticationService, ILogger<Handler> logger)
+        public Handler(AuthenticationService authenticationService, AnalyticsLoggerFactory loggerFactory)
         {
             _authenticationService = authenticationService;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
         {
             var person = await _authenticationService.AuthenticateAndGetOrRegisterAndGetPerson(request.Context, cancellationToken);
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, "Identity", request.Context.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on verifying identity"));
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.Context.Items["User"] as RequestAuthenticatedUser ?? throw new Exception("Unknown error occurred on verifying identity"));
             return new User(person.Id, person.Created, person.Modified);
         }
     }

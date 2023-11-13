@@ -1,7 +1,5 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
@@ -17,9 +15,9 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<GetUserProfile.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var query = new GetUserProfile.Query(requestAuthenticatedUser);
-        var handler = new GetUserProfile.Handler(_dbContext, mockLogger.Object);
+        var handler = new GetUserProfile.Handler(_dbContext, mockLoggerFactory);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -46,13 +44,13 @@ public class ProductizerTests : APITestBase
     {
         // Arrange
         var (user, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUserProfile.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
-        var sut = new UpdateUserProfile.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository, occupationRepository);
+        var sut = new UpdateUserProfile.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository, occupationRepository);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);

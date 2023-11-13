@@ -41,8 +41,10 @@ public class UsersApiStack : Stack
         var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
         var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
         var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
+        ElastiCacheClusterId = redisCache.ClusterId;
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch);
+        var analyticsSqS = SqsQueue.CreateSqsQueueForAnalyticsCommand(stackSetup);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
@@ -50,8 +52,11 @@ public class UsersApiStack : Stack
         DBIdentifier = database.DBIdentifier;
         AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
-        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret);
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS);
         AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Analytics triggers
+        adminFunction.CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
 
         // Ensure database user 
         database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
@@ -77,4 +82,5 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? DBIdentifier { get; set; }
     [Output] public Output<string>? AdminFunctionArn { get; set; }
     [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
+    [Output] public Output<string>? ElastiCacheClusterId { get; set; }
 }

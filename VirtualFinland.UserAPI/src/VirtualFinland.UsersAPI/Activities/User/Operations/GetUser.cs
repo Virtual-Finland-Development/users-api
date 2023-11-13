@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Security.Models;
 
@@ -31,12 +31,12 @@ public static class GetUser
     public class Handler : IRequestHandler<Query, User>
     {
         private readonly UsersDbContext _usersDbContext;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext, ILogger<Handler> logger)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<User> Handle(Query request, CancellationToken cancellationToken)
@@ -79,7 +79,7 @@ public static class GetUser
                 );
             }
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Read, "Person", request.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Read, request.User);
 
             return new User(
                 dbUser.Id,
@@ -148,6 +148,4 @@ public static class GetUser
         string? EscoCode,
         int? WorkMonths
     );
-
-
 }

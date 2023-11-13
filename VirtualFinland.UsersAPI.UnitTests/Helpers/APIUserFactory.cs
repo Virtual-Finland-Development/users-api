@@ -28,7 +28,8 @@ public class APIUserFactory
             Modified = DateTime.UtcNow,
             Issuer = Issuer,
             IdentityId = faker.Random.Guid().ToString(),
-            UserId = dbUser.Entity.Id
+            UserId = dbUser.Entity.Id,
+            Audiences = new List<string> { Audience }
         });
 
         var requestAuthenticatedUser = new RequestAuthenticatedUser()

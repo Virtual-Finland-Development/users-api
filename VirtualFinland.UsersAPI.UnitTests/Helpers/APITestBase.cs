@@ -1,13 +1,18 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Amazon.CloudWatch;
+using Amazon.SQS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security;
@@ -49,7 +54,7 @@ public class APITestBase
             new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
         ));
 
-        var mockAuthenticationServiceLogger = new Mock<ILogger<AuthenticationService>>();
+        var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
         var securityClientProviders = new SecurityClientProviders()
         {
             HttpClient = new Mock<HttpClient>().Object,
@@ -86,7 +91,7 @@ public class APITestBase
             }
         );
 
-        var authenticationService = new AuthenticationService(_dbContext, mockAuthenticationServiceLogger.Object, applicationSecurity);
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -118,6 +123,32 @@ public class APITestBase
             .Returns(serviceScopeFactory.Object);
 
         return serviceProvider;
+    }
+
+    protected AnalyticsLoggerFactory GetMockedAnalyticsLoggerFactory()
+    {
+        var loggerFactory = new Mock<ILoggerFactory>();
+        loggerFactory.Setup(o => o.CreateLogger(It.IsAny<string>())).Returns(new Mock<ILogger>().Object);
+
+        var cloudWatchClient = new Mock<IAmazonCloudWatch>();
+        var sqsClient = new Mock<IAmazonSQS>();
+
+        var analyticsConfig = new AnalyticsConfig(
+            new AnalyticsConfig.CloudWatchSettings()
+            {
+                IsEnabled = true,
+                Namespace = "test-namespace"
+            },
+            new AnalyticsConfig.SqsSettings()
+            {
+                IsEnabled = false,
+                QueueUrl = "test-queue-url"
+            }
+        );
+
+        var analyticsService = new AnalyticsService(analyticsConfig, cloudWatchClient.Object, sqsClient.Object);
+
+        return new AnalyticsLoggerFactory(loggerFactory.Object, analyticsService);
     }
 
     protected async Task<TermsOfService> SetupTermsOfServices()

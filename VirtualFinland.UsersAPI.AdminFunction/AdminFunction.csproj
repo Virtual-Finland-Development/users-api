@@ -13,13 +13,14 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.CloudWatchEvents" Version="4.3.0" />
     <PackageReference Include="Amazon.Lambda.Core" Version="2.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.3.1" />
+    <PackageReference Include="Amazon.Lambda.SQSEvents" Version="2.1.0" />
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference
-      Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
+    <ProjectReference Include="..\VirtualFinland.UserAPI\src\VirtualFinland.UsersAPI\VirtualFinland.UsersAPI.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../Data/terms-of-services.json">

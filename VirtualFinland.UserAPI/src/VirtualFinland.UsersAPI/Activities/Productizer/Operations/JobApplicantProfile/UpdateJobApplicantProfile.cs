@@ -7,6 +7,7 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -103,14 +104,13 @@ public static class UpdateJobApplicantProfile
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
-        private readonly ILogger<Handler> _logger;
+        private readonly AnalyticsLogger<Handler> _logger;
         private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-
-        public Handler(UsersDbContext context, ILogger<Handler> logger, IOccupationsFlatRepository occupationsFlatRepository)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _context = context;
-            _logger = logger;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
             _occupationsFlatRepository = occupationsFlatRepository;
         }
 
@@ -203,7 +203,7 @@ public static class UpdateJobApplicantProfile
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Update, "JobApplicantProfile", command.User);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, command.User);
 
             return new Response
             {

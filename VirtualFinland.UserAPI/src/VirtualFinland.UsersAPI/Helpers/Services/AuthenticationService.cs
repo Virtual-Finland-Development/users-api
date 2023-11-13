@@ -3,20 +3,19 @@ using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class AuthenticationService
 {
     private readonly UsersDbContext _usersDbContext;
-    private readonly ILogger<AuthenticationService> _logger;
+    private readonly AnalyticsLogger<AuthenticationService> _logger;
     private readonly IApplicationSecurity _applicationSecurity;
 
-    public AuthenticationService(UsersDbContext usersDbContext, ILogger<AuthenticationService> logger, IApplicationSecurity applicationSecurity)
+    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory, IApplicationSecurity applicationSecurity)
     {
         _usersDbContext = usersDbContext;
-        _logger = logger;
+        _logger = loggerFactory.CreateAnalyticsLogger<AuthenticationService>();
         _applicationSecurity = applicationSecurity;
     }
 
@@ -38,6 +37,7 @@ public class AuthenticationService
             var externalIdentity = await _usersDbContext.ExternalIdentities.SingleAsync(o => o.IdentityId == requestAuthenticationCandinate.IdentityId && o.Issuer == requestAuthenticationCandinate.Issuer, cancellationToken);
             var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
             if (verifyTermsOfServiceAgreement) await _applicationSecurity.VerifyPersonTermsOfServiceAgreement(person.Id);
+            await EnsureAudienceListedInExternalIdentity(externalIdentity, requestAuthenticationCandinate.Audience, cancellationToken);
 
             var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
 
@@ -68,6 +68,7 @@ public class AuthenticationService
             await _usersDbContext.ExternalIdentities.AddAsync(new ExternalIdentity
             {
                 Issuer = requestAuthenticationCandinate.Issuer,
+                Audiences = new List<string> { requestAuthenticationCandinate.Audience },
                 IdentityId = requestAuthenticationCandinate.IdentityId,
                 UserId = newDbPerson.Entity.Id,
                 Created = DateTime.UtcNow,
@@ -78,12 +79,14 @@ public class AuthenticationService
 
             var authenticatedUser = new RequestAuthenticatedUser(newDbPerson.Entity, requestAuthenticationCandinate);
 
-            _logger.LogAuditLogEvent(AuditLogEvent.Create, "Person", authenticatedUser);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Create, authenticatedUser, "AuthenticationService::AuthenticateAndGetOrRegisterAndGetPerson");
 
             context.Items.Add("User", authenticatedUser);
 
             return newDbPerson.Entity;
         }
+
+        await EnsureAudienceListedInExternalIdentity(externalIdentity, requestAuthenticationCandinate.Audience, cancellationToken);
 
         var person = await _usersDbContext.Persons.SingleAsync(o => o.Id == externalIdentity.UserId, cancellationToken);
 
@@ -101,5 +104,14 @@ public class AuthenticationService
         var requestAuthenticationCandinate = await _applicationSecurity.ParseJwtToken(token);
         requestAuthenticationCandinate.TraceId = context.TraceIdentifier;
         return requestAuthenticationCandinate;
+    }
+
+    private async Task EnsureAudienceListedInExternalIdentity(ExternalIdentity externalIdentity, string audience, CancellationToken cancellationToken = default)
+    {
+        if (externalIdentity.Audiences.Contains(audience)) return;
+
+        externalIdentity.Audiences.Add(audience);
+
+        await _usersDbContext.SaveChangesAsync(cancellationToken);
     }
 }

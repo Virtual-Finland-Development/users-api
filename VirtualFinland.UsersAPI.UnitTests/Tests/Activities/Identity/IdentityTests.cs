@@ -1,8 +1,5 @@
 using Bogus;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.Identity.Operations;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
@@ -19,8 +16,8 @@ public class IdentityTests : APITestBase
         var (requestAuthenticationCandinate, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         var query = new VerifyIdentityPerson.Query(mockHttpContext.Object);
-        var mockLogger = new Mock<ILogger<VerifyIdentityPerson.Handler>>();
-        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLogger.Object);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLoggerFactory);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -44,8 +41,8 @@ public class IdentityTests : APITestBase
         var (_, authenticationService, mockHttpContext) = GetGoodLoginRequestSituation(requestAuthenticatedUser);
 
         var query = new VerifyIdentityPerson.Query(mockHttpContext.Object);
-        var mockLogger = new Mock<ILogger<VerifyIdentityPerson.Handler>>();
-        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLogger.Object);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var handler = new VerifyIdentityPerson.Handler(authenticationService, mockLoggerFactory);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);

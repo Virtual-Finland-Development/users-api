@@ -12,7 +12,14 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class TermsOfServiceUpdateAction : IAdminAppAction
 {
-    public async Task Execute(UsersDbContext dataContext, string? data)
+    private readonly UsersDbContext _dataContext;
+    public TermsOfServiceUpdateAction(UsersDbContext dataContext)
+    {
+        _dataContext = dataContext;
+    }
+
+
+    public async Task Execute(string? data)
     {
         // Parse payload
         var inputString = ReadActionInput(data);
@@ -23,7 +30,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
             ?? throw new ArgumentException("Invalid JSON payload");
 
         // Fetch existing terms of services
-        var existingTermsOfServices = await dataContext.TermsOfServices.ToListAsync();
+        var existingTermsOfServices = await _dataContext.TermsOfServices.ToListAsync();
 
         // Prepare database actions
         foreach (var tossable in payload.TermsOfServices)
@@ -46,14 +53,14 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
                     Created = DateTime.UtcNow,
                     Modified = DateTime.UtcNow
                 };
-                dataContext.TermsOfServices.Add(termsOfService);
+                _dataContext.TermsOfServices.Add(termsOfService);
             }
             else
             {
                 if (tossable.Action == "DELETE")
                 {
                     // Delete
-                    dataContext.TermsOfServices.Remove(existingTosItem);
+                    _dataContext.TermsOfServices.Remove(existingTosItem);
                 }
                 else
                 {
@@ -66,7 +73,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
         }
 
         // Apply changes
-        await dataContext.SaveChangesAsync();
+        await _dataContext.SaveChangesAsync();
     }
 
     private static string ReadActionInput(string? data)

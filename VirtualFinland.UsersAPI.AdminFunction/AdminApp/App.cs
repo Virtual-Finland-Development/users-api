@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.AdminFunction.AdminApp.Actions;
+using Amazon.CloudWatch;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
@@ -13,19 +14,21 @@ public class App
     public static async Task<IHost> Build()
     {
         var builder = Host.CreateDefaultBuilder();
-        AwsConfigurationManager awsConfigurationManager = new();
+        var configurationBuilder = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddEnvironmentVariables()
+            .Build();
 
+        AwsConfigurationManager awsConfigurationManager = new();
         var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
             ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
             : null;
-        var dbConnectionString = databaseSecret ?? new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddEnvironmentVariables()
-            .Build().GetConnectionString("DefaultConnection");
+        var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
 
         builder.ConfigureServices(
             services =>
             {
+                // Dependencies
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,
@@ -34,19 +37,32 @@ public class App
                             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     );
                 });
+                services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+                services.AddSingleton<AnalyticsConfig>();
+
+                // Actions
+                services.AddTransient<DatabaseMigrationAction>();
+                services.AddTransient<DatabaseAuditLogTriggersInitializationAction>();
+                services.AddTransient<DatabaseUserInitializationAction>();
+                services.AddTransient<TermsOfServiceUpdateAction>();
+                services.AddTransient<UpdateAnalyticsAction>();
             });
 
         return builder.Build();
     }
+}
 
-    public static IAdminAppAction ResolveAction(Models.Actions action)
+public static class AppExtensions
+{
+    public static IAdminAppAction ResolveAction(this IServiceScope scope, Models.Actions action)
     {
         return action switch
         {
-            Models.Actions.Migrate => new DatabaseMigrationAction(),
-            Models.Actions.InitializeDatabaseAuditLogTriggers => new DatabaseAuditLogTriggersInitializationAction(),
-            Models.Actions.InitializeDatabaseUser => new DatabaseUserInitializationAction(),
-            Models.Actions.UpdateTermsOfService => new TermsOfServiceUpdateAction(),
+            Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<DatabaseMigrationAction>(),
+            Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<DatabaseAuditLogTriggersInitializationAction>(),
+            Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<DatabaseUserInitializationAction>(),
+            Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<TermsOfServiceUpdateAction>(),
+            Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };
     }
