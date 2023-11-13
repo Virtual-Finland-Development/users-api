@@ -74,6 +74,9 @@ public class UpdateAnalyticsAction : IAdminAppAction
             });
         }
 
+        // Retrieves the amount of persons by audience
+        // Note: as of the column data is stored as a comma separated string and modelled as List<string> in the code (the model-first approach),
+        // composing this query with fluent syntax proved to be rather difficult. Maybe revisit this with newer version of EF Core.
         var rawQuery = @"
             SELECT COUNT(*) AS Amount, regexp_split_to_table(""Audiences"", ',') AS Audience  
             FROM ""ExternalIdentities""
