@@ -50,6 +50,7 @@ public class UsersApiStack : Stack
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
+        DBClusterIdentifier = database.DBClusterIdentifier;
         AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
         var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS);
@@ -80,6 +81,7 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
+    [Output] public Output<string>? DBClusterIdentifier { get; set; }
     [Output] public Output<string>? AdminFunctionArn { get; set; }
     [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
     [Output] public Output<string>? ElastiCacheClusterId { get; set; }

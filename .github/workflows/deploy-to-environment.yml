@@ -57,6 +57,7 @@ jobs:
         run: |
           pulumi stack select ${{ secrets.PULUMI_ORGANIZATION }}/${{ inputs.environment }}
           echo "DBIdentifier=$(pulumi stack output DBIdentifier)" >> $GITHUB_OUTPUT
+          echo "DBClusterIdentifier=$(pulumi stack output DBClusterIdentifier)" >> $GITHUB_OUTPUT
           echo "AdminFunctionArn=$(pulumi stack output AdminFunctionArn)" >> $GITHUB_OUTPUT
           echo "StackExists=true" >> $GITHUB_OUTPUT
         env:
@@ -87,7 +88,7 @@ jobs:
       - name: Create database backup snapshot on PRE-deployment
         if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_DEPLOYMENT }}
         run: |
-          aws rds create-db-cluster-snapshot --db-cluster-identifier ${{ steps.get-pulumi-outputs.outputs.DBIdentifier }} --db-cluster-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
+          aws rds create-db-cluster-snapshot --db-cluster-identifier ${{ steps.get-pulumi-outputs.outputs.DBClusterIdentifier }} --db-cluster-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Wait for the database snapshot to be ready
         if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_DEPLOYMENT }}
         run: |
