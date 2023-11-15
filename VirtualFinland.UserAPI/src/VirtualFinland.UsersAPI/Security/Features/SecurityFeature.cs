@@ -131,6 +131,7 @@ public class SecurityFeature : ISecurityFeature
 
     /// <summary>
     /// Validates the token audience by external service
+    /// Implement this in the derived class if using the audience guard service feature
     /// </summary>
     /// <param name="audience"></param>
     /// <exception cref="NotAuthorizedException"></exception>
