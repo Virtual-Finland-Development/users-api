@@ -1,28 +1,33 @@
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
 public abstract class CodesetsResourceRepository<T>
 {
     private readonly CodesetsService _codesetsService;
-    private T? _resourceCache; // @TODO: Add caching suitable for AWS Lambda
+    private ICacheRepository _cacheRepository;
     protected CodesetsResource? _resource;
 
-    public CodesetsResourceRepository(CodesetsService codesetsService)
+    public CodesetsResourceRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory)
     {
         _codesetsService = codesetsService;
+        _cacheRepository = cacheRepositoryFactory.Create("codesets");
     }
 
     public async Task<T> GetResource(CodesetsResource? resource = null)
     {
-        if (_resourceCache is not null)
+        var resourceToGet = resource ?? _resource ?? throw new Exception("Resource not defined");
+
+        var cacheKey = resourceToGet.ToString();
+        if (await _cacheRepository.Exists(cacheKey))
         {
-            return _resourceCache;
+            return await _cacheRepository.Get<T>(cacheKey);
         }
 
-        var resourceToGet = resource ?? _resource ?? throw new Exception("Resource not defined");
-        _resourceCache = await _codesetsService.GetResource<T>(resourceToGet);
-        return _resourceCache;
+        var resolvedResource = await _codesetsService.GetResource<T>(resourceToGet);
+        await _cacheRepository.Set<T>(cacheKey, resolvedResource);
+        return resolvedResource;
     }
 }

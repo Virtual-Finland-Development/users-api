@@ -7,7 +7,7 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class LanguageRepository : CodesetsResourceRepository<List<Language>>, ILanguageRepository
 {
-    public LanguageRepository(CodesetsService codesetsService) : base(codesetsService)
+    public LanguageRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory) : base(codesetsService, cacheRepositoryFactory)
     {
         _resource = CodesetsResource.Languages;
     }
