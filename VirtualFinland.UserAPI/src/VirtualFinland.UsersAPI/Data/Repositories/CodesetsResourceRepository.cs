@@ -27,7 +27,7 @@ public abstract class CodesetsResourceRepository<T>
         }
 
         var resolvedResource = await _codesetsService.GetResource<T>(resourceToGet);
-        await _cacheRepository.Set<T>(cacheKey, resolvedResource);
+        await _cacheRepository.Set<T>(cacheKey, resolvedResource, TimeSpan.FromHours(24));
         return resolvedResource;
     }
 }
