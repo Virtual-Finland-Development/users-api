@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Amazon.SQS;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -124,12 +125,15 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Re
 // Redis connection
 //
 var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
-ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+IDatabase redisDatabase = redisCluster.GetDatabase();
+builder.Services.AddSingleton(redisDatabase);
+builder.Services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 
 //
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
+builder.Services.RegisterSecurityFeatures(builder.Configuration, new CacheRepositoryFactory(redisDatabase, Constants.Security.CachePrefix));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);

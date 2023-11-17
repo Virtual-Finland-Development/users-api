@@ -6,6 +6,7 @@ public class CacheRepositoryFactory : ICacheRepositoryFactory
 {
     private readonly IDatabase _database;
     private readonly string _factoryKeyPrefix;
+    static readonly List<string> KnownKeys = new(); // Static list of all known cache repository keys
 
     public CacheRepositoryFactory(IDatabase database, string factoryKeyPrefix = "")
     {
@@ -16,6 +17,12 @@ public class CacheRepositoryFactory : ICacheRepositoryFactory
 
     public ICacheRepository Create(string keyPrefix = "")
     {
-        return new CacheRepository(_database, $"{_factoryKeyPrefix}{keyPrefix}");
+        var cacheRepositoryKeyPrefix = $"{_factoryKeyPrefix}{keyPrefix}";
+
+        // Safety check to avoid accidentally overwriting existing cache repositories
+        if (KnownKeys.Contains(cacheRepositoryKeyPrefix)) throw new ArgumentException($"Key prefix {cacheRepositoryKeyPrefix} already in use");
+        KnownKeys.Add(cacheRepositoryKeyPrefix);
+
+        return new CacheRepository(_database, cacheRepositoryKeyPrefix);
     }
 }

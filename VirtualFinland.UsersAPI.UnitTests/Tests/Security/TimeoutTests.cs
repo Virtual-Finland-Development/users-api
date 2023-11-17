@@ -22,7 +22,7 @@ public class TimeoutTests : APITestBase
     ///
     /// Test that the security feature times out when retrieving service information using the AudienceGuardService feature
     /// 
-    public async Task Should_RetrievingSecurityServiceInformation_shouldThrowTimeoutException()
+    public async Task RetrievingSecurityServiceInformation_shouldThrowTimeoutException()
     {
         // Arrange
         var requestDelay = 2;
