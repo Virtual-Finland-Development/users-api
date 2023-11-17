@@ -172,7 +172,7 @@ public class SecurityFeature : ISecurityFeature
     {
         if (_openIDConfigurationURL == null) return;
 
-        if (await CacheRepository.Exists(Constants.Security.OpenIdConfigCachePrefix))
+        if (Options.IsOidcMetadataCachingEnabled && await CacheRepository.Exists(Constants.Security.OpenIdConfigCachePrefix))
         {
             var cachedResult = await CacheRepository.Get<OpenIdConfiguration>(Constants.Security.OpenIdConfigCachePrefix);
             _issuer = cachedResult.Issuer;
@@ -193,15 +193,19 @@ public class SecurityFeature : ISecurityFeature
 
                 if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                 {
-                    // Check for standard cache headers or default to 1 hour
-                    var cacheControlHeader = httpResponse.Headers.CacheControl;
-                    var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromHours(1);
-
-                    await CacheRepository.Set(Constants.Security.OpenIdConfigCachePrefix, new OpenIdConfiguration()
+                    if (Options.IsOidcMetadataCachingEnabled)
                     {
-                        Issuer = _issuer,
-                        JwksUri = _jwksOptionsUrl
-                    }, cacheDuration);
+                        // Check for standard cache headers or use default cache duration
+                        var cacheControlHeader = httpResponse.Headers.CacheControl;
+                        var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromSeconds(Options.DefaultOidcMetadataCacheDurationInSeconds);
+
+                        await CacheRepository.Set(Constants.Security.OpenIdConfigCachePrefix, new OpenIdConfiguration()
+                        {
+                            Issuer = _issuer,
+                            JwksUri = _jwksOptionsUrl
+                        }, cacheDuration);
+                    }
+
                     break;
                 }
             }
