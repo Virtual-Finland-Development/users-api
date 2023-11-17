@@ -14,6 +14,7 @@ public static class Constants
         public static string RequestFromAccessFinland => "RequestFromAccessFinland";
         public static string RequestFromDataspace => "RequestFromDataspace";
         public static string CachePrefix => "security";
+        public static string OpenIdConfigCachePrefix => "openid-config";
     }
 
     public static class Headers
