@@ -1,6 +1,7 @@
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Data.Repositories;
+using System.Reflection.Metadata;
 
 namespace VirtualFinland.UserAPI.Helpers;
 
@@ -13,7 +14,7 @@ public abstract class CodesetsResourceRepository<T>
     public CodesetsResourceRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory)
     {
         _codesetsService = codesetsService;
-        _cacheRepository = cacheRepositoryFactory.Create("codesets");
+        _cacheRepository = cacheRepositoryFactory.Create(Constants.Cache.CodesetsPrefix);
     }
 
     public async Task<T> GetResource(CodesetsResource? resource = null)

@@ -132,7 +132,7 @@ builder.Services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>()
 //
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration, new CacheRepositoryFactory(redisDatabase, Constants.Security.CachePrefix));
+builder.Services.RegisterSecurityFeatures(builder.Configuration, new CacheRepositoryFactory(redisDatabase, Constants.Cache.SecurityPrefix));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);

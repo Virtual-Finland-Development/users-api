@@ -172,9 +172,9 @@ public class SecurityFeature : ISecurityFeature
     {
         if (_openIDConfigurationURL == null) return;
 
-        if (Options.IsOidcMetadataCachingEnabled && await CacheRepository.Exists(Constants.Security.OpenIdConfigCachePrefix))
+        if (Options.IsOidcMetadataCachingEnabled && await CacheRepository.Exists(Constants.Cache.OpenIdConfigPrefix))
         {
-            var cachedResult = await CacheRepository.Get<OpenIdConfiguration>(Constants.Security.OpenIdConfigCachePrefix);
+            var cachedResult = await CacheRepository.Get<OpenIdConfiguration>(Constants.Cache.OpenIdConfigPrefix);
             _issuer = cachedResult.Issuer;
             _jwksOptionsUrl = cachedResult.JwksUri;
             return;
@@ -199,7 +199,7 @@ public class SecurityFeature : ISecurityFeature
                         var cacheControlHeader = httpResponse.Headers.CacheControl;
                         var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromSeconds(Options.DefaultOidcMetadataCacheDurationInSeconds);
 
-                        await CacheRepository.Set(Constants.Security.OpenIdConfigCachePrefix, new OpenIdConfiguration()
+                        await CacheRepository.Set(Constants.Cache.OpenIdConfigPrefix, new OpenIdConfiguration()
                         {
                             Issuer = _issuer,
                             JwksUri = _jwksOptionsUrl

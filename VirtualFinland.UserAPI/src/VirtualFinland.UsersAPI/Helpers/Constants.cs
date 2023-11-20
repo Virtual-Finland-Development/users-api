@@ -13,8 +13,13 @@ public static class Constants
         public static string ResolvePolicyFromTokenIssuer => "ResolvePolicyFromTokenIssuer";
         public static string RequestFromAccessFinland => "RequestFromAccessFinland";
         public static string RequestFromDataspace => "RequestFromDataspace";
-        public static string CachePrefix => "security";
-        public static string OpenIdConfigCachePrefix => "openid-config";
+    }
+
+    public static class Cache
+    {
+        public static string SecurityPrefix => "security";
+        public static string OpenIdConfigPrefix => "openid-config";
+        public static string CodesetsPrefix => "codesets";
     }
 
     public static class Headers
