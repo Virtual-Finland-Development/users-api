@@ -56,10 +56,10 @@ public class RDSProxy
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("RdsProxy-SecretManager"), new RolePolicyAttachmentArgs
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("RdsProxy-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = rdsProxyRole.Name,
-            PolicyArn = rdsProxySecret.Arn
+            PolicyArn = rdsProxySecret.ReadPolicy.Arn,
         });
 
         // AWS RDS Proxy
@@ -96,10 +96,10 @@ public class RDSProxy
         });
 
         // RDS Proxy Target
-        new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+        _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
         {
             DbProxyName = rdsProxy.Name,
-            DbInstanceIdentifier = database.DBIdentifier,
+            DbClusterIdentifier = database.DBClusterIdentifier,
             TargetGroupName = rdsProxyTargetGroup.Name,
         });
 
