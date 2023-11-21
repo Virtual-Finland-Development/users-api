@@ -91,6 +91,7 @@ public class PostgresDatabase
             MasterPassword = DbAdminPassword,
 
             SkipFinalSnapshot = false,
+            FinalSnapshotIdentifier = $"{clusterIdentifier}-final-snapshot",
             DeletionProtection = true,
             StorageEncrypted = true,
             KmsKeyId = encryptionKey.Arn,
