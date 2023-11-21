@@ -30,7 +30,9 @@ public class PostgresDatabase
         if (config.GetBoolean("useRdsProxy") == true)
         {
             var rdsProxy = new RDSProxy(config, stackSetup, this, vpcSetup);
-            DatabaseConnectionString = rdsProxy.DatabaseConnectionString; // Override the connection string with one from the proxy
+            DatabaseConnectionString = rdsProxy.ProxyConnectionString; // Override the connection string with one from the proxy
+            DbUsername = rdsProxy.ProxyUsername; // Also override the username and password for the InvokeInitialDatabaseUserSetupFunction trigger
+            DbPassword = rdsProxy.ProxyPassword;
         }
     }
 
