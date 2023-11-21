@@ -1,9 +1,8 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
-using Microsoft.Extensions.Logging;
-using Moq;
 using VirtualFinland.UserAPI.Activities.User.Operations;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UsersAPI.UnitTests.Mocks;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
@@ -16,10 +15,10 @@ public class UserTests : APITestBase
     public async Task Should_GetUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<GetUser.Handler>>();
-        var query = new GetUser.Query(dbEntities.user.Id);
-        var handler = new GetUser.Handler(_dbContext, mockLogger.Object);
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var query = new GetUser.Query(requestAuthenticatedUser);
+        var handler = new GetUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -28,30 +27,30 @@ public class UserTests : APITestBase
         result.Should()
             .Match<GetUser.User>(o =>
                 o.DateOfBirth != null &&
-                o.Id == dbEntities.user.Id &&
-                o.Address!.StreetAddress == dbEntities.user.AdditionalInformation!.Address!.StreetAddress &&
-                o.FirstName == dbEntities.user.GivenName &&
-                o.LastName == dbEntities.user.LastName &&
-                o.CitizenshipCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
-                o.OccupationCode == dbEntities.user.AdditionalInformation.OccupationCode &&
-                o.NativeLanguageCode == dbEntities.user.AdditionalInformation.CitizenshipCode &&
-                o.CountryOfBirthCode == dbEntities.user.AdditionalInformation.CountryOfBirthCode &&
-                o.Gender == dbEntities.user.AdditionalInformation.Gender &&
-                DateOnly.FromDateTime(o.DateOfBirth.Value) == dbEntities.user.AdditionalInformation.DateOfBirth);
+                o.Id == user.Id &&
+                o.Address!.StreetAddress == user.AdditionalInformation!.Address!.StreetAddress &&
+                o.FirstName == user.GivenName &&
+                o.LastName == user.LastName &&
+                o.CitizenshipCode == user.AdditionalInformation.CitizenshipCode &&
+                o.OccupationCode == user.AdditionalInformation.OccupationCode &&
+                o.NativeLanguageCode == user.AdditionalInformation.CitizenshipCode &&
+                o.CountryOfBirthCode == user.AdditionalInformation.CountryOfBirthCode &&
+                o.Gender == user.AdditionalInformation.Gender &&
+                DateOnly.FromDateTime(o.DateOfBirth.Value) == user.AdditionalInformation.DateOfBirth);
     }
 
     [Fact]
     public async Task Should_UpdateUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(requestAuthenticatedUser);
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -60,7 +59,7 @@ public class UserTests : APITestBase
         // Assert
         result.Should()
             .Match<UpdateUser.User>(o =>
-                o.Id == dbEntities.user.Id &&
+                o.Id == user.Id &&
                 o.FirstName == command.FirstName &&
                 o.LastName == command.LastName &&
                 o.CitizenshipCode == command.CitizenshipCode &&
@@ -74,10 +73,12 @@ public class UserTests : APITestBase
     public async Task Should_DeleteUserAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var (_, _, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
         var command = new DeleteUser.Command();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new DeleteUser.Handler(_dbContext);
+        command.SetAuth(requestAuthenticatedUser);
+
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
+        var sut = new DeleteUser.Handler(_dbContext, mockLoggerFactory);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);
@@ -90,14 +91,14 @@ public class UserTests : APITestBase
     public async Task Should_FailUpdateUserNationalityCheckAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCitizenshipCode("not a code").Build();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(requestAuthenticatedUser);
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -111,14 +112,14 @@ public class UserTests : APITestBase
     public async Task Should_FailUpdateUserCountryOfBirthAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithCountryOfBirthCode("not a code").Build();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(requestAuthenticatedUser);
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -132,14 +133,14 @@ public class UserTests : APITestBase
     public async Task Should_FailUpdateUserNativeLanguageCodeAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithNativeLanguageCode("not a code").Build();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(requestAuthenticatedUser);
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -153,14 +154,14 @@ public class UserTests : APITestBase
     public async Task Should_FailUpdateUserOccupationCodeAsync()
     {
         // Arrange
-        var dbEntities = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var (user, externalIdentity, requestAuthenticatedUser) = await APIUserFactory.CreateAndGetLogInUser(_dbContext);
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().WithOccupationCode("not a code").Build();
-        command.SetAuth(dbEntities.user.Id);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(requestAuthenticatedUser);
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -174,13 +175,13 @@ public class UserTests : APITestBase
     public async Task Should_FailUserCheckWithNonExistingUserIdAsync()
     {
         // Arrange
-        var mockLogger = new Mock<ILogger<UpdateUser.Handler>>();
+        var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
         var occupationRepository = new MockOccupationsRepository();
         var countryRepository = new MockCountriesRepository();
         var languageRepository = new MockLanguageRepository();
         var command = new UpdateUserCommandBuilder().Build();
-        command.SetAuth(Guid.Empty);
-        var sut = new UpdateUser.Handler(_dbContext, mockLogger.Object, languageRepository, countryRepository,
+        command.SetAuth(new RequestAuthenticatedUser(Guid.NewGuid()));
+        var sut = new UpdateUser.Handler(_dbContext, mockLoggerFactory, languageRepository, countryRepository,
             occupationRepository);
 
         // Act
@@ -209,7 +210,7 @@ public class UserTests : APITestBase
             .WithGender("Alien")
             .WithDateOfBirth(null)
             .Build();
-        command.SetAuth(dbEntities.user.Id);
+        command.SetAuth(dbEntities.requestAuthenticatedUser);
 
         // Assert
         var result = validator.TestValidate(command);

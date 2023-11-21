@@ -34,22 +34,38 @@ public class UsersApiStack : Stack
             Tags = tags,
         };
 
+        var cloudwatch = new CloudWatch(stackSetup);
         var vpcSetup = new VpcSetup(stackSetup);
-        var database = new PostgresDatabase(config, stackSetup, vpcSetup);
-        var secretManagerSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var database = new PostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
+        var dbConnectionStringSecret = new SecretsManager(stackSetup, "dbConnectionStringSecret", database.DatabaseConnectionString);
+        var dbAdminConnectionStringSecret = new SecretsManager(stackSetup, "dbAdminConnectionStringSecret", database.DatabaseAdminConnectionString);
+        var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
+        var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
+        ElastiCacheClusterId = redisCache.ClusterId;
 
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, secretManagerSecret);
+        var analyticsSqS = SqsQueue.CreateSqsQueueForAnalyticsCommand(stackSetup);
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS);
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
+        DBClusterIdentifier = database.DBClusterIdentifier;
+        AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
-        var databaseMigratorLambda = new DatabaseMigratorLambda(config, stackSetup, vpcSetup, secretManagerSecret);
-        DatabaseMigratorLambdaArn = databaseMigratorLambda.LambdaFunctionArn;
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS);
+        AdminFunctionArn = adminFunction.LambdaFunction.Arn;
+
+        // Analytics triggers
+        adminFunction.CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
+
+        // Ensure database user 
+        database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
+        // Ensure database audit log triggers
+        database.InvokeInitialDatabaseAuditLogTriggersSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
-    private bool IsProductionEnvironment()
+    private static bool IsProductionEnvironment()
     {
         var stackName = Pulumi.Deployment.Instance.StackName;
         return stackName switch
@@ -65,5 +81,8 @@ public class UsersApiStack : Stack
     [Output] public Output<string>? ApplicationUrl { get; set; }
     [Output] public Output<string>? LambdaId { get; set; }
     [Output] public Output<string>? DBIdentifier { get; set; }
-    [Output] public Output<string>? DatabaseMigratorLambdaArn { get; set; }
+    [Output] public Output<string>? DBClusterIdentifier { get; set; }
+    [Output] public Output<string>? AdminFunctionArn { get; set; }
+    [Output] public Output<string>? AuditLogSubscriptionFunctionArn { get; set; }
+    [Output] public Output<string>? ElastiCacheClusterId { get; set; }
 }

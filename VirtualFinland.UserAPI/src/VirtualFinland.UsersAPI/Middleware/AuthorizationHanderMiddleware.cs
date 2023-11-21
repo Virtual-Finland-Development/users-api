@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using VirtualFinland.UserAPI.Exceptions;
 
+namespace VirtualFinland.UserAPI.Middleware;
+
 public class AuthorizationHanderMiddleware : IAuthorizationMiddlewareResultHandler
 {
     private readonly AuthorizationMiddlewareResultHandler defaultHandler = new();

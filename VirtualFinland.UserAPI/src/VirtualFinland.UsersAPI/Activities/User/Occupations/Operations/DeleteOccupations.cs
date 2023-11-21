@@ -1,12 +1,14 @@
 using MediatR;
 using VirtualFinland.UserAPI.Data;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Occupations.Operations;
 
 public static class DeleteOccupations
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
         public Command()
         {
@@ -17,29 +19,24 @@ public static class DeleteOccupations
             Ids = ids;
         }
 
-        [SwaggerIgnore] public Guid? UserId { get; private set; }
-
         public List<Guid> Ids { get; init; } = null!;
-
-        public void SetAuth(Guid? userDatabaseIdentifier)
-        {
-            UserId = userDatabaseIdentifier;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _usersDbContext;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext usersDbContext)
+        public Handler(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory)
         {
             _usersDbContext = usersDbContext;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var userOccupations = _usersDbContext.Occupations
-                .Where(o => o.PersonId == request.UserId)
+                .Where(o => o.PersonId == request.User.PersonId)
                 .ToList();
 
             var occupationsToRemove = request.Ids switch
@@ -50,7 +47,8 @@ public static class DeleteOccupations
             };
 
             _usersDbContext.Occupations.RemoveRange(occupationsToRemove);
-            await _usersDbContext.SaveChangesAsync(cancellationToken);
+            await _usersDbContext.SaveChangesAsync(request.User, cancellationToken);
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, request.User);
 
             return Unit.Value;
         }

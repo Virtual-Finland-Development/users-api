@@ -14,6 +14,8 @@ public class ExternalIdentity : IEntity
     [Required]
     public string? IdentityId { get; set; }
 
+    public List<string> Audiences { get; set; } = new();
+
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 

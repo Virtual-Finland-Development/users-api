@@ -1,3 +1,4 @@
+using Amazon.CloudWatch;
 using System.Reflection;
 using MediatR;
 using MediatR.Extensions.FluentValidation.AspNetCore;
@@ -15,12 +16,25 @@ using VirtualFinland.UserAPI.Middleware;
 using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Security.Extensions;
 using VirtualFinland.UserAPI.Helpers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using StackExchange.Redis;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Amazon.SQS;
 
+var builder = WebApplication.CreateBuilder(args);
+
+//
+// Logging and analytics
+//
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
-
-var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<AnalyticsLoggerFactory>();
+builder.Services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+builder.Services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+Log.Logger.Information($"Bootsrapping environment: {builder.Environment.EnvironmentName}");
 
 //
 // App runtime configuration
@@ -37,8 +51,16 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
 });
 
-// Validate server configuration
-ServerConfigurationValidation.ValidateServer(builder.Configuration);
+// @see: https://learn.microsoft.com/en-us/aspnet/core/security/data-protection/configuration/overview?view=aspnetcore-6.0
+builder.Services.AddDataProtection()
+    .SetApplicationName("VirtualFinland.UsersAPI")
+    .PersistKeysToDbContext<UsersDbContext>();
+builder.Services.AddDataProtection().UseCryptographicAlgorithms(
+    new AuthenticatedEncryptorConfiguration
+    {
+        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+    });
 
 //
 // Swagger setup
@@ -81,26 +103,34 @@ builder.Services.AddSwaggerGen(config =>
 //
 // Database connection
 //
-AwsConfigurationManager awsConfigurationManager = new AwsConfigurationManager();
+AwsConfigurationManager awsConfigurationManager = new();
 
 var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
     ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddSingleton<IAuditInterceptor, AuditInterceptor>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
-        op => op.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>()));
+        op => op
+            .EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), new List<string>())
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
+        );
 });
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
+
+//
+// Redis connection
+//
+var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
+ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
 
 //
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration);
+builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
-builder.Services.AddTransient<UserSecurityService>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
 builder.Services.AddTransient<TestbedConsentSecurityService>();
@@ -109,6 +139,7 @@ builder.Services.AddTransient<TestbedConsentSecurityService>();
 // Route handlers
 //
 builder.Services.AddControllers();
+builder.Services.AddTransient<ProblemDetailsFactory, ValidationProblemDetailsFactory>();
 builder.Services.AddFluentValidation(new[] { Assembly.GetExecutingAssembly() });
 builder.Services.AddResponseCaching();
 
@@ -119,11 +150,15 @@ builder.Services.AddSingleton<IOccupationsRepository, OccupationsRepository>();
 builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatRepository>();
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
+builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
 
 //
 // Other dependencies
 //
-builder.Services.Configure<CodesetConfig>(builder.Configuration);
+builder.Services.AddSingleton<CodesetConfig>();
+builder.Services.AddSingleton<CodesetsService>();
+builder.Services.AddSingleton<AnalyticsConfig>();
+builder.Services.AddSingleton<AnalyticsService>();
 
 //
 // Application build
@@ -144,29 +179,26 @@ if (!EnvironmentExtensions.IsProduction(app.Environment))
 }
 
 
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        if (httpContext.Items["Exception"] is Exception exception)
+        {
+            // Add the exception to the log context, omit the stack trace
+            diagnosticContext.Set("@x", $"{exception.GetType().Name}: {exception.Message}");
+        }
+    };
+});
+
+app.UseMiddleware<RequestTracingMiddleware>();
+app.UseMiddleware<AnalyticsMiddleware>();
 app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
-
-// Only run database migrations in local environment
-if (EnvironmentExtensions.IsLocal(app.Environment))
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        Log.Information("Migrate database");
-
-        // Initialize automatically any database changes
-        var dataContext = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
-        await dataContext.Database.MigrateAsync();
-
-        Log.Information("Database migration completed");
-    }
-}
-
 
 app.MapGet("/", () => "App is up!");
 

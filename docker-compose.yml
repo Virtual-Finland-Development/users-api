@@ -8,19 +8,53 @@ services:
       dockerfile: ${USERAPI_DOCKERFILE:-Dockerfile}
     ports:
       - 5001:80
+    environment:
+      ASPNETCORE_ENVIRONMENT: local
+      CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=appuser;Password=password
+      AWS_REGION: eu-north-1
+      REDIS_ENDPOINT: redis:6379
+      "Services__Codesets__ApiEndpoint": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
     depends_on:
       postgresdb:
         condition: service_healthy
-    environment:
-      ASPNETCORE_ENVIRONMENT: local
-      CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
-      AWS_REGION: eu-north-1
-      "CodesetApiBaseUrl": ${CodesetApiBaseUrl:-http://host.docker.internal:3166/resources}
-      "SuomiFi__AuthorizationJwksJsonUrl": ${SuomiFi__AuthorizationJwksJsonUrl:-http://host.docker.internal:4078/auth/saml2/suomifi/.well-known/jwks.json}
+      usersapi-local-initialization:
+        condition: service_completed_successfully
     networks:
       - vfd-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  usersapi-local-initialization:
+    image: virtualfinland/usersapi-adminfunction-cli:latest
+    build:
+      context: ./
+      dockerfile: ./VirtualFinland.UsersAPI.AdminFunction.CLI/Dockerfile
+    command: >
+      bash -c "
+        set -e
+        echo '> Initializing local database..'
+        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+        echo '> Initializing local audit log triggers..'
+        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-audit-log-triggers
+        echo '> Initializing local database user..'
+        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user
+        echo '> Initialization script executed - shutting down';
+      "
+    environment:
+      ASPNETCORE_ENVIRONMENT: local
+      CONNECTIONSTRINGS__DEFAULTCONNECTION: Host=postgresdb;Database=postgres;Username=postgres;Password=example
+      AWS_REGION: eu-north-1
+      DATABASE_USER: appuser
+      DATABASE_PASSWORD: password
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+    networks:
+      - vfd-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    labels:
+      - "traefik.enable=false"
 
   postgresdb:
     image: postgres:14
@@ -33,6 +67,7 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: example
+      POSTGRES_USER: postgres
     volumes:
       - postgresdb:/var/lib/postgresql/data
     networks:
@@ -44,6 +79,13 @@ services:
     image: adminer
     ports:
       - 8080:8080
+    networks:
+      - vfd-network
+
+  redis:
+    image: redis:6.2.13-alpine
+    ports:
+      - 6379:6379
     networks:
       - vfd-network
 

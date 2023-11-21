@@ -2,33 +2,28 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Exceptions;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers;
+using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.User.Operations;
 
 public static class DeleteUser
 {
-    public class Command : IRequest
+    public class Command : AuthenticatedRequest
     {
-        public Command()
-        { }
 
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
-        public void SetAuth(Guid? userDatabaseId)
-        {
-            UserId = userDatabaseId;
-        }
     }
 
     public class Handler : IRequestHandler<Command>
     {
         private readonly UsersDbContext _context;
+        private readonly AnalyticsLogger<Handler> _logger;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
         }
 
         public async Task<Unit> Handle(Command request,
@@ -42,11 +37,17 @@ public static class DeleteUser
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .SingleAsync(p => p.Id == request.UserId, cancellationToken);
-            var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.UserId);
+                .Include(p => p.TermsOfServiceAgreements)
+                .SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
+            var externalIdentity = await _context.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == request.User.PersonId);
 
             try
             {
+                // Update the person's metadata for the delete log
+                person.Modified = DateTime.UtcNow;
+                await _context.SaveChangesAsync(request.User, cancellationToken);
+
+                // Actually remove
                 _context.Persons.Remove(person);
 
                 if (externalIdentity != null)
@@ -54,7 +55,9 @@ public static class DeleteUser
                     _context.ExternalIdentities.Remove(externalIdentity);
                 }
 
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(request.User, cancellationToken);
+
+                await _logger.LogAuditLogEvent(AuditLogEvent.Delete, request.User);
             }
             catch (DbUpdateException e)
             {

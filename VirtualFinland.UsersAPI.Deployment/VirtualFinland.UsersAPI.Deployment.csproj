@@ -9,7 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Pulumi" Version="3.*" />
     <PackageReference Include="Pulumi.Aws" Version="5.40.0" />
-    <PackageReference Include="Pulumi.Command" Version="4.5.0" />
+    <PackageReference Include="Pulumi.Command" Version="0.9.1" />
+    <PackageReference Include="Pulumi.PostgreSql" Version="3.10.0" />
     <PackageReference Include="Pulumi.Random" Version="4.8.2" />
     <PackageReference Include="Pulumi.Awsx" Version="1.0.2" />
   </ItemGroup>

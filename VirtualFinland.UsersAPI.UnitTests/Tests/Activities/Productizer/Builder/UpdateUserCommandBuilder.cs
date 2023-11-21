@@ -1,6 +1,5 @@
-using VirtualFinland.UserAPI.Activities.Productizer.Operations;
+using VirtualFinland.UserAPI.Activities.Productizer.Operations.User;
 using VirtualFinland.UserAPI.Models.Shared;
-using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User;
 using VirtualFinland.UsersAPI.UnitTests.Tests.Activities.User.Builder;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Productizer.Builder;
@@ -85,9 +84,9 @@ public class UpdateUserCommandBuilder
         return this;
     }
 
-    public UpdateUser.Command Build()
+    public UpdateUserProfile.Command Build()
     {
-        return new UpdateUser.Command(
+        return new UpdateUserProfile.Command(
             _firstName,
             _lastName,
             _address,

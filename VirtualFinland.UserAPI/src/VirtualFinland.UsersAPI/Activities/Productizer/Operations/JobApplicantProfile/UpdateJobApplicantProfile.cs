@@ -1,18 +1,23 @@
 using System.Text.Json.Serialization;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
-using VirtualFinland.UserAPI.Helpers.Swagger;
+using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Helpers.Extensions;
+using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 
 namespace VirtualFinland.UserAPI.Activities.Productizer.Operations.JobApplicantProfile;
 
 public static class UpdateJobApplicantProfile
 {
-    public class Command : IRequest<Request>
+    public class Command : AuthenticatedRequest<Request>
     {
         public Command(
             List<Request.Occupation> occupations,
@@ -40,27 +45,81 @@ public static class UpdateJobApplicantProfile
         public List<string> Permits { get; }
         public Request.WorkPreferenceValues WorkPreferences { get; }
 
-
-        [SwaggerIgnore]
-        public Guid? UserId { get; set; }
-
-        public void SetAuth(Guid? userDatabaseId)
+        private sealed class WorkPreferencesValidator : AbstractValidator<Request.WorkPreferenceValues>
         {
-            UserId = userDatabaseId;
+            public WorkPreferencesValidator()
+            {
+                RuleForEach(wp => wp.PreferredMunicipality)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<Municipality>(x, out _));
+
+                RuleForEach(wp => wp.PreferredRegion)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<Region>(x, out _));
+
+                RuleFor(x => x.TypeOfEmployment)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<EmploymentType>(x!, out _))
+                    .When(x => !string.IsNullOrEmpty(x.TypeOfEmployment));
+
+                RuleFor(x => x.WorkingTime)
+                    .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x!, out _))
+                    .When(x => !string.IsNullOrEmpty(x.WorkingTime));
+
+                RuleForEach(wp => wp.WorkingLanguage)
+                    .Must(x => !string.IsNullOrEmpty(x) && x.Length == 2); // TODO: Check if language code is valid ISO 639-1 code
+            }
+        }
+
+        public sealed class OccupationsValidator : AbstractValidator<List<Request.Occupation>>
+        {
+            private readonly IOccupationsFlatRepository _occupationsFlatRepository;
+
+            public OccupationsValidator(IOccupationsFlatRepository occupationsFlatRepository)
+            {
+                _occupationsFlatRepository = occupationsFlatRepository;
+
+                RuleFor(occupations => occupations)
+                    .MustAsync(async (occupations, cancellationToken) =>
+                    {
+                        if (occupations is null || !occupations.Any()) return true;
+
+                        var knownOccupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
+                        return occupations.Any(x =>
+                        {
+                            var occupation = knownOccupations.FirstOrDefault(y => y.Notation == x.EscoCode);
+                            return occupation != null;
+                        });
+                    }).WithMessage("EscoCode is not valid");
+            }
+        }
+
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
+                RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator());
+            }
         }
     }
 
     public class Handler : IRequestHandler<Command, Request>
     {
         private readonly UsersDbContext _context;
+        private readonly AnalyticsLogger<Handler> _logger;
+        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext context)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory, IOccupationsFlatRepository occupationsFlatRepository)
         {
             _context = context;
+            _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
+            _occupationsFlatRepository = occupationsFlatRepository;
         }
 
         public async Task<Request> Handle(Command command, CancellationToken cancellationToken)
         {
+            // Validate command async parts
+            var validator = new Command.OccupationsValidator(_occupationsFlatRepository);
+            await validator.ValidateAndThrowAsync(command.Occupations, cancellationToken);
+
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)
@@ -69,9 +128,7 @@ public static class UpdateJobApplicantProfile
                 .Include(p => p.Certifications)
                 .Include(p => p.Permits)
                 .Include(p => p.WorkPreferences)
-                .FirstOrDefaultAsync(p => p.Id == command.UserId, cancellationToken);
-
-            if (person is null) throw new NotFoundException();
+                .FirstOrDefaultAsync(p => p.Id == command.User.PersonId, cancellationToken) ?? throw new NotFoundException();
 
             person.Occupations = command.Occupations.Select(x => new Occupation
             {
@@ -134,17 +191,19 @@ public static class UpdateJobApplicantProfile
             }
 
             person.WorkPreferences.NaceCode = command.WorkPreferences.NaceCode;
+
             person.Permits = command.Permits.Select(x => new Permit { TypeCode = x }).ToList();
 
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(command.User, cancellationToken);
             }
             catch (DbUpdateException e)
             {
                 throw new BadRequestException(e.InnerException?.Message ?? e.Message);
             }
 
+            await _logger.LogAuditLogEvent(AuditLogEvent.Update, command.User);
 
             return new Response
             {
@@ -226,7 +285,7 @@ public static class UpdateJobApplicantProfile
 
             [JsonConverter(typeof(DateOnlyJsonConverter))]
             public DateOnly? GraduationDate { get; init; }
-            
+
             public string? InstitutionName { get; set; }
         }
 

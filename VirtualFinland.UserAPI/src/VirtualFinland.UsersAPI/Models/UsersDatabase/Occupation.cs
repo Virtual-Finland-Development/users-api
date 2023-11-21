@@ -12,7 +12,7 @@ public class Occupation : Auditable, IEntity
     /// </summary>
     [MaxLength(16)]
     public string? EscoCode { get; set; }
-    
+
     [MaxLength(256)]
     public string? Employer { get; set; }
 
