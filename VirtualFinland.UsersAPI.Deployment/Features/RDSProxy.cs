@@ -93,12 +93,24 @@ public class RDSProxy
         });
 
         // RDS Proxy Target
-        _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+        if (database.IsDatabaseCluster)
         {
-            DbProxyName = rdsProxy.Name,
-            DbClusterIdentifier = database.DBClusterIdentifier,
-            TargetGroupName = rdsProxyTargetGroup.Name,
-        });
+            _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+            {
+                DbProxyName = rdsProxy.Name,
+                DbClusterIdentifier = database.DBClusterIdentifier,
+                TargetGroupName = rdsProxyTargetGroup.Name,
+            });
+        }
+        else
+        {
+            _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+            {
+                DbProxyName = rdsProxy.Name,
+                DbInstanceIdentifier = database.DBIdentifier,
+                TargetGroupName = rdsProxyTargetGroup.Name,
+            });
+        }
 
         // Set outputs
         ProxyEndpoint = rdsProxy.Endpoint;

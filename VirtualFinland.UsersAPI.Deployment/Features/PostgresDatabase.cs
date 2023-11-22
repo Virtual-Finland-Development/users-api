@@ -118,6 +118,7 @@ public class PostgresDatabase
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = dbInstance.Identifier;
         DBClusterIdentifier = auroraCluster.ClusterIdentifier;
+        IsDatabaseCluster = true;
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"), 3);
     }
@@ -170,6 +171,7 @@ public class PostgresDatabase
         DatabaseAdminConnectionString = Output.Format($"Host={DbEndpoint};Database={DbName};Username={DbAdminUsername};Password={DbAdminPassword}");
         DBIdentifier = rdsPostgreSqlInstance.Identifier;
         DBClusterIdentifier = Output.Create("");
+        IsDatabaseCluster = false;
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
@@ -221,6 +223,7 @@ public class PostgresDatabase
 
     public Output<string> DBIdentifier = default!;
     public Output<string> DBClusterIdentifier = default!;
+    public bool IsDatabaseCluster = false;
     public string DbUsername = default!;
     public Output<string> DbPassword = default!;
     public Output<string> DatabaseConnectionString = default!;
