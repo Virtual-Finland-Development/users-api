@@ -35,6 +35,7 @@ public static class UpdatePersonBasicInformation
             public CommandValidator(ICountriesRepository countriesRepository)
             {
                 RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
+                RuleFor(command => command.Email).NotNull().NotEmpty();
 
                 var knownCountries = countriesRepository.GetAllCountries().Result;
                 var knownCountryCodes = knownCountries.Select(x => x.IsoCodeThreeLetter).ToList();
