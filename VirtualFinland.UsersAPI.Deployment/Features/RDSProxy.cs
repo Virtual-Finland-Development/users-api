@@ -78,7 +78,7 @@ public class RDSProxy
                 }
             },
             Tags = stackSetup.Tags,
-        });
+        }, new() { DependsOn = new[] { database.DatabaseResource } });
 
         // Target group
         var rdsProxyTargetGroup = new ProxyDefaultTargetGroup(stackSetup.CreateResourceName("database-proxy-target-group"), new()
@@ -90,7 +90,7 @@ public class RDSProxy
                 MaxIdleConnectionsPercent = 50,
                 ConnectionBorrowTimeout = 120,
             },
-        });
+        }, new() { DependsOn = new[] { rdsProxy } });
 
         // RDS Proxy Target
         if (database.IsDatabaseCluster)
@@ -100,7 +100,7 @@ public class RDSProxy
                 DbProxyName = rdsProxy.Name,
                 DbClusterIdentifier = database.DBClusterIdentifier,
                 TargetGroupName = rdsProxyTargetGroup.Name,
-            });
+            }, new() { DependsOn = new[] { rdsProxy } });
         }
         else
         {
@@ -109,7 +109,7 @@ public class RDSProxy
                 DbProxyName = rdsProxy.Name,
                 DbInstanceIdentifier = database.DBIdentifier,
                 TargetGroupName = rdsProxyTargetGroup.Name,
-            });
+            }, new() { DependsOn = new[] { rdsProxy } });
         }
 
         // Set outputs
@@ -119,6 +119,7 @@ public class RDSProxy
         ProxyConnectionString = Output.Format($"Host={rdsProxy.Endpoint};Database={dbName};Username={dbUsername};Password={password.Result}");
         ProxyUsername = dbUsername;
         ProxyPassword = password.Result;
+        MainResource = rdsProxy;
     }
 
     [Output]
@@ -127,4 +128,5 @@ public class RDSProxy
     public Output<string> ProxyConnectionString { get; set; }
     public string ProxyUsername { get; set; }
     public Output<string> ProxyPassword { get; set; }
+    public Resource MainResource { get; set; }
 }

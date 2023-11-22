@@ -12,7 +12,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue analyticsSqS)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue analyticsSqS, PostgresDatabase database)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -141,7 +141,7 @@ class AdminFunction
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
-        });
+        }, new() { DependsOn = new[] { database.MainResource } });
 
         SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-handler"), new FunctionArgs
         {
@@ -154,7 +154,7 @@ class AdminFunction
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
-        });
+        }, new() { DependsOn = new[] { database.MainResource } });
 
         CloudWatchEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-cloudwatch-handler"), new FunctionArgs
         {
@@ -167,7 +167,7 @@ class AdminFunction
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
-        });
+        }, new() { DependsOn = new[] { database.MainResource } });
     }
 
     public void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)

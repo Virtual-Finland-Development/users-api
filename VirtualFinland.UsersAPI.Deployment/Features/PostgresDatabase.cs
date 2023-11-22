@@ -33,6 +33,7 @@ public class PostgresDatabase
             DatabaseConnectionString = rdsProxy.ProxyConnectionString; // Override the connection string with one from the proxy
             DbUsername = rdsProxy.ProxyUsername; // Also override the username and password for the InvokeInitialDatabaseUserSetupFunction trigger
             DbPassword = rdsProxy.ProxyPassword;
+            MainResource = rdsProxy.MainResource; // Wait for the proxy to be ready where needed, instead of database ref
         }
     }
 
@@ -119,6 +120,7 @@ public class PostgresDatabase
         DBIdentifier = dbInstance.Identifier;
         DBClusterIdentifier = auroraCluster.ClusterIdentifier;
         IsDatabaseCluster = true;
+        MainResource = auroraCluster;
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/cluster/{auroraCluster.ClusterIdentifier}/postgresql"), 3);
     }
@@ -172,6 +174,7 @@ public class PostgresDatabase
         DBIdentifier = rdsPostgreSqlInstance.Identifier;
         DBClusterIdentifier = Output.Create("");
         IsDatabaseCluster = false;
+        MainResource = rdsPostgreSqlInstance;
 
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
@@ -202,7 +205,7 @@ public class PostgresDatabase
                         DbPassword,
                         Output.Create(DbUsername),
                     }
-                });
+                }, new() { DependsOn = new[] { adminFunction, MainResource } });
                 return password;
             }
         );
@@ -218,11 +221,13 @@ public class PostgresDatabase
         _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitializeDatabaseAuditLogTriggers"), new()
         {
             Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
-        });
+        }, new() { DependsOn = new[] { adminFunction, MainResource } });
     }
 
     public Output<string> DBIdentifier = default!;
     public Output<string> DBClusterIdentifier = default!;
+    public Resource DatabaseResource = default!;
+    public Resource MainResource = default!; // To wait for the database to be ready
     public bool IsDatabaseCluster = false;
     public string DbUsername = default!;
     public Output<string> DbPassword = default!;
