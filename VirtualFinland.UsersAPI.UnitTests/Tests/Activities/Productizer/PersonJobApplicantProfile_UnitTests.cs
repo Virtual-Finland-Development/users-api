@@ -29,8 +29,7 @@ public class PersonJobApplicantProfile_UnitTests : APITestBase
         var command = new UpdateJobApplicantProfileCommandBuilder().Build();
         command.SetAuth(requestAuthenticatedUser);
         var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
-        var occupationRepository = new MockOccupationsRepository();
-        var sut = new UpdateJobApplicantProfile.Handler(_dbContext, mockLoggerFactory, occupationRepository);
+        var sut = new UpdateJobApplicantProfile.Handler(_dbContext, mockLoggerFactory);
 
         var actual = await sut.Handle(command, CancellationToken.None);
 
