@@ -28,7 +28,7 @@ jobs:
       contents: write
     env:
       DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_number }}
-      IS_MVP_DEPLOYMENT: ${{ startsWith(inputs.environment, 'mvp-') }}
+      IS_MVP_PRODUCTION_LIKE_DEPLOYMENT: ${{ startsWith(inputs.environment, 'mvp-') && inputs.environment != 'mpv-dev' }}
     steps:
       - uses: actions/setup-dotnet@v3
         with:
@@ -78,19 +78,19 @@ jobs:
             fi
           fi
       - name: Create database backup snapshot on PRE-deployment
-        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_DEPLOYMENT }}
+        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT }}
         run: |
           aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-outputs.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Wait for the database snapshot to be ready
-        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_DEPLOYMENT}}
+        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT}}
         run: |
           aws rds wait db-snapshot-available --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Create database backup snapshot on PRE-deployment
-        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_DEPLOYMENT }}
+        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT }}
         run: |
           aws rds create-db-cluster-snapshot --db-cluster-identifier ${{ steps.get-pulumi-outputs.outputs.DBClusterIdentifier }} --db-cluster-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Wait for the database snapshot to be ready
-        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_DEPLOYMENT }}
+        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT }}
         run: |
           aws rds wait db-cluster-snapshot-available --db-cluster-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Deploy with Pulumi
