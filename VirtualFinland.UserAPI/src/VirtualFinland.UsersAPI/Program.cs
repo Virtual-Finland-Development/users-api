@@ -172,6 +172,12 @@ if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDe
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Direct cors requests used in dev-stages
+    app.UseCors(builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
 }
 
 app.UseSerilogRequestLogging(options =>
