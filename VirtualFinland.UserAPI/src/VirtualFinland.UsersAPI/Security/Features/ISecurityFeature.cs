@@ -13,4 +13,5 @@ public interface ISecurityFeature
     Task ValidateSecurityTokenAudience(string audience);
 
     public string Issuer { get; }
+    public bool IsInitialized { get; set; }
 }

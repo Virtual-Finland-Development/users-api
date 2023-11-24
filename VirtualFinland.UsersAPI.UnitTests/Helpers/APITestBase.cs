@@ -66,7 +66,7 @@ public class APITestBase
             new SecuritySetup()
             {
                 Features = new List<ISecurityFeature>() {
-                    new SecurityFeature(
+                    new TestSecurityFeature(
                         new SecurityFeatureOptions {
                             Issuer = requestAuthenticationCandinate.Issuer,
                             OpenIdConfigurationUrl = "test-openid-config-url",
