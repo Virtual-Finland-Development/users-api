@@ -68,7 +68,6 @@ namespace VirtualFinland.UserAPI.Migrations
                 column: "Version",
                 unique: true);
 
-            // @TODO Manage terms of service by some control mechanism and not by migrations
             migrationBuilder.InsertData(
                 table: "TermsOfServices",
                 columns: new[] { "Id", "Url", "Description", "Version", "Created", "Modified" },
