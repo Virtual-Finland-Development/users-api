@@ -7,7 +7,7 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class CountriesRepository : CodesetsResourceRepository<List<Country>>, ICountriesRepository
 {
-    public CountriesRepository(CodesetsService codesetsService) : base(codesetsService)
+    public CountriesRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory) : base(codesetsService, cacheRepositoryFactory)
     {
         _resource = CodesetsResource.Countries;
     }

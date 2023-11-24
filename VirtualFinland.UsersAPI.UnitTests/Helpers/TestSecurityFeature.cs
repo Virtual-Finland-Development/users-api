@@ -17,8 +17,8 @@ public class TestSecurityFeature : SecurityFeature
     /// <exception cref="NotAuthorizedException"></exception>
     public override async Task ValidateSecurityTokenAudienceByService(string audience)
     {
-        var verifyUrl = $"{_options.AudienceGuard.Service.ApiEndpoint}?audience={audience}";
-        using var response = await _securityClientProviders.HttpClient.GetAsync(verifyUrl);
+        var verifyUrl = $"{Options.AudienceGuard.Service.ApiEndpoint}?audience={audience}";
+        using var response = await SecurityClientProviders.HttpClient.GetAsync(verifyUrl);
         response.EnsureSuccessStatusCode();
     }
 }
