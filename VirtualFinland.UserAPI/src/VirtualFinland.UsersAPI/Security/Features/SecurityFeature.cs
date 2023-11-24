@@ -12,13 +12,18 @@ using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
 
-public class SecurityFeature : ISecurityFeature
+public abstract class SecurityFeature : ISecurityFeature
 {
     ///
     /// The issuer of the JWT token
     ///
     public string Issuer => _issuer ?? throw new ArgumentNullException("Issuer is not set");
     protected string? _issuer;
+
+    /// <summary>
+    /// Is the security feature initialized
+    /// </summary>
+    public bool IsInitialized { get; set; } = false;
 
     /// <summary>
     /// Security feature options
@@ -171,13 +176,18 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     protected virtual async void LoadOpenIdConfigUrl()
     {
-        if (_openIDConfigurationURL == null) return;
+        if (_openIDConfigurationURL == null)
+        {
+            IsInitialized = true;
+            return;
+        }
 
         if (Options.IsOidcMetadataCachingEnabled && await CacheRepository.Exists(Constants.Cache.OpenIdConfigPrefix))
         {
             var cachedResult = await CacheRepository.Get<OpenIdConfiguration>(Constants.Cache.OpenIdConfigPrefix);
             _issuer = cachedResult.Issuer;
             _jwksOptionsUrl = cachedResult.JwksUri;
+            IsInitialized = true;
             return;
         }
 
@@ -205,6 +215,8 @@ public class SecurityFeature : ISecurityFeature
                             Issuer = _issuer,
                             JwksUri = _jwksOptionsUrl
                         }, cacheDuration);
+
+                        IsInitialized = true;
                     }
 
                     break;

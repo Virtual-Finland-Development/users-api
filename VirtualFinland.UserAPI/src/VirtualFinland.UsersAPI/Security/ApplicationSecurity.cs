@@ -9,6 +9,8 @@ public class ApplicationSecurity : IApplicationSecurity
 {
     private readonly ITermsOfServiceRepository _termsOfServiceRepository;
     private readonly SecuritySetup _setup;
+    private readonly int _initializationTimeoutInMilliseconds = 10000;
+
     public ApplicationSecurity(ITermsOfServiceRepository termsOfServiceRepository, SecuritySetup securitySetup)
     {
         _termsOfServiceRepository = termsOfServiceRepository;
@@ -27,7 +29,8 @@ public class ApplicationSecurity : IApplicationSecurity
         if (!tokenHandler.CanReadToken(token)) throw new NotAuthorizedException("The given token is not valid");
         var parsedToken = tokenHandler.ReadJwtToken(token);
 
-        // Resolve the security feature by token issuer (must be enabled) // @TODO: ensure the security feature is loaded before this
+        // Resolve the security feature by token issuer (must be enabled)
+        await EnsureSecurityInitializationCompleted();
         var tokenIssuer = parsedToken.Issuer;
         var securityFeature = _setup.Features.Find(o => o.Issuer == tokenIssuer) ?? throw new NotAuthorizedException("The given token issuer is not valid");
 
@@ -48,5 +51,18 @@ public class ApplicationSecurity : IApplicationSecurity
         if (!_setup.Options.TermsOfServiceAgreementRequired) return;
         // Fetch person terms of service agreement
         _ = await _termsOfServiceRepository.GetTermsOfServiceAgreementOfTheLatestTermsByPersonId(personId) ?? throw new NotAuthorizedException("User has not accepted the latest terms of service.");
+    }
+
+    /// <summary>
+    /// All the enabled security features must be initialized before the application can be used, verify that the initializations are completed
+    /// </summary>
+    private async Task EnsureSecurityInitializationCompleted()
+    {
+        var initializationTimeout = DateTime.Now.AddMilliseconds(_initializationTimeoutInMilliseconds);
+        while (_setup.Features.Any(o => !o.IsInitialized))
+        {
+            if (DateTime.Now > initializationTimeout) throw new NotAuthorizedException("Security initialization timeout");
+            await Task.Delay(100);
+        }
     }
 }

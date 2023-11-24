@@ -294,11 +294,7 @@ public static class UpdateUser
                         continue;
                     }
 
-                    var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id);
-
-                    // TODO: Return some error about invalid guid ?
-                    if (existingOccupation is null) continue;
-
+                    var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id) ?? throw new BadRequestException("Invalid occupation ID");
                     if (occupation.Delete is true)
                     {
                         dbUserOccupations.Remove(existingOccupation);
@@ -370,9 +366,6 @@ public static class UpdateUser
             return validationErrors;
         }
 
-        /// <summary>
-        /// TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
-        /// </summary>
         /// <param name="dbUserDefaultSearchProfile"></param>
         /// <param name="dbUser"></param>
         /// <param name="request"></param>

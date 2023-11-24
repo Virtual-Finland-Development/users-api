@@ -8,6 +8,7 @@ public class TestSecurityFeature : SecurityFeature
 {
     public TestSecurityFeature(SecurityFeatureOptions options, SecurityClientProviders securityClientProviders) : base(options, securityClientProviders)
     {
+        IsInitialized = true;
     }
 
     /// <summary>

@@ -118,7 +118,6 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
         );
 });
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
 // Redis connection
@@ -168,19 +167,18 @@ builder.Services.AddSingleton<AnalyticsService>();
 //
 var app = builder.Build();
 
-// Use swagger only in non-production environments
-if (!EnvironmentExtensions.IsProduction(app.Environment))
+// Use swagger only in development
+if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    // global cors policy
-    app.UseCors(x => x
+    // Direct cors requests used in dev-stages
+    app.UseCors(builder => builder
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
-
 
 app.UseSerilogRequestLogging(options =>
 {
