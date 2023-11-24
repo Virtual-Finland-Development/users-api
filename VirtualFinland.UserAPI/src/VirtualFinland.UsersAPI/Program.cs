@@ -168,19 +168,12 @@ builder.Services.AddSingleton<AnalyticsService>();
 //
 var app = builder.Build();
 
-// Use swagger only in non-production environments
-if (!EnvironmentExtensions.IsProduction(app.Environment))
+// Use swagger only in development
+if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    // global cors policy
-    app.UseCors(x => x
-        .AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
 }
-
 
 app.UseSerilogRequestLogging(options =>
 {
