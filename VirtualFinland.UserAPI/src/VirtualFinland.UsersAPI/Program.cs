@@ -167,18 +167,22 @@ builder.Services.AddSingleton<AnalyticsService>();
 //
 var app = builder.Build();
 
-// Use swagger only in development
-if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
+// Use swagger only in non-productionlike environments: (staging, production)-like
+if (!app.Environment.IsMvpProductionlike() && !app.Environment.IsProductionlike())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-    // Direct cors requests used in dev-stages
+// Allow CORS only in non-mvp environments
+if (!app.Environment.IsMvpEnvironment())
+{
     app.UseCors(builder => builder
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
+
 
 app.UseSerilogRequestLogging(options =>
 {
