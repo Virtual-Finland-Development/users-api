@@ -12,7 +12,7 @@ public class CacheRepositoryFactory : ICacheRepositoryFactory
     {
         _database = database;
         _factoryKeyPrefix = factoryKeyPrefix;
-        if (!string.IsNullOrEmpty(_factoryKeyPrefix)) _factoryKeyPrefix += ":";
+        if (!string.IsNullOrEmpty(_factoryKeyPrefix)) _factoryKeyPrefix = $"{_factoryKeyPrefix}:";
     }
 
     public ICacheRepository Create(string keyPrefix = "")

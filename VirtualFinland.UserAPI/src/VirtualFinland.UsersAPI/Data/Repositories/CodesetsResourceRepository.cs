@@ -14,7 +14,7 @@ public abstract class CodesetsResourceRepository<T>
     public CodesetsResourceRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory)
     {
         _codesetsService = codesetsService;
-        _cacheRepository = cacheRepositoryFactory.Create(Constants.Cache.CodesetsPrefix);
+        _cacheRepository = cacheRepositoryFactory.Create($"{Constants.Cache.CodesetsPrefix}:{GetType().Name}");
     }
 
     public async Task<T> GetResource(CodesetsResource? resource = null)
