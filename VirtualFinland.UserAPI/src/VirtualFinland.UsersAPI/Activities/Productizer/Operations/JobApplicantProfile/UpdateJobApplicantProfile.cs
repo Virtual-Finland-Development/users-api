@@ -8,7 +8,6 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
-using VirtualFinland.UserAPI.Helpers.Extensions;
 using VirtualFinland.UserAPI.Models.Shared;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security.Models;
@@ -47,7 +46,7 @@ public static class UpdateJobApplicantProfile
 
         private sealed class WorkPreferencesValidator : AbstractValidator<Request.WorkPreferenceValues>
         {
-            public WorkPreferencesValidator()
+            public WorkPreferencesValidator(ILanguageRepository languagesRepository)
             {
                 RuleForEach(wp => wp.PreferredMunicipality)
                     .Must(x => EnumUtilities.TryParseWithMemberName<Municipality>(x, out _));
@@ -63,25 +62,27 @@ public static class UpdateJobApplicantProfile
                     .Must(x => EnumUtilities.TryParseWithMemberName<WorkingTime>(x!, out _))
                     .When(x => !string.IsNullOrEmpty(x.WorkingTime));
 
+                var knownLanguages = languagesRepository.GetAllLanguages().Result;
+                var knownLanguageCodes = knownLanguages.Select(x => x.TwoLetterISOLanguageName).ToList();
                 RuleForEach(wp => wp.WorkingLanguage)
-                    .Must(x => !string.IsNullOrEmpty(x) && x.Length == 2); // TODO: Check if language code is valid ISO 639-1 code
+                    .Must(x =>
+                    {
+                        return !string.IsNullOrEmpty(x) && x.Length == 2 && knownLanguageCodes.Contains(x);
+                    }).WithMessage("WorkingLanguage(s) are not valid");
             }
         }
 
         public sealed class OccupationsValidator : AbstractValidator<List<Request.Occupation>>
         {
-            private readonly IOccupationsFlatRepository _occupationsFlatRepository;
-
             public OccupationsValidator(IOccupationsFlatRepository occupationsFlatRepository)
             {
-                _occupationsFlatRepository = occupationsFlatRepository;
+                var knownOccupations = occupationsFlatRepository.GetAllOccupationsFlat().Result;
 
                 RuleFor(occupations => occupations)
-                    .MustAsync(async (occupations, cancellationToken) =>
+                    .Must((occupations, cancellationToken) =>
                     {
                         if (occupations is null || !occupations.Any()) return true;
 
-                        var knownOccupations = await _occupationsFlatRepository.GetAllOccupationsFlat();
                         return occupations.Any(x =>
                         {
                             var occupation = knownOccupations.FirstOrDefault(y => y.Notation == x.EscoCode);
@@ -91,12 +92,35 @@ public static class UpdateJobApplicantProfile
             }
         }
 
+        public sealed class LanguageSkillsValidator : AbstractValidator<List<Request.LanguageSkill>>
+        {
+            public LanguageSkillsValidator(ILanguageRepository languagesRepository)
+            {
+                var knownLanguages = languagesRepository.GetAllLanguages().Result;
+                var knownLanguageCodes = knownLanguages.Select(x => x.TwoLetterISOLanguageName).ToList();
+
+                RuleFor(languageSkills => languageSkills)
+                    .Must((languageSkills, cancellationToken) =>
+                    {
+                        if (languageSkills is null || !languageSkills.Any()) return true;
+
+                        return languageSkills.Any(x =>
+                        {
+                            var language = knownLanguages.FirstOrDefault(y => y.TwoLetterISOLanguageName == x.LanguageCode);
+                            return language != null;
+                        });
+                    }).WithMessage("LanguageSkills are not valid");
+            }
+        }
+
         public class CommandValidator : AbstractValidator<Command>
         {
-            public CommandValidator()
+            public CommandValidator(ILanguageRepository languagesRepository, IOccupationsFlatRepository occupationsFlatRepository)
             {
                 RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
-                RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator());
+                RuleFor(command => command.WorkPreferences).SetValidator(new WorkPreferencesValidator(languagesRepository));
+                RuleFor(command => command.Occupations).SetValidator(new OccupationsValidator(occupationsFlatRepository));
+                RuleFor(command => command.LanguageSkills).SetValidator(new LanguageSkillsValidator(languagesRepository));
             }
         }
     }
@@ -105,21 +129,15 @@ public static class UpdateJobApplicantProfile
     {
         private readonly UsersDbContext _context;
         private readonly AnalyticsLogger<Handler> _logger;
-        private readonly IOccupationsFlatRepository _occupationsFlatRepository;
 
-        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory, IOccupationsFlatRepository occupationsFlatRepository)
+        public Handler(UsersDbContext context, AnalyticsLoggerFactory loggerFactory)
         {
             _context = context;
             _logger = loggerFactory.CreateAnalyticsLogger<Handler>();
-            _occupationsFlatRepository = occupationsFlatRepository;
         }
 
         public async Task<Request> Handle(Command command, CancellationToken cancellationToken)
         {
-            // Validate command async parts
-            var validator = new Command.OccupationsValidator(_occupationsFlatRepository);
-            await validator.ValidateAndThrowAsync(command.Occupations, cancellationToken);
-
             var person = await _context.Persons
                 .Include(p => p.Occupations)
                 .Include(p => p.Educations)

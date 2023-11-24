@@ -6,5 +6,6 @@ public enum Actions
     InitializeDatabaseUser,
     InitializeDatabaseAuditLogTriggers,
     UpdateTermsOfService,
-    UpdateAnalytics
+    UpdateAnalytics,
+    InvalidateCaches,
 }

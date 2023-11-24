@@ -118,18 +118,20 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
         );
 });
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
 // Redis connection
 //
 var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? builder.Configuration["Redis:Endpoint"];
-ConnectionMultiplexer redis = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+IDatabase redisDatabase = redisCluster.GetDatabase();
+builder.Services.AddSingleton(redisDatabase);
+builder.Services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 
 //
 // App security
 //
-builder.Services.RegisterSecurityFeatures(builder.Configuration, redis);
+builder.Services.RegisterSecurityFeatures(builder.Configuration, new CacheRepositoryFactory(redisDatabase, Constants.Cache.SecurityPrefix));
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationHanderMiddleware>();
 builder.Services.AddTransient<AuthenticationService>();
 builder.Services.RegisterConsentServiceProviders(builder.Configuration);
@@ -165,19 +167,18 @@ builder.Services.AddSingleton<AnalyticsService>();
 //
 var app = builder.Build();
 
-// Use swagger only in non-production environments
-if (!EnvironmentExtensions.IsProduction(app.Environment))
+// Use swagger only in development
+if (EnvironmentExtensions.IsLocal(app.Environment) || EnvironmentExtensions.IsDevelopment(app.Environment))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    // global cors policy
-    app.UseCors(x => x
+    // Direct cors requests used in dev-stages
+    app.UseCors(builder => builder
         .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 }
-
 
 app.UseSerilogRequestLogging(options =>
 {

@@ -4,13 +4,15 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using NetDevPack.Security.JwtExtensions;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Security.Models;
 using JwksExtension = VirtualFinland.UserAPI.Helpers.Extensions.JwksExtension;
 
 namespace VirtualFinland.UserAPI.Security.Features;
 
-public class SecurityFeature : ISecurityFeature
+public abstract class SecurityFeature : ISecurityFeature
 {
     ///
     /// The issuer of the JWT token
@@ -19,14 +21,21 @@ public class SecurityFeature : ISecurityFeature
     protected string? _issuer;
 
     /// <summary>
+    /// Is the security feature initialized
+    /// </summary>
+    public bool IsInitialized { get; set; } = false;
+
+    /// <summary>
     /// Security feature options
     /// </summary>
-    protected SecurityFeatureOptions _options { get; set; }
+    protected SecurityFeatureOptions Options { get; set; }
 
     /// <summary>
     /// Cache repository
     /// </summary>
-    protected SecurityClientProviders _securityClientProviders { get; set; }
+    protected SecurityClientProviders SecurityClientProviders { get; set; }
+
+    protected ICacheRepository CacheRepository;
 
     /// <summary>
     /// The URL to the OpenID configuration
@@ -50,7 +59,7 @@ public class SecurityFeature : ISecurityFeature
 
     public SecurityFeature(SecurityFeatureOptions options, SecurityClientProviders securityClientProviders)
     {
-        _options = options;
+        Options = options;
         _issuer = options.Issuer;
         _openIDConfigurationURL = options.OpenIdConfigurationUrl;
         _jwksOptionsUrl = options.AuthorizationJwksJsonUrl;
@@ -60,7 +69,8 @@ public class SecurityFeature : ISecurityFeature
             throw new ArgumentException("Invalid security feature configuration");
         }
 
-        _securityClientProviders = securityClientProviders;
+        SecurityClientProviders = securityClientProviders;
+        CacheRepository = SecurityClientProviders.CacheRepositoryFactory.Create(GetType().Name);
     }
 
     /// <summary>
@@ -107,12 +117,12 @@ public class SecurityFeature : ISecurityFeature
     /// <exception cref="NotAuthorizedException"></exception>
     public virtual async Task ValidateSecurityTokenAudience(string audience)
     {
-        if (_options.AudienceGuard.StaticConfig.IsEnabled)
+        if (Options.AudienceGuard.StaticConfig.IsEnabled)
         {
             await ValidateSecurityTokenAudienceByStaticConfiguration(audience);
         }
 
-        if (_options.AudienceGuard.Service.IsEnabled)
+        if (Options.AudienceGuard.Service.IsEnabled)
         {
             await ValidateSecurityTokenAudienceByService(audience);
         }
@@ -125,7 +135,7 @@ public class SecurityFeature : ISecurityFeature
     /// <exception cref="NotAuthorizedException"></exception>
     public virtual Task ValidateSecurityTokenAudienceByStaticConfiguration(string audience)
     {
-        if (!_options.AudienceGuard.StaticConfig.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
+        if (!Options.AudienceGuard.StaticConfig.AllowedAudiences.Contains(audience)) throw new NotAuthorizedException("The given token audience is not allowed");
         return Task.CompletedTask;
     }
 
@@ -166,7 +176,22 @@ public class SecurityFeature : ISecurityFeature
     /// </summary>
     protected virtual async void LoadOpenIdConfigUrl()
     {
-        var httpClient = _securityClientProviders.HttpClient;
+        if (_openIDConfigurationURL == null)
+        {
+            IsInitialized = true;
+            return;
+        }
+
+        if (Options.IsOidcMetadataCachingEnabled && await CacheRepository.Exists(Constants.Cache.OpenIdConfigPrefix))
+        {
+            var cachedResult = await CacheRepository.Get<OpenIdConfiguration>(Constants.Cache.OpenIdConfigPrefix);
+            _issuer = cachedResult.Issuer;
+            _jwksOptionsUrl = cachedResult.JwksUri;
+            IsInitialized = true;
+            return;
+        }
+
+        var httpClient = SecurityClientProviders.HttpClient;
         var httpResponse = await httpClient.GetAsync(_openIDConfigurationURL);
 
         for (int retryCount = 0; retryCount < _configUrlMaxRetryCount; retryCount++)
@@ -179,6 +204,21 @@ public class SecurityFeature : ISecurityFeature
 
                 if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                 {
+                    if (Options.IsOidcMetadataCachingEnabled)
+                    {
+                        // Check for standard cache headers or use default cache duration
+                        var cacheControlHeader = httpResponse.Headers.CacheControl;
+                        var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromSeconds(Options.DefaultOidcMetadataCacheDurationInSeconds);
+
+                        await CacheRepository.Set(Constants.Cache.OpenIdConfigPrefix, new OpenIdConfiguration()
+                        {
+                            Issuer = _issuer,
+                            JwksUri = _jwksOptionsUrl
+                        }, cacheDuration);
+
+                        IsInitialized = true;
+                    }
+
                     break;
                 }
             }
@@ -190,5 +230,11 @@ public class SecurityFeature : ISecurityFeature
         {
             throw new ArgumentNullException("Failed to retrieve OpenID configurations");
         }
+    }
+
+    private class OpenIdConfiguration
+    {
+        public string Issuer { get; set; } = default!;
+        public string JwksUri { get; set; } = default!;
     }
 }

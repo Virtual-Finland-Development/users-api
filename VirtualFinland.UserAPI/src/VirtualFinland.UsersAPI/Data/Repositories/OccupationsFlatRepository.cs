@@ -7,7 +7,7 @@ namespace VirtualFinland.UserAPI.Data.Repositories;
 
 public class OccupationsFlatRepository : CodesetsResourceRepository<List<OccupationFlatRoot.Occupation>>, IOccupationsFlatRepository
 {
-    public OccupationsFlatRepository(CodesetsService codesetsService) : base(codesetsService)
+    public OccupationsFlatRepository(CodesetsService codesetsService, ICacheRepositoryFactory cacheRepositoryFactory) : base(codesetsService, cacheRepositoryFactory)
     {
         _resource = CodesetsResource.OccupationsFlat;
     }

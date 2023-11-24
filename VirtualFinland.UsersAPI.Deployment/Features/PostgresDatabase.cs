@@ -99,7 +99,7 @@ public class PostgresDatabase
 
             DbSubnetGroupName = dbSubNetGroup.Name,
             Tags = stackSetup.Tags,
-            BackupRetentionPeriod = 7, // @TODO: Define for production
+            BackupRetentionPeriod = 30,
             EnabledCloudwatchLogsExports = new[] { "postgresql" },
         });
 

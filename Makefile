@@ -17,6 +17,10 @@ update-terms-of-service:
 	@echo "> Updating terms of service in database"
 	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service
 
+invalidate-caches:
+	@echo "> Invalidating caches"
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI invalidate-caches
+
 packages: test
 	@echo "> Ensuring local dependencies are installed"
 	dotnet tool install -g Amazon.Lambda.Tools || true

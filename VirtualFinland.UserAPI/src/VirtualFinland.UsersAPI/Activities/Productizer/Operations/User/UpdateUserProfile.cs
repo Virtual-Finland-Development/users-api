@@ -232,9 +232,6 @@ public static class UpdateUserProfile
             return validationErrors;
         }
 
-        /// <summary>
-        /// TODO - To be decided: This default search profile in the user API call can be possibly removed when requirement are more clear
-        /// </summary>
         /// <param name="dbUserDefaultSearchProfile"></param>
         /// <param name="dbUser"></param>
         /// <param name="request"></param>

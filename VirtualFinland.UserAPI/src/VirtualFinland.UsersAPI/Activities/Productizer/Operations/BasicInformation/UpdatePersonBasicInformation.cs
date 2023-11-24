@@ -1,7 +1,9 @@
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
@@ -27,6 +29,23 @@ public static class UpdatePersonBasicInformation
         public string Email { get; }
         public string? PhoneNumber { get; }
         public string? Residency { get; }
+
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator(ICountriesRepository countriesRepository)
+            {
+                RuleFor(command => command.User.PersonId).NotNull().NotEmpty();
+                RuleFor(command => command.Email).NotNull().NotEmpty();
+
+                var knownCountries = countriesRepository.GetAllCountries().Result;
+                var knownCountryCodes = knownCountries.Select(x => x.IsoCodeThreeLetter).ToList();
+                RuleFor(command => command.Residency).Must((residency) =>
+                {
+                    if (residency is null) return true;
+                    return knownCountryCodes.Contains(residency);
+                }).WithMessage("Residency is not valid");
+            }
+        }
     }
 
     public class Handler : IRequestHandler<Command, UpdatePersonBasicInformationResponse>
@@ -45,11 +64,11 @@ public static class UpdatePersonBasicInformation
         {
             var person = await _context.Persons.SingleAsync(p => p.Id == request.User.PersonId, cancellationToken);
 
-            person.GivenName = request.GivenName ?? person.GivenName;
-            person.LastName = request.LastName ?? person.LastName;
+            person.GivenName = request.GivenName;
+            person.LastName = request.LastName;
             person.Email = request.Email;
-            person.PhoneNumber = request.PhoneNumber ?? person.PhoneNumber;
-            person.ResidencyCode = request.Residency ?? person.ResidencyCode;
+            person.PhoneNumber = request.PhoneNumber;
+            person.ResidencyCode = request.Residency;
 
             try
             {

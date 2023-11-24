@@ -18,7 +18,7 @@ public static class SecurityFeatureServiceExtensions
     /// <param name="services"></param>
     /// <param name="configuration"></param>
     /// <returns></returns>
-    public static IServiceCollection RegisterSecurityFeatures(this IServiceCollection services, IConfiguration configuration, ConnectionMultiplexer redis)
+    public static IServiceCollection RegisterSecurityFeatures(this IServiceCollection services, IConfiguration configuration, CacheRepositoryFactory cacheRepositoryFactory)
     {
         var features = new List<ISecurityFeature>();
 
@@ -37,7 +37,7 @@ public static class SecurityFeatureServiceExtensions
                     InnerHandler = new HttpClientHandler()
                 }
             ),
-            CacheRepositoryFactory = new CacheRepositoryFactory(redis.GetDatabase(), Constants.Security.CachePrefix),
+            CacheRepositoryFactory = cacheRepositoryFactory,
         };
 
         // Dynamically map security feature name to correct class

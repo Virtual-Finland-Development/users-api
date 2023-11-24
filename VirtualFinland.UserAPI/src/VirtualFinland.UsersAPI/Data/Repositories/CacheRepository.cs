@@ -46,11 +46,15 @@ public class CacheRepository : ICacheRepository
 
     public async Task Clear()
     {
+        // Traverse all cluster endpoint servers
         var endpoints = _database.Multiplexer.GetEndPoints();
         foreach (var endpoint in endpoints)
         {
             var server = _database.Multiplexer.GetServer(endpoint);
-            await server.FlushDatabaseAsync();
+
+            // Clear all keys with the keyPrefix
+            var keys = server.Keys(pattern: $"{_keyPrefix}*");
+            await _database.KeyDeleteAsync(keys.ToArray());
         }
     }
 

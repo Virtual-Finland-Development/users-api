@@ -44,3 +44,6 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service`
 - `update-analytics`:
   - lambda function payload: `{"Action": "UpdateAnalytics"}`
+- `invalidate-caches`: invalidates the api gateway caches
+  - lambda function payload: `{"Action": "InvalidateCaches"}`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI invalidate-caches`
