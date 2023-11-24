@@ -294,11 +294,7 @@ public static class UpdateUser
                         continue;
                     }
 
-                    var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id);
-
-                    // TODO: Return some error about invalid guid ?
-                    if (existingOccupation is null) continue;
-
+                    var existingOccupation = dbUserOccupations.FirstOrDefault(o => o.Id == occupation.Id) ?? throw new BadRequestException("Invalid occupation ID");
                     if (occupation.Delete is true)
                     {
                         dbUserOccupations.Remove(existingOccupation);
