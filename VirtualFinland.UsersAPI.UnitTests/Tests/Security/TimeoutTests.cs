@@ -93,8 +93,8 @@ public class TimeoutTests : APITestBase
             {
                 new("sub", "dummy"),
             },
-            DateTime.Now,
-            DateTime.Now.AddDays(1),
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(1),
             new SigningCredentials(new SymmetricSecurityKey(new byte[16]), SecurityAlgorithms.HmacSha256)
         ));
 

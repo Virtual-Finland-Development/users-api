@@ -118,7 +118,6 @@ builder.Services.AddDbContext<UsersDbContext>(options =>
             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
         );
 });
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true); // @TODO: Resolve what changed in datetime inserting that causes this to be needed
 
 //
 // Redis connection

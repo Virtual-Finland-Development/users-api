@@ -30,13 +30,13 @@ public class Auditable : IAuditable
 
     protected void SetupAuditAddition(IRequestAuthenticationCandinate user)
     {
-        Created = DateTime.Now;
+        Created = DateTime.UtcNow;
         SetupAuditUpdate(user);
     }
 
     protected void SetupAuditUpdate(IRequestAuthenticationCandinate user)
     {
-        Modified = DateTime.Now;
+        Modified = DateTime.UtcNow;
         Metadata = new AuditableMetadata(user);
     }
 }
