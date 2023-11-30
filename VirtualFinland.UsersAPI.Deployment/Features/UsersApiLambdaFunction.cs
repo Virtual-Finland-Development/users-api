@@ -17,7 +17,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS, PostgresDatabase database)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -224,19 +224,16 @@ class UsersApiLambdaFunction
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
-        });
+        }, new() { DependsOn = new[] { database.MainResource } });
 
         // Configure log group with retention of 180 days
         LogGroup = cloudwatch.CreateLambdaFunctionLogGroup(stackSetup, "apiFunction", LambdaFunctionResource, 180);
-
-        // Setup error alerting
-        SetupErrorAlerting(stackSetup);
 
         LambdaFunctionArn = LambdaFunctionResource.Arn;
         LambdaFunctionId = LambdaFunctionResource.Id;
     }
 
-    private void SetupErrorAlerting(StackSetup stackSetup)
+    public void SetupErrorAlerting(StackSetup stackSetup)
     {
         var stackReference = new StackReference(stackSetup.GetAlertingStackName());
         var errorLambdaFunctionArnRef = stackReference.RequireOutput("errorSubLambdaFunctionArn");

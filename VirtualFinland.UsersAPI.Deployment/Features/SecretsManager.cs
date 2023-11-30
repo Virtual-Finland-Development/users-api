@@ -10,7 +10,7 @@ public class SecretsManager
     public SecretsManager(StackSetup stackSetup, string secretName, Output<string> secretValue)
     {
         var secret = new Secret(stackSetup.CreateResourceName(secretName));
-        new SecretVersion(stackSetup.CreateResourceName($"{secretName}Version"), new()
+        _ = new SecretVersion(stackSetup.CreateResourceName($"{secretName}Version"), new()
         {
             SecretId = secret.Id,
             SecretString = secretValue,

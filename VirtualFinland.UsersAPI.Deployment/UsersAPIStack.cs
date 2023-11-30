@@ -44,7 +44,11 @@ public class UsersApiStack : Stack
         ElastiCacheClusterId = redisCache.ClusterId;
 
         var analyticsSqS = SqsQueue.CreateSqsQueueForAnalyticsCommand(stackSetup);
-        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS);
+
+        // The API
+        var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS, database);
+        usersApiFunction.SetupErrorAlerting(stackSetup);
+
         var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
         ApplicationUrl = apiProvider.ApplicationUrl;
@@ -53,7 +57,7 @@ public class UsersApiStack : Stack
         DBClusterIdentifier = database.DBClusterIdentifier;
         AuditLogSubscriptionFunctionArn = auditLogSubscriptionFunction.LambdaFunctionArn;
 
-        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS);
+        var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS, database);
         AdminFunctionArn = adminFunction.LambdaFunction.Arn;
 
         // Analytics triggers

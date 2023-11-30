@@ -14,19 +14,16 @@ public class RDSProxy
     public RDSProxy(Config config, StackSetup stackSetup, PostgresDatabase database, VpcSetup vpcSetup)
     {
         // RDS proxy access secret
-        var username = new RandomPassword(stackSetup.CreateResourceName("rdsproxy-username"), new()
-        {
-            Length = 16,
-            Special = false,
-            OverrideSpecial = "_%@",
-        });
+        var dbName = config.Require("dbName");
+        var dbUsername = config.Require("dbUser");
+
         var password = new RandomPassword(stackSetup.CreateResourceName("rdsproxy-password"), new()
         {
             Length = 16,
             Special = false,
             OverrideSpecial = "_%@",
         });
-        var rdsProxySecretString = Output.Format($"{{\"username\":\"{username.Result}\",\"password\":\"{password.Result}\"}}");
+        var rdsProxySecretString = Output.Format($"{{\"username\":\"{dbUsername}\",\"password\":\"{password.Result}\"}}");
         var rdsProxySecret = new SecretsManager(stackSetup, "rdsProxySecret", rdsProxySecretString);
 
         // Create role for rds proxy
@@ -56,10 +53,10 @@ public class RDSProxy
             Tags = stackSetup.Tags
         });
 
-        new RolePolicyAttachment(stackSetup.CreateResourceName("RdsProxy-SecretManager"), new RolePolicyAttachmentArgs
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("RdsProxy-SecretManager"), new RolePolicyAttachmentArgs
         {
             Role = rdsProxyRole.Name,
-            PolicyArn = rdsProxySecret.Arn
+            PolicyArn = rdsProxySecret.ReadPolicy.Arn,
         });
 
         // AWS RDS Proxy
@@ -81,25 +78,55 @@ public class RDSProxy
                 }
             },
             Tags = stackSetup.Tags,
-        });
+        }, new() { DependsOn = new[] { database.DatabaseResource } });
 
-        // RDS Proxy Target
-        new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+        // Target group
+        var rdsProxyTargetGroup = new ProxyDefaultTargetGroup(stackSetup.CreateResourceName("database-proxy-target-group"), new()
         {
             DbProxyName = rdsProxy.Name,
-            DbInstanceIdentifier = database.DBIdentifier,
-        });
+            ConnectionPoolConfig = new ProxyDefaultTargetGroupConnectionPoolConfigArgs
+            {
+                MaxConnectionsPercent = 100,
+                MaxIdleConnectionsPercent = 50,
+                ConnectionBorrowTimeout = 120,
+            },
+        }, new() { DependsOn = new[] { rdsProxy } });
+
+        // RDS Proxy Target
+        if (database.IsDatabaseCluster)
+        {
+            _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+            {
+                DbProxyName = rdsProxy.Name,
+                DbClusterIdentifier = database.DBClusterIdentifier,
+                TargetGroupName = rdsProxyTargetGroup.Name,
+            }, new() { DependsOn = new[] { rdsProxy } });
+        }
+        else
+        {
+            _ = new ProxyTarget(stackSetup.CreateResourceName("database-proxy-target"), new ProxyTargetArgs()
+            {
+                DbProxyName = rdsProxy.Name,
+                DbInstanceIdentifier = database.DBIdentifier,
+                TargetGroupName = rdsProxyTargetGroup.Name,
+            }, new() { DependsOn = new[] { rdsProxy } });
+        }
 
         // Set outputs
         ProxyEndpoint = rdsProxy.Endpoint;
         ProxyIdentifier = rdsProxy.Id;
 
-        var DbName = config.Require("dbName");
-        DatabaseConnectionString = Output.Format($"Host={rdsProxy.Endpoint};Database={DbName};Username={username.Result};Password={password.Result}");
+        ProxyConnectionString = Output.Format($"Host={rdsProxy.Endpoint};Database={dbName};Username={dbUsername};Password={password.Result}");
+        ProxyUsername = dbUsername;
+        ProxyPassword = password.Result;
+        MainResource = rdsProxy;
     }
 
     [Output]
     public Output<string> ProxyEndpoint { get; set; }
     public Output<string> ProxyIdentifier { get; set; }
-    public Output<string> DatabaseConnectionString { get; set; }
+    public Output<string> ProxyConnectionString { get; set; }
+    public string ProxyUsername { get; set; }
+    public Output<string> ProxyPassword { get; set; }
+    public Resource MainResource { get; set; }
 }
