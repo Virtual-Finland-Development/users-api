@@ -15,7 +15,7 @@ public static class UpdatePersonBasicInformation
 {
     public class Command : AuthenticatedRequest<UpdatePersonBasicInformationResponse>
     {
-        public Command(string? givenName, string? lastName, string email, string? phoneNumber, string residency)
+        public Command(string? givenName, string? lastName, string email, string? phoneNumber, string? residency)
         {
             GivenName = givenName;
             LastName = lastName;
@@ -41,7 +41,7 @@ public static class UpdatePersonBasicInformation
                 var knownCountryCodes = knownCountries.Select(x => x.IsoCodeThreeLetter).ToList();
                 RuleFor(command => command.Residency).Must((residency) =>
                 {
-                    if (residency is null) return true;
+                    if (string.IsNullOrEmpty(residency)) return true;
                     return knownCountryCodes.Contains(residency);
                 }).WithMessage("Residency is not valid");
             }
