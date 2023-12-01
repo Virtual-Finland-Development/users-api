@@ -143,7 +143,7 @@ class AdminFunction
             Tags = stackSetup.Tags
         }, new() { DependsOn = new[] { database.MainResource } });
 
-        SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-handler"), new FunctionArgs
+        SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
@@ -156,7 +156,7 @@ class AdminFunction
             Tags = stackSetup.Tags
         }, new() { DependsOn = new[] { database.MainResource } });
 
-        CloudWatchEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-cloudwatch-handler"), new FunctionArgs
+        CloudWatchEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-cloudwatch"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
@@ -195,7 +195,7 @@ class AdminFunction
             Function = CloudWatchEventHandlerFunction.Name,
             SourceArn = eventRule.Arn
         });
-        _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionScheduledEventTarget"), new EventTargetArgs
+        _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionSchedulerTarget"), new EventTargetArgs
         {
             Rule = eventRule.Name,
             Arn = CloudWatchEventHandlerFunction.Arn,
