@@ -17,6 +17,6 @@ The versions are stored in the users-api database in the `TermsOfServices` table
 
 As it is required that the user has accepted the terms of service before accessing the relevant data, the users-api has to enforce this requirement. This is done as a part of the authentication process better described in the [API Security Features](./README.security.md) document.
 
-## Using the api from third-party applications
+## Using the API from third-party applications
 
-The users-api provided ToS-subjected relevant data is accessed through the dataspace gateway service, which means that in theory it would be possible to access the user data from third-party applications as well (in a controlled manner). If this is the case, the third-party application has to inform the user that the data is not accessible before accepting the Access Finland MVP terms of service and that the terms can only be accepted through the Access Finland MVP application.
+The users-api provided ToS-subjected relevant data is accessed through the dataspace gateway service, which means that in theory it would be possible to access the user data from third-party applications as well (in a controlled manner). If this is the use-case, the third-party application has to inform the user that the data is not accessible before accepting the Access Finland MVP terms of service and that the terms can only be accepted through the Access Finland MVP application.
