@@ -1,6 +1,6 @@
 # Terms of service 
 
-The users-api, when used as part of the Access Finland MVP application, is subject to the terms of service of the app. The requirement is that the user has to accept the terms of service before accessing the relevant data. It is also required that the service keeps track of which users have accepted the terms and which version of the terms they have accepted. 
+The users-api, when used as part of the [Access Finland MVP](https://github.com/Virtual-Finland-Development/access-finland) application, is subject to the terms of service of the app. The requirement is that the user has to accept the terms of service before accessing the relevant data. It is also required that the service keeps track of which users have accepted the terms and which version of the terms they have accepted. 
 
 ## Terms of service version references management
 

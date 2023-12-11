@@ -22,6 +22,12 @@ The audience validation is configured in the [appsettings.json](../VirtualFinlan
 
 Currently only Sinuna authentication provider has the implementation, as defined in the [SinunaSecurityFeature.cs](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Security/Features/SinunaSecurityFeature.cs)-file. With Sinuna, the audience guard service ([DataspaceAudienceSecurityService.cs](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Helpers/Services/DataspaceAudienceSecurityService.cs)-file) retrieves the audience from the dataspace service API and validates that the audience is configured in a group of intrest. The allowed groups are configured in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file properties block: `Security:Authorization:Sinuna:AudienceGuard:Service:AllowedGroups`.
 
+### The enforcement of Access Finland MVP Terms of Service Agreement
+
+When used in the context of [Access Finland MVP](https://github.com/Virtual-Finland-Development/access-finland) application the users-api request authentication/authorization phase requires that user has agreed to the af-mvp Terms of Service. The enforcement can be enabled or disabled using with the `Security.Options.TermsOfServiceAgreementRequired` property in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file.
+
+Read more at [./README.terms-of-service.md](./README.terms-of-service.md) document.
+
 ## Controller Specific Guards
 
 ### RequestFromAccessFinland Policy
