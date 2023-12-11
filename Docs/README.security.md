@@ -24,7 +24,7 @@ Currently only Sinuna authentication provider has the implementation, as defined
 
 ### The enforcement of Access Finland MVP Terms of Service Agreement
 
-When used in the context of [Access Finland MVP](https://github.com/Virtual-Finland-Development/access-finland) application the users-api request authentication/authorization phase requires that user has agreed to the af-mvp Terms of Service. The enforcement can be enabled or disabled using with the `Security.Options.TermsOfServiceAgreementRequired` property in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file.
+When used in the context of [Access Finland MVP](https://github.com/Virtual-Finland-Development/access-finland) application the users-api request authentication phase requires that the user has agreed to the terms of service of the Access Finland MVP. The enforcement can be enabled or disabled using with the `Security.Options.TermsOfServiceAgreementRequired` property in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file and is disabled by default. The actual enforcement is implemented in the `VerifyPersonTermsOfServiceAgreement` method of the [ApplicationSecurity.cs](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Security/ApplicationSecurity.cs)-file.
 
 Read more at [./README.terms-of-service.md](./README.terms-of-service.md) document.
 
