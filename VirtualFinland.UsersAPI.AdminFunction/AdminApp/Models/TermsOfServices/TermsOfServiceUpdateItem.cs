@@ -1,3 +1,5 @@
+using System.Runtime.Serialization;
+
 namespace VirtualFinland.AdminFunction.AdminApp.Models.TermsOfServices;
 
 public class TermsOfServiceUpdateItem
@@ -9,6 +11,11 @@ public class TermsOfServiceUpdateItem
     /// <summary>
     /// Special action to perform on the item
     /// </summary>
-    public string? Action { get; set; }
+    public TermsOfServiceUpdateItemAction? Action { get; set; }
 }
 
+public enum TermsOfServiceUpdateItemAction
+{
+    [EnumMember(Value = "UPDATE")] Update = 1,
+    [EnumMember(Value = "DELETE")] Delete = 2,
+}
