@@ -1,3 +1,7 @@
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using VirtualFinland.UserAPI.Helpers;
+
 namespace VirtualFinland.AdminFunction.AdminApp.Models.TermsOfServices;
 
 public class TermsOfServiceUpdateItem
@@ -9,6 +13,12 @@ public class TermsOfServiceUpdateItem
     /// <summary>
     /// Special action to perform on the item
     /// </summary>
-    public string? Action { get; set; }
+    public TermsOfServiceUpdateItemAction? Action { get; set; }
 }
 
+[JsonConverter(typeof(JsonEnumMemberValueConverterFactory))]
+public enum TermsOfServiceUpdateItemAction
+{
+    [EnumMember(Value = "UPDATE")] Update = 1,
+    [EnumMember(Value = "DELETE")] Delete = 2,
+}

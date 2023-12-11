@@ -38,7 +38,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
             var existingTosItem = existingTermsOfServices.FirstOrDefault(tos => tos.Version == tossable.Version);
             if (existingTosItem == null)
             {
-                if (tossable.Action == "DELETE")
+                if (tossable.Action == TermsOfServiceUpdateItemAction.Delete)
                 {
                     // No need to delete something that does not exist
                     continue;
@@ -57,7 +57,7 @@ public class TermsOfServiceUpdateAction : IAdminAppAction
             }
             else
             {
-                if (tossable.Action == "DELETE")
+                if (tossable.Action == TermsOfServiceUpdateItemAction.Delete)
                 {
                     // Delete
                     _dataContext.TermsOfServices.Remove(existingTosItem);
