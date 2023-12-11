@@ -4,7 +4,7 @@ The users-api, when used as part of the [Access Finland MVP](https://github.com/
 
 ## Terms of service version references management
 
-The terms of service are provided and managed by the Access Finland MVP application, but it uses the users-api as the service that keeps track of the accepted terms. This means that the users-api has to have some reference to which terms of service versions exists so that it can validate which version the user has accepted. 
+The service terms are provided and managed by the Access Finland MVP application, but it uses the users-api as the backend service that keeps track of the accepted terms. This means that the users-api has to have some reference to which terms of service versions exists, so that it can validate which version the user has accepted. 
 
 The versions are stored in the users-api database in the `TermsOfServices` table and is managed using the [admin function](./README.adminfunction.md) action `update-terms-of-service`. The action performs a syncronization between the database and the a json-file that contains the terms of service versions. The json-file is located at [../Data/terms-of-services.json](../Data/terms-of-services.json) and it contains a list of terms of service versions, where each version has the following properties:
 
