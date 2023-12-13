@@ -19,6 +19,8 @@ public class Person : Auditable, IEntity
 
     [MaxLength(3)]
     public string? ResidencyCode { get; set; }
+    public DateTime? LastActive { get; set; } // Last time the user accessed the system
+    public bool ToBeDeletedFromInactivity { get; set; }
 
     // Relationships
     public PersonAdditionalInformation? AdditionalInformation { get; set; } = null!;

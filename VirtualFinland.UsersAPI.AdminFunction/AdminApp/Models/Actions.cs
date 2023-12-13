@@ -8,4 +8,5 @@ public enum Actions
     UpdateTermsOfService,
     UpdateAnalytics,
     InvalidateCaches,
+    AbandonedAccountsCleanup,
 }
