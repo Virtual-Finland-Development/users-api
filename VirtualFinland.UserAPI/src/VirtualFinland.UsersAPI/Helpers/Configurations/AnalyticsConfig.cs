@@ -1,5 +1,7 @@
 namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
+using VirtualFinland.UserAPI.Models.App;
+
 public class AnalyticsConfig
 {
     public AnalyticsConfig(IConfiguration configuration)
@@ -15,16 +17,4 @@ public class AnalyticsConfig
 
     public CloudWatchSettings CloudWatch { get; set; } = new();
     public SqsSettings Sqs { get; set; } = new();
-
-    public record CloudWatchSettings
-    {
-        public bool IsEnabled { get; set; }
-        public string Namespace { get; set; } = null!;
-    }
-
-    public record SqsSettings
-    {
-        public bool IsEnabled { get; set; }
-        public string QueueUrl { get; set; } = null!;
-    }
 }

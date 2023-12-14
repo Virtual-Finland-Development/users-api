@@ -110,6 +110,7 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
+builder.Services.AddSingleton<DatabaseEventTriggersService>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,

@@ -4,9 +4,9 @@ using Amazon.CloudWatch;
 using Amazon.SQS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
@@ -14,6 +14,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Models.App;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Security.Configurations;
@@ -36,7 +37,14 @@ public class APITestBase
         var options = new DbContextOptionsBuilder<UsersDbContext>()
             .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
             .Options;
-        return new UsersDbContext(options, true);
+
+        // Setup db event triggers mock
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(o => o.GetSection("Database:Triggers:SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        var mockEventService = new DatabaseEventTriggersService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
+        var databaseEventTriggers = new DatabaseActivityInterceptor(mockEventService);
+
+        return new UsersDbContext(options, databaseEventTriggers, true);
     }
 
     public (IRequestAuthenticationCandinate requestAuthenticationCandinate, AuthenticationService authenticationService, Mock<HttpContext> httpContext) GetGoodLoginRequestSituation(IRequestAuthenticationCandinate requestAuthenticationCandinate, bool verifyTermsOfServiceAgreement = false)
@@ -134,12 +142,12 @@ public class APITestBase
         var sqsClient = new Mock<IAmazonSQS>();
 
         var analyticsConfig = new AnalyticsConfig(
-            new AnalyticsConfig.CloudWatchSettings()
+            new CloudWatchSettings()
             {
                 IsEnabled = true,
                 Namespace = "test-namespace"
             },
-            new AnalyticsConfig.SqsSettings()
+            new SqsSettings()
             {
                 IsEnabled = false,
                 QueueUrl = "test-queue-url"
