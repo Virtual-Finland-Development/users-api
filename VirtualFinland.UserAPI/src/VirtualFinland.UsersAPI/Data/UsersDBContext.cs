@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Data.Configuration;
@@ -37,6 +38,7 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<TermsOfService> TermsOfServices => Set<TermsOfService>();
     public DbSet<PersonTermsOfServiceAgreement> PersonTermsOfServiceAgreements => Set<PersonTermsOfServiceAgreement>();
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+    [NotMapped]
     public DbSet<PersonsByAudiencesResult> PersonsByAudiencesResults => Set<PersonsByAudiencesResult>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,6 +58,9 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
         modelBuilder.ApplyConfiguration(new ExternalIdentityConfiguration());
 
         if (_isTesting) modelBuilder.ApplyConfiguration(new SearchProfileConfiguration());
+
+        // This is a view, so we don't want to create it
+        modelBuilder.Entity<PersonsByAudiencesResult>().ToTable(nameof(PersonsByAudiencesResult), t => t.ExcludeFromMigrations());
     }
 
     public Task<int> SaveChangesAsync(IRequestAuthenticationCandinate user, CancellationToken cancellationToken = new CancellationToken())
