@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+using System.Text.Json;
 using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
@@ -11,13 +13,16 @@ public class SqsQueue
     /// </summary>
     public static Queue CreateSqsQueueForAnalyticsCommand(StackSetup stackSetup)
     {
-        return new Queue(stackSetup.CreateResourceName("analytics-update"), new QueueArgs
+        var queue = new Queue(stackSetup.CreateResourceName("analytics-update"), new QueueArgs
         {
             FifoQueue = true,
             ContentBasedDeduplication = true,
             DeduplicationScope = "messageGroup",
             VisibilityTimeoutSeconds = 30,
+            FifoThroughputLimit = "perMessageGroupId",
             Tags = stackSetup.Tags,
         });
+
+        return queue;
     }
 }

@@ -32,7 +32,10 @@ public class ActivityTriggerService
                 MessageBody = JsonSerializer.Serialize(new
                 {
                     Action = "UpdatePersonActivity",
-                    Data = new { PersonId = person.Id }
+                    Data = JsonSerializer.Serialize(new
+                    {
+                        PersonId = person.Id,
+                    })
                 }),
             });
         }
