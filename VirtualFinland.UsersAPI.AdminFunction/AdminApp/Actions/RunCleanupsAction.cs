@@ -51,6 +51,7 @@ public class RunCleanupsAction : IAdminAppAction
             {
                 _logger.LogInformation("Marking person {PersonId} for deletion", abandonedPerson.Id);
                 abandonedPerson.ToBeDeletedFromInactivity = true; // Updates Modified attr too
+                // TODO: Send email to person
             }
         }
 
