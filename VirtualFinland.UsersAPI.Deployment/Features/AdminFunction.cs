@@ -224,7 +224,7 @@ class AdminFunction
         // Configure CloudWatch scheduled event
         var eventRule = new EventRule(stackSetup.CreateResourceName("cleanups-scheduler"), new EventRuleArgs
         {
-            ScheduleExpression = "rate(1 days)",
+            ScheduleExpression = "rate(1 day)",
             Description = "Users-API Cleanup Trigger",
             Tags = stackSetup.Tags
         });
