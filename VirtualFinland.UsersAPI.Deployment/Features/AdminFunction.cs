@@ -149,7 +149,7 @@ class AdminFunction
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
             Timeout = 30,
-            MemorySize = 256,
+            MemorySize = 128, // Intented for short-lived, low memory tasks
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,

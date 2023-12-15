@@ -17,7 +17,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS, PostgresDatabase database)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue adminFunctionSqs, PostgresDatabase database)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -137,7 +137,7 @@ class UsersApiLambdaFunction
                             ""sqs:SendMessage""
                         ],
                         ""Resource"": [
-                            ""{analyticsSqS.Arn}""
+                            ""{adminFunctionSqs.Arn}""
                         ]
                     }}
                 ]
@@ -214,10 +214,16 @@ class UsersApiLambdaFunction
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
                     {
-                        "Analytics__SQS__QueueUrl", analyticsSqS.Url
+                        "Analytics__SQS__QueueUrl", adminFunctionSqs.Url
                     },
                     {
                         "Analytics__SQS__IsEnabled", "true"
+                    },
+                    {
+                        "Database__Triggers__SQS__QueueUrl", adminFunctionSqs.Url
+                    },
+                    {
+                        "Database__Triggers__SQS__IsEnabled", "true"
                     }
                 }
             },

@@ -28,7 +28,7 @@ public class DatabaseEventTriggersService
             await _sqsClient.SendMessageAsync(new SendMessageRequest()
             {
                 QueueUrl = _sqsSettings.QueueUrl,
-                MessageGroupId = "PersonActivityUpdates",
+                MessageGroupId = $"PersonActivityUpdates:{person.Id}", // Used in sqs dedublication
                 MessageBody = JsonSerializer.Serialize(new
                 {
                     Action = "UpdatePersonActivity",
