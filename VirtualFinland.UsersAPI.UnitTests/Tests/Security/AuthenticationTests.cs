@@ -9,6 +9,7 @@ using VirtualFinland.UsersAPI.UnitTests.Helpers;
 using VirtualFinland.UserAPI.Security.Features;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Security.Models;
+using Amazon.SQS;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Security;
 
@@ -23,7 +24,13 @@ public class AuthenticationTests : APITestBase
         var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
-        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
+
+        // Setup db event triggers mock
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(o => o.GetSection("Database:Triggers:SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        var activityTriggerService = new ActivityTriggerService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
+
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, activityTriggerService);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -54,7 +61,13 @@ public class AuthenticationTests : APITestBase
         var features = new List<ISecurityFeature>();
         var applicationSecurity = new ApplicationSecurity(new TermsOfServiceRepository(GetMockedServiceProvider().Object), new SecuritySetup() { Features = features, Options = new SecurityOptions() { TermsOfServiceAgreementRequired = false } });
         var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
-        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
+
+        // Setup db event triggers mock
+        mockConfiguration.Setup(o => o.GetSection("Database:Triggers:SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        var activityTriggerService = new ActivityTriggerService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
+
+
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, activityTriggerService);
 
         // Act
         var act = () => authenticationService.Authenticate(mockHttpContext.Object);

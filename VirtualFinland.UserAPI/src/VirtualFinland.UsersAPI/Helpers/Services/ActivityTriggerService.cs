@@ -8,7 +8,7 @@ namespace VirtualFinland.UserAPI.Helpers.Services;
 
 public class ActivityTriggerService
 {
-    private readonly SqsSettings _sqsSettings;
+    private readonly SqsSettings? _sqsSettings;
     private readonly IAmazonSQS _sqsClient;
 
     public ActivityTriggerService(IConfiguration configuration, IAmazonSQS sqsClient)
@@ -19,7 +19,7 @@ public class ActivityTriggerService
 
     public async Task UpdatePersonActivity(Person person)
     {
-        if (_sqsSettings.IsEnabled)
+        if (_sqsSettings is not null && _sqsSettings.IsEnabled)
         {
             // Only publish the event if person last activity is more than 1 days old
             if (person.LastActive is not null && person.LastActive > DateTime.UtcNow.AddDays(-1)) return;
