@@ -32,9 +32,8 @@ public class UpdatePersonActivityAction : IAdminAppAction
             return;
         }
 
-        // Update the last active date
-        person.LastActive = DateTime.UtcNow;
-        person.ToBeDeletedFromInactivity = false;
+        person.LastActive = DateTime.UtcNow;  // Update the last active date
+        person.ToBeDeletedFromInactivity = false; // Reset the to be deleted flag
         await _dataContext.SaveChangesAsync();
 
         _logger.LogInformation("Person {PersonId} last active date updated", actionInput.PersonId);

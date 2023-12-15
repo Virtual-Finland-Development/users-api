@@ -22,6 +22,7 @@ public class ActivityTriggerService
         if (_sqsSettings is not null && _sqsSettings.IsEnabled)
         {
             // Only publish the event if person last activity is more than 1 days old
+            // This is to avoid spamming the queue. With this the last activity set to update max daily
             if (person.LastActive is not null && person.LastActive > DateTime.UtcNow.AddDays(-1)) return;
 
             // Publish an SQS message to the lambda
