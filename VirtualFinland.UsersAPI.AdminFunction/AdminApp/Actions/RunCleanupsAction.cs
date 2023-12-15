@@ -8,18 +8,23 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// Flag for deletion the persons that have not been active in years
 /// A month after the delete-flagging, delete them
 /// </summary>
-public class AbandonedAccountsCleanupAction : IAdminAppAction
+public class RunCleanupsAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    private readonly ILogger<AbandonedAccountsCleanupAction> _logger;
+    private readonly ILogger<RunCleanupsAction> _logger;
 
-    public AbandonedAccountsCleanupAction(UsersDbContext dataContext, ILogger<AbandonedAccountsCleanupAction> logger)
+    public RunCleanupsAction(UsersDbContext dataContext, ILogger<RunCleanupsAction> logger)
     {
         _dataContext = dataContext;
         _logger = logger;
     }
 
     public async Task Execute(string? _)
+    {
+        await RunAbandoedAccountsCleanup();
+    }
+
+    public async Task RunAbandoedAccountsCleanup()
     {
         var dateYearsAgo = DateTime.UtcNow.AddYears(-3);
         var dateMonthAgo = DateTime.UtcNow.AddMonths(-1);
@@ -40,7 +45,6 @@ public class AbandonedAccountsCleanupAction : IAdminAppAction
                 {
                     _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", abandonedPerson.Id);
                     _dataContext.Persons.Remove(abandonedPerson);
-
                 }
             }
             else

@@ -9,5 +9,5 @@ public enum Actions
     UpdateAnalytics,
     InvalidateCaches,
     UpdatePersonActivity,
-    AbandonedAccountsCleanup,
+    RunCleanups,
 }

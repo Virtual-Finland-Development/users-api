@@ -49,9 +49,9 @@ public class UsersApiStack : Stack
         var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS, database);
         usersApiFunction.SetupErrorAlerting(stackSetup);
 
-        var apiProvider = new LambdaFunctionUrl(stackSetup, usersApiFunction);
+        var apiEndpoint = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
-        ApplicationUrl = apiProvider.ApplicationUrl;
+        ApplicationUrl = apiEndpoint.ApplicationUrl;
         LambdaId = usersApiFunction.LambdaFunctionId;
         DBIdentifier = database.DBIdentifier;
         DBClusterIdentifier = database.DBClusterIdentifier;
@@ -60,8 +60,8 @@ public class UsersApiStack : Stack
         var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS, database);
         AdminFunctionArn = adminFunction.LambdaFunction.Arn;
 
-        // Analytics triggers
-        adminFunction.CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
+        // Admin function schedulers and triggers
+        adminFunction.CreateSchedulersAndTriggers(stackSetup, analyticsSqS);
 
         // Ensure database user 
         database.InvokeInitialDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);

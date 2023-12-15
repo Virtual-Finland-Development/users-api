@@ -61,7 +61,7 @@ public class App
                 services.AddTransient<TermsOfServiceUpdateAction>();
                 services.AddTransient<UpdateAnalyticsAction>();
                 services.AddTransient<InvalidateCachesAction>();
-                services.AddTransient<AbandonedAccountsCleanupAction>();
+                services.AddTransient<RunCleanupsAction>();
                 services.AddTransient<UpdatePersonActivityAction>();
             });
 
@@ -81,7 +81,7 @@ public static class AppExtensions
             Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<TermsOfServiceUpdateAction>(),
             Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
             Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
-            Models.Actions.AbandonedAccountsCleanup => scope.ServiceProvider.GetRequiredService<AbandonedAccountsCleanupAction>(),
+            Models.Actions.RunCleanups => scope.ServiceProvider.GetRequiredService<RunCleanupsAction>(),
             Models.Actions.UpdatePersonActivity => scope.ServiceProvider.GetRequiredService<UpdatePersonActivityAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };

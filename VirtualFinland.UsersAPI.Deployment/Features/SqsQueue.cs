@@ -1,6 +1,3 @@
-
-using System.Collections.Generic;
-using System.Text.Json;
 using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 
@@ -11,7 +8,7 @@ public class SqsQueue
     /// <summary>
     /// Creates a new SQS queue that's used by the users API lambda to invoke the admin function lambdas analytics updater command
     /// </summary>
-    public static Queue CreateSqsQueueForAnalyticsCommand(StackSetup stackSetup)
+    public static Queue CreateSqsQueueForAnalyticsCommand(StackSetup stackSetup) // FIXME: rename to suite the more general purpose
     {
         // FIXME: add a dead letter queue with a retry count of 1
         var queue = new Queue(stackSetup.CreateResourceName("analytics-update"), new QueueArgs

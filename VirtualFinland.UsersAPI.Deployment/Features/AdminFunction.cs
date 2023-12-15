@@ -173,6 +173,13 @@ class AdminFunction
         }, new() { DependsOn = new[] { database.MainResource } });
     }
 
+    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    {
+        CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
+        CreateAnalyticsUpdateScheduler(stackSetup);
+        CreateCleanupSchedulers(stackSetup);
+    }
+
     public void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
     {
         // Configure SQS trigger
@@ -183,22 +190,25 @@ class AdminFunction
             BatchSize = 1,
             Enabled = true,
         });
+    }
 
+    public void CreateAnalyticsUpdateScheduler(StackSetup stackSetup)
+    {
         // Configure CloudWatch scheduled event
-        var eventRule = new EventRule(stackSetup.CreateResourceName("AdminFunctionScheduledEvent"), new EventRuleArgs
+        var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-update-scheduler"), new EventRuleArgs
         {
             ScheduleExpression = "rate(3 hours)",
             Description = "Users-API Analytics Update Trigger",
             Tags = stackSetup.Tags
         });
-        _ = new Permission(stackSetup.CreateResourceName("AdminFunctionScheduledEventPermission"), new PermissionArgs
+        _ = new Permission(stackSetup.CreateResourceName("analytics-update-scheduler-permission"), new PermissionArgs
         {
             Principal = "events.amazonaws.com",
             Action = "lambda:InvokeFunction",
             Function = CloudWatchEventHandlerFunction.Name,
             SourceArn = eventRule.Arn
         });
-        _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionSchedulerTarget"), new EventTargetArgs
+        _ = new EventTarget(stackSetup.CreateResourceName("analytics-update-scheduler-target"), new EventTargetArgs
         {
             Rule = eventRule.Name,
             Arn = CloudWatchEventHandlerFunction.Arn,
@@ -207,7 +217,33 @@ class AdminFunction
                 { "Action", "UpdateAnalytics" }
             })
         });
+    }
 
+    public void CreateCleanupSchedulers(StackSetup stackSetup)
+    {
+        // Configure CloudWatch scheduled event
+        var eventRule = new EventRule(stackSetup.CreateResourceName("cleanups-scheduler"), new EventRuleArgs
+        {
+            ScheduleExpression = "rate(1 days)",
+            Description = "Users-API Cleanup Trigger",
+            Tags = stackSetup.Tags
+        });
+        _ = new Permission(stackSetup.CreateResourceName("cleanups-scheduler-permission"), new PermissionArgs
+        {
+            Principal = "events.amazonaws.com",
+            Action = "lambda:InvokeFunction",
+            Function = CloudWatchEventHandlerFunction.Name,
+            SourceArn = eventRule.Arn
+        });
+        _ = new EventTarget(stackSetup.CreateResourceName("cleanups-scheduler-target"), new EventTargetArgs
+        {
+            Rule = eventRule.Name,
+            Arn = CloudWatchEventHandlerFunction.Arn,
+            Input = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                { "Action", "RunCleanups" }
+            })
+        });
     }
 
     public Function LambdaFunction = default!;
