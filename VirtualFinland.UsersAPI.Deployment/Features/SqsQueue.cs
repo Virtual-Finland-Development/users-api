@@ -13,6 +13,7 @@ public class SqsQueue
     /// </summary>
     public static Queue CreateSqsQueueForAnalyticsCommand(StackSetup stackSetup)
     {
+        // FIXME: add a dead letter queue with a retry count of 1
         var queue = new Queue(stackSetup.CreateResourceName("analytics-update"), new QueueArgs
         {
             FifoQueue = true,
