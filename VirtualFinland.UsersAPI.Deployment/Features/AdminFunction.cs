@@ -127,6 +127,9 @@ class AdminFunction
                     {
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
+                    {
+                        "Database__Triggers__SQS__IsEnabled", "false" // Ensure no SQS Triggers are enabled
+                    }
                 }
         };
 

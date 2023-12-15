@@ -22,7 +22,7 @@ public class UpdatePersonActivityAction : IAdminAppAction
             throw new ArgumentNullException(nameof(input));
 
         var actionInput = JsonSerializer.Deserialize<UpdatePersonActivityActionInput>(input) ??
-                          throw new ArgumentException("Invalid input", nameof(input));
+            throw new ArgumentException("Invalid input", nameof(input));
 
         // Find the person
         var person = await _dataContext.Persons.FirstOrDefaultAsync(p => p.Id == actionInput.PersonId);
