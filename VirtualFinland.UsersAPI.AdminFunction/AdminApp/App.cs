@@ -8,6 +8,8 @@ using VirtualFinland.AdminFunction.AdminApp.Actions;
 using Amazon.CloudWatch;
 using StackExchange.Redis;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Helpers.Services;
+using Amazon.SQS;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
@@ -37,6 +39,9 @@ public class App
             services =>
             {
                 // Dependencies
+                services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+                services.AddSingleton<DatabaseEventTriggersService>();
+                services.AddSingleton<DatabaseActivityInterceptor>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,
