@@ -110,8 +110,6 @@ var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NA
     : null;
 var dbConnectionString = databaseSecret ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddSingleton<DatabaseEventTriggersService>();
-builder.Services.AddSingleton<DatabaseActivityInterceptor>();
 builder.Services.AddDbContext<UsersDbContext>(options =>
 {
     options.UseNpgsql(dbConnectionString,
@@ -155,7 +153,6 @@ builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatReposit
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
-
 //
 // Other dependencies
 //
@@ -163,6 +160,7 @@ builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
 builder.Services.AddSingleton<AnalyticsConfig>();
 builder.Services.AddSingleton<AnalyticsService>();
+builder.Services.AddSingleton<ActivityTriggerService>();
 
 //
 // Application build

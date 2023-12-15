@@ -10,17 +10,14 @@ namespace VirtualFinland.UserAPI.Data;
 
 public class UsersDbContext : DbContext, IDataProtectionKeyContext
 {
-    private readonly DatabaseActivityInterceptor _activityInterceptor;
     private readonly bool _isTesting;
 
-    public UsersDbContext(DbContextOptions options, DatabaseActivityInterceptor activityInterceptor) : base(options)
+    public UsersDbContext(DbContextOptions options) : base(options)
     {
-        _activityInterceptor = activityInterceptor;
     }
 
-    public UsersDbContext(DbContextOptions options, DatabaseActivityInterceptor activityInterceptor, bool isTesting) : base(options)
+    public UsersDbContext(DbContextOptions options, bool isTesting) : base(options)
     {
-        _activityInterceptor = activityInterceptor;
         _isTesting = isTesting;
     }
 
@@ -43,7 +40,6 @@ public class UsersDbContext : DbContext, IDataProtectionKeyContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_activityInterceptor);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

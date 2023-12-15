@@ -40,8 +40,7 @@ public class App
             {
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
-                services.AddSingleton<DatabaseEventTriggersService>();
-                services.AddSingleton<DatabaseActivityInterceptor>();
+                services.AddSingleton<ActivityTriggerService>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,

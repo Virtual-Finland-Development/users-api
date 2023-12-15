@@ -6,12 +6,12 @@ using VirtualFinland.UserAPI.Models.UsersDatabase;
 
 namespace VirtualFinland.UserAPI.Helpers.Services;
 
-public class DatabaseEventTriggersService
+public class ActivityTriggerService
 {
     private readonly SqsSettings _sqsSettings;
     private readonly IAmazonSQS _sqsClient;
 
-    public DatabaseEventTriggersService(IConfiguration configuration, IAmazonSQS sqsClient)
+    public ActivityTriggerService(IConfiguration configuration, IAmazonSQS sqsClient)
     {
         _sqsSettings = configuration.GetSection("Database:Triggers:SQS").Get<SqsSettings>();
         _sqsClient = sqsClient;

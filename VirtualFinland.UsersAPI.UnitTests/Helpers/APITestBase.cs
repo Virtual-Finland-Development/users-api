@@ -37,14 +37,7 @@ public class APITestBase
         var options = new DbContextOptionsBuilder<UsersDbContext>()
             .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
             .Options;
-
-        // Setup db event triggers mock
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(o => o.GetSection("Database:Triggers:SQS")).Returns(new Mock<IConfigurationSection>().Object);
-        var mockEventService = new DatabaseEventTriggersService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
-        var databaseEventTriggers = new DatabaseActivityInterceptor(mockEventService);
-
-        return new UsersDbContext(options, databaseEventTriggers, true);
+        return new UsersDbContext(options, true);
     }
 
     public (IRequestAuthenticationCandinate requestAuthenticationCandinate, AuthenticationService authenticationService, Mock<HttpContext> httpContext) GetGoodLoginRequestSituation(IRequestAuthenticationCandinate requestAuthenticationCandinate, bool verifyTermsOfServiceAgreement = false)

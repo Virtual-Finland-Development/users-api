@@ -11,12 +11,14 @@ public class AuthenticationService
     private readonly UsersDbContext _usersDbContext;
     private readonly AnalyticsLogger<AuthenticationService> _logger;
     private readonly IApplicationSecurity _applicationSecurity;
+    private readonly ActivityTriggerService _activityTriggerService;
 
-    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory, IApplicationSecurity applicationSecurity)
+    public AuthenticationService(UsersDbContext usersDbContext, AnalyticsLoggerFactory loggerFactory, IApplicationSecurity applicationSecurity, ActivityTriggerService activityTriggerService)
     {
         _usersDbContext = usersDbContext;
         _logger = loggerFactory.CreateAnalyticsLogger<AuthenticationService>();
         _applicationSecurity = applicationSecurity;
+        _activityTriggerService = activityTriggerService;
     }
 
     /// <summary>
@@ -42,6 +44,8 @@ public class AuthenticationService
             var requestAuthenticatedUser = new RequestAuthenticatedUser(person, requestAuthenticationCandinate);
 
             context.Items.Add("User", requestAuthenticatedUser);
+
+            await _activityTriggerService.UpdatePersonActivity(person);
 
             return requestAuthenticatedUser;
         }
