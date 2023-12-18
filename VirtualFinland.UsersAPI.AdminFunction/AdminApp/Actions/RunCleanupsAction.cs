@@ -30,18 +30,18 @@ public class RunCleanupsAction : IAdminAppAction
 
     public async Task RunAbandoedAccountsCleanup()
     {
-        var dateYearsAgo = DateTime.UtcNow.AddYears(-3);
-        var dateMonthAgo = DateTime.UtcNow.AddMonths(-1);
+        var flaggingAsInactiveAt = DateTime.UtcNow.AddYears(-3);
+        var deletionAt = DateTime.UtcNow.AddMonths(-1);
 
         // Find persons that have not been active in years
-        var abandonedPersons = await _dataContext.Persons.Where(p => p.LastActive != null && p.LastActive < dateYearsAgo).ToListAsync();
+        var abandonedPersons = await _dataContext.Persons.Where(p => p.LastActive != null && p.LastActive < flaggingAsInactiveAt).ToListAsync();
 
         // Mark them for deletion
         foreach (var abandonedPerson in abandonedPersons)
         {
             if (abandonedPerson.ToBeDeletedFromInactivity)
             {
-                if (abandonedPerson.Modified > dateMonthAgo)
+                if (abandonedPerson.Modified > deletionAt)
                 {
                     _logger.LogInformation("Person {PersonId} has been marked for deletion for less than a month", abandonedPerson.Id);
                 }
