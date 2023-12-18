@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers.Services;
+using static VirtualFinland.UserAPI.Helpers.Services.NotificationService;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
@@ -11,11 +13,13 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 public class RunCleanupsAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
+    private readonly NotificationService _notificationService;
     private readonly ILogger<RunCleanupsAction> _logger;
 
-    public RunCleanupsAction(UsersDbContext dataContext, ILogger<RunCleanupsAction> logger)
+    public RunCleanupsAction(UsersDbContext dataContext, NotificationService notificationService, ILogger<RunCleanupsAction> logger)
     {
         _dataContext = dataContext;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -45,13 +49,14 @@ public class RunCleanupsAction : IAdminAppAction
                 {
                     _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", abandonedPerson.Id);
                     _dataContext.Persons.Remove(abandonedPerson);
+                    await _notificationService.SendPersonNotification(abandonedPerson, NotificationTemplate.AccountDeletedFromInactivity);
                 }
             }
             else
             {
                 _logger.LogInformation("Marking person {PersonId} for deletion", abandonedPerson.Id);
                 abandonedPerson.ToBeDeletedFromInactivity = true; // Updates Modified attr too
-                // TODO: Send email to person
+                await _notificationService.SendPersonNotification(abandonedPerson, NotificationTemplate.AccountToBeDeletedFromInactivity);
             }
         }
 

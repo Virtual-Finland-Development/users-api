@@ -40,6 +40,9 @@ public class App
             {
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+                services.AddSingleton<NotificationsConfig>();
+                services.AddSingleton<NotificationService>();
+
                 services.AddSingleton<ActivityTriggerService>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
