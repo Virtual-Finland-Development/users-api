@@ -11,7 +11,7 @@ test: restore
 
 migrate:
 	@echo "> Running database migrations"
-	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 
 update-terms-of-service:
 	@echo "> Updating terms of service in database"
@@ -19,7 +19,7 @@ update-terms-of-service:
 
 invalidate-caches:
 	@echo "> Invalidating caches"
-	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI invalidate-caches
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InvalidateCaches
 
 packages: test
 	@echo "> Ensuring local dependencies are installed"
