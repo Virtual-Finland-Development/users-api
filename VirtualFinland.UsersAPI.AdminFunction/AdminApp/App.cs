@@ -51,6 +51,7 @@ public class App
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 
                 // Actions
+                services.AddTransient<InitialDatabaseSetupAction>();
                 services.AddTransient<DatabaseMigrationAction>();
                 services.AddTransient<DatabaseAuditLogTriggersInitializationAction>();
                 services.AddTransient<DatabaseUserInitializationAction>();
@@ -69,6 +70,7 @@ public static class AppExtensions
     {
         return action switch
         {
+            Models.Actions.InitializeDatabase => scope.ServiceProvider.GetRequiredService<InitialDatabaseSetupAction>(),
             Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<DatabaseMigrationAction>(),
             Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<DatabaseAuditLogTriggersInitializationAction>(),
             Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<DatabaseUserInitializationAction>(),

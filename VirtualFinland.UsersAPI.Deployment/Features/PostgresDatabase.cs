@@ -179,10 +179,39 @@ public class PostgresDatabase
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
 
+    public void InvokeInitialDatabaseSetupFunction(StackSetup stackSetup, Function adminFunction)
+    {
+        DbPassword.Apply(
+            password =>
+            {
+                var invokePayload = JsonSerializer.Serialize(new
+                {
+                    action = "InitializeDatabase",
+                    data = JsonSerializer.Serialize(new
+                    {
+                        Username = DbUsername,
+                        Password = password,
+                    }),
+                });
+
+                _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitialDatabaseUserSetup"), new()
+                {
+                    Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
+                    Triggers = new InputList<string>
+                    {
+                        DbPassword,
+                        Output.Create(DbUsername),
+                    }
+                }, new() { DependsOn = new[] { adminFunction, MainResource } });
+                return password;
+            }
+        );
+    }
+
     /// <summary>
     /// Setup the database user
     /// </summary>
-    public void InvokeInitialDatabaseUserSetupFunction(StackSetup stackSetup, Function adminFunction)
+    public void InvokeDatabaseUserSetupFunction(StackSetup stackSetup, Function adminFunction)
     {
         DbPassword.Apply(
             password =>
