@@ -30,6 +30,13 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
 
 ## Available actions
 
+- `initialize-database`:
+  - creates the database schema, users and triggers by running the actions in correct order:
+    - `migrate`
+    - `initialize-database-user`
+    - `initialize-database-audit-log-triggers`
+  - lambda function payload: `{"Action": "InitializeDatabase"}`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database`
 - `migrate` - runs the database migrations
   - lambda function payload: `{"Action": "Migrate"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate`
