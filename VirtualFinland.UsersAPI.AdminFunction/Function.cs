@@ -14,6 +14,9 @@ public class Function
 {
     public static async Task FunctionHandler(FunctionPayload payload)
     {
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
         // Setup
         using var app = await App.Build();
         using var scope = app.Services.CreateScope();
@@ -28,6 +31,10 @@ public class Function
         // Setup
         var payloadBody = sqsEvent.Records.First().Body;
         var payload = JsonSerializer.Deserialize<FunctionPayload>(payloadBody) ?? throw new Exception("Could not deserialize payload");
+
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
         using var app = await App.Build();
         using var scope = app.Services.CreateScope();
 
@@ -43,6 +50,10 @@ public class Function
         // Setup
         var payloadBody = cloudWatchEvent.Detail.ToString() ?? throw new Exception("Could not get payload");
         var payload = JsonSerializer.Deserialize<FunctionPayload>(payloadBody) ?? throw new Exception("Could not deserialize payload");
+
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
         using var app = await App.Build();
         using var scope = app.Services.CreateScope();
 
@@ -59,7 +70,7 @@ public class Function
         var allowedActions = new[] { Actions.UpdateAnalytics, Actions.InvalidateCaches, Actions.UpdatePersonActivity };
         if (!allowedActions.Contains(action))
         {
-            throw new Exception($"Action '{action}' is not allowed to be invoked from event source");
+            throw new ArgumentException($"Action '{action}' is not allowed to be invoked from event source");
         }
     }
 }
