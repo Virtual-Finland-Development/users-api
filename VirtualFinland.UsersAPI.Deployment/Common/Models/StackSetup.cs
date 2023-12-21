@@ -6,7 +6,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Common.Models;
 public class StackSetup
 {
     public InputMap<string> Tags = default!;
-    public bool IsProductionEnvironment;
+    public bool IsProductionlikeEnvironment => Pulumi.Deployment.Instance.StackName == Environments.MvpStaging || Pulumi.Deployment.Instance.StackName == Environments.MvpProduction;
     public string Environment = default!;
     public string ProjectName = default!;
     public string Organization = default!;

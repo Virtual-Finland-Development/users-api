@@ -7,7 +7,6 @@ using VirtualFinland.UsersAPI.Deployment.Features;
 return await Deployment.RunAsync(async () =>
 {
     var config = new Config();
-    bool isProductionEnvironment = Environments.IsProductionEnvironment();
     var organization = Deployment.Instance.OrganizationName;
     var environment = Deployment.Instance.StackName;
     var projectName = Deployment.Instance.ProjectName;
@@ -27,7 +26,6 @@ return await Deployment.RunAsync(async () =>
         Organization = organization,
         ProjectName = projectName,
         Environment = environment,
-        IsProductionEnvironment = isProductionEnvironment,
         Tags = tags,
     };
 

@@ -18,7 +18,7 @@ public class PostgresDatabase
 {
     public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
-        if (stackSetup.IsProductionEnvironment)
+        if (stackSetup.IsProductionlikeEnvironment)
         {
             SetupProductionPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
