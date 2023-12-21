@@ -6,10 +6,10 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// <summary>
 /// Run database migrations
 /// </summary>
-public class DatabaseMigrationAction : IAdminAppAction
+public class MigrateAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    public DatabaseMigrationAction(UsersDbContext dataContext)
+    public MigrateAction(UsersDbContext dataContext)
     {
         _dataContext = dataContext;
     }

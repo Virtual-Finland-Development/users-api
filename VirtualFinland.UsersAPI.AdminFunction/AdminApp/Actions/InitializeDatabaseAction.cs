@@ -3,13 +3,13 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// <summary>
 /// Runs the initial database setup actions: migrate, setup database user and audit log triggers
 /// </summary>
-public class InitialDatabaseSetupAction : IAdminAppAction
+public class InitializeDatabaseAction : IAdminAppAction
 {
-    private readonly DatabaseMigrationAction _databaseMigrationAction;
+    private readonly MigrateAction _databaseMigrationAction;
     private readonly DatabaseUserInitializationAction _databaseUserInitializationAction;
-    private readonly DatabaseAuditLogTriggersInitializationAction _databaseAuditLogTriggersInitializationAction;
+    private readonly InitializeDatabaseAuditLogTriggersAction _databaseAuditLogTriggersInitializationAction;
 
-    public InitialDatabaseSetupAction(DatabaseMigrationAction databaseMigrationAction, DatabaseUserInitializationAction databaseUserInitializationAction, DatabaseAuditLogTriggersInitializationAction databaseAuditLogTriggersInitializationAction)
+    public InitializeDatabaseAction(MigrateAction databaseMigrationAction, DatabaseUserInitializationAction databaseUserInitializationAction, InitializeDatabaseAuditLogTriggersAction databaseAuditLogTriggersInitializationAction)
     {
         _databaseMigrationAction = databaseMigrationAction;
         _databaseUserInitializationAction = databaseUserInitializationAction;

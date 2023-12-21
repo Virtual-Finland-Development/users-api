@@ -8,10 +8,10 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// <summary>
 /// Initializes the database audit log triggers for the auditable models
 /// </summary>
-public class DatabaseAuditLogTriggersInitializationAction : IAdminAppAction
+public class InitializeDatabaseAuditLogTriggersAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    public DatabaseAuditLogTriggersInitializationAction(UsersDbContext dataContext)
+    public InitializeDatabaseAuditLogTriggersAction(UsersDbContext dataContext)
     {
         _dataContext = dataContext;
     }
