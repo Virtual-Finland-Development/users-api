@@ -194,14 +194,9 @@ public class PostgresDatabase
                     }),
                 });
 
-                _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitialDatabaseUserSetup"), new()
+                _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitialDatabaseSetup"), new()
                 {
                     Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
-                    Triggers = new InputList<string>
-                    {
-                        DbPassword,
-                        Output.Create(DbUsername),
-                    }
                 }, new() { DependsOn = new[] { adminFunction, MainResource } });
                 return password;
             }
