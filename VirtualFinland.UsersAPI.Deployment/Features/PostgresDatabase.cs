@@ -240,7 +240,7 @@ public class PostgresDatabase
         );
     }
 
-    public void InvokeInitialDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
+    public void InvokeDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
     {
         var invokePayload = JsonSerializer.Serialize(new
         {

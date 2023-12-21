@@ -62,7 +62,7 @@ return await Deployment.RunAsync(async () =>
         // Ensure database user 
         database.InvokeDatabaseUserSetupFunction(stackSetup, adminFunction.LambdaFunction);
         // Ensure database audit log triggers
-        database.InvokeInitialDatabaseAuditLogTriggersSetupFunction(stackSetup, adminFunction.LambdaFunction);
+        database.InvokeDatabaseAuditLogTriggersSetupFunction(stackSetup, adminFunction.LambdaFunction);
     }
 
     // Outputs
