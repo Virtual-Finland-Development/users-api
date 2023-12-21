@@ -5,21 +5,21 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class InitializeDatabaseAction : IAdminAppAction
 {
-    private readonly MigrateAction _databaseMigrationAction;
-    private readonly DatabaseUserInitializationAction _databaseUserInitializationAction;
-    private readonly InitializeDatabaseAuditLogTriggersAction _databaseAuditLogTriggersInitializationAction;
+    private readonly MigrateAction _migrateAction;
+    private readonly InitializeDatabaseUserAction _initializeDatabaseUserAction;
+    private readonly InitializeDatabaseAuditLogTriggersAction _initializeDatabaseAuditLogTriggersAction;
 
-    public InitializeDatabaseAction(MigrateAction databaseMigrationAction, DatabaseUserInitializationAction databaseUserInitializationAction, InitializeDatabaseAuditLogTriggersAction databaseAuditLogTriggersInitializationAction)
+    public InitializeDatabaseAction(MigrateAction databaseMigrationAction, InitializeDatabaseUserAction initializeDatabaseUserAction, InitializeDatabaseAuditLogTriggersAction databaseAuditLogTriggersInitializationAction)
     {
-        _databaseMigrationAction = databaseMigrationAction;
-        _databaseUserInitializationAction = databaseUserInitializationAction;
-        _databaseAuditLogTriggersInitializationAction = databaseAuditLogTriggersInitializationAction;
+        _migrateAction = databaseMigrationAction;
+        _initializeDatabaseUserAction = initializeDatabaseUserAction;
+        _initializeDatabaseAuditLogTriggersAction = databaseAuditLogTriggersInitializationAction;
     }
 
     public async Task Execute(string? payload)
     {
-        await _databaseMigrationAction.Execute(payload);
-        await _databaseUserInitializationAction.Execute(payload);
-        await _databaseAuditLogTriggersInitializationAction.Execute(payload);
+        await _migrateAction.Execute(payload);
+        await _initializeDatabaseUserAction.Execute(payload);
+        await _initializeDatabaseAuditLogTriggersAction.Execute(payload);
     }
 }
