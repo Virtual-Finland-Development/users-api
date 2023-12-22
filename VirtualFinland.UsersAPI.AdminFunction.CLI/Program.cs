@@ -20,7 +20,7 @@ internal class Program
             return new FunctionPayload
             {
                 Action = action,
-                Data = JsonSerializer.Serialize(new DatabaseUserInitializationAction.DatabaseUserCredentials(
+                Data = JsonSerializer.Serialize(new InitializeDatabaseUserAction.DatabaseUserCredentials(
                     Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentException(nameof(Environment.GetEnvironmentVariable)),
                     Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentException(nameof(Environment.GetEnvironmentVariable))
                 ))
