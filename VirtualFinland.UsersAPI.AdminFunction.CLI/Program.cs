@@ -15,14 +15,14 @@ internal class Program
 
     private static FunctionPayload ResolveFunctionPayload(Actions action)
     {
-        if (action == Actions.InitializeDatabaseUser)
+        if (action == Actions.InitializeDatabaseUser || action == Actions.InitializeDatabase)
         {
             return new FunctionPayload
             {
-                Action = Actions.InitializeDatabaseUser,
+                Action = action,
                 Data = JsonSerializer.Serialize(new DatabaseUserInitializationAction.DatabaseUserCredentials(
-                    Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable)),
-                    Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentNullException(nameof(Environment.GetEnvironmentVariable))
+                    Environment.GetEnvironmentVariable("DATABASE_USER") ?? throw new ArgumentException(nameof(Environment.GetEnvironmentVariable)),
+                    Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? throw new ArgumentException(nameof(Environment.GetEnvironmentVariable))
                 ))
             };
         }

@@ -11,11 +11,10 @@ test: restore
 
 migrate.cli:
 	@echo "> Running database migrations"
-	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 migrate.aws:
 	@echo "> Running database migrations in AWS Lambda"
 	aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name $(pulumi -C ./VirtualFinland.UsersAPI.Deployment stack output AdminFunctionArn) output.json
-
 
 update-terms-of-service:
 	@echo "> Updating terms of service in database"
@@ -23,7 +22,7 @@ update-terms-of-service:
 
 invalidate-caches:
 	@echo "> Invalidating caches"
-	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI invalidate-caches
+	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InvalidateCaches
 
 packages: test
 	@echo "> Ensuring local dependencies are installed"

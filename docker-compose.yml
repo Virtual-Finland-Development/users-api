@@ -33,12 +33,8 @@ services:
       bash -c "
         set -e
         echo '> Initializing local database..'
-        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
-        echo '> Initializing local audit log triggers..'
-        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-audit-log-triggers
-        echo '> Initializing local database user..'
-        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user
-        echo '> Initialization script executed - shutting down';
+        dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InitializeDatabase
+        echo '> Initialization script executed successfully.';
       "
     environment:
       ASPNETCORE_ENVIRONMENT: local

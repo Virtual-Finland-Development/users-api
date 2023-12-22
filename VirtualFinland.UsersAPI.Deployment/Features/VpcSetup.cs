@@ -15,7 +15,7 @@ public class VpcSetup
             EnableDnsHostnames = true,
             NatGateways = new NatGatewayConfigurationArgs
             {
-                Strategy = stackSetup.IsProductionEnvironment ? NatGatewayStrategy.OnePerAz : NatGatewayStrategy.Single
+                Strategy = stackSetup.IsProductionlikeEnvironment ? NatGatewayStrategy.OnePerAz : NatGatewayStrategy.Single
             }
         });
 

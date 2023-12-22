@@ -129,7 +129,7 @@ make migrate
 Or you can use the following command with dotnet:
 
 ```
-dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 ```
 
 * More infromation about the adminfunction tool can be found from the [Docs/README.adminfunction.md](./Docs/README.adminfunction.md) file.

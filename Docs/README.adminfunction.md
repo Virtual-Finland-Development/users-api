@@ -15,36 +15,43 @@ aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-b
 
 The payload of the function is a json object that contains the following properties:
 
-- `action` - the action that is performed by the function, for example `migrate`
+- `action` - the action that is performed by the function, for example `Migrate`
 - `data` - an optional stringified data set or a value that is passed to the action implementation
 
 ## How to run the admin function locally against a local database:
 
 The setup does not emulate aws lambda-runtime locally but instead runs the admin function as a normal dotnet core console application [../VirtualFinland.UsersAPI.AdminFunction.CLI]([../VirtualFinland.UsersAPI.AdminFunction.CLI)
 
-For example the admin functions migrate-command can be run locally against a local database using the following command:
+For example the admin functions Migrate-command can be run locally against a local database using the following command:
 
 ```
-dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate
+dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 ```
 
 ## Available actions
 
-- `migrate` - runs the database migrations
+- `InitializeDatabase`:
+  - creates the database schema, users and triggers by running the actions in correct order:
+    - `Migrate`
+    - `InitializeDatabaseUser`
+    - `InitializeDatabaseAuditLogTriggers`
+  - lambda function payload: `{"Action": "InitializeDatabase"}`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InitializeDatabase`
+- `Migrate` - runs the database migrations
   - lambda function payload: `{"Action": "Migrate"}`
-  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI migrate`
-- `initialize-database-audit-log-triggers` - initializes the database audit logging triggers
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate`
+- `InitializeDatabaseAuditLogTriggers` - initializes the database audit logging triggers
   - lambda function payload: `{"Action": "InitializeDatabaseAuditLogTriggers"}`
-  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-audit-log-triggers`
-- `initialize-database-user` - setup the application-level user credentials to the database
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InitializeDatabaseAuditLogTriggers`
+- `InitializeDatabaseUser` - setup the application-level user credentials to the database
   - lambda function payload: `{"Action": "InitializeDatabaseUser", "data": "{\"Username\": \"appuser\", \"Password\": \"pass\"}"}`
-  - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI initialize-database-user`
+  - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InitializeDatabaseUser`
 - `update-terms-of-service`:
   - lambda function payload: `{"Action": "UpdateTermsOfService"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service`
   - read more at [./README.terms-of-service.md](./README.terms-of-service.md) document
-- `update-analytics`:
+- `UpdateAnalytics`:
   - lambda function payload: `{"Action": "UpdateAnalytics"}`
-- `invalidate-caches`: invalidates the api gateway caches
+- `InvalidateCaches`: invalidates the api gateway caches
   - lambda function payload: `{"Action": "InvalidateCaches"}`
-  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI invalidate-caches`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InvalidateCaches`

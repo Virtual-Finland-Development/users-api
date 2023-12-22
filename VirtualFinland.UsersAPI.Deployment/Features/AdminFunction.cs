@@ -197,7 +197,7 @@ class AdminFunction
         // Configure CloudWatch scheduled event
         var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-update-scheduler"), new EventRuleArgs
         {
-            ScheduleExpression = "rate(3 hours)",
+            ScheduleExpression = "rate(12 hours)",
             Description = "Users-API Analytics Update Trigger",
             Tags = stackSetup.Tags
         });
