@@ -170,7 +170,7 @@ class AdminFunction
         }, new() { DependsOn = new[] { database.MainResource } });
     }
 
-    public void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue analyticsSqS)
     {
         // Configure SQS trigger
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
@@ -204,7 +204,6 @@ class AdminFunction
                 { "Action", "UpdateAnalytics" }
             })
         });
-
     }
 
     public Function LambdaFunction = default!;

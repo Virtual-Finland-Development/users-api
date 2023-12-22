@@ -51,10 +51,11 @@ public class App
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 
                 // Actions
-                services.AddTransient<DatabaseMigrationAction>();
-                services.AddTransient<DatabaseAuditLogTriggersInitializationAction>();
-                services.AddTransient<DatabaseUserInitializationAction>();
-                services.AddTransient<TermsOfServiceUpdateAction>();
+                services.AddTransient<InitializeDatabaseAction>();
+                services.AddTransient<MigrateAction>();
+                services.AddTransient<InitializeDatabaseAuditLogTriggersAction>();
+                services.AddTransient<InitializeDatabaseUserAction>();
+                services.AddTransient<UpdateTermsOfServiceAction>();
                 services.AddTransient<UpdateAnalyticsAction>();
                 services.AddTransient<InvalidateCachesAction>();
             });
@@ -69,10 +70,11 @@ public static class AppExtensions
     {
         return action switch
         {
-            Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<DatabaseMigrationAction>(),
-            Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<DatabaseAuditLogTriggersInitializationAction>(),
-            Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<DatabaseUserInitializationAction>(),
-            Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<TermsOfServiceUpdateAction>(),
+            Models.Actions.InitializeDatabase => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAction>(),
+            Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<MigrateAction>(),
+            Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAuditLogTriggersAction>(),
+            Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<InitializeDatabaseUserAction>(),
+            Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<UpdateTermsOfServiceAction>(),
             Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
             Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),

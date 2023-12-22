@@ -18,7 +18,7 @@ public class PostgresDatabase
 {
     public PostgresDatabase(Config config, StackSetup stackSetup, VpcSetup vpcSetup, CloudWatch cloudwatch)
     {
-        if (stackSetup.IsProductionEnvironment)
+        if (stackSetup.IsProductionlikeEnvironment)
         {
             SetupProductionPostgresDatabase(config, stackSetup, vpcSetup, cloudwatch);
         }
@@ -179,10 +179,34 @@ public class PostgresDatabase
         LogGroup = cloudwatch.CreateLogGroup(stackSetup, "database", Output.Format($"/aws/rds/instance/{rdsPostgreSqlInstance.Identifier}/postgresql"), 3);
     }
 
+    public void InvokeInitialDatabaseSetupFunction(StackSetup stackSetup, Function adminFunction)
+    {
+        DbPassword.Apply(
+            password =>
+            {
+                var invokePayload = JsonSerializer.Serialize(new
+                {
+                    action = "InitializeDatabase",
+                    data = JsonSerializer.Serialize(new
+                    {
+                        Username = DbUsername,
+                        Password = password,
+                    }),
+                });
+
+                _ = new Pulumi.Command.Local.Command(stackSetup.CreateResourceName("InitialDatabaseSetup"), new()
+                {
+                    Create = Output.Format($"aws lambda invoke --payload '{invokePayload}' --cli-binary-format raw-in-base64-out --function-name {adminFunction.Arn} /dev/null"),
+                }, new() { DependsOn = new[] { adminFunction, MainResource } });
+                return password;
+            }
+        );
+    }
+
     /// <summary>
     /// Setup the database user
     /// </summary>
-    public void InvokeInitialDatabaseUserSetupFunction(StackSetup stackSetup, Function adminFunction)
+    public void InvokeDatabaseUserSetupFunction(StackSetup stackSetup, Function adminFunction)
     {
         DbPassword.Apply(
             password =>
@@ -211,7 +235,7 @@ public class PostgresDatabase
         );
     }
 
-    public void InvokeInitialDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
+    public void InvokeDatabaseAuditLogTriggersSetupFunction(StackSetup stackSetup, Function adminFunction)
     {
         var invokePayload = JsonSerializer.Serialize(new
         {

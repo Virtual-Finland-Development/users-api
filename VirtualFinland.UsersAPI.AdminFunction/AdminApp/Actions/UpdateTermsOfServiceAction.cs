@@ -10,10 +10,10 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// <summary>
 /// Terms of Service Update
 /// </summary>
-public class TermsOfServiceUpdateAction : IAdminAppAction
+public class UpdateTermsOfServiceAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    public TermsOfServiceUpdateAction(UsersDbContext dataContext)
+    public UpdateTermsOfServiceAction(UsersDbContext dataContext)
     {
         _dataContext = dataContext;
     }
