@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Pulumi;
-using VirtualFinland.UsersAPI.Deployment.Common;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using VirtualFinland.UsersAPI.Deployment.Features;
 
