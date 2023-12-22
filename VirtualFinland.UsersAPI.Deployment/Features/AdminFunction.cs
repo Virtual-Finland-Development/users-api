@@ -180,7 +180,7 @@ class AdminFunction
         CreateCleanupSchedulers(stackSetup);
     }
 
-    public void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    private void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
     {
         // Configure SQS trigger
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
@@ -192,7 +192,7 @@ class AdminFunction
         });
     }
 
-    public void CreateAnalyticsUpdateScheduler(StackSetup stackSetup)
+    private void CreateAnalyticsUpdateScheduler(StackSetup stackSetup)
     {
         // Configure CloudWatch scheduled event
         var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-update-scheduler"), new EventRuleArgs
@@ -219,7 +219,7 @@ class AdminFunction
         });
     }
 
-    public void CreateCleanupSchedulers(StackSetup stackSetup)
+    private void CreateCleanupSchedulers(StackSetup stackSetup)
     {
         // Configure CloudWatch scheduled event
         var eventRule = new EventRule(stackSetup.CreateResourceName("cleanups-scheduler"), new EventRuleArgs
