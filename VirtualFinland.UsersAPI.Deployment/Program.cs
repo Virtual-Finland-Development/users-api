@@ -25,6 +25,7 @@ return await Deployment.RunAsync(async () =>
         Organization = organization,
         ProjectName = projectName,
         Environment = environment,
+        Region = new Config("aws").Require("region"),
         Tags = tags,
     };
 
