@@ -39,7 +39,7 @@ public class NotificationService
         var client = new AmazonSimpleEmailServiceClient();
         var sendRequest = new SendEmailRequest
         {
-            Source = _config.Email.SenderAddress,
+            Source = _config.Email.FromAddress,
             Destination = new Destination
             {
                 ToAddresses = new List<string> { person.Email }
@@ -56,7 +56,6 @@ public class NotificationService
                     }
                 }
             },
-            ReplyToAddresses = new List<string> { _config.Email.SenderAddress }
         };
 
         await client.SendEmailAsync(sendRequest);
