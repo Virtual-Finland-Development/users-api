@@ -107,6 +107,33 @@ class AdminFunction
             PolicyArn = sqsInvokePolicy.Arn
         });
 
+        // Allow sending emails with SES
+        var sesSendEmailPolicy = new Policy(stackSetup.CreateResourceName("AdminFunctionSESSendEmailPolicy"), new()
+        {
+            Description = "Users-API SES Send Email Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""ses:SendEmail"",
+                            ""ses:SendRawEmail""
+                        ],
+                        ""Resource"": [
+                            ""*""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SES"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = sesSendEmailPolicy.Arn
+        });
+
         var functionVpcArgs = new FunctionVpcConfigArgs()
         {
             SecurityGroupIds = new[] { vpcSetup.SecurityGroupId },
@@ -138,7 +165,7 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
-            Timeout = 30,
+            Timeout = 120,
             MemorySize = 256,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
@@ -164,7 +191,7 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
-            Timeout = 30,
+            Timeout = 120,
             MemorySize = 256,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),

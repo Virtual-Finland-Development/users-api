@@ -29,8 +29,14 @@ public class NotificationService
 
     private async Task SendPersonEmail(Person person, NotificationTemplate template)
     {
-        if (_config.Email.IsEnabled || person.Email is null)
+        if (!_config.Email.IsEnabled)
         {
+            _logger.LogInformation("Skip notification as email notifications are disabled");
+            return;
+        }
+        if (person.Email is null)
+        {
+            _logger.LogInformation("Skip notification as person {personId} does not have an email address", person.Id);
             return;
         }
 
@@ -72,7 +78,7 @@ public class NotificationService
                 Body = @$"
                         <h1>Your Access Finland account will be deleted from inactivity!</h1>
                         <p>Hi {personFirstName}, you have not been active in Access Finland for a long time.</p>
-                        <p>Unless you log in to Access Finland within a month, your account will be deleted.</p>
+                        <p>Unless you log in to Access Finland within a month, your account will be automatically deleted.</p>
                         <p>If you want to keep your account, please log in to Access Finland.</p>
                     "
             },
