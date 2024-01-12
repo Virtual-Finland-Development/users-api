@@ -18,3 +18,4 @@ config:
   auth:testbed-isEnabled: true
   auth:sinuna-isEnabled: true
   termsOfService:isEnabled: false
+  ses:fromAddress: "no-reply@dev.accessfinland.dev"

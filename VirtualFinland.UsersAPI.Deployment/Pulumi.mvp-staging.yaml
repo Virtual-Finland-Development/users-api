@@ -7,3 +7,4 @@ config:
   auth:testbed-isEnabled: false
   termsOfService:isEnabled: true
   users-api:useRdsProxy: false
+  ses:fromAddress: "no-reply@staging.accessfinland.dev"

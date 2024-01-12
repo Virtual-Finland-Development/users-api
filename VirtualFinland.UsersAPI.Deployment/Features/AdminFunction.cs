@@ -156,6 +156,9 @@ class AdminFunction
                     },
                     {
                         "Database__Triggers__SQS__IsEnabled", "false" // Ensure no SQS Triggers are enabled
+                    },
+                    {
+                        "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
                     }
                 }
         };

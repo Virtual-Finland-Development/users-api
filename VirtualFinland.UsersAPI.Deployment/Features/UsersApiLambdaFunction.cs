@@ -224,6 +224,9 @@ class UsersApiLambdaFunction
                     },
                     {
                         "Database__Triggers__SQS__IsEnabled", "true"
+                    },
+                    {
+                        "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
                     }
                 }
             },
