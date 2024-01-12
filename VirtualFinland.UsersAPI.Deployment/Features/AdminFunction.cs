@@ -12,7 +12,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue analyticsSqS, PostgresDatabase database)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue adminFunctionSqs, PostgresDatabase database)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -94,7 +94,7 @@ class AdminFunction
                             ""sqs:GetQueueAttributes""
                         ],
                         ""Resource"": [
-                            ""{analyticsSqS.Arn}""
+                            ""{adminFunctionSqs.Arn}""
                         ]
                     }}
                 ]
@@ -200,19 +200,19 @@ class AdminFunction
         }, new() { DependsOn = new[] { database.MainResource } });
     }
 
-    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue adminFunctionSqs)
     {
-        CreateAnalyticsUpdateTriggers(stackSetup, analyticsSqS);
+        CreateAnalyticsUpdateTriggers(stackSetup, adminFunctionSqs);
         CreateAnalyticsUpdateScheduler(stackSetup);
         CreateCleanupSchedulers(stackSetup);
     }
 
-    private void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    private void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue adminFunctionSqs)
     {
         // Configure SQS trigger
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
         {
-            EventSourceArn = analyticsSqS.Arn,
+            EventSourceArn = adminFunctionSqs.Arn,
             FunctionName = SqsEventHandlerFunction.Name,
             BatchSize = 1,
             Enabled = true,
