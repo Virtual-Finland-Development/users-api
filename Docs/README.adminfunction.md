@@ -55,3 +55,6 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 - `InvalidateCaches`: invalidates the api gateway caches
   - lambda function payload: `{"Action": "InvalidateCaches"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InvalidateCaches`
+- `RunCleanupsAction`:
+  - lambda function payload: `{"Action": "RunCleanups"}`
+  - read more at [./README.automatic-cleanups.md](./README.automatic-cleanups.md) document
