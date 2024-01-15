@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Services;
 using Amazon.SQS;
+using VirtualFinland.UserAPI.Helpers;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
@@ -41,6 +42,7 @@ public class App
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
                 services.AddSingleton<NotificationsConfig>();
+                services.AddSingleton<EmailTemplates>();
                 services.AddSingleton<NotificationService>();
 
                 services.AddSingleton<ActivityTriggerService>();
