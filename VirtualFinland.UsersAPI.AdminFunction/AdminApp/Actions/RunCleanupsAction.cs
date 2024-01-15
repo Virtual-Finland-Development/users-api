@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
 using static VirtualFinland.UserAPI.Helpers.Services.NotificationService;
 
@@ -14,27 +15,32 @@ public class RunCleanupsAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
     private readonly NotificationService _notificationService;
+    private readonly CleanupConfig _config;
     private readonly ILogger<RunCleanupsAction> _logger;
 
-    public RunCleanupsAction(UsersDbContext dataContext, NotificationService notificationService, ILogger<RunCleanupsAction> logger)
+    public RunCleanupsAction(UsersDbContext dataContext, NotificationService notificationService, CleanupConfig config, ILogger<RunCleanupsAction> logger)
     {
         _dataContext = dataContext;
         _notificationService = notificationService;
+        _config = config;
         _logger = logger;
     }
 
     public async Task Execute(string? _)
     {
-        await RunAbandoedAccountsCleanup();
+        if (_config.AbandonedAccounts.IsEnabled)
+        {
+            await RunAbandoedAccountsCleanup();
+        }
     }
 
     public async Task RunAbandoedAccountsCleanup()
     {
-        var flaggingAsInactiveAt = DateTime.UtcNow.AddYears(-3);
-        var deletionAt = DateTime.UtcNow.AddMonths(-1);
+        var flagAsAbandonedAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.FlagAsAbandonedInDays);
+        var deletionAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.DeleteFlaggedAfterDays);
 
         // Find persons that have not been active in years
-        var abandonedPersons = await _dataContext.Persons.Where(p => p.LastActive != null && p.LastActive < flaggingAsInactiveAt).ToListAsync();
+        var abandonedPersons = await _dataContext.Persons.Where(p => p.LastActive != null && p.LastActive < flagAsAbandonedAt).ToListAsync();
 
         // Mark them for deletion
         foreach (var abandonedPerson in abandonedPersons)

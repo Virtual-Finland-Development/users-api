@@ -44,6 +44,7 @@ public class App
                 services.AddSingleton<NotificationsConfig>();
                 services.AddSingleton<EmailTemplates>();
                 services.AddSingleton<NotificationService>();
+                services.AddSingleton<CleanupConfig>();
 
                 services.AddSingleton<ActivityTriggerService>();
                 services.AddDbContext<UsersDbContext>(options =>
