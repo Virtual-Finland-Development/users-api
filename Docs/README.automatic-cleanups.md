@@ -9,7 +9,7 @@ The cleanup is performed in two phases:
 1. The user accounts that have not been used for 36 months are marked as abandoned
 2. The user accounts that have been marked as abandoned are removed from the system after 30 days of continued user inactivity
 
-From both phases the user is notified by email about the upcoming cleanup.
+From both phases the user is notified by email about the upcoming cleanup if the email notifications are enabled (see: [./README.notifications.md](./README.notifications.md)).
 
 ### Configuration
 
