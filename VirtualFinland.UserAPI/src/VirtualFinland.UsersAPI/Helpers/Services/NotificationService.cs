@@ -58,7 +58,12 @@ public class NotificationService
                     Html = new Content
                     {
                         Charset = "UTF-8",
-                        Data = templateData.Body
+                        Data = templateData.HtmlBody
+                    },
+                    Text = new Content
+                    {
+                        Charset = "UTF-8",
+                        Data = templateData.TextBody
                     }
                 }
             },
@@ -67,7 +72,7 @@ public class NotificationService
         await client.SendEmailAsync(sendRequest);
     }
 
-    private static EmailTemplate GetEmailTemplateData(Person person, NotificationTemplate template)
+    private EmailTemplate GetEmailTemplateData(Person person, NotificationTemplate template)
     {
         var personFirstName = person.GivenName ?? person.Email;
         return template switch
@@ -75,30 +80,58 @@ public class NotificationService
             NotificationTemplate.AccountToBeDeletedFromInactivity => new EmailTemplate
             {
                 Subject = "Your Access Finland account will be deleted from inactivity!",
-                Body = @$"
+                HtmlBody = WrapEmailHtmlContentWithCoreTemplate("Your Access Finland account will be deleted from inactivity!", @$"
                         <h1>Your Access Finland account will be deleted from inactivity!</h1>
                         <p>Hi {personFirstName}, you have not been active in Access Finland for a long time.</p>
                         <p>Unless you log in to Access Finland within a month, your account will be automatically deleted.</p>
-                        <p>If you want to keep your account, please log in to Access Finland.</p>
-                    "
+                        <p>If you want to keep your account, please log in to Access Finland here:</p>
+                        <p><a href=""{_config.Email.SiteUrl}"">{_config.Email.SiteUrl}</a></p>
+                    "),
+                TextBody = "Your Access Finland account will be deleted from inactivity in 30 days!"
             },
             NotificationTemplate.AccountDeletedFromInactivity => new EmailTemplate
             {
                 Subject = "Your Access Finland account was deleted from inactivity!",
-                Body = @$"
+                HtmlBody = WrapEmailHtmlContentWithCoreTemplate("Your Access Finland account was deleted from inactivity!", @$"
                         <h1>Your Access Finland account was deleted from inactivity!</h1>
-                        <p>Hi {personFirstName}, a month ago we sent you an email about your Access Finland account being deleted from inactivity.</p>
+                        <p>Hello {personFirstName}, a month ago we sent you an email about your Access Finland account being deleted from inactivity.</p>
                         <p>Since you did not log in to Access Finland within a month, your account was deleted.</p>
-                    "
+                        <p>If you want to continue using Access Finland service, please create a new account here:</p>
+                        <p><a href=""{_config.Email.SiteUrl}"">{_config.Email.SiteUrl}</a></p>
+                    "),
+                TextBody = "Your Access Finland account was deleted from inactivity!"
             },
             _ => throw new ArgumentException($"Email template {template} not found"),
         };
     }
 
+    private static string WrapEmailHtmlContentWithCoreTemplate(string title, string body)
+    {
+        return @$"
+            <html>
+                <head>
+                    <title>{title}</title>
+                    <style>
+                        body: {{
+                            font-family: Arial, Helvetica, sans-serif;
+                            font-size: 14px;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    {body}
+                    <hr />
+                    <p>This message cannot be replied to.</p>
+                </body>
+            </html>
+        ";
+    }
+
     private record EmailTemplate
     {
         public string Subject { get; init; } = string.Empty;
-        public string Body { get; init; } = string.Empty;
+        public string HtmlBody { get; init; } = string.Empty;
+        public string TextBody { get; init; } = string.Empty;
     }
 
     public enum NotificationTemplate

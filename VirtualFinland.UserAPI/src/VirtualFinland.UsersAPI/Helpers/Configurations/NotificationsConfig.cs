@@ -13,5 +13,6 @@ public class NotificationsConfig
     {
         public bool IsEnabled { get; init; }
         public string FromAddress { get; init; } = string.Empty;
+        public string SiteUrl { get; init; } = string.Empty;
     }
 }

@@ -159,6 +159,9 @@ class AdminFunction
                     },
                     {
                         "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
+                    },
+                    {
+                        "Notifications__Email__SiteUrl", new Config("ses").Require("siteUrl")
                     }
                 }
         };
