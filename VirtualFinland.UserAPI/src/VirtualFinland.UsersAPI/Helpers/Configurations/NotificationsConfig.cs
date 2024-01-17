@@ -9,6 +9,11 @@ public class NotificationsConfig
         Email = configuration.GetSection("Notifications:Email").Get<EmailConfigValues>();
     }
 
+    public NotificationsConfig(EmailConfigValues email)
+    {
+        Email = email;
+    }
+
     public record EmailConfigValues
     {
         public bool IsEnabled { get; init; }

@@ -56,7 +56,7 @@ public class UpdatePersonAction : IAdminAppAction
         }
     }
 
-    private async Task UpdateLastActiveDate(Person person)
+    public async Task UpdateLastActiveDate(Person person)
     {
         _logger.LogInformation("Updating Person {PersonId} last active date", person.Id);
         person.LastActive = DateTime.UtcNow;  // Update the last active date
@@ -64,7 +64,7 @@ public class UpdatePersonAction : IAdminAppAction
         await _dataContext.SaveChangesAsync();
     }
 
-    private async Task UpdateToBeDeletedFlag(Person person)
+    public async Task UpdateToBeDeletedFlag(Person person)
     {
         _logger.LogInformation("Marking person {PersonId} for deletion", person.Id);
         person.ToBeDeletedFromInactivity = true; // Updates Modified attr too
@@ -72,7 +72,7 @@ public class UpdatePersonAction : IAdminAppAction
         await _notificationService.SendPersonNotification(person, NotificationTemplate.AccountToBeDeletedFromInactivity);
     }
 
-    private async Task DeleteAbandonedPerson(Person person)
+    public async Task DeleteAbandonedPerson(Person person)
     {
         if (!person.ToBeDeletedFromInactivity)
         {
