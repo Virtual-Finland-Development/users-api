@@ -30,11 +30,11 @@ public class RunCleanupsAction : IAdminAppAction
     {
         if (_config.AbandonedAccounts.IsEnabled)
         {
-            await RunAbandoedAccountsCleanup();
+            await RunAbandonedAccountsCleanup();
         }
     }
 
-    public async Task RunAbandoedAccountsCleanup()
+    public async Task RunAbandonedAccountsCleanup()
     {
         var flagAsAbandonedAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.FlagAsAbandonedInDays);
         var deletionAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.DeleteFlaggedAfterDays);

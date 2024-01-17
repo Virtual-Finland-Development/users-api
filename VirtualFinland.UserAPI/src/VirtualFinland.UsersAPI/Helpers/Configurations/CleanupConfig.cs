@@ -8,6 +8,10 @@ public class CleanupConfig
     {
         AbandonedAccounts = configuration.GetSection("Cleanups:AbandonedAccounts").Get<AbandonedAccountsConfig>();
     }
+    public CleanupConfig(AbandonedAccountsConfig config)
+    {
+        AbandonedAccounts = config;
+    }
 
     public record AbandonedAccountsConfig
     {

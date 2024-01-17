@@ -17,7 +17,13 @@ public class ActionDispatcherService
         _sqsClient = sqsClient;
     }
 
-    public async Task UpdatePersonActivity(Person person)
+    public ActionDispatcherService()
+    {
+        _sqsSettings = null;
+        _sqsClient = null!;
+    }
+
+    public virtual async Task UpdatePersonActivity(Person person)
     {
         if (_sqsSettings is null || !_sqsSettings.IsEnabled || string.IsNullOrEmpty(_sqsSettings.QueueUrls.Fast))
         {
@@ -45,7 +51,7 @@ public class ActionDispatcherService
         });
     }
 
-    public async Task UpdatePersonToBeDeletedFlag(Person person)
+    public virtual async Task UpdatePersonToBeDeletedFlag(Person person)
     {
         if (_sqsSettings is null || !_sqsSettings.IsEnabled || string.IsNullOrEmpty(_sqsSettings.QueueUrls.Slow))
         {
@@ -68,7 +74,7 @@ public class ActionDispatcherService
         });
     }
 
-    public async Task DeleteAbandonedPerson(Person person)
+    public virtual async Task DeleteAbandonedPerson(Person person)
     {
         if (_sqsSettings is null || !_sqsSettings.IsEnabled || string.IsNullOrEmpty(_sqsSettings.QueueUrls.Slow))
         {
