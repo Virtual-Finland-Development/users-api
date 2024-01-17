@@ -46,7 +46,7 @@ public class App
                 services.AddSingleton<NotificationService>();
                 services.AddSingleton<CleanupConfig>();
 
-                services.AddSingleton<ActivityTriggerService>();
+                services.AddSingleton<ActionDispatcherService>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,
@@ -69,7 +69,7 @@ public class App
                 services.AddTransient<UpdateAnalyticsAction>();
                 services.AddTransient<InvalidateCachesAction>();
                 services.AddTransient<RunCleanupsAction>();
-                services.AddTransient<UpdatePersonActivityAction>();
+                services.AddTransient<UpdatePersonAction>();
             });
 
         return builder.Build();
@@ -90,7 +90,7 @@ public static class AppExtensions
             Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
             Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
             Models.Actions.RunCleanups => scope.ServiceProvider.GetRequiredService<RunCleanupsAction>(),
-            Models.Actions.UpdatePersonActivity => scope.ServiceProvider.GetRequiredService<UpdatePersonActivityAction>(),
+            Models.Actions.UpdatePerson => scope.ServiceProvider.GetRequiredService<UpdatePersonAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };
     }

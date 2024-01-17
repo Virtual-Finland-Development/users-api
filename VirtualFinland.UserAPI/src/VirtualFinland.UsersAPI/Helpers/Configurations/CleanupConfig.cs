@@ -14,5 +14,6 @@ public class CleanupConfig
         public bool IsEnabled { get; init; }
         public int FlagAsAbandonedInDays { get; init; }
         public int DeleteFlaggedAfterDays { get; init; }
+        public int MaxPersonsToFlagPerDay { get; init; }
     }
 }

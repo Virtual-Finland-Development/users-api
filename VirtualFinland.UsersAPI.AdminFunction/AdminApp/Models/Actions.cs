@@ -9,6 +9,6 @@ public enum Actions
     UpdateTermsOfService,
     UpdateAnalytics,
     InvalidateCaches,
-    UpdatePersonActivity,
+    UpdatePerson,
     RunCleanups,
 }

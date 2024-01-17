@@ -94,10 +94,10 @@ public class APITestBase
 
         // Setup db event triggers mock
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(o => o.GetSection("Database:Triggers:SQS")).Returns(new Mock<IConfigurationSection>().Object);
-        var activityTriggerService = new ActivityTriggerService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
+        mockConfiguration.Setup(o => o.GetSection("SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        var actionDispatcherService = new ActionDispatcherService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
 
-        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, activityTriggerService);
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, actionDispatcherService);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();

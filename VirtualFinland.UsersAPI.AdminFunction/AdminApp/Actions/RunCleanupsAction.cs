@@ -14,14 +14,14 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 public class RunCleanupsAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    private readonly NotificationService _notificationService;
+    private readonly ActionDispatcherService _actionDispatcherService;
     private readonly CleanupConfig _config;
     private readonly ILogger<RunCleanupsAction> _logger;
 
-    public RunCleanupsAction(UsersDbContext dataContext, NotificationService notificationService, CleanupConfig config, ILogger<RunCleanupsAction> logger)
+    public RunCleanupsAction(UsersDbContext dataContext, ActionDispatcherService actionDispatcherService, CleanupConfig config, ILogger<RunCleanupsAction> logger)
     {
         _dataContext = dataContext;
-        _notificationService = notificationService;
+        _actionDispatcherService = actionDispatcherService;
         _config = config;
         _logger = logger;
     }
@@ -40,7 +40,11 @@ public class RunCleanupsAction : IAdminAppAction
         var deletionAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.DeleteFlaggedAfterDays);
 
         // Find persons that have not been active in years
-        var abandonedPersons = await _dataContext.Persons.Where(p => p.LastActive != null && p.LastActive < flagAsAbandonedAt).ToListAsync();
+        var abandonedPersons = await _dataContext.Persons
+            .AsQueryable()
+            .Where(p => p.LastActive != null && p.LastActive < flagAsAbandonedAt)
+            .Take(_config.AbandonedAccounts.MaxPersonsToFlagPerDay)
+            .ToListAsync();
 
         // Mark them for deletion
         foreach (var abandonedPerson in abandonedPersons)
@@ -54,15 +58,13 @@ public class RunCleanupsAction : IAdminAppAction
                 else
                 {
                     _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", abandonedPerson.Id);
-                    _dataContext.Persons.Remove(abandonedPerson);
-                    await _notificationService.SendPersonNotification(abandonedPerson, NotificationTemplate.AccountDeletedFromInactivity);
+                    await _actionDispatcherService.DeleteAbandonedPerson(abandonedPerson);
                 }
             }
             else
             {
                 _logger.LogInformation("Marking person {PersonId} for deletion", abandonedPerson.Id);
-                abandonedPerson.ToBeDeletedFromInactivity = true; // Updates Modified attr too
-                await _notificationService.SendPersonNotification(abandonedPerson, NotificationTemplate.AccountToBeDeletedFromInactivity);
+                await _actionDispatcherService.UpdatePersonToBeDeletedFlag(abandonedPerson);
             }
         }
 

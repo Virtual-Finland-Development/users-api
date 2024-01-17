@@ -7,12 +7,13 @@ using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
 using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
+using static VirtualFinland.UsersAPI.Deployment.Features.SqsQueue;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue adminFunctionSqs, PostgresDatabase database)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queues adminFunctionSqs, PostgresDatabase database)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -94,7 +95,8 @@ class AdminFunction
                             ""sqs:GetQueueAttributes""
                         ],
                         ""Resource"": [
-                            ""{adminFunctionSqs.Arn}""
+                            ""{adminFunctionSqs.Fast.Arn}"",
+                            ""{adminFunctionSqs.Slow.Arn}""
                         ]
                     }}
                 ]
@@ -155,7 +157,13 @@ class AdminFunction
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
                     {
-                        "Database__Triggers__SQS__IsEnabled", "false" // Ensure no SQS Triggers are enabled
+                        "SQS__QueueUrl__Fast", ""
+                    },
+                    {
+                        "SQS__QueueUrl__Slow", adminFunctionSqs.Slow.Url
+                    },
+                    {
+                        "SQS__IsEnabled", "true"
                     },
                     {
                         "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
@@ -179,13 +187,26 @@ class AdminFunction
             Tags = stackSetup.Tags
         }, new() { DependsOn = new[] { database.MainResource } });
 
-        SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs"), new FunctionArgs
+        SqsFastEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-fast"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
             Timeout = 30,
             MemorySize = 128, // Intented for short-lived, low memory tasks
+            Environment = environmentArg,
+            Code = new FileArchive(appArtifactPath),
+            VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
+        }, new() { DependsOn = new[] { database.MainResource } });
+
+        SqsSlowEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-slow"), new FunctionArgs
+        {
+            Role = execRole.Arn,
+            Runtime = "dotnet6",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
+            Timeout = 30,
+            MemorySize = 256,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -206,22 +227,32 @@ class AdminFunction
         }, new() { DependsOn = new[] { database.MainResource } });
     }
 
-    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue adminFunctionSqs)
+    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queues adminFunctionSqs)
     {
-        CreateAnalyticsUpdateTriggers(stackSetup, adminFunctionSqs);
+        CreateAdminFunctionQueueTriggers(stackSetup, adminFunctionSqs);
         CreateAnalyticsUpdateScheduler(stackSetup);
         CreateCleanupSchedulers(stackSetup);
     }
 
-    private void CreateAnalyticsUpdateTriggers(StackSetup stackSetup, Queue adminFunctionSqs)
+    private void CreateAdminFunctionQueueTriggers(StackSetup stackSetup, Queues adminFunctionSqs)
     {
-        // Configure SQS trigger
+        // Configure SQS trigger for fast track
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
         {
-            EventSourceArn = adminFunctionSqs.Arn,
-            FunctionName = SqsEventHandlerFunction.Name,
+            EventSourceArn = adminFunctionSqs.Fast.Arn,
+            FunctionName = SqsFastEventHandlerFunction.Name,
             BatchSize = 1,
             Enabled = true,
+        });
+
+        // Slow
+        _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger-Slow"), new EventSourceMappingArgs
+        {
+            EventSourceArn = adminFunctionSqs.Slow.Arn,
+            FunctionName = SqsSlowEventHandlerFunction.Name,
+            BatchSize = 1,
+            Enabled = true,
+            MaximumBatchingWindowInSeconds = 60
         });
     }
 
@@ -280,6 +311,7 @@ class AdminFunction
     }
 
     public Function LambdaFunction = default!;
-    public Function SqsEventHandlerFunction = default!;
+    public Function SqsFastEventHandlerFunction = default!;
+    public Function SqsSlowEventHandlerFunction = default!;
     public Function CloudWatchEventHandlerFunction = default!;
 }

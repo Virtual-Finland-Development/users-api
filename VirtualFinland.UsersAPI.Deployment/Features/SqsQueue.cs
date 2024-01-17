@@ -8,9 +8,9 @@ public class SqsQueue
     /// <summary>
     /// Creates a new SQS queue that's used by the users API lambda to invoke the admin function lambda
     /// </summary>
-    public static Queue CreateSqsQueueForAdminCommands(StackSetup stackSetup)
+    public static Queues CreateSqsQueueForAdminCommands(StackSetup stackSetup)
     {
-        var dlq = new Queue(stackSetup.CreateResourceName("admin-function-sqs-dlq"), new QueueArgs
+        var fastDlq = new Queue(stackSetup.CreateResourceName("admin-function-fast-sqs-dlq"), new QueueArgs
         {
             FifoQueue = true,
             ContentBasedDeduplication = true,
@@ -19,8 +19,7 @@ public class SqsQueue
             FifoThroughputLimit = "perMessageGroupId",
             Tags = stackSetup.Tags,
         });
-
-        var queue = new Queue(stackSetup.CreateResourceName("admin-function-sqs"), new QueueArgs
+        var fastQueue = new Queue(stackSetup.CreateResourceName("admin-function-fast-sqs"), new QueueArgs
         {
             FifoQueue = true,
             ContentBasedDeduplication = true,
@@ -28,12 +27,45 @@ public class SqsQueue
             VisibilityTimeoutSeconds = 30,
             FifoThroughputLimit = "perMessageGroupId",
             Tags = stackSetup.Tags,
-            RedrivePolicy = dlq.Arn.Apply(arn => $@"{{
+            RedrivePolicy = fastDlq.Arn.Apply(arn => $@"{{
                 ""deadLetterTargetArn"": ""{arn}"",
                 ""maxReceiveCount"": 1
             }}")
         });
 
-        return queue;
+        var slowDlq = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs-dlq"), new QueueArgs
+        {
+            FifoQueue = false,
+            ContentBasedDeduplication = true,
+            DeduplicationScope = "messageGroup",
+            VisibilityTimeoutSeconds = 30,
+            FifoThroughputLimit = "perMessageGroupId",
+            Tags = stackSetup.Tags,
+        });
+        var slowQueue = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs"), new QueueArgs
+        {
+            FifoQueue = false,
+            ContentBasedDeduplication = true,
+            DeduplicationScope = "messageGroup",
+            VisibilityTimeoutSeconds = 300,
+            FifoThroughputLimit = "perMessageGroupId",
+            Tags = stackSetup.Tags,
+            RedrivePolicy = slowDlq.Arn.Apply(arn => $@"{{
+                ""deadLetterTargetArn"": ""{arn}"",
+                ""maxReceiveCount"": 1
+            }}")
+        });
+
+        return new Queues
+        {
+            Fast = fastQueue,
+            Slow = slowQueue
+        };
+    }
+
+    public record Queues
+    {
+        public Queue Fast { get; init; } = null!;
+        public Queue Slow { get; init; } = null!;
     }
 }

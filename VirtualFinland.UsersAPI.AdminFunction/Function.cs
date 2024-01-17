@@ -67,7 +67,7 @@ public class Function
     private static void ValidateEventSourceAction(Actions action)
     {
         // Ensure only specific actions are allowed to be invoked from CloudWatch / Sqs events
-        var allowedActions = new[] { Actions.UpdateAnalytics, Actions.InvalidateCaches, Actions.UpdatePersonActivity };
+        var allowedActions = new[] { Actions.UpdateAnalytics, Actions.InvalidateCaches, Actions.UpdatePerson };
         if (!allowedActions.Contains(action))
         {
             throw new ArgumentException($"Action '{action}' is not allowed to be invoked from event source");

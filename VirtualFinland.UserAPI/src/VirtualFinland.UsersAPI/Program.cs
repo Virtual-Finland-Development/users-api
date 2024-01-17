@@ -160,7 +160,7 @@ builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
 builder.Services.AddSingleton<AnalyticsConfig>();
 builder.Services.AddSingleton<AnalyticsService>();
-builder.Services.AddSingleton<ActivityTriggerService>();
+builder.Services.AddSingleton<ActionDispatcherService>();
 builder.Services.AddSingleton<NotificationsConfig>();
 builder.Services.AddSingleton<EmailTemplates>();
 builder.Services.AddSingleton<NotificationService>();
