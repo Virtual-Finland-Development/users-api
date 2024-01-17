@@ -36,19 +36,13 @@ public class SqsQueue
         var slowDlq = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs-dlq"), new QueueArgs
         {
             FifoQueue = false,
-            ContentBasedDeduplication = true,
-            DeduplicationScope = "messageGroup",
-            VisibilityTimeoutSeconds = 30,
-            FifoThroughputLimit = "perMessageGroupId",
+            VisibilityTimeoutSeconds = 300,
             Tags = stackSetup.Tags,
         });
         var slowQueue = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs"), new QueueArgs
         {
             FifoQueue = false,
-            ContentBasedDeduplication = true,
-            DeduplicationScope = "messageGroup",
             VisibilityTimeoutSeconds = 300,
-            FifoThroughputLimit = "perMessageGroupId",
             Tags = stackSetup.Tags,
             RedrivePolicy = slowDlq.Arn.Apply(arn => $@"{{
                 ""deadLetterTargetArn"": ""{arn}"",

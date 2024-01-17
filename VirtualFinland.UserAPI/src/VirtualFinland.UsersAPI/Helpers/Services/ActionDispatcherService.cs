@@ -56,7 +56,6 @@ public class ActionDispatcherService
         await _sqsClient.SendMessageAsync(new SendMessageRequest()
         {
             QueueUrl = _sqsSettings.QueueUrls.Slow,
-            MessageGroupId = $"UpdateToBeDeletedFlag:{person.Id}", // Used in sqs dedublication
             MessageBody = JsonSerializer.Serialize(new
             {
                 Action = "UpdatePerson",
@@ -80,7 +79,6 @@ public class ActionDispatcherService
         await _sqsClient.SendMessageAsync(new SendMessageRequest()
         {
             QueueUrl = _sqsSettings.QueueUrls.Slow,
-            MessageGroupId = $"UpdateToBeDeletedFlag:{person.Id}", // Used in sqs dedublication
             MessageBody = JsonSerializer.Serialize(new
             {
                 Action = "UpdatePerson",
