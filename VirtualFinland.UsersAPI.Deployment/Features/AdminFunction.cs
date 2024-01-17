@@ -157,13 +157,13 @@ class AdminFunction
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
                     {
-                        "SQS__QueueUrl__Fast", ""
+                        "Dispatches__SQS__QueueUrls__Fast", ""
                     },
                     {
-                        "SQS__QueueUrl__Slow", adminFunctionSqs.Slow.Url
+                        "Dispatches__SQS__QueueUrls__Slow", adminFunctionSqs.Slow.Url
                     },
                     {
-                        "SQS__IsEnabled", "true"
+                        "Dispatches__SQS__IsEnabled", "true"
                     },
                     {
                         "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")

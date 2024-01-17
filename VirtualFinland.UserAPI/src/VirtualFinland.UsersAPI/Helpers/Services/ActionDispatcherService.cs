@@ -13,7 +13,7 @@ public class ActionDispatcherService
 
     public ActionDispatcherService(IConfiguration configuration, IAmazonSQS sqsClient)
     {
-        _sqsSettings = configuration.GetSection("SQS").Get<SqsSettings>();
+        _sqsSettings = configuration.GetSection("Dispatches:SQS").Get<SqsSettings>();
         _sqsClient = sqsClient;
     }
 

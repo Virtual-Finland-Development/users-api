@@ -27,7 +27,7 @@ public class AuthenticationTests : APITestBase
 
         // Setup db event triggers mock
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(o => o.GetSection("SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        mockConfiguration.Setup(o => o.GetSection("Dispatches:SQS")).Returns(new Mock<IConfigurationSection>().Object);
         var actionDispatcherService = new ActionDispatcherService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
 
         var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, actionDispatcherService);
@@ -63,7 +63,7 @@ public class AuthenticationTests : APITestBase
         var AnalyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
 
         // Setup db event triggers mock
-        mockConfiguration.Setup(o => o.GetSection("SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        mockConfiguration.Setup(o => o.GetSection("Dispatches:SQS")).Returns(new Mock<IConfigurationSection>().Object);
         var actionDispatcherService = new ActionDispatcherService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
 
 
