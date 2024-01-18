@@ -17,4 +17,5 @@ config:
   acl:dataspace-agent: ""
   auth:testbed-isEnabled: true
   auth:sinuna-isEnabled: true
+  auth:virtualfinland-isEnabled: true
   termsOfService:isEnabled: false

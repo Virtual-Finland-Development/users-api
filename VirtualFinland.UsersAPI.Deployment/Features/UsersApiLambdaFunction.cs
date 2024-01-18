@@ -23,6 +23,12 @@ class UsersApiLambdaFunction
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
         var codesetsEndpointUrl = codesetStackReference.GetOutput("url");
 
+        var fixedMvpEnvironment = stackSetup.Environment == "dev" ? "mvp-dev" : stackSetup.Environment;
+        var accessFinlandMvpStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/access-finland/{fixedMvpEnvironment}");
+        var vfCognitoUserPoolId = accessFinlandMvpStackReference.GetOutput("VirtualFinlandAuthCognitoUserPoolId");
+        var vfIssuer = vfCognitoUserPoolId.Apply(o => $"https://cognito-idp.{stackSetup.Region}.amazonaws.com/{o}");
+        var vfJwksUrl = vfCognitoUserPoolId.Apply(o => $"https://cognito-idp.{stackSetup.Region}.amazonaws.com/{o}/.well-known/jwks.json");
+
         // Retrieve ACL configs
         var stackReference = new StackReference(stackSetup.GetInfrastructureStackName());
         var sharedAccessKey = stackReference.RequireOutput("SharedAccessKey");
@@ -208,6 +214,15 @@ class UsersApiLambdaFunction
                         "Security__Authorization__Sinuna__IsEnabled", authorizationConfig.Require("sinuna-isEnabled")
                     },
                     {
+                        "Security__Authorization__VirtualFinland__IsEnabled", authorizationConfig.Require("virtualfinland-isEnabled")
+                    },
+                    {
+                        "Security__Authorization__VirtualFinland__Issuer", vfIssuer
+                    },
+                    {
+                        "Security__Authorization__VirtualFinland__AuthorizationJwksJsonUrl", vfJwksUrl
+                    },
+                    {
                         "Security__Options__TermsOfServiceAgreementRequired", termsOfServiceConfig.Require("isEnabled")
                     },
                     {
@@ -218,7 +233,7 @@ class UsersApiLambdaFunction
                     },
                     {
                         "Analytics__SQS__IsEnabled", "true"
-                    }
+                    },
                 }
             },
             Code = new FileArchive(appArtifactPath),
