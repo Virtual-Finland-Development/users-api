@@ -63,7 +63,7 @@ public class AbandonedAccountsFlowTests : APITestBase
         ), new Mock<ILogger<RunCleanupsAction>>().Object);
 
         // Act 1
-        await runCleanupsAction.RunAbandonedAccountsCleanup();
+        await runCleanupsAction.FlagInactiveAccountsAsAbandoned();
         // Assert 1
         var abandonedPerson = await _dbContext.Persons.Where(p => p.Id == person.Id).FirstOrDefaultAsync();
         Assert.NotNull(abandonedPerson);
