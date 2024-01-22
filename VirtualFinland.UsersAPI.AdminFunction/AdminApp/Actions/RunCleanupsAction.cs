@@ -30,44 +30,53 @@ public class RunCleanupsAction : IAdminAppAction
     {
         if (_config.AbandonedAccounts.IsEnabled)
         {
+            await FlagInactiveAccountsAsAbandoned();
             await RunAbandonedAccountsCleanup();
+        }
+    }
+
+    public async Task FlagInactiveAccountsAsAbandoned()
+    {
+        var flagAsAbandonedAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.FlagAsAbandonedInDays);
+        Console.WriteLine($"Flagging accounts that have not been active since {flagAsAbandonedAt}");
+
+        // Find persons that have not been active in years
+        var abandonedPersons = await _dataContext.Persons
+            .AsQueryable()
+            .Where(p => p.ToBeDeletedFromInactivity != true && (p.LastActive == null || p.LastActive < flagAsAbandonedAt))
+            .Take(_config.AbandonedAccounts.MaxPersonsToFlagPerDay)
+            .ToListAsync();
+
+        // Mark for deletion
+        foreach (var abandonedPerson in abandonedPersons)
+        {
+            _logger.LogInformation("Marking person {PersonId} for deletion", abandonedPerson.Id);
+            await _actionDispatcherService.UpdatePersonToBeDeletedFlag(abandonedPerson);
         }
     }
 
     public async Task RunAbandonedAccountsCleanup()
     {
-        var flagAsAbandonedAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.FlagAsAbandonedInDays);
         var deletionAt = DateTime.UtcNow.AddDays(-_config.AbandonedAccounts.DeleteFlaggedAfterDays);
 
         // Find persons that have not been active in years
         var abandonedPersons = await _dataContext.Persons
             .AsQueryable()
-            .Where(p => p.LastActive != null && p.LastActive < flagAsAbandonedAt)
+            .Where(p => p.ToBeDeletedFromInactivity == true)
             .Take(_config.AbandonedAccounts.MaxPersonsToFlagPerDay)
             .ToListAsync();
 
-        // Mark them for deletion
         foreach (var abandonedPerson in abandonedPersons)
         {
-            if (abandonedPerson.ToBeDeletedFromInactivity)
+            if (abandonedPerson.Modified > deletionAt)
             {
-                if (abandonedPerson.Modified > deletionAt)
-                {
-                    _logger.LogInformation("Person {PersonId} has been marked for deletion for less than a month", abandonedPerson.Id);
-                }
-                else
-                {
-                    _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", abandonedPerson.Id);
-                    await _actionDispatcherService.DeleteAbandonedPerson(abandonedPerson);
-                }
+                _logger.LogInformation("Person {PersonId} has been marked for deletion for less than a month", abandonedPerson.Id);
             }
             else
             {
-                _logger.LogInformation("Marking person {PersonId} for deletion", abandonedPerson.Id);
-                await _actionDispatcherService.UpdatePersonToBeDeletedFlag(abandonedPerson);
+                _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", abandonedPerson.Id);
+                await _actionDispatcherService.DeleteAbandonedPerson(abandonedPerson);
             }
         }
-
-        await _dataContext.SaveChangesAsync();
     }
 }
