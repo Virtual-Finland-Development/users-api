@@ -48,7 +48,7 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
   - cli command: `DATABASE_USER=appuser DATABASE_PASSWORD=pass dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InitializeDatabaseUser`
 - `UpdateTermsOfService`:
   - lambda function payload: `{"Action": "UpdateTermsOfService"}`
-  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI update-terms-of-service`
+  - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI UpdateTermsOfService`
   - read more at [./README.terms-of-service.md](./README.terms-of-service.md) document
 - `UpdateAnalytics`:
   - lambda function payload: `{"Action": "UpdateAnalytics"}`
