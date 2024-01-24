@@ -4,9 +4,10 @@ Users API provides resources that are intented to be used by other applications 
 
 ## Request Authorization
 
-Users API supports two different authentication providers: 
+Users API supports three different authentication providers: 
 - [Sinuna](https://sinuna.fi/)
 - [Testbed](https://testbed.fi/)
+- [Virtual Finland Login](https://accessfinland.com)
 
 The different authentication providers are configured (for example disabled or enabled) in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file properties block: `Security:Authorization`. The configurations also include the authentication provider specific settings like OpenID Connect endpoints. 
 
