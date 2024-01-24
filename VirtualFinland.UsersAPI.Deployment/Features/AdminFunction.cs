@@ -92,7 +92,8 @@ class AdminFunction
                         ""Action"": [
                             ""sqs:ReceiveMessage"",
                             ""sqs:DeleteMessage"",
-                            ""sqs:GetQueueAttributes""
+                            ""sqs:GetQueueAttributes"",
+                            ""sqs:SendMessage""
                         ],
                         ""Resource"": [
                             ""{adminFunctionSqs.Fast.Arn}"",
@@ -180,7 +181,7 @@ class AdminFunction
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
             Timeout = 120,
-            MemorySize = 256,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -192,8 +193,8 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
-            Timeout = 30,
-            MemorySize = 128, // Intented for short-lived, low memory tasks
+            Timeout = 60,
+            MemorySize = 512, // Intented for short-lived, low memory tasks
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -205,8 +206,8 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
-            Timeout = 30,
-            MemorySize = 256,
+            Timeout = 120,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -219,7 +220,7 @@ class AdminFunction
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
             Timeout = 120,
-            MemorySize = 256,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,

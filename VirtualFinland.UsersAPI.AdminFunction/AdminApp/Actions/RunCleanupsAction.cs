@@ -43,6 +43,7 @@ public class RunCleanupsAction : IAdminAppAction
         var abandonedPersons = await _dataContext.Persons
             .AsQueryable()
             .Where(p => p.ToBeDeletedFromInactivity != true && p.LastActive != null && p.LastActive < flagAsAbandonedAt)
+            .OrderBy(p => p.LastActive)
             .Take(_config.AbandonedAccounts.MaxPersonsToFlagPerDay)
             .ToListAsync();
 
@@ -64,6 +65,7 @@ public class RunCleanupsAction : IAdminAppAction
         var abandonedPersons = await _dataContext.Persons
             .AsQueryable()
             .Where(p => p.ToBeDeletedFromInactivity == true)
+            .OrderBy(p => p.LastActive)
             .Take(_config.AbandonedAccounts.MaxPersonsToFlagPerDay)
             .ToListAsync();
 
