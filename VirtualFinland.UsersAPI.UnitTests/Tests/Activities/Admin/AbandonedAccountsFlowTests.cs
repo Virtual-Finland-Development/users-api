@@ -34,7 +34,8 @@ public class AbandonedAccountsFlowTests : APITestBase
             new Mock<ILogger<NotificationService>>().Object
         );
         var logger = new Mock<ILogger<UpdatePersonAction>>();
-        var updatePersonAction = new UpdatePersonAction(_dbContext, logger.Object, notificationService);
+        var analyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
+        var updatePersonAction = new UpdatePersonAction(_dbContext, analyticsLoggerFactoryMock, notificationService);
 
         var actionDispatcherService = new Mock<ActionDispatcherService>();
         actionDispatcherService.Setup(x =>
