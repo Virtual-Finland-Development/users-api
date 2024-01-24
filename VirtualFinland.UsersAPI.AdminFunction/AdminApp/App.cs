@@ -41,6 +41,10 @@ public class App
             {
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+                services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+                services.AddSingleton<AnalyticsConfig>();
+                services.AddSingleton<AnalyticsLoggerFactory>();
+                services.AddSingleton<AnalyticsService>();
                 services.AddSingleton<NotificationsConfig>();
                 services.AddSingleton<EmailTemplates>();
                 services.AddSingleton<NotificationService>();
@@ -55,8 +59,6 @@ public class App
                             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     );
                 });
-                services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
-                services.AddSingleton<AnalyticsConfig>();
                 services.AddSingleton(redisDatabase);
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 

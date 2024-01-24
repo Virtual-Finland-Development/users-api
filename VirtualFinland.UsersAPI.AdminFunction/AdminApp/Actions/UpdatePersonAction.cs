@@ -3,8 +3,10 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
+using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Services;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Security.Models;
 using static VirtualFinland.UserAPI.Helpers.Services.NotificationService;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
@@ -12,14 +14,14 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 public class UpdatePersonAction : IAdminAppAction
 {
     private readonly UsersDbContext _dataContext;
-    private readonly ILogger<UpdatePersonAction> _logger;
+    private readonly AnalyticsLogger<UpdatePersonAction> _logger;
     private readonly NotificationService _notificationService;
 
 
-    public UpdatePersonAction(UsersDbContext dataContext, ILogger<UpdatePersonAction> logger, NotificationService notificationService)
+    public UpdatePersonAction(UsersDbContext dataContext, AnalyticsLoggerFactory loggerFactory, NotificationService notificationService)
     {
         _dataContext = dataContext;
-        _logger = logger;
+        _logger = loggerFactory.CreateAnalyticsLogger<UpdatePersonAction>();
         _notificationService = notificationService;
     }
 
@@ -81,8 +83,16 @@ public class UpdatePersonAction : IAdminAppAction
         }
 
         _logger.LogInformation("Deleting person {PersonId} because it has been marked for deletion for over a month", person.Id);
+        var externalIdentity = await _dataContext.ExternalIdentities.SingleOrDefaultAsync(id => id.UserId == person.Id);
         _dataContext.Persons.Remove(person);
+
+        if (externalIdentity != null)
+        {
+            _dataContext.ExternalIdentities.Remove(externalIdentity);
+        }
+
         await _dataContext.SaveChangesAsync();
+        await _logger.LogAuditLogEvent(AuditLogEvent.Delete, new RequestAuthenticatedUser(person.Id), "DeleteUser");
         await _notificationService.SendPersonNotification(person, NotificationTemplate.AccountDeletedFromInactivity);
     }
 
