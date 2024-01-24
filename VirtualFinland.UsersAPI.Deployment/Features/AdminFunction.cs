@@ -5,7 +5,6 @@ using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
 using static VirtualFinland.UsersAPI.Deployment.Features.SqsQueue;
 
@@ -156,6 +155,9 @@ class AdminFunction
                     },
                     {
                         "Analytics__CloudWatch__IsEnabled", "true"
+                    },
+                    {
+                        "Cleanups__AbandonedAccounts__IsEnabled", "true"
                     },
                     {
                         "Dispatches__SQS__QueueUrls__Fast", ""
