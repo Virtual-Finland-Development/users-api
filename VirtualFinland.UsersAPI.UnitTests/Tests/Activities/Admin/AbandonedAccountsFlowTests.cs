@@ -73,6 +73,17 @@ public class AbandonedAccountsFlowTests : APITestBase
         // Act 2
         await runCleanupsAction.RunAbandonedAccountsCleanup();
         // Assert 2
+        var notYetDeletedPerson = await _dbContext.Persons.Where(p => p.Id == person.Id).FirstOrDefaultAsync();
+        Assert.NotNull(notYetDeletedPerson);
+        Assert.True(notYetDeletedPerson.ToBeDeletedFromInactivity);
+
+        // Interlude: update the modified date to be old enough
+        notYetDeletedPerson.Modified = DateTime.UtcNow.AddDays(-2);
+        await _dbContext.SaveChangesAsync();
+
+        // Act 3
+        await runCleanupsAction.RunAbandonedAccountsCleanup();
+        // Assert 3
         var deletedPerson = await _dbContext.Persons.Where(p => p.Id == person.Id).FirstOrDefaultAsync();
         Assert.Null(deletedPerson);
     }
