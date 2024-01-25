@@ -69,7 +69,8 @@ public class UpdatePersonAction : IAdminAppAction
     public async Task UpdateToBeDeletedFlag(Person person)
     {
         _logger.LogInformation("Marking person {PersonId} for deletion", person.Id);
-        person.ToBeDeletedFromInactivity = true; // Updates Modified attr too
+        person.ToBeDeletedFromInactivity = true;
+        person.Modified = DateTime.UtcNow;
         await _dataContext.SaveChangesAsync();
         await _notificationService.SendPersonNotification(person, NotificationTemplate.AccountToBeDeletedFromInactivity);
     }
