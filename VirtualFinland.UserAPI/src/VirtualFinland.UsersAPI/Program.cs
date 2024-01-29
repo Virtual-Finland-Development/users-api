@@ -153,6 +153,8 @@ builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatReposit
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
+builder.Services.AddSingleton<IPersonRepository, PersonRepository>();
+
 //
 // Other dependencies
 //

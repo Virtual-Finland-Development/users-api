@@ -59,6 +59,7 @@ public class App
                             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     );
                 });
+                services.AddSingleton<IPersonRepository, PersonRepository>();
                 services.AddSingleton(redisDatabase);
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
 
