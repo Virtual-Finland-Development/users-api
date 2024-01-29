@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
+using VirtualFinland.UserAPI.Data.Repositories;
 
 namespace VirtualFinland.UsersAPI.UnitTests.Tests.Activities.Admin;
 
@@ -35,7 +36,9 @@ public class AbandonedAccountsFlowTests : APITestBase
         );
         var logger = new Mock<ILogger<UpdatePersonAction>>();
         var analyticsLoggerFactoryMock = GetMockedAnalyticsLoggerFactory();
-        var updatePersonAction = new UpdatePersonAction(_dbContext, analyticsLoggerFactoryMock, notificationService);
+        var servicesProvider = GetMockedServiceProvider();
+        var personRepository = new PersonRepository(servicesProvider.Object);
+        var updatePersonAction = new UpdatePersonAction(_dbContext, personRepository, analyticsLoggerFactoryMock, notificationService);
 
         var actionDispatcherService = new Mock<ActionDispatcherService>();
         actionDispatcherService.Setup(x =>
