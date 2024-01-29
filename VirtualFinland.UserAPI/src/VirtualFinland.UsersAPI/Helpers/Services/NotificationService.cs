@@ -71,7 +71,7 @@ public class NotificationService
             },
         };
 
-        await client.SendEmailAsync(sendRequest);
+        await client.SendEmailAsync(sendRequest); // @TODO: Should be send as queued task that is retried
     }
 
     public enum NotificationTemplate
