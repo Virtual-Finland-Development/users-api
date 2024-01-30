@@ -4,3 +4,4 @@ config:
   auth:sinuna-isEnabled: true
   auth:testbed-isEnabled: false
   termsOfService:isEnabled: true
+  users-api:useRdsProxy: false
