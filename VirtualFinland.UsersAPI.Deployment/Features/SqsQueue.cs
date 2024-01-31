@@ -10,6 +10,7 @@ public class SqsQueue
     /// </summary>
     public static Queues CreateSqsQueueForAdminCommands(StackSetup stackSetup)
     {
+        // Queue from "fast track", first-in-first-out events with deduplication
         var fastDlq = new Queue(stackSetup.CreateResourceName("admin-function-fast-sqs-dlq"), new QueueArgs
         {
             FifoQueue = true,
@@ -17,6 +18,7 @@ public class SqsQueue
             DeduplicationScope = "messageGroup",
             VisibilityTimeoutSeconds = 30,
             FifoThroughputLimit = "perMessageGroupId",
+            MessageRetentionSeconds = 3600, // 1 hour
             Tags = stackSetup.Tags,
         });
         var fastQueue = new Queue(stackSetup.CreateResourceName("admin-function-fast-sqs"), new QueueArgs
@@ -33,13 +35,14 @@ public class SqsQueue
             }}")
         });
 
+        // Queue for "slow track", standard queue events, failed events are retried until retention period is reached
         var slowDlq = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs-dlq"), new QueueArgs
         {
             FifoQueue = false,
             VisibilityTimeoutSeconds = 120,
             Tags = stackSetup.Tags,
             MaxMessageSize = 262144,
-            MessageRetentionSeconds = 345600,
+            MessageRetentionSeconds = 3600, // 1 hour
             DelaySeconds = 5,
         });
         var slowQueue = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs"), new QueueArgs

@@ -20,7 +20,8 @@ The cleanup is configured in the appsettings.json file with the following config
     "AbandonedAccounts": {
         "Enabled": true,
         "FlagAsAbandonedInDays": 1095,
-        "DeleteFlaggedAfterDays": 30
+        "DeleteFlaggedAfterDays": 30,
+        "MaxPersonsToFlagPerDay": 1000
     }
 }
 ```
@@ -28,3 +29,4 @@ The cleanup is configured in the appsettings.json file with the following config
 - `Enabled` - if the cleanup is enabled or not
 - `FlagAsAbandonedInDays` - the number of days after which the user account is flagged as abandoned
 - `DeleteFlaggedAfterDays` - the number of days after which the flagged user account is deleted from the system
+- `MaxPersonsToFlagPerDay` - the maximum number of user accounts that are flagged as abandoned per day
