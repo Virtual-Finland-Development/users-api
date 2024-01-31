@@ -6,3 +6,4 @@ config:
   termsOfService:isEnabled: true
   ses:fromAddress: "no-reply@accessfinland.com"
   ses:siteUrl: "https://accessfinland.com"
+  users-api:useRdsProxy: false
