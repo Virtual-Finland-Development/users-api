@@ -11,4 +11,5 @@ public enum Actions
     InvalidateCaches,
     UpdatePerson,
     RunCleanups,
+    SendEmail,
 }

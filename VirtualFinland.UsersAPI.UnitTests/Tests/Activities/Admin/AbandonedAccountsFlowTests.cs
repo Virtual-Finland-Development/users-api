@@ -32,6 +32,7 @@ public class AbandonedAccountsFlowTests : APITestBase
         var notificationService = new NotificationService(
             notificationsConfig,
             new EmailTemplates(notificationsConfig),
+            new Mock<ActionDispatcherService>().Object,
             new Mock<ILogger<NotificationService>>().Object
         );
         var logger = new Mock<ILogger<UpdatePersonAction>>();

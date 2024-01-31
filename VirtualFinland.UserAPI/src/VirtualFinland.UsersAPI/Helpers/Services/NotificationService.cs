@@ -1,4 +1,4 @@
-using Amazon.SimpleEmail;
+using System.Text.Json;
 using Amazon.SimpleEmail.Model;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
@@ -10,10 +10,12 @@ public class NotificationService
     private readonly NotificationsConfig _config;
     private readonly ILogger<NotificationService> _logger;
     private readonly EmailTemplates _emailTemplates;
-    public NotificationService(NotificationsConfig notificationsConfig, EmailTemplates emailTemplates, ILogger<NotificationService> logger)
+    private readonly ActionDispatcherService _actionDispatcherService;
+    public NotificationService(NotificationsConfig notificationsConfig, EmailTemplates emailTemplates, ActionDispatcherService actionDispatcherService, ILogger<NotificationService> logger)
     {
         _config = notificationsConfig;
         _emailTemplates = emailTemplates;
+        _actionDispatcherService = actionDispatcherService;
         _logger = logger;
     }
 
@@ -44,7 +46,7 @@ public class NotificationService
 
         var templateData = _emailTemplates.GetEmailTemplateForPersonEmail(template, person);
 
-        var client = new AmazonSimpleEmailServiceClient();
+
         var sendRequest = new SendEmailRequest
         {
             Source = _config.Email.FromAddress,
@@ -71,7 +73,7 @@ public class NotificationService
             },
         };
 
-        await client.SendEmailAsync(sendRequest); // @TODO: Should be send as queued task that is retried
+        await _actionDispatcherService.SendEmail(sendRequest);
     }
 
     public enum NotificationTemplate

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Amazon.SimpleEmail.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using VirtualFinland.UserAPI.Models.App;
@@ -93,6 +94,25 @@ public class ActionDispatcherService
                     PersonId = person.Id,
                     Type = "DeleteAbandonedPerson"
                 })
+            }),
+        });
+    }
+
+    public virtual async Task SendEmail(SendEmailRequest sendRequest)
+    {
+        if (_sqsSettings is null || !_sqsSettings.IsEnabled || string.IsNullOrEmpty(_sqsSettings.QueueUrls.Slow))
+        {
+            return;
+        }
+
+        // Publish an SQS message to the lambda
+        await _sqsClient.SendMessageAsync(new SendMessageRequest()
+        {
+            QueueUrl = _sqsSettings.QueueUrls.Slow,
+            MessageBody = JsonSerializer.Serialize(new
+            {
+                Action = "SendEmail",
+                Data = JsonSerializer.Serialize(sendRequest)
             }),
         });
     }

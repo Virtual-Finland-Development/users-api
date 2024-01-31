@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
-using static VirtualFinland.UserAPI.Helpers.Services.NotificationService;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
