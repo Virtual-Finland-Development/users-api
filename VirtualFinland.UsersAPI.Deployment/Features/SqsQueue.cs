@@ -36,13 +36,16 @@ public class SqsQueue
         var slowDlq = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs-dlq"), new QueueArgs
         {
             FifoQueue = false,
-            VisibilityTimeoutSeconds = 300,
+            VisibilityTimeoutSeconds = 120,
             Tags = stackSetup.Tags,
+            MaxMessageSize = 262144,
+            MessageRetentionSeconds = 345600,
+            DelaySeconds = 5,
         });
         var slowQueue = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs"), new QueueArgs
         {
             FifoQueue = false,
-            VisibilityTimeoutSeconds = 300,
+            VisibilityTimeoutSeconds = 120,
             Tags = stackSetup.Tags,
             RedrivePolicy = slowDlq.Arn.Apply(arn => $@"{{
                 ""deadLetterTargetArn"": ""{arn}"",

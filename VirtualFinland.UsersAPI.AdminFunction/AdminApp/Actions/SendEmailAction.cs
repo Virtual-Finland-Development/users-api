@@ -28,7 +28,7 @@ public class SendEmailAction : IAdminAppAction
         var sendRequest = JsonSerializer.Deserialize<SendEmailRequest>(input) ??
             throw new ArgumentException("Invalid input", nameof(input));
 
-        _logger.LogInformation("Sending email to {toAddresses}", sendRequest.Destination.ToAddresses);
+        _logger.LogDebug("Sending email to {toAddresses} with subject {subject}", sendRequest.Destination.ToAddresses, sendRequest.Message.Subject.Data);
 
         await _client.SendEmailAsync(sendRequest);
     }

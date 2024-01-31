@@ -255,7 +255,6 @@ class AdminFunction
             FunctionName = SqsSlowEventHandlerFunction.Name,
             BatchSize = 1,
             Enabled = true,
-            MaximumBatchingWindowInSeconds = 60
         });
     }
 
