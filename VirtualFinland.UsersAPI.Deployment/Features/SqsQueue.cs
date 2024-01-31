@@ -37,25 +37,13 @@ public class SqsQueue
         });
 
         // Queue for "slow track", standard queue events, failed events are retried until retention period is reached
-        var slowDlq = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs-dlq"), new QueueArgs
-        {
-            FifoQueue = false,
-            VisibilityTimeoutSeconds = 120,
-            Tags = stackSetup.Tags,
-            MaxMessageSize = 262144,
-            MessageRetentionSeconds = 86400, // 1 day
-            DelaySeconds = 5,
-        });
         var slowQueue = new Queue(stackSetup.CreateResourceName("admin-function-slow-sqs"), new QueueArgs
         {
             FifoQueue = false,
             VisibilityTimeoutSeconds = 120,
             MessageRetentionSeconds = 86400,
+            DelaySeconds = 5,
             Tags = stackSetup.Tags,
-            RedrivePolicy = slowDlq.Arn.Apply(arn => $@"{{
-                ""deadLetterTargetArn"": ""{arn}"",
-                ""maxReceiveCount"": 1
-            }}")
         });
 
         return new Queues
