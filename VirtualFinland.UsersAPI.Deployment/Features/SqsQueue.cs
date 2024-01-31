@@ -28,6 +28,7 @@ public class SqsQueue
             DeduplicationScope = "messageGroup",
             VisibilityTimeoutSeconds = 30,
             FifoThroughputLimit = "perMessageGroupId",
+            MessageRetentionSeconds = 3600,
             Tags = stackSetup.Tags,
             RedrivePolicy = fastDlq.Arn.Apply(arn => $@"{{
                 ""deadLetterTargetArn"": ""{arn}"",
@@ -49,6 +50,7 @@ public class SqsQueue
         {
             FifoQueue = false,
             VisibilityTimeoutSeconds = 120,
+            MessageRetentionSeconds = 3600,
             Tags = stackSetup.Tags,
             RedrivePolicy = slowDlq.Arn.Apply(arn => $@"{{
                 ""deadLetterTargetArn"": ""{arn}"",
