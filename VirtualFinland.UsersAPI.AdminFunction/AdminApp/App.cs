@@ -11,6 +11,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers.Services;
 using Amazon.SQS;
 using VirtualFinland.UserAPI.Helpers;
+using Amazon.SimpleEmail;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
@@ -62,6 +63,7 @@ public class App
                 services.AddSingleton<IPersonRepository, PersonRepository>();
                 services.AddSingleton(redisDatabase);
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
+                services.AddTransient<AmazonSimpleEmailServiceClient>();
 
                 // Actions
                 services.AddTransient<InitializeDatabaseAction>();
@@ -73,6 +75,7 @@ public class App
                 services.AddTransient<InvalidateCachesAction>();
                 services.AddTransient<RunCleanupsAction>();
                 services.AddTransient<UpdatePersonAction>();
+                services.AddTransient<SendEmailAction>();
             });
 
         return builder.Build();
@@ -94,6 +97,7 @@ public static class AppExtensions
             Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
             Models.Actions.RunCleanups => scope.ServiceProvider.GetRequiredService<RunCleanupsAction>(),
             Models.Actions.UpdatePerson => scope.ServiceProvider.GetRequiredService<UpdatePersonAction>(),
+            Models.Actions.SendEmail => scope.ServiceProvider.GetRequiredService<SendEmailAction>(),
             _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
         };
     }
