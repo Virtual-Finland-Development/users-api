@@ -47,7 +47,7 @@ return await Deployment.RunAsync(async () =>
     var apiEndpoint = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
     // Admin function for management tasks, scheduled events and triggers
-    var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, adminFunctionSqses, database);
+    var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, adminFunctionSqses, database, redisCache);
 
     // Admin function schedulers and triggers
     adminFunction.CreateSchedulersAndTriggers(stackSetup, adminFunctionSqses);

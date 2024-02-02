@@ -88,6 +88,6 @@ public static class AppExtensions
     {
         var actionName = action.ToString();
         var actionType = Type.GetType($"VirtualFinland.AdminFunction.AdminApp.Actions.{actionName}Action") ?? throw new ArgumentException($"Action {actionName} not found");
-        return scope.ServiceProvider.GetRequiredService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} could not be resolved");
+        return scope.ServiceProvider.GetService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} could not be resolved");
     }
 }

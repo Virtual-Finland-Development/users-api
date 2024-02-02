@@ -12,7 +12,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queues adminFunctionSqs, PostgresDatabase database)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queues adminFunctionSqs, PostgresDatabase database, RedisElastiCache redis)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -51,6 +51,13 @@ class AdminFunction
         {
             Role = execRole.Name,
             PolicyArn = secretsManager.ReadPolicy.Arn
+        });
+
+        // Allow function to access elasticache
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-ElastiCache"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
         });
 
         // Allow function to post metrics to cloudwatch
@@ -173,6 +180,9 @@ class AdminFunction
                     },
                     {
                         "Notifications__Email__SiteUrl", new Config("ses").Require("siteUrl")
+                    },
+                     {
+                        "REDIS_ENDPOINT", Output.Format($"{redis.ClusterEndpoint}")
                     }
                 }
         };
