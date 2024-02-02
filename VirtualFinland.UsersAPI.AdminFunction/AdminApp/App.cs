@@ -28,16 +28,16 @@ public class App
         builder.ConfigureServices(
             async services =>
             {
-        // Database
-        AwsConfigurationManager awsConfigurationManager = new();
-        var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
-            ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
-            : null;
-        var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
+                // Database
+                AwsConfigurationManager awsConfigurationManager = new();
+                var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
+                    ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
+                    : null;
+                var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
 
-        // Cache provider
-        var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
-        ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+                // Cache provider
+                var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
+                ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
 
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
@@ -85,19 +85,8 @@ public static class AppExtensions
 {
     public static IAdminAppAction ResolveAction(this IServiceScope scope, Models.Actions action)
     {
-        return action switch
-        {
-            Models.Actions.InitializeDatabase => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAction>(),
-            Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<MigrateAction>(),
-            Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAuditLogTriggersAction>(),
-            Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<InitializeDatabaseUserAction>(),
-            Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<UpdateTermsOfServiceAction>(),
-            Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
-            Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
-            Models.Actions.RunCleanups => scope.ServiceProvider.GetRequiredService<RunCleanupsAction>(),
-            Models.Actions.UpdatePerson => scope.ServiceProvider.GetRequiredService<UpdatePersonAction>(),
-            Models.Actions.SendEmail => scope.ServiceProvider.GetRequiredService<SendEmailAction>(),
-            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
-        };
+        var actionName = action.ToString();
+        var actionType = Type.GetType($"VirtualFinland.AdminFunction.AdminApp.Actions.{actionName}Action") ?? throw new ArgumentException($"Action {actionName} not found");
+        return scope.ServiceProvider.GetService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} not found");
     }
 }
