@@ -18,7 +18,7 @@ public class Function
         LambdaLogger.Log($"Action: {payload.Action}");
 
         // Setup
-        using var app = await App.Build();
+        using var app = App.Build();
         using var scope = app.Services.CreateScope();
 
         // Administrate the command
@@ -35,7 +35,7 @@ public class Function
         // Log action
         LambdaLogger.Log($"Action: {payload.Action}");
 
-        using var app = await App.Build();
+        using var app = App.Build();
         using var scope = app.Services.CreateScope();
 
         ValidateEventSourceAction(payload.Action);
@@ -54,7 +54,7 @@ public class Function
         // Log action
         LambdaLogger.Log($"Action: {payload.Action}");
 
-        using var app = await App.Build();
+        using var app = App.Build();
         using var scope = app.Services.CreateScope();
 
         ValidateEventSourceAction(payload.Action);

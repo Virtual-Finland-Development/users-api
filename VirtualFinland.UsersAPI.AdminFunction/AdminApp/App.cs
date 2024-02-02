@@ -17,7 +17,7 @@ namespace VirtualFinland.AdminFunction.AdminApp;
 
 public class App
 {
-    public static async Task<IHost> Build()
+    public static IHost Build()
     {
         var builder = Host.CreateDefaultBuilder();
         var configurationBuilder = new ConfigurationBuilder()
@@ -25,6 +25,9 @@ public class App
             .AddEnvironmentVariables()
             .Build();
 
+        builder.ConfigureServices(
+            async services =>
+            {
         // Database
         AwsConfigurationManager awsConfigurationManager = new();
         var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
@@ -35,11 +38,7 @@ public class App
         // Cache provider
         var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
         ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
-        IDatabase redisDatabase = redisCluster.GetDatabase();
 
-        builder.ConfigureServices(
-            services =>
-            {
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
                 services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
@@ -61,7 +60,7 @@ public class App
                     );
                 });
                 services.AddSingleton<IPersonRepository, PersonRepository>();
-                services.AddSingleton(redisDatabase);
+                services.AddSingleton(redisCluster.GetDatabase());
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
                 services.AddTransient<AmazonSimpleEmailServiceClient>();
 
