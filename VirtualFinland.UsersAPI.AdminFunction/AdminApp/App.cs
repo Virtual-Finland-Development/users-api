@@ -12,12 +12,13 @@ using VirtualFinland.UserAPI.Helpers.Services;
 using Amazon.SQS;
 using VirtualFinland.UserAPI.Helpers;
 using Amazon.SimpleEmail;
+using Amazon.Lambda.Core;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
 public class App
 {
-    public static IHost Build()
+    public static async Task<IHost> BuildAsync()
     {
         var builder = Host.CreateDefaultBuilder();
         var configurationBuilder = new ConfigurationBuilder()
@@ -25,20 +26,20 @@ public class App
             .AddEnvironmentVariables()
             .Build();
 
+        // Database
+        AwsConfigurationManager awsConfigurationManager = new();
+        var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
+            ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
+            : null;
+        var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
+
+        // Cache provider
+        var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
+        ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
+
         builder.ConfigureServices(
-            async services =>
+            services =>
             {
-                // Database
-                AwsConfigurationManager awsConfigurationManager = new();
-                var databaseSecret = Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME") != null
-                    ? await awsConfigurationManager.GetSecretString(Environment.GetEnvironmentVariable("DB_CONNECTION_SECRET_NAME"))
-                    : null;
-                var dbConnectionString = databaseSecret ?? configurationBuilder.GetConnectionString("DefaultConnection");
-
-                // Cache provider
-                var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
-                ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
-
                 // Dependencies
                 services.AddTransient<IAmazonSQS, AmazonSQSClient>();
                 services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
@@ -87,6 +88,6 @@ public static class AppExtensions
     {
         var actionName = action.ToString();
         var actionType = Type.GetType($"VirtualFinland.AdminFunction.AdminApp.Actions.{actionName}Action") ?? throw new ArgumentException($"Action {actionName} not found");
-        return scope.ServiceProvider.GetService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} not found");
+        return scope.ServiceProvider.GetRequiredService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} could not be resolved");
     }
 }
