@@ -21,8 +21,8 @@ jobs:
       contents: read
     steps:
       - name: Install Pulumi CLI
-        uses: pulumi/actions@v4
-      - uses: actions/checkout@v3
+        uses: pulumi/actions@v5
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v3
         with:
           name: Application_Artifacts
@@ -34,7 +34,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Pulumi preview
-        uses: pulumi/actions@v4
+        uses: pulumi/actions@v5
         with:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: preview
