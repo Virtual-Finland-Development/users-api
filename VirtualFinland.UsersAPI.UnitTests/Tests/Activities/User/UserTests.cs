@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation.TestHelper;
 using VirtualFinland.UserAPI.Activities.User.Operations;
+using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Security.Models;
 using VirtualFinland.UsersAPI.UnitTests.Helpers;
@@ -78,7 +79,9 @@ public class UserTests : APITestBase
         command.SetAuth(requestAuthenticatedUser);
 
         var mockLoggerFactory = GetMockedAnalyticsLoggerFactory();
-        var sut = new DeleteUser.Handler(_dbContext, mockLoggerFactory);
+        var servicesProvider = GetMockedServiceProvider();
+        var personRepository = new PersonRepository(servicesProvider.Object);
+        var sut = new DeleteUser.Handler(personRepository, mockLoggerFactory);
 
         // Act
         var result = await sut.Handle(command, CancellationToken.None);

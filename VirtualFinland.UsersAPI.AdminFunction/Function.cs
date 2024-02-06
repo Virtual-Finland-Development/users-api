@@ -14,8 +14,11 @@ public class Function
 {
     public static async Task FunctionHandler(FunctionPayload payload)
     {
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
         // Setup
-        using var app = await App.Build();
+        using var app = await App.BuildAsync();
         using var scope = app.Services.CreateScope();
 
         // Administrate the command
@@ -28,7 +31,11 @@ public class Function
         // Setup
         var payloadBody = sqsEvent.Records.First().Body;
         var payload = JsonSerializer.Deserialize<FunctionPayload>(payloadBody) ?? throw new Exception("Could not deserialize payload");
-        using var app = await App.Build();
+
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
+        using var app = await App.BuildAsync();
         using var scope = app.Services.CreateScope();
 
         ValidateEventSourceAction(payload.Action);
@@ -43,7 +50,11 @@ public class Function
         // Setup
         var payloadBody = cloudWatchEvent.Detail.ToString() ?? throw new Exception("Could not get payload");
         var payload = JsonSerializer.Deserialize<FunctionPayload>(payloadBody) ?? throw new Exception("Could not deserialize payload");
-        using var app = await App.Build();
+
+        // Log action
+        LambdaLogger.Log($"Action: {payload.Action}");
+
+        using var app = await App.BuildAsync();
         using var scope = app.Services.CreateScope();
 
         ValidateEventSourceAction(payload.Action);
@@ -56,10 +67,10 @@ public class Function
     private static void ValidateEventSourceAction(Actions action)
     {
         // Ensure only specific actions are allowed to be invoked from CloudWatch / Sqs events
-        var allowedActions = new[] { Actions.UpdateAnalytics, Actions.InvalidateCaches };
+        var allowedActions = new[] { Actions.UpdateAnalytics, Actions.InvalidateCaches, Actions.UpdatePerson, Actions.SendEmail };
         if (!allowedActions.Contains(action))
         {
-            throw new Exception($"Action '{action}' is not allowed to be invoked from event source");
+            throw new ArgumentException($"Action '{action}' is not allowed to be invoked from event source");
         }
     }
 }

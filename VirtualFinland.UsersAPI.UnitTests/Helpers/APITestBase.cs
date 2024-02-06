@@ -4,9 +4,9 @@ using Amazon.CloudWatch;
 using Amazon.SQS;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using VirtualFinland.UserAPI.Data;
@@ -14,6 +14,7 @@ using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Helpers;
 using VirtualFinland.UserAPI.Helpers.Configurations;
 using VirtualFinland.UserAPI.Helpers.Services;
+using VirtualFinland.UserAPI.Models.App;
 using VirtualFinland.UserAPI.Models.UsersDatabase;
 using VirtualFinland.UserAPI.Security;
 using VirtualFinland.UserAPI.Security.Configurations;
@@ -91,7 +92,12 @@ public class APITestBase
             }
         );
 
-        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity);
+        // Setup db event triggers mock
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(o => o.GetSection("Dispatches:SQS")).Returns(new Mock<IConfigurationSection>().Object);
+        var actionDispatcherService = new ActionDispatcherService(mockConfiguration.Object, new Mock<IAmazonSQS>().Object);
+
+        var authenticationService = new AuthenticationService(_dbContext, AnalyticsLoggerFactoryMock, applicationSecurity, actionDispatcherService);
         var mockHttpRequest = new Mock<HttpRequest>();
         var mockHeaders = new Mock<IHeaderDictionary>();
         var mockHttpContext = new Mock<HttpContext>();
@@ -134,12 +140,12 @@ public class APITestBase
         var sqsClient = new Mock<IAmazonSQS>();
 
         var analyticsConfig = new AnalyticsConfig(
-            new AnalyticsConfig.CloudWatchSettings()
+            new CloudWatchSettings()
             {
                 IsEnabled = true,
                 Namespace = "test-namespace"
             },
-            new AnalyticsConfig.SqsSettings()
+            new AnalyticsConfig.AnalyticsSqsSettings()
             {
                 IsEnabled = false,
                 QueueUrl = "test-queue-url"

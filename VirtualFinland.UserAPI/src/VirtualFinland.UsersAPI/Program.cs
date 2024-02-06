@@ -153,6 +153,7 @@ builder.Services.AddSingleton<IOccupationsFlatRepository, OccupationsFlatReposit
 builder.Services.AddSingleton<ILanguageRepository, LanguageRepository>();
 builder.Services.AddSingleton<ICountriesRepository, CountriesRepository>();
 builder.Services.AddSingleton<ITermsOfServiceRepository, TermsOfServiceRepository>();
+builder.Services.AddSingleton<IPersonRepository, PersonRepository>();
 
 //
 // Other dependencies
@@ -161,6 +162,10 @@ builder.Services.AddSingleton<CodesetConfig>();
 builder.Services.AddSingleton<CodesetsService>();
 builder.Services.AddSingleton<AnalyticsConfig>();
 builder.Services.AddSingleton<AnalyticsService>();
+builder.Services.AddSingleton<ActionDispatcherService>();
+builder.Services.AddSingleton<NotificationsConfig>();
+builder.Services.AddSingleton<EmailTemplates>();
+builder.Services.AddSingleton<NotificationService>();
 
 //
 // Application build

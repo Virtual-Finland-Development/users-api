@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using VirtualFinland.UserAPI.Data;
 using VirtualFinland.UserAPI.Helpers.Configurations;
+using VirtualFinland.UserAPI.Models.App;
 
 namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 
@@ -14,7 +15,7 @@ namespace VirtualFinland.AdminFunction.AdminApp.Actions;
 /// </summary>
 public class UpdateAnalyticsAction : IAdminAppAction
 {
-    private readonly AnalyticsConfig.CloudWatchSettings _cloudWatchSettings;
+    private readonly CloudWatchSettings _cloudWatchSettings;
     private readonly UsersDbContext _dataContext;
     private readonly IAmazonCloudWatch _cloudWatchClient;
     private readonly ILogger<UpdateAnalyticsAction> _logger;

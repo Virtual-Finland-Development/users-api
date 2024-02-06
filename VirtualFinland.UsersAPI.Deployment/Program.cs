@@ -39,18 +39,18 @@ return await Deployment.RunAsync(async () =>
     var auditLogSubscriptionFunction = new AuditLogSubscription(config, stackSetup, database, cloudwatch);
     var redisCache = new RedisElastiCache(stackSetup, vpcSetup);
 
-    var analyticsSqS = SqsQueue.CreateSqsQueueForAnalyticsCommand(stackSetup);
+    var adminFunctionSqses = SqsQueue.CreateSqsQueueForAdminCommands(stackSetup);
 
     // The API
-    var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, analyticsSqS, database);
+    var usersApiFunction = new UsersApiLambdaFunction(config, stackSetup, vpcSetup, dbConnectionStringSecret, redisCache, cloudwatch, adminFunctionSqses, database);
     usersApiFunction.SetupErrorAlerting(stackSetup);
     var apiEndpoint = new LambdaFunctionUrl(stackSetup, usersApiFunction);
 
     // Admin function for management tasks, scheduled events and triggers
-    var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, analyticsSqS, database);
+    var adminFunction = new AdminFunction(config, stackSetup, vpcSetup, dbAdminConnectionStringSecret, adminFunctionSqses, database, redisCache);
 
     // Admin function schedulers and triggers
-    adminFunction.CreateSchedulersAndTriggers(stackSetup, analyticsSqS);
+    adminFunction.CreateSchedulersAndTriggers(stackSetup, adminFunctionSqses);
 
     if (isInitialDeployment)
     {

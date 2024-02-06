@@ -19,3 +19,5 @@ config:
   auth:sinuna-isEnabled: true
   auth:virtualfinland-isEnabled: true
   termsOfService:isEnabled: false
+  ses:fromAddress: "no-reply@dev.accessfinland.dev"
+  ses:siteUrl: "https://dev.accessfinland.dev"
