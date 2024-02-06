@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Net.Http.Headers;
-using StackExchange.Redis;
 using VirtualFinland.UserAPI.Data.Repositories;
 using VirtualFinland.UserAPI.Exceptions;
 using VirtualFinland.UserAPI.Helpers;
@@ -74,13 +75,29 @@ public static class SecurityFeatureServiceExtensions
                 policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:AccessFinland").Get<RequestAccessConfig>())));
             options.AddPolicy(Constants.Security.RequestFromDataspace, policy =>
                 policy.Requirements.Add(new RequestAccessRequirement(configuration.GetSection("Security:Access:Dataspace").Get<RequestAccessConfig>())));
+
+            // Anonymous access policy
+            options.AddPolicy(Constants.Security.Anonymous, policy =>
+            {
+                policy.AuthenticationSchemes.Add(Constants.Security.Anonymous);
+                policy.RequireAssertion(context => true);
+            });
         });
 
+        // Anonymous access scheme
+        authenticationBuilder.AddScheme<AuthenticationSchemeOptions, AnonymousAuthenticationHandler>(Constants.Security.Anonymous, options => { });
+
+        // Configure the scheme resolving policy scheme that's used by default
         authenticationBuilder.AddPolicyScheme(Constants.Security.ResolvePolicyFromTokenIssuer, Constants.Security.ResolvePolicyFromTokenIssuer,
             options =>
             {
                 options.ForwardDefaultSelector =
-                    context => GetSecurityPolicySchemeName(context.Request.Headers, features);
+                    context =>
+                    {
+                        if (context.GetEndpoint()?.Metadata?.GetMetadata<IAllowAnonymous>() is not null)
+                            return Constants.Security.Anonymous; // Use anonymous policy if endpoint is marked as AllowAnonymous
+                        return GetSecurityPolicySchemeName(context.Request.Headers, features);
+                    };
             });
 
         return services;
