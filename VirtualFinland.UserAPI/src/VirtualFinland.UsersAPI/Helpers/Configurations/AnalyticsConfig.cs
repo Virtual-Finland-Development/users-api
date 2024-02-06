@@ -1,30 +1,26 @@
 namespace VirtualFinland.UserAPI.Helpers.Configurations;
 
+using VirtualFinland.UserAPI.Models.App;
+
 public class AnalyticsConfig
 {
     public AnalyticsConfig(IConfiguration configuration)
     {
         CloudWatch = configuration.GetSection("Analytics:CloudWatch").Get<CloudWatchSettings>();
-        Sqs = configuration.GetSection("Analytics:SQS").Get<SqsSettings>();
+        Sqs = configuration.GetSection("Analytics:SQS").Get<AnalyticsSqsSettings>();
     }
-    public AnalyticsConfig(CloudWatchSettings cloudWatch, SqsSettings sqs)
+    public AnalyticsConfig(CloudWatchSettings cloudWatch, AnalyticsSqsSettings sqs)
     {
         CloudWatch = cloudWatch;
         Sqs = sqs;
     }
 
     public CloudWatchSettings CloudWatch { get; set; } = new();
-    public SqsSettings Sqs { get; set; } = new();
+    public AnalyticsSqsSettings Sqs { get; set; } = new();
 
-    public record CloudWatchSettings
+    public record AnalyticsSqsSettings
     {
-        public bool IsEnabled { get; set; }
-        public string Namespace { get; set; } = null!;
-    }
-
-    public record SqsSettings
-    {
-        public bool IsEnabled { get; set; }
-        public string QueueUrl { get; set; } = null!;
+        public bool IsEnabled { get; init; }
+        public string QueueUrl { get; init; } = null!;
     }
 }

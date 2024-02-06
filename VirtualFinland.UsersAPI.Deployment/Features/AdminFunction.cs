@@ -5,14 +5,14 @@ using Pulumi.Aws.CloudWatch;
 using Pulumi.Aws.Iam;
 using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
-using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
+using static VirtualFinland.UsersAPI.Deployment.Features.SqsQueue;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
 class AdminFunction
 {
-    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queue analyticsSqS, PostgresDatabase database)
+    public AdminFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, Queues adminFunctionSqs, PostgresDatabase database, RedisElastiCache redis)
     {
         // Lambda function
         var execRole = new Role(stackSetup.CreateResourceName("AdminFunctionRole"), new RoleArgs
@@ -53,6 +53,13 @@ class AdminFunction
             PolicyArn = secretsManager.ReadPolicy.Arn
         });
 
+        // Allow function to access elasticache
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-ElastiCache"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = ManagedPolicy.AmazonElastiCacheFullAccess.ToString()
+        });
+
         // Allow function to post metrics to cloudwatch
         var cloudWatchMetricsPushPolicy = new Policy(stackSetup.CreateResourceName("AdminFunctionCloudWatchMetricsPushPolicy"), new()
         {
@@ -91,10 +98,12 @@ class AdminFunction
                         ""Action"": [
                             ""sqs:ReceiveMessage"",
                             ""sqs:DeleteMessage"",
-                            ""sqs:GetQueueAttributes""
+                            ""sqs:GetQueueAttributes"",
+                            ""sqs:SendMessage""
                         ],
                         ""Resource"": [
-                            ""{analyticsSqS.Arn}""
+                            ""{adminFunctionSqs.Fast.Arn}"",
+                            ""{adminFunctionSqs.Slow.Arn}""
                         ]
                     }}
                 ]
@@ -105,6 +114,33 @@ class AdminFunction
         {
             Role = execRole.Name,
             PolicyArn = sqsInvokePolicy.Arn
+        });
+
+        // Allow sending emails with SES
+        var sesSendEmailPolicy = new Policy(stackSetup.CreateResourceName("AdminFunctionSESSendEmailPolicy"), new()
+        {
+            Description = "Users-API SES Send Email Policy",
+            PolicyDocument = Output.Format($@"{{
+                ""Version"": ""2012-10-17"",
+                ""Statement"": [
+                    {{
+                        ""Effect"": ""Allow"",
+                        ""Action"": [
+                            ""ses:SendEmail"",
+                            ""ses:SendRawEmail""
+                        ],
+                        ""Resource"": [
+                            ""*""
+                        ]
+                    }}
+                ]
+            }}"),
+            Tags = stackSetup.Tags,
+        });
+        _ = new RolePolicyAttachment(stackSetup.CreateResourceName("AdminFunctionRoleAttachment-SES"), new RolePolicyAttachmentArgs
+        {
+            Role = execRole.Name,
+            PolicyArn = sesSendEmailPolicy.Arn
         });
 
         var functionVpcArgs = new FunctionVpcConfigArgs()
@@ -127,6 +163,27 @@ class AdminFunction
                     {
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
+                    {
+                        "Cleanups__AbandonedAccounts__IsEnabled", "true"
+                    },
+                    {
+                        "Dispatches__SQS__QueueUrls__Fast", ""
+                    },
+                    {
+                        "Dispatches__SQS__QueueUrls__Slow", adminFunctionSqs.Slow.Url
+                    },
+                    {
+                        "Dispatches__SQS__IsEnabled", "true"
+                    },
+                    {
+                        "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
+                    },
+                    {
+                        "Notifications__Email__SiteUrl", new Config("ses").Require("siteUrl")
+                    },
+                     {
+                        "REDIS_ENDPOINT", Output.Format($"{redis.ClusterEndpoint}")
+                    }
                 }
         };
 
@@ -135,21 +192,34 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
-            Timeout = 30,
-            MemorySize = 256,
+            Timeout = 120,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
             Tags = stackSetup.Tags
         }, new() { DependsOn = new[] { database.MainResource } });
 
-        SqsEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs"), new FunctionArgs
+        SqsFastEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-fast"), new FunctionArgs
         {
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
-            Timeout = 30,
-            MemorySize = 256,
+            Timeout = 60,
+            MemorySize = 512, // Intented for short-lived, low memory tasks
+            Environment = environmentArg,
+            Code = new FileArchive(appArtifactPath),
+            VpcConfig = functionVpcArgs,
+            Tags = stackSetup.Tags
+        }, new() { DependsOn = new[] { database.MainResource } });
+
+        SqsSlowEventHandlerFunction = new Function(stackSetup.CreateResourceName("AdminFunction-sqs-slow"), new FunctionArgs
+        {
+            Role = execRole.Arn,
+            Runtime = "dotnet6",
+            Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::SQSEventHandler",
+            Timeout = 120,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -161,8 +231,8 @@ class AdminFunction
             Role = execRole.Arn,
             Runtime = "dotnet6",
             Handler = "AdminFunction::VirtualFinland.AdminFunction.Function::FunctionHandler",
-            Timeout = 30,
-            MemorySize = 256,
+            Timeout = 120,
+            MemorySize = 1024,
             Environment = environmentArg,
             Code = new FileArchive(appArtifactPath),
             VpcConfig = functionVpcArgs,
@@ -170,32 +240,51 @@ class AdminFunction
         }, new() { DependsOn = new[] { database.MainResource } });
     }
 
-    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queue analyticsSqS)
+    public void CreateSchedulersAndTriggers(StackSetup stackSetup, Queues adminFunctionSqs)
     {
-        // Configure SQS trigger
+        CreateAdminFunctionQueueTriggers(stackSetup, adminFunctionSqs);
+        CreateAnalyticsUpdateScheduler(stackSetup);
+        CreateCleanupSchedulers(stackSetup);
+    }
+
+    private void CreateAdminFunctionQueueTriggers(StackSetup stackSetup, Queues adminFunctionSqs)
+    {
+        // Configure SQS trigger for fast track
         _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger"), new EventSourceMappingArgs
         {
-            EventSourceArn = analyticsSqS.Arn,
-            FunctionName = SqsEventHandlerFunction.Name,
+            EventSourceArn = adminFunctionSqs.Fast.Arn,
+            FunctionName = SqsFastEventHandlerFunction.Name,
             BatchSize = 1,
             Enabled = true,
         });
 
-        // Configure CloudWatch scheduled event
-        var eventRule = new EventRule(stackSetup.CreateResourceName("AdminFunctionScheduledEvent"), new EventRuleArgs
+        // Slow
+        _ = new EventSourceMapping(stackSetup.CreateResourceName("AdminFunctionSQSTrigger-Slow"), new EventSourceMappingArgs
         {
-            ScheduleExpression = "rate(3 hours)",
+            EventSourceArn = adminFunctionSqs.Slow.Arn,
+            FunctionName = SqsSlowEventHandlerFunction.Name,
+            BatchSize = 1,
+            Enabled = true,
+        });
+    }
+
+    private void CreateAnalyticsUpdateScheduler(StackSetup stackSetup)
+    {
+        // Configure CloudWatch scheduled event
+        var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-update-scheduler"), new EventRuleArgs
+        {
+            ScheduleExpression = "rate(12 hours)",
             Description = "Users-API Analytics Update Trigger",
             Tags = stackSetup.Tags
         });
-        _ = new Permission(stackSetup.CreateResourceName("AdminFunctionScheduledEventPermission"), new PermissionArgs
+        _ = new Permission(stackSetup.CreateResourceName("analytics-update-scheduler-permission"), new PermissionArgs
         {
             Principal = "events.amazonaws.com",
             Action = "lambda:InvokeFunction",
             Function = CloudWatchEventHandlerFunction.Name,
             SourceArn = eventRule.Arn
         });
-        _ = new EventTarget(stackSetup.CreateResourceName("AdminFunctionSchedulerTarget"), new EventTargetArgs
+        _ = new EventTarget(stackSetup.CreateResourceName("analytics-update-scheduler-target"), new EventTargetArgs
         {
             Rule = eventRule.Name,
             Arn = CloudWatchEventHandlerFunction.Arn,
@@ -206,7 +295,35 @@ class AdminFunction
         });
     }
 
+    private void CreateCleanupSchedulers(StackSetup stackSetup)
+    {
+        // Configure CloudWatch scheduled event
+        var eventRule = new EventRule(stackSetup.CreateResourceName("cleanups-scheduler"), new EventRuleArgs
+        {
+            ScheduleExpression = "rate(1 day)",
+            Description = "Users-API Cleanup Trigger",
+            Tags = stackSetup.Tags
+        });
+        _ = new Permission(stackSetup.CreateResourceName("cleanups-scheduler-permission"), new PermissionArgs
+        {
+            Principal = "events.amazonaws.com",
+            Action = "lambda:InvokeFunction",
+            Function = CloudWatchEventHandlerFunction.Name,
+            SourceArn = eventRule.Arn
+        });
+        _ = new EventTarget(stackSetup.CreateResourceName("cleanups-scheduler-target"), new EventTargetArgs
+        {
+            Rule = eventRule.Name,
+            Arn = CloudWatchEventHandlerFunction.Arn,
+            Input = JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                { "Action", "RunCleanups" }
+            })
+        });
+    }
+
     public Function LambdaFunction = default!;
-    public Function SqsEventHandlerFunction = default!;
+    public Function SqsFastEventHandlerFunction = default!;
+    public Function SqsSlowEventHandlerFunction = default!;
     public Function CloudWatchEventHandlerFunction = default!;
 }

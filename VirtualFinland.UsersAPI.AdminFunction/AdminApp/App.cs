@@ -8,12 +8,17 @@ using VirtualFinland.AdminFunction.AdminApp.Actions;
 using Amazon.CloudWatch;
 using StackExchange.Redis;
 using VirtualFinland.UserAPI.Data.Repositories;
+using VirtualFinland.UserAPI.Helpers.Services;
+using Amazon.SQS;
+using VirtualFinland.UserAPI.Helpers;
+using Amazon.SimpleEmail;
+using Amazon.Lambda.Core;
 
 namespace VirtualFinland.AdminFunction.AdminApp;
 
 public class App
 {
-    public static async Task<IHost> Build()
+    public static async Task<IHost> BuildAsync()
     {
         var builder = Host.CreateDefaultBuilder();
         var configurationBuilder = new ConfigurationBuilder()
@@ -31,12 +36,22 @@ public class App
         // Cache provider
         var redisEndpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT") ?? configurationBuilder["Redis:Endpoint"];
         ConnectionMultiplexer redisCluster = ConnectionMultiplexer.Connect($"{redisEndpoint},abortConnect=false,connectRetry=5");
-        IDatabase redisDatabase = redisCluster.GetDatabase();
 
         builder.ConfigureServices(
             services =>
             {
                 // Dependencies
+                services.AddTransient<IAmazonSQS, AmazonSQSClient>();
+                services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
+                services.AddSingleton<AnalyticsConfig>();
+                services.AddSingleton<AnalyticsLoggerFactory>();
+                services.AddSingleton<AnalyticsService>();
+                services.AddSingleton<NotificationsConfig>();
+                services.AddSingleton<EmailTemplates>();
+                services.AddSingleton<NotificationService>();
+                services.AddSingleton<CleanupConfig>();
+
+                services.AddSingleton<ActionDispatcherService>();
                 services.AddDbContext<UsersDbContext>(options =>
                 {
                     options.UseNpgsql(dbConnectionString,
@@ -45,10 +60,10 @@ public class App
                             .UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
                     );
                 });
-                services.AddTransient<IAmazonCloudWatch, AmazonCloudWatchClient>();
-                services.AddSingleton<AnalyticsConfig>();
-                services.AddSingleton(redisDatabase);
+                services.AddSingleton<IPersonRepository, PersonRepository>();
+                services.AddSingleton(redisCluster.GetDatabase());
                 services.AddSingleton<ICacheRepositoryFactory, CacheRepositoryFactory>();
+                services.AddTransient<AmazonSimpleEmailServiceClient>();
 
                 // Actions
                 services.AddTransient<InitializeDatabaseAction>();
@@ -58,6 +73,9 @@ public class App
                 services.AddTransient<UpdateTermsOfServiceAction>();
                 services.AddTransient<UpdateAnalyticsAction>();
                 services.AddTransient<InvalidateCachesAction>();
+                services.AddTransient<RunCleanupsAction>();
+                services.AddTransient<UpdatePersonAction>();
+                services.AddTransient<SendEmailAction>();
             });
 
         return builder.Build();
@@ -68,16 +86,8 @@ public static class AppExtensions
 {
     public static IAdminAppAction ResolveAction(this IServiceScope scope, Models.Actions action)
     {
-        return action switch
-        {
-            Models.Actions.InitializeDatabase => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAction>(),
-            Models.Actions.Migrate => scope.ServiceProvider.GetRequiredService<MigrateAction>(),
-            Models.Actions.InitializeDatabaseAuditLogTriggers => scope.ServiceProvider.GetRequiredService<InitializeDatabaseAuditLogTriggersAction>(),
-            Models.Actions.InitializeDatabaseUser => scope.ServiceProvider.GetRequiredService<InitializeDatabaseUserAction>(),
-            Models.Actions.UpdateTermsOfService => scope.ServiceProvider.GetRequiredService<UpdateTermsOfServiceAction>(),
-            Models.Actions.UpdateAnalytics => scope.ServiceProvider.GetRequiredService<UpdateAnalyticsAction>(),
-            Models.Actions.InvalidateCaches => scope.ServiceProvider.GetRequiredService<InvalidateCachesAction>(),
-            _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
-        };
+        var actionName = action.ToString();
+        var actionType = Type.GetType($"VirtualFinland.AdminFunction.AdminApp.Actions.{actionName}Action") ?? throw new ArgumentException($"Action {actionName} not found");
+        return scope.ServiceProvider.GetService(actionType) as IAdminAppAction ?? throw new ArgumentException($"Action {actionName} could not be resolved");
     }
 }

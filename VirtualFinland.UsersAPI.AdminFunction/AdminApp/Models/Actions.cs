@@ -9,4 +9,7 @@ public enum Actions
     UpdateTermsOfService,
     UpdateAnalytics,
     InvalidateCaches,
+    UpdatePerson,
+    RunCleanups,
+    SendEmail,
 }

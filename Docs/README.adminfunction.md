@@ -55,3 +55,13 @@ dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
 - `InvalidateCaches`: invalidates the api gateway caches
   - lambda function payload: `{"Action": "InvalidateCaches"}`
   - cli command: `dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI InvalidateCaches`
+- `UpdatePerson`:
+  - updates persons meta data / system related attributes
+  - lambda function payload eg: `{"Action": "UpdatePerson", "data": "{\"PersonId\": \"00000000-0000-0000-0000-000000000000\", \"MetaData\": \"Activity\"}"}`
+    - updates the person activity timestamp
+- `RunCleanups`:
+  - lambda function payload: `{"Action": "RunCleanups"}`
+  - read more at [./README.automatic-cleanups.md](./README.automatic-cleanups.md) document
+- `SendEmail`:
+  - lambda function payload eg: `{"Action": "SendEmail", "data": <SendEmailRequest>}`
+  - where SendEmailRequest: https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/PinpointEmail/TSendEmailRequest.html

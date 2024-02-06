@@ -9,6 +9,7 @@ using Pulumi.Aws.Lambda;
 using Pulumi.Aws.Lambda.Inputs;
 using Pulumi.Aws.Sqs;
 using VirtualFinland.UsersAPI.Deployment.Common.Models;
+using static VirtualFinland.UsersAPI.Deployment.Features.SqsQueue;
 
 namespace VirtualFinland.UsersAPI.Deployment.Features;
 
@@ -17,7 +18,7 @@ namespace VirtualFinland.UsersAPI.Deployment.Features;
 /// </summary>
 class UsersApiLambdaFunction
 {
-    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queue analyticsSqS, PostgresDatabase database)
+    public UsersApiLambdaFunction(Config config, StackSetup stackSetup, VpcSetup vpcSetup, SecretsManager secretsManager, RedisElastiCache redis, CloudWatch cloudwatch, Queues adminFunctionSqs, PostgresDatabase database)
     {
         // External references
         var codesetStackReference = new StackReference($"{Pulumi.Deployment.Instance.OrganizationName}/codesets/{stackSetup.Environment}");
@@ -143,7 +144,8 @@ class UsersApiLambdaFunction
                             ""sqs:SendMessage""
                         ],
                         ""Resource"": [
-                            ""{analyticsSqS.Arn}""
+                            ""{adminFunctionSqs.Fast.Arn}"",
+                            ""{adminFunctionSqs.Slow.Arn}""
                         ]
                     }}
                 ]
@@ -229,11 +231,26 @@ class UsersApiLambdaFunction
                         "Analytics__CloudWatch__IsEnabled", "true"
                     },
                     {
-                        "Analytics__SQS__QueueUrl", analyticsSqS.Url
+                        "Analytics__SQS__QueueUrl", adminFunctionSqs.Fast.Url
                     },
                     {
                         "Analytics__SQS__IsEnabled", "true"
                     },
+                    {
+                        "Dispatches__SQS__QueueUrls__Fast", adminFunctionSqs.Fast.Url
+                    },
+                    {
+                        "Dispatches__SQS__QueueUrls__Slow", adminFunctionSqs.Slow.Url
+                    },
+                    {
+                        "Dispatches__SQS__IsEnabled", "true"
+                    },
+                    {
+                        "Notifications__Email__FromAddress", new Config("ses").Require("fromAddress")
+                    },
+                    {
+                        "Notifications__Email__SiteUrl", new Config("ses").Require("siteUrl")
+                    }
                 }
             },
             Code = new FileArchive(appArtifactPath),

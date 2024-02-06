@@ -9,9 +9,12 @@ test: restore
 	@echo "> Running unit tests"
 	dotnet test ./VirtualFinland.UsersAPI.UnitTests --no-restore
 
-migrate:
+migrate.cli:
 	@echo "> Running database migrations"
 	dotnet run --project ./VirtualFinland.UsersAPI.AdminFunction.CLI Migrate
+migrate.aws:
+	@echo "> Running database migrations in AWS Lambda"
+	aws lambda invoke --payload '{"Action": "Migrate"}' --cli-binary-format raw-in-base64-out --function-name $(pulumi -C ./VirtualFinland.UsersAPI.Deployment stack output AdminFunctionArn) output.json
 
 update-terms-of-service:
 	@echo "> Updating terms of service in database"
