@@ -28,14 +28,14 @@ jobs:
       contents: write
     env:
       DEPLOYMENT_EVENT_IDENT: users-api-deployment-${{ inputs.environment }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_number }}
-      IS_MVP_PRODUCTION_LIKE_DEPLOYMENT: ${{ startsWith(inputs.environment, 'mvp-') && inputs.environment != 'mpv-dev' }}
+      IS_MVP_PRODUCTION_LIKE_DEPLOYMENT: ${{ startsWith(inputs.environment, 'mvp-') && inputs.environment != 'mvp-dev' }}
     steps:
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.x
       - name: Install Pulumi CLI
-        uses: pulumi/actions@v4
-      - uses: actions/checkout@v3
+        uses: pulumi/actions@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - uses: actions/download-artifact@v3
@@ -49,7 +49,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           pulumi-access-token: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - name: Install Pulumi CLI
-        uses: pulumi/actions@v4
+        uses: pulumi/actions@v5
       - name: Resolve Database identifier with Pulumi
         id: get-pulumi-outputs
         continue-on-error: true # Continue if db does not yet exist
@@ -82,7 +82,7 @@ jobs:
         run: |
           aws rds create-db-snapshot --db-instance-identifier ${{ steps.get-pulumi-outputs.outputs.DBIdentifier }} --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Wait for the database snapshot to be ready
-        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT}}
+        if: ${{ steps.deployment-database-events.outputs.Migrations == 'true' && !env.IS_MVP_PRODUCTION_LIKE_DEPLOYMENT }}
         run: |
           aws rds wait db-snapshot-available --db-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Create database backup snapshot on PRE-deployment
@@ -95,7 +95,7 @@ jobs:
           aws rds wait db-cluster-snapshot-available --db-cluster-snapshot-identifier PRE-${{ env.DEPLOYMENT_EVENT_IDENT }}
       - name: Deploy with Pulumi
         id: pulumi-up
-        uses: pulumi/actions@v4
+        uses: pulumi/actions@v5
         with:
           work-dir: ./VirtualFinland.UsersAPI.Deployment
           command: up
