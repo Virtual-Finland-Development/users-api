@@ -211,6 +211,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.UseResponseCaching();
 
-app.MapGet("/", () => "App is up!");
+app.MapGet("/health-check", () => "OK").AllowAnonymous();
+app.MapGet("/", () => "OK");
 
 app.Run();
