@@ -271,20 +271,20 @@ class AdminFunction
     private void CreateAnalyticsUpdateScheduler(StackSetup stackSetup)
     {
         // Configure CloudWatch scheduled event
-        var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-update-scheduler"), new EventRuleArgs
+        var eventRule = new EventRule(stackSetup.CreateResourceName("analytics-scheduler"), new EventRuleArgs
         {
             ScheduleExpression = "rate(12 hours)",
             Description = "Users-API Analytics Update Trigger",
             Tags = stackSetup.Tags
         });
-        _ = new Permission(stackSetup.CreateResourceName("analytics-update-scheduler-permission"), new PermissionArgs
+        _ = new Permission(stackSetup.CreateResourceName("analytics-scheduler-permission"), new PermissionArgs
         {
             Principal = "events.amazonaws.com",
             Action = "lambda:InvokeFunction",
             Function = CloudWatchEventHandlerFunction.Name,
             SourceArn = eventRule.Arn
         });
-        _ = new EventTarget(stackSetup.CreateResourceName("analytics-update-scheduler-target"), new EventTargetArgs
+        _ = new EventTarget(stackSetup.CreateResourceName("analytics-scheduler-target"), new EventTargetArgs
         {
             Rule = eventRule.Name,
             Arn = CloudWatchEventHandlerFunction.Arn,
