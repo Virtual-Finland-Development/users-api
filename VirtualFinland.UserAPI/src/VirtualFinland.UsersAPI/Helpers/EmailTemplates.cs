@@ -1,5 +1,4 @@
 using VirtualFinland.UserAPI.Helpers.Configurations;
-using VirtualFinland.UserAPI.Models.UsersDatabase;
 using static VirtualFinland.UserAPI.Helpers.Services.NotificationService;
 
 namespace VirtualFinland.UserAPI.Helpers;
@@ -12,9 +11,8 @@ public class EmailTemplates
     _siteUrl = notificationsConfig.Email.SiteUrl;
   }
 
-  public EmailTemplate GetEmailTemplateForPersonEmail(NotificationTemplate template, Person person)
+  public EmailTemplate GetEmailTemplateForPersonEmail(NotificationTemplate template)
   {
-    var personFirstName = person.GivenName ?? person.Email;
     return template switch
     {
       NotificationTemplate.AccountToBeDeletedFromInactivity => new EmailTemplate
@@ -22,7 +20,7 @@ public class EmailTemplates
         Subject = "Your Access Finland account will be deleted from inactivity!",
         HtmlBody = WrapEmailHtmlContentWithCoreTemplate("Your Access Finland account will be deleted from inactivity!", @$"
                         <h1>Your Access Finland account will be deleted from inactivity!</h1>
-                        <p>Hi {personFirstName}, you have not been active in Access Finland for a long time.</p>
+                        <p>Hi, you have not been active in Access Finland for a long time.</p>
                         <p>Unless you log in to Access Finland within a month, your account will be automatically deleted.</p>
                         <p>If you want to keep your account, please log in to Access Finland here:</p>
                         <p><a href=""{_siteUrl}"">{_siteUrl}</a></p>
@@ -34,7 +32,7 @@ public class EmailTemplates
         Subject = "Your Access Finland account was deleted from inactivity!",
         HtmlBody = WrapEmailHtmlContentWithCoreTemplate("Your Access Finland account was deleted from inactivity!", @$"
                         <h1>Your Access Finland account was deleted from inactivity!</h1>
-                        <p>Hello {personFirstName}, a month ago we sent you an email about your Access Finland account being deleted from inactivity.</p>
+                        <p>Hello, a month ago we sent you an email about your Access Finland account being deleted from inactivity.</p>
                         <p>Since you did not log in to Access Finland within a month, your account was deleted.</p>
                         <p>If you want to continue using Access Finland service, please create a new account here:</p>
                         <p><a href=""{_siteUrl}"">{_siteUrl}</a></p>
