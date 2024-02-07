@@ -38,3 +38,11 @@ The [UserController](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Activ
 ### RequestFromDataspace Policy
 
 The [ProductizerController](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/Activities/Productizer/ProductizerController.cs) defines the routes that are to be used to handle the requests that come from the dataspace gateway service. The routes are protected with the `Authorize(Policy = "RequestFromDataspace")` attribute that requires that the requests `User-Agent` header matches the one configured in the [appsettings.json](../VirtualFinland.UserAPI/src/VirtualFinland.UsersAPI/appsettings.json)-file properties block: `Security:Access:Dataspace`.
+
+## Endpoint specific guards
+
+### Allow anonymous
+
+Endpoints that are intented to be used by the public are flagged with the `AllowAnonymous` attribute. Read more here: https://learn.microsoft.com/en-us/aspnet/core/security/authorization/simple?view=aspnetcore-6.0
+
+The only users-api endpoint that is intented to be used by the public is the `GET /health-check` endpoint that is used to check the health of the API. 
