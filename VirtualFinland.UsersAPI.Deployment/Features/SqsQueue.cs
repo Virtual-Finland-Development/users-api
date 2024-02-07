@@ -16,7 +16,7 @@ public class SqsQueue
             FifoQueue = true,
             ContentBasedDeduplication = true,
             DeduplicationScope = "messageGroup",
-            VisibilityTimeoutSeconds = 30,
+            VisibilityTimeoutSeconds = 120,
             FifoThroughputLimit = "perMessageGroupId",
             MessageRetentionSeconds = 3600, // 1 hour
             Tags = stackSetup.Tags,
@@ -26,7 +26,7 @@ public class SqsQueue
             FifoQueue = true,
             ContentBasedDeduplication = true,
             DeduplicationScope = "messageGroup",
-            VisibilityTimeoutSeconds = 30,
+            VisibilityTimeoutSeconds = 120,
             FifoThroughputLimit = "perMessageGroupId",
             MessageRetentionSeconds = 3600,
             Tags = stackSetup.Tags,
