@@ -15,7 +15,7 @@ jobs:
       - name: Test and build
         run: make packages
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Application_Artifacts
           path: build-artifacts/
