@@ -44,7 +44,7 @@ public class NotificationService
             return;
         }
 
-        var templateData = _emailTemplates.GetEmailTemplateForPersonEmail(template, person);
+        var templateData = _emailTemplates.GetEmailTemplateForPersonEmail(template);
 
 
         var sendRequest = new SendEmailRequest
