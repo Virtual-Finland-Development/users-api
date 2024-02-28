@@ -1,7 +1,6 @@
 config:
   acl:accessfinland-isEnabled: true
   acl:dataspace-isEnabled: false
-  auth:sinuna-isEnabled: true
   auth:testbed-isEnabled: false
   termsOfService:isEnabled: true
   ses:fromAddress: "no-reply@accessfinland.com"
