@@ -17,7 +17,7 @@ public abstract class SecurityFeature : ISecurityFeature
     ///
     /// The issuer of the JWT token
     ///
-    public string Issuer => _issuer ?? throw new ArgumentNullException("Issuer is not set");
+    public string Issuer => _issuer ?? throw new ArgumentNullException($"Issuer of {GetType().Name} is not set");
     protected string? _issuer;
 
     /// <summary>
@@ -176,6 +176,7 @@ public abstract class SecurityFeature : ISecurityFeature
     /// </summary>
     protected virtual async void LoadOpenIdConfigUrl()
     {
+        // Skip if OpenID URL is defined as not required
         if (_openIDConfigurationURL == null)
         {
             IsInitialized = true;
@@ -198,28 +199,36 @@ public abstract class SecurityFeature : ISecurityFeature
         {
             if (httpResponse.IsSuccessStatusCode)
             {
-                var jsonData = JsonNode.Parse(await httpResponse.Content.ReadAsStringAsync());
-                _issuer = jsonData?["issuer"]?.ToString();
-                _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
-
-                if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
+                try
                 {
-                    if (Options.IsOidcMetadataCachingEnabled)
+                    var rawData = await httpResponse.Content.ReadAsStringAsync();
+                    var jsonData = JsonNode.Parse(rawData);
+                    _issuer = jsonData?["issuer"]?.ToString();
+                    _jwksOptionsUrl = jsonData?["jwks_uri"]?.ToString();
+
+                    if (!string.IsNullOrEmpty(_issuer) && !string.IsNullOrEmpty(_jwksOptionsUrl))
                     {
-                        // Check for standard cache headers or use default cache duration
-                        var cacheControlHeader = httpResponse.Headers.CacheControl;
-                        var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromSeconds(Options.DefaultOidcMetadataCacheDurationInSeconds);
-
-                        await CacheRepository.Set(Constants.Cache.OpenIdConfigPrefix, new OpenIdConfiguration()
+                        if (Options.IsOidcMetadataCachingEnabled)
                         {
-                            Issuer = _issuer,
-                            JwksUri = _jwksOptionsUrl
-                        }, cacheDuration);
+                            // Check for standard cache headers or use default cache duration
+                            var cacheControlHeader = httpResponse.Headers.CacheControl;
+                            var cacheDuration = cacheControlHeader?.MaxAge ?? TimeSpan.FromSeconds(Options.DefaultOidcMetadataCacheDurationInSeconds);
 
-                        IsInitialized = true;
+                            await CacheRepository.Set(Constants.Cache.OpenIdConfigPrefix, new OpenIdConfiguration()
+                            {
+                                Issuer = _issuer,
+                                JwksUri = _jwksOptionsUrl
+                            }, cacheDuration);
+
+                            IsInitialized = true;
+                        }
+
+                        break;
                     }
-
-                    break;
+                }
+                catch (Exception)
+                {
+                    // Pass
                 }
             }
             await Task.Delay(_configUrlRetryWaitTime);
@@ -228,7 +237,7 @@ public abstract class SecurityFeature : ISecurityFeature
         // If all retries fail, then send an exception since the security information is critical to the functionality of the backend
         if (string.IsNullOrEmpty(_issuer) || string.IsNullOrEmpty(_jwksOptionsUrl))
         {
-            throw new ArgumentNullException("Failed to retrieve OpenID configurations");
+            throw new ArgumentNullException("Failed to retrieve OpenID configurations of ${GetType().Name} from ${_openIDConfigurationURL} after ${_configUrlMaxRetryCount} retries.");
         }
     }
 
